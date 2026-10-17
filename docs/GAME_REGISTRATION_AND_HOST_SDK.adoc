@@ -1,0 +1,178 @@
+= Atrium — Game Registration, Distribution and Host Integration
+:revnumber: 0.5.3
+:revdate: 2026-10-17
+:toc: left
+:toclevels: 3
+
+== Contract authority and status
+
+This document distinguishes the **implemented Atrium v0.5.0 registry contract** from a **proposed `atrium.game/v2` registration and `atrium.host/v1` integration contract**. Shipping this design does NOT add new API handlers, trusted user sessions, game installation, or SDK methods. The current schema (`schemas/atrium-app-v1.schema.json`), `src/catalog.py`, `src/registry_runtime.py`, `src/catalog_client.mjs`, `src/apphost.mjs`, and `tools/export_catalog.py` remain authoritative for implemented behavior.
+
+The target is: a third-party game publishes and runs independently; Atrium reviews and advertises the game, filters installation/launch by platform, and optionally connects it to Atrium-owned player, lobby, save, activity and UI components. Tavi is a chat client that may open Atrium, not the game catalog or launcher authority. All user registration/login remains owned by Social (`TheBigTreeInc/social`). No game receives reusable Social credentials.
+
+[cols="2,1,3",options="header"]
+|===
+|Capability|Status in 0.5.0|Next required implementation
+|Register publisher, submit v1 app, approve/revoke|Implemented, operator key only|Self-service publisher identity/asset proof (future)
+|Approved listing on public Pages storefront|Manual snapshot export + manual Pages publish|Review-gated automated catalog publication
+|Host single hash-checked HTML entry <= 1 MiB|Implemented, isolated srcdoc iframe|Versioned hosted-site/bundle launch and embedding policies
+|Game-specific platform metadata|Not implemented|`atrium.game/v2` schema + platform filter
+|Launch full hosted web game by reviewed URL|Not implemented as separate mode|External/embedded hosted-site launcher
+|Atrium-native SDK, multiplayer lobby, saves, game activity|Not implemented|`atrium.host/v1` bridge and authorized server APIs
+|Shared Social login / Atrium player session|Not implemented|Social-owned web login + one-time Atrium exchange
+|Web offline / PWA or desktop native install|Not implemented|Verified install adapters, package/platform enforcement
+|===
+
+== 1. Current registration format: `atrium.app/v1`
+
+=== Required metadata
+
+An operator registers one publisher with an approved set of exact, clean public HTTPS asset origins, using an `apps:approve` Looprd database key. An app submission has only these fields: `id`, `title`, `version`, `publisher`, `kind`, `entry`, `sha256`, `permissions`. No arbitrary fields are permitted. `kind=game`; `version` is numeric `major.minor.patch`; `id` is lowercase letters, numbers or dots after the first letter (no hyphens in v1 app IDs); `publisher` may include hyphens. The `sha256` is the lowercase SHA-256 of the exact HTML bytes. The `entry` must be on an approved HTTPS origin, start with `/assets/`, and include the digest as a path segment. For existing v1 only the listed permissions `profile:read`, `game:join`, `notifications:read` are syntactically accepted: declaration does not grant a functional player API.
+
+The browser downloads the *entire* HTML document (max 1,048,576 bytes), re-hashes it, and loads it into an `<iframe sandbox="allow-scripts">` via `srcdoc`, without `allow-same-origin`, a privileged postMessage bridge, or game API tokens. Relative CSS/script links may resolve against the Atrium Pages origin rather than the downloaded game's origin. Consequently, standalone `index.html` files referring to many relative assets cannot be assumed to work in v1.
+
+=== Operator submission procedure, as implemented
+
+. **Package the actual game entry** as reviewed, immutable, self-contained HTML <= 1 MiB. Calculate SHA-256 from the exact bytes, not the Git commit hash or its URL. Do not claim this step works for The Life Loop's current large HTML build.
+. **Host** the exact bytes at an operator-approved immutable URL such as `https://games.example.org/assets/<actual-sha256>/index.html`; allow CORS reads from the Atrium Pages origin and deny redirects. The DNS/domain, TLS and byte integrity require independent operator verification.
+. **Register the publisher** once: `POST /looprd/atrium/v1/registry/publishers` with `{"id":"thebigtreeinc","name":"TheBigTreeInc","origins":["https://games.example.org"]}`. Requires private `apps:approve` key; not sent by the browser or game.
+. **Submit** `POST /looprd/atrium/v1/registry/submissions` with `{"manifest": <the eight-field v1 manifest>}`. Record returned `submissionId` and digest. Requires `apps:approve` in the currently implemented release.
+. **Review** the actual hosted bytes, publisher ownership and manifest, then `POST /looprd/atrium/v1/registry/reviews` with `{"submissionId":"<id>","decision":"approve"}`. Unapproved apps do not appear. A reviewed immutable release is inserted and catalog-change event emitted. The API has no anonymous catalog route.
+. **Export** a sanitized snapshot from a read-only local copy/access to the active Atrium SQLite database and locally reviewed `<sha256>.html` bytes (see command below), then review/stage it as `web/catalog.json`.
+. **Publish** the reviewed Atrium GitHub Pages storefront via its *manual* `Publish reviewed Atrium Pages` workflow, after a reviewed Git commit. ZIP import or an approval event alone does not update Pages. `web/catalog.json` is deliberately empty until this is done.
+. **Acceptance**: the game card appears from `./catalog.json`, its entry hash passes, its frame opens on supported browsers, and revoking the game/publisher followed by republishing removes it. No API/operator credential is present in GitHub Pages output.
+
+[source,shell]
+----
+python tools/export_catalog.py \
+  --database /srv/atrium-data/atrium.sqlite3 \
+  --assets-dir /srv/atrium-reviewed-assets \
+  --output /path/to/reviewed-checkout/web/catalog.json
+npm test && npm run build && npm run verify
+# Review the diff and publish using the manually dispatched Pages workflow.
+----
+
+The paths above are illustrative operator-controlled paths; do not move databases, secrets or private keys into source control. The exporter does NOT host files or perform review for you. See `docs/P1_REGISTRY.adoc`, `docs/P1_PUBLIC_CATALOG.adoc`, `docs/P1_050_PAGES.adoc`, and `openapi.yaml` for the source-implemented contract.
+
+== 2. Proposed registration contract: `atrium.game/v2`
+
+**Status: design / interoperability proposal, NOT accepted by existing `registry/submissions`.** Keep `atrium.app/v1` parsing unchanged until new server handlers, schema validation, migrations, security checks and compatibility tests are implemented. An existing `/registry/submissions` POST containing `schema`, `platforms`, `backend`, or `integration` fields is rejected by v1 validation.
+
+A game version SHOULD declare:
+
+* `schema`, unique immutable `id`, `publisher`, `version`, `title`, `summary`, `kind=game`, optional reviewed artwork and locale metadata.
+* `platforms[]`: independently reviewed distribution targets with `runtime` (`web`, `windows`, `linux`, `macos`, `android`, `ios`), `formFactors[]` (`desktop`, `tablet`, `phone`), minimum requirements, optional architecture, `launch.mode` (`hosted`, `embedded`, `native`) and `install.mode` (`none`, `pwa`, `offline-web`, `native`). Web access does not imply PWA/offline support; Windows binaries must never be offered as mobile installations.
+* Per-target immutable artifact provenance: approved HTTPS origin, exact digest and size, artifact/media type and signing evidence where applicable. Native installation MUST be operator/OS-approved and require trusted package signature verification, no arbitrary executable URL auto-installs.
+* An optional existing game-owned backend declaration: Looprd origin, verified component ID and game-owned protocols. Registration does not create, deploy, trust, migrate or import a new backend service.
+* Optional `atriumIntegration`: requested named capabilities, compatible SDK protocol ranges and whether the game must remain playable in standalone mode.
+* Embedding requirements: reviewed `frame-ancestors` compatibility, nested frame/worker/storage requirements, fallback `open-external`; do not grant `allow-same-origin`, top navigation, popups, downloads or storage access without explicit review.
+* Presentation/display: approved card image, supported languages, age rating (if available), supported controls (touch/keyboard/gamepad), screenshots and accessible fallback.
+
+== 3. Proposed native Atrium services for games
+
+“Native components” means shared **Atrium platform components**, not OS-native DLLs or direct SQL access. Atrium owns their UI and authorization. Games opt into them individually; standalone launch continues without Atrium. A game may run inside a reviewed iframe or in its own browser tab. The underlying backend remains authoritative for game-specific state.
+
+[cols="2,3,2",options="header"]
+|===
+|Capability|Owned by / expected semantics|Initial Life mapping
+|`context.read`|Atrium host returns game-scoped pseudonymous player ID, locale, selected device capabilities, consented display name|Use display name only after shared login exists; never a raw Social session token
+|`lobby.create`, `lobby.join`, `lobby.leave`|Atrium UI owns room finder, invitations and membership, game backend enforces actual participant rights|Adapter maps approved Atrium join to existing Life room code/role; never reveal a host token to another player
+|`activity.publish`|Game backend may publish verified pending turn/session states and update receipts|Integrate Life's existing room notifications; not an automatic projection of public `pulses`
+|`save.checkpoint`, `save.resume`|Versioned player-owned save metadata/optional opaque snapshots, quota, ownership and conflict policy; backend validates writes|Reuse Life's existing save format with version and migration policy, not new shared game-state tables inside Atrium
+|`results.report`, `achievements.unlock`|Server-attested result/achievement events with replay/idempotency and anti-cheat policy|Future Life finish/goal reporting; never trust iframe-only score submissions
+|`ui.notify`, `ui.dialog`, `ui.openExternal`|Atrium-owned accessible UI, strictly validated text/actions/HTTPS origins|Optional to Life; no arbitrary HTML injection or privileged admin panels
+|`install.offer`|Atrium launcher's platform-aware, operator-reviewed package choices|Life web target first; optional future offline bundle/PWA only after verified packaging
+|===
+
+=== Proposed host-to-game message transport
+
+For a reviewed **embedded** game, host chooses a strict sandbox/CSP policy and creates an isolated `MessageChannel` for that specific verified frame. If the iframe has an opaque sandbox origin, `event.origin` may be `null` and MUST NOT be treated as authentication. The host binds the channel to the selected iframe's `contentWindow`, reviewed artifact identity, random launch nonce, game ID, granted capabilities and current authenticated Atrium session. Inbound game requests are always untrusted data. The host enforces allowlists, schemas, rate limits, size bounds, expiry and server-side authorization; it MUST NOT pass Social access tokens, Looprd operator keys or unrestricted game service credentials to the frame.
+
+Proposed request/result envelopes (examples, not current SDK):
+
+[source,json]
+----
+{"schema":"atrium.host/v1","requestId":"r1","method":"context.read","params":{}}
+{"schema":"atrium.host/v1","requestId":"r1","ok":true,"result":{"gameId":"life.loop","playerId":"gameScopedOpaqueId","locale":"en"}}
+----
+
+Capabilities are denied unless the game’s reviewed manifest, the current player, and the host policy all permit them. The host SHOULD expose `ready`, `suspended`, `resumed`, `session.expired`, `network.offline` lifecycle events; game must tolerate absent SDK and permit standalone play. An externally opened game cannot assume direct parent-frame messaging; its account/session handoff must use separately defined, server-verified, short-lived game tickets.
+
+== 4. The Life Loop / Jones integration example
+
+The inspected `TheBigTreeInc/life` source has a static GitHub Pages workflow, `npm run build:pages`, an offline `PLAY.html`, and a separate `component: the-life-loop` Looprd multiplayer service using room codes, game-issued host/guest tokens and subscription events. Its source `PLAY.html` is **3,773,664 bytes** at the inspected commit, larger than Atrium's existing 1 MiB isolated HTML limit. The Pages build can reference cacheable art files, and currently depends on the game's own web asset layout. These facts DO NOT imply that it is compatible with current `srcdoc` embedding, a functioning Atrium launch ticket, PWA install, or shared Atrium lobby.
+
+=== Minimum viable visibility (first new implementation)
+
+. The Life maintainers provide reviewed real GitHub Pages URL, title, thumbnail, version, publisher, platform targets, and any embedding policy; do not use example URLs as production artifacts.
+. Implement `atrium.game/v2` registration/approval and an external-web launch mode (or a narrower reviewed `hosted-web` v1-compatible extension in a **new schema**). Preserve the original `atrium.app/v1` parser and old catalog reading. Accept hosted frontend URL only on a reviewed, verified publisher-controlled origin; store immutable artifact provenance and release metadata.
+. Create a versioned Life registration with `id=life.loop`, `kind=game`, web desktop/tablet/phone as verified, `launch.mode=hosted` and `install.mode=none`. UI shows an Atrium card, “Play” opens the reviewed hosted Life game (new tab initially) without embedding a token in the URL. The exact form factor support must be confirmed by manual mobile tests before advertising it as verified.
+. Atrium's GitHub Pages release reads only the approved public v2 catalog, maps platform support to device choices, and offers external launch; desktop-only game downloads are hidden or disabled on mobile.
+. Life continues to run independently and uses its existing Looprd service; no Atrium game data migration or automatic authentication is required just to show its card and open a public game.
+
+=== Second implementation: native Atrium integration
+
+. Social implements a reusable login and one-time audience-bound Atrium ticket issuance/redeem protocol; Atrium resolves `(issuer, verified subject)` into a stable player ID. No game receives the Social bearer token.
+. Atrium issues short-lived game-specific grants and maps `life.loop` game sessions to Life's room-code system via a trusted adapter. Every action checks both current Atrium player membership and Life participant-role restrictions; Room creation/join is authorized by the game backend.
+. Provide an optional `atrium.host/v1` client adapter to Life for launch context, invitations, activity, checkpoint and UI capabilities. Never rewrite the existing Life save, time, AI, economy or Classic rules to integrate the launcher.
+. On supported browsers, explicitly test embedded game origin/frame/storage/asset behavior; use “Open externally” as a graceful fallback. On mobile no local desktop executable install option exists.
+
+=== Example planned metadata
+
+See `examples/life.atrium-game-v2.example.json`. This is a **design fixture**, not valid input for Atrium v0.5.0. Replace illustrative URLs, review platform claims, verify artifact provenance, and implement v2 before submission.
+
+== 5. Compatibility and security rules
+
+. Public catalog discovery may be anonymous, but operator approval, publishing, and account/session APIs are not. Static GitHub Pages MUST NEVER embed backend management keys.
+. Do not accept an `acct_*` string or a username from a browser as authentication. The shared Social issuer verifies users; game sessions use Atrium-scoped grants. Distinct Social servers may issue the same local `acct_*` ID; identity key includes issuer + verified subject.
+. Games cannot load new Looprd components merely by registration. Deploying a trusted game service remains a separate audited operator action, with separate migrations and secrets.
+. A game cannot claim unsupported native/mobile/PWA support; the launcher filters by reviewed platform, OS architecture, browser capability and distribution kind. Verified file hashes/signatures are required for installable packages.
+. Reviews, revoked publisher/app status, asset integrity and HTTPS origin ownership gate new discovery and launch. Already cached offline installations require an explicit revocation and update policy.
+. Every request using Atrium-owned player resources needs server-enforced game ownership/consent and idempotency; self-reported browser scores never become authoritative multiplayer results.
+. Offline gameplay is optional; games maintain standalone start behavior even when Atrium, Tavi or the Social identity service is unreachable. A new authenticated launch may require the provider online.
+
+== 6. Required code changes and acceptance criteria
+
+[cols="2,3",options="header"]
+|===
+|Repository or subsystem|Work required
+|`TheBigTreeInc/atrium`|Add reviewed v2 game schema, validation, registry storage/export, Pages platform cards, separate hosted web launch path, SDK/host contract, later player/session/lobby APIs
+|`TheBigTreeInc/life`|Produce verifiable web distribution metadata and stable publish URL; optionally adapt its Life room/session APIs and frontend to Atrium SDK, without depending on Atrium to play standalone
+|`TheBigTreeInc/social`|Later supply reusable browser login and verified one-time Atrium launch exchange, not a second account database
+|Looprd runtime / deployment|Keep `atrium`, `looprd-social`, and `the-life-loop` as distinct admitted components as needed; confirm supported trusted service-contract API before authoring dependencies; configure browser CORS, data persistence and private service credentials outside Git
+|GitHub Pages / host|Operator review, immutable assets, approved public catalog, platform filtering and HTTPS delivery. Static Pages cannot execute backend registration/auth logic
+|===
+
+=== Minimum external game acceptance
+
+* Independently hosted Life build opens directly without Atrium.
+* Approved Life entry appears in Atrium with correct title, publisher, platform badges, screenshot, and no invented installation option; unapproved entry does not appear.
+* Launch opens real Life at an operator-approved verified origin; no Social bearer or operator API key appears in URL, postMessage, browser logs or game files.
+* Desktop and mobile platform filters behave as reviewed; unsupported platform is never offered a native installer.
+* Disabling the publisher prevents new listings/launches after catalog republish, without deleting user data.
+* Game does not need a new Atrium user registration, and direct browsing remains possible without Tavi.
+
+=== Atrium SDK acceptance (later milestone)
+
+* Verified shared Social account obtains Atrium session without copying a reusable credential into Life.
+* The same Life game runs standalone if SDK is unavailable.
+* Wrong game ID, wrong issuer, expired ticket, unapproved origin, missing capability and spectator attempting a host-only action are rejected server-side.
+* Lobby invite maps to one actual game-authorized Life session; private data and host tokens remain confined.
+* Reconnect and resume are deterministic, independently verified and never cross player ownership boundaries.
+
+== 7. Versioning and transition
+
+* Preserve existing `atrium.app/v1` on the currently deployed registry. Extend through explicitly versioned `atrium.game/v2`, with migration and old-client compatibility policy approved before activation.
+* A documentation-only Atrium source ZIP does NOT register Life, publish a game catalog, change the SQLite schema, deploy new Looprd components or change Tavi.
+* Implementation should prioritize **reviewed externally hosted web game + safe public card + manual Pages publication** before player identity, SDK methods, lobbies, PWA/offline or native installation.
+
+
+== Looprd-native discovery: activation is not Atrium registration (v0.5.3)
+
+The game-owned Looprd `looprd.yaml` can expose a normal read-only discovery handler, but the root Looprd descriptor cannot add an unrecognized `atrium:` field. Atrium learns the game endpoint through a scoped deployment-side announcement (for an admitted local component) or a reviewed external publisher registration; the deployment reconciler and Atrium discovery API are proposed and **not implemented** in v0.5.3. A discovery hit becomes a pending reviewed registry candidate, never automatic publication or backend activation. The game's Looprd database, session tokens and verified Social account principal remain game-owned. The existing Life service has public room-token auth; shared verified Social principal adoption is separate work. Full source: `docs/LOOPRD_GAME_DISCOVERY.adoc`.
+
+== v0.5.3 sidecar preferred over a game discovery endpoint
+The preferred `atriumd.yaml` sidecar contract and actual reconciliation hook requirements supersede the earlier draft handler-based mechanism; see `docs/ATRIUMD_SIDECAR.adoc`. No URL in portable game source.
+
+== v0.5.5 Atrium reviewed discovery candidate implementation
+The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.

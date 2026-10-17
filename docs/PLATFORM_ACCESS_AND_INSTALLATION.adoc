@@ -1,0 +1,182 @@
+= Atrium Platform Access, Authentication and Installation Architecture
+:revnumber: 0.5.3
+:revdate: 2026-10-17
+:toc: left
+
+== Status and authority
+
+This is an *approved architecture direction* and an implementation plan, not a
+statement that the launch, identity, or game installation features already
+exist. Atrium's v0.4.x operator-reviewed registry and static catalog are its
+current implemented boundary. Tavi's existing `game_ticket` operation is still
+an unimplemented stub. Avoid implying that an Atrium source ZIP deploys either
+Looprd component or publishes GitHub Pages.
+
+== User-confirmed product boundaries
+
+* *Atrium* is the game registry, game discovery UI, launcher and, where
+  supported, installation manager. Players enter Atrium either through a link
+  or launch action in Tavi, or by visiting Atrium independently.
+* *Tavi* is principally the Social chat/messenger client. It need not become an
+  embedded browser, installer or another game launcher. A lightweight
+  'Open Atrium' action is sufficient. Retain any current game-opening behavior
+  as compatibility, not the architectural owner of game distribution.
+* *Social account service*, maintained within `TheBigTreeInc/social` alongside
+  Tavi, remains the one authority for user registration, credentials, user IDs,
+  revocation and device sessions. Provide a reusable web-login surface/API
+  independently of the Tavi client; do not introduce another user database or
+  require registering an Atrium-only account. Signing in on the standalone
+  Atrium website should use the same Social account.
+* *Looprd/DAPI* executes trusted, separately admitted Social and Atrium
+  components. It supplies security primitives, storage and service contracts,
+  not the product-facing identity policy or game UI.
+
+== Hosting and deployment
+
+[cols="1,3,2",options="header"]
+|===
+|Surface|Deployment / ownership|Access boundary
+|Atrium web app|GitHub Pages static hosting (prefer reviewed custom HTTPS domain)|Unprivileged HTML/CSS/JS, offline shell where supported; NO bundled secret
+|Atrium API|`component: atrium` on operator-controlled Looprd origin|Registry, player sessions, game catalog/launch policy; authenticated writes
+|Social account authority|`component: looprd-social`, in `TheBigTreeInc/social` repository|Account sign-in, session verification, trusted game/identity grants
+|Independent web sign-in|Social-owned static frontend linked to Social API, exposed to Atrium via reviewed redirect/exchange contract|Same Social account; does not require opening Tavi client
+|Tavi client|Existing native/mobile/web messenger|Open Atrium URL or deep link; no shared Social bearer token in game URL
+|Game bundles|Reviewed immutable HTTPS assets, initially static hosting / later verified distribution service|Hash/signature metadata, allowlist, revocation and integrity
+|Native artifacts|Platform-specific, reviewed publisher distribution|Only compatible platform is offered; installation requires OS authorization
+|Optional local game content server|Future *Atrium desktop launcher only*; loopback interface if needed|Explicitly secured origin, lifecycle, MIME, cache and path isolation; not a shared public backend
+|===
+
+GitHub Pages is a static host, not a backend for user accounts, API keys,
+matchmaking, submissions or durable game saves. Client code accesses Looprd
+APIs over HTTPS with reviewed CORS origins and appropriately restricted CSRF/
+authentication design. Avoid a static-site secret, embedded management token
+or privileged DAPI API key. The cross-origin authentication transport is an
+implementation decision requiring browser tests (including restrictive
+third-party cookie settings); do not depend on unverified third-party cookies.
+
+=== Initial deployment topology
+
+* One operator-controlled Looprd host can serve both independently versioned
+  components, each with its own database and scoped access. Separate hosts
+  and database systems are optional scaling/deployment decisions later.
+* Publish Atrium's reviewed static portal and approved catalog on GitHub Pages.
+  Operator-reviewed CI should publish it after tests; GitHub Pages hosting
+  must be explicitly enabled/configured. Dynamic public catalog publication,
+  invalidation, and automated asset promotion are still pending.
+* Use HTTPS front-door routing for Looprd and private access for management.
+  Persistent DB, backups, signing/service secrets and game state remain off
+  GitHub Pages and out of source ZIPs.
+
+== Identity flows
+
+=== Launched from Tavi
+
+. Tavi has a user authenticated against their home Social server.
+. Tavi opens Atrium's HTTPS portal with *no reusable Social bearer credential*
+  in the URL, iframe, local storage copy or third-party game endpoint.
+. A Social-controlled, single-use, short-lived launch authorization is issued
+  for the exact Atrium relying party and origin, with verified account identity.
+. Atrium exchanges/verifies this authorization through a trusted server-side
+  Social contract, then maps the issuer+subject to its own internal player ID.
+. Atrium establishes a scoped session; subsequently launched games obtain
+  game-specific capabilities, not the Social account session.
+
+=== Direct entry through GitHub Pages
+
+. Player visits the Atrium portal directly and selects 'Sign in'.
+. Atrium redirects to the *independent Social-owned login interface*, which
+  authenticates the existing Social account. The user does not need Tavi open.
+. A reviewed short-lived authorization-code/PKCE-style or equivalent one-time
+  backend exchange returns an Atrium session; audience, state, expiry, issuer
+  and replay controls are mandatory. This protocol is *proposed*, not an
+  existing Social or DAPI endpoint.
+. Atrium provides the same player identity and game state as launching from Tavi.
+
+For the initial same-home-server environment, never infer a global identity
+from `acct_42` alone. Use authoritative issuer + server-local subject; later
+federation must be separately defined and verified. Account creation and
+recovery remain Social operations, not Atrium duplicate registrations.
+If Social is unavailable, an existing, unexpired Atrium session may continue
+according to policy; *new* account verification must fail closed. An optional
+anonymous trial mode cannot silently manufacture a real Social account.
+
+== Game manifest platform and distribution contract (proposed v2 extension)
+
+Preserve the existing strict `atrium.app/v1` manifest for approved games. Extend
+in a deliberately versioned future schema with explicit, validated fields:
+
+* `platforms`: recognized target categories (for example `web`, `windows`,
+  `linux`, `macos`, `android`, `ios`) and tested architectures where relevant.
+* `distribution`: browser-run, installable PWA/offline web bundle, or native
+  platform package with per-platform immutable artifact URL, size, digest and
+  signature/provenance where appropriate.
+* `requirements`: minimum OS/runtime/API/browser features, online requirement,
+  storage estimate, touch/keyboard/gamepad support, and accessibility notes.
+* `capabilities`: networking, multiplayer, local saves, offline support and
+  requested bridge permissions, reviewed per release.
+* `launch`: allowed browser URL or locally installed entrypoint, with explicit
+  isolation and verified per-game launch session.
+
+This is a *design example*, not an existing validated schema or installation
+API. Compatibility filtering must happen for **discovery, download, install and
+launch** and also be enforced by the target platform/install layer. Thus a
+Windows-only executable is not installable on Android/iOS. A cross-platform web
+bundle may be available to those devices if its declared features are supported.
+Platform claims come from publisher metadata and independent acceptance/tests,
+not just filename extensions or user-agent strings.
+
+== Local and offline web games
+
+A public GitHub Pages portal can offer installable PWA behavior when reviewed
+PWA assets/service workers are properly scoped to its HTTPS origin. Such a
+service worker can cache approved same-origin resources within browser
+storage limits, and certain browsers permit explicit offline use. It does
+*not* grant arbitrary filesystem/native install rights or create a portable
+server for third-party domains. Cross-origin bundles require a secure
+reviewed distribution/caching approach.
+
+Atrium may eventually offer an optional Windows/macOS/Linux desktop launcher
+with private local storage and an isolated WebView/custom protocol or, only if
+required, a loopback-only HTTP content server. Any loopback server must bind
+only to localhost, use unpredictable session authorization, disallow arbitrary
+filesystem paths, and protect against untrusted web origins. Mobile can
+remain browser/PWA-based; do not require a local HTTP daemon on phones.
+
+Native packages may be offered only for approved compatible platforms and
+through legitimate OS installation flows. No silent sideloading, and no
+assumption that mobile platforms allow native installs from an arbitrary
+website. Updates, uninstall, data retention, and rollback require explicit
+lifecycle contracts before enabling installed-native game delivery.
+
+== Delivery responsibilities and follow-up dependencies
+
+* *Social repository:* reusable web login, session/launch authorization and
+  server-to-server validation/revocation; Tavi remains the chat client with
+  an Atrium launch affordance.
+* *Atrium repository:* identity mapping, player sessions, reviewed catalog,
+  launch grants, platform filter and installation manager/SDK, Pages frontend.
+* *Games/publishers:* platform-specific manifest, hashed verified assets,
+  capability declarations, game-specific backend if needed, test evidence.
+* *Infrastructure/operator:* Pages configuration, CORS/TLS, approved asset
+  hosting, secrets/backups and deployment/release promotion.
+
+Acceptance for the identity slice: one Social account logs into the same Atrium
+player from both Tavi and direct web entry, without duplicate registration or
+transferring the Social bearer to a game. Revocation, replay, cross-origin,
+wrong-audience and offline-failure tests must pass.
+
+Acceptance for delivery slice: a reviewed web game launches on supported mobile
+and desktop devices; a Windows-only native game is not downloadable/installable
+on Android; an approved offline web bundle has a tested offline/reconnection
+path where the target browser supports it.
+
+== v0.5.0 Pages implementation status
+
+The first part of `ATR-107-PAGES` is implemented: relative-path-safe static output, `.nojekyll` and an operator-dispatched GitHub Pages workflow that checks public assets before publication. See `docs/P1_050_PAGES.adoc`. This does not implement Social login, direct authenticated Looprd API access, automatic catalog synchronization or game installation.
+
+== External hosted game and optional SDK contract (v0.5.1)
+
+The approved direction for independently hosted games, Life/Jones as first candidate, platform-aware registration and a future optional `atrium.host/v1` integration adapter is documented in `docs/GAME_REGISTRATION_AND_HOST_SDK.adoc`. Current `atrium.app/v1` still requires an operator-approved <=1 MiB immutable HTML entry; Life's current offline HTML is too large and its multi-asset Pages site needs a separately reviewed hosted-site launch mode. `examples/life.atrium-game-v2.example.json` is a design fixture, not importable current registry data. This v0.5.1 pass **only documents and regression-tests the contract**. No v2 service, real Life publication, Social login, SQL migration, SDK or installer is claimed.
+
+== v0.5.3 portable game discovery
+The `atriumd.yaml` sidecar is the future Looprd discovery declaration, with no deployment URLs; see `docs/ATRIUMD_SIDECAR.adoc`. Atrium remains optional and the publisher/asset review gate stays in force.

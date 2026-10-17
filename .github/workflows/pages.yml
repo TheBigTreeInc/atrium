@@ -1,0 +1,40 @@
+name: Publish reviewed Atrium Pages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: atrium-pages
+  cancel-in-progress: false
+jobs:
+  publish:
+    name: Build and publish reviewed Atrium storefront
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out reviewed source
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate catalog and static client
+        run: |
+          npm test
+          npm run build
+          npm run verify
+      - name: Configure repository Pages
+        uses: actions/configure-pages@v5
+      - name: Upload verified static output
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Publish after operator-triggered approval
+        id: deployment
+        uses: actions/deploy-pages@v4

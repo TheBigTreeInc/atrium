@@ -1,0 +1,15 @@
+# Stable checkout bytes for raw-byte-hashed Looprd component specifications.
+# No end-of-line rewriting of binary assets or packages.
+* text=auto
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.py text eol=lf
+*.zr text eol=lf
+*.mjs text eol=lf
+*.md text eol=lf
+*.adoc text eol=lf
+*.html text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
+*.zip binary

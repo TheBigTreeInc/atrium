@@ -1,0 +1,13 @@
+Atrium v0.5.0 — GitHub Pages static storefront source verification (2026-10-17)
+Scope: operator-triggered Pages workflow, subpath-safe static assets, .nojekyll source marker, source-controlled architecture and workboard.
+Observed local checks:
+- python -m unittest discover -s tests -q: 97 passed, 0 failed.
+- npm test: 8 passed, 0 failed.
+- npm run build: passed; dist includes index.html, main.mjs, src modules, catalog.json and .nojekyll.
+- npm run verify: passed (relative-path and no-secret checks).
+- python tools/build_spec.py --check: passed.
+- python tools/build_registry_spec.py --check: passed.
+- python tools/check_specs.py: passed (source composition lint).
+- Source workboard IDs match all verification-plan task IDs and rich manifest planned=done union todo.
+Pending independent checks: hosted GitHub Pages activation/operator review, target Windows ZipRunner import, pinned DAPI runtime smoke on GitHub Actions, official interchange validator and deployment.
+No Social game ticket, account exchange, live auth, game installer, PWA offline games or DB migration implemented in this pass.

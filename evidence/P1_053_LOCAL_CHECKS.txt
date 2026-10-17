@@ -1,0 +1,1 @@
+Atrium v0.5.3 source-side sidecar validation regression; verified locally. Runtime Looprd/Atrium sidecar integration NOT exercised.

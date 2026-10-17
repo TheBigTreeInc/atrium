@@ -1,0 +1,41 @@
+= Atrium v0.4.8 — Pinned DAPI and cross-OS CI source repair
+
+== Observed failures (GitHub Actions, 17 October 2026)
+
+* Windows: 88 Python tests reached `test_link_hash_is_current` and failed
+  because SHA-256 bytes differed after Windows checkout of `looprd.yaml`.
+  No `.gitattributes` policy existed. Line-ending conversion is the probable
+  cause; original checkout bytes were not independently captured.
+* Linux: pinned `pac-labs/dapi` revision
+  `1d4d177e0ea8091fcc9f343e187b18dda03d90d6` successfully installed,
+  validated source specification, and failed importing `looprd.app` because
+  generated `looprd/panel_assets/panel.css` was absent. DAPI's own
+  `ui/README.md` requires `npm ci --ignore-scripts` and `npm run build:ui`
+  with Node 24 before using its Python runtime.
+
+== Source changes
+
+* `.gitattributes`: `*.yaml text eol=lf` and other deterministic source text
+  rules. The existing Looprd sidecar continues to SHA-256 the actual YAML
+  bytes; do not mask content mismatch by changing how the hash is calculated.
+* `.github/workflows/verify.yml`: select Node 24 after Atrium's own Node 22
+  checks, install pinned DAPI node dependencies with its own lockfile, run its
+  `build:ui` Sass target in `_upstream/dapi`, assert CSS exists, only then
+  install DAPI and execute source validation and disposable smoke.
+* `tools/package_zip.py`: include `.gitattributes`, but continue excluding
+  `_upstream`, local venv, credentials and runtime data.
+* `tests/test_ci_integrations.py`: enforce stable hash/eol contract, CSS build
+  prerequisite ordering and expected package identity.
+
+== Acceptance and limitations
+
+1. Commit through the normal operator-reviewed repository process so Windows
+   checkout receives the committed `.gitattributes`; a source ZIP overlay does
+   not itself update GitHub.
+2. Re-run both GitHub Actions jobs; verify 0.4.8 source test and pinned DAPI
+   smoke complete, and ZipRunner v0.4.8 is accepted on the actual Windows host.
+3. Inspect results from the upstream interchange package validator before
+   approving a release. Do not mark these external checks as passed on the basis
+   of source-only tests.
+
+No registry logic changes, migration changes, secrets, deployment or push.

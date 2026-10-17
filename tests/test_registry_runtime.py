@@ -27,6 +27,8 @@ catalog = _namespace['catalog']
 disable = _namespace['disable']
 submissions = _namespace['submissions']
 change_publisher_status = _namespace['change_publisher_status']
+record_discovery = _namespace['record_discovery']
+list_discoveries = _namespace['list_discoveries']
 
 DIGEST = 'a' * 64
 BASE = {
@@ -55,10 +57,11 @@ class RegistryStorageTests(unittest.TestCase):
                  sa.Column('manifest', sa.JSON, nullable=False))
         metadata.create_all(self.engine)
         # Exercise the actual declared additive migration statements, not a fake table.
-        migration = compose(ROOT / 'looprd.yaml')['database']['migrations'][0]
+        migrations = compose(ROOT / 'looprd.yaml')['database']['migrations']
         with self.engine.begin() as connection:
-            for statement in migration['statements']:
-                connection.exec_driver_sql(statement)
+            for migration in migrations:
+                for statement in migration['statements']:
+                    connection.exec_driver_sql(statement)
         self.Session = sessionmaker(self.engine)
         self.events = []
 

@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.4.7",
-  "summary": "P1 v0.4.7: fix Windows-native Path normalization in two v0.4.6 build-environment regression mocks; preserve the now-working real SQLAlchemy registry tests. No runtime/data changes.",
+  "version": "0.5.5",
+  "summary": "v0.5.5 adds operator-authenticated idempotent Atrium discovery candidate intake (separate non-public schema v3 table) and a deployer CLI; DAPI automatic sidecar reconciliation remains pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -39,6 +39,55 @@
         "Confirm no ModuleNotFoundError: sqlalchemy and no assertion failure comparing /fake-test-venv vs \\fake-test-venv.",
         "Confirm npm tests and web build finish, and stable latest advances after a successful build."
       ]
+    },
+    {
+      "id": "ATR-104-CI",
+      "title": "Repair pinned DAPI and Windows CI build prerequisites",
+      "summary": "Add Git LF checkout policy for raw-byte-hashed Looprd YAML and include it in source ZIP; build pinned DAPI panel.css with Node 24 and its lockfile before DAPI import. Test source CI ordering and package identity. This does not claim GitHub CI rerun passed.",
+      "operator_checks": [
+        "Push this source through the approved Git workflow and rerun both GitHub Actions jobs; verify Windows test_link_hash_is_current passes and all tests finish.",
+        "Verify pinned DAPI CSS builds from npm ci/node 24 and disposable DAPI smoke starts and completes; verify official ZipRunner package validator and v0.4.8 artifact publish step run.",
+        "Confirm ZipRunner v0.4.8 source overlay/build success, and no _upstream, secrets, dist, or runtime files enter source ZIP."
+      ]
+    },
+    {
+      "id": "ATR-107-ARCH",
+      "title": "Document unified Social sign-in and platform-aware Atrium distribution",
+      "summary": "Source-controlled approved architecture and regression: GitHub Pages static Atrium portal, Looprd API, Social web login, optional Tavi launch, platform filtering and offline/web/native separation. Design only; no working login or installer.",
+      "operator_checks": [
+        "Confirm DESIGN.adoc, docs/ARCHITECTURE.adoc and docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc establish Atrium as launcher/registry, Tavi as chat only, and the Social repository as sole user registration authority.",
+        "Review that no new auth database, installer, backend deployment or runtime API functionality is falsely claimed; implementation stays in future roadmap work."
+      ]
+    },
+    {
+      "id": "ATR-107-PAGES",
+      "title": "Deploy approved Atrium static frontend through GitHub Pages with secure Looprd API access",
+      "summary": "Built relative-path-safe Atrium static storefront, reviewed-catalog reader, .nojekyll, and GitHub Actions workflow_dispatch Pages publication; operator must separately enable and verify live site.",
+      "operator_checks": [
+        "Review .github/workflows/pages.yml: no push-trigger, no privileged client secret, environment deployment only after explicit dispatch.",
+        "After source Git approval, enable Pages from GitHub Actions and manually dispatch Publish reviewed Atrium Pages. Verify the project subpath imports and empty catalog.",
+        "Confirm no Social account login or native game install is falsely offered; approved catalog is manually staged only."
+      ]
+    },
+    {
+      "id": "ATR-108-GAME-SPEC",
+      "title": "Specify independently hosted game registration and optional Atrium native host SDK",
+      "summary": "v0.5.5 adds a source-side portable atriumd/v1 validator and example plus documented optional Looprd sidecar reconciliation; existing Atrium registry and game backend behavior unchanged.",
+      "operator_checks": [
+        "Verify Life v2 example is explicitly NOT accepted by existing v1 registry and current installed Atrium still shows no unapproved Life entry.",
+        "Review real v1 registration/export procedures and proposed SDK security/standalone fallback before implementing v2.",
+        "Review docs/LOOPRD_GAME_DISCOVERY.adoc: loading looprd.yaml does not automatically register games in Atrium, no unknown Looprd root extension or untrusted token forwarding.",
+        "Run tools/validate_atriumd.py on the Life example. Verify the deployed Looprd runtime still does not automatically register games: source validation is not an activation hook."
+      ]
+    },
+    {
+      "id": "ATR-109-CANDIDATES",
+      "title": "Persist reviewed-only portable game discovery candidates",
+      "summary": "Operator-key protected candidate POST/GET validates portable atriumd/v1, records immutable source revision/fingerprint per deployment/component, rejects publisher takeover and never publishes. Atrium DB schema v3 additive.",
+      "operator_checks": [
+        "Back up Atrium SQLite DB before v2→v3; verify schema migration on disposable deployment and test existing publisher history.",
+        "After external Looprd game activates, use deployer command with private apps:approve key; verify candidate appears only in operator GET queue and public Pages catalog stays unchanged."
+      ]
     }
   ],
   "remaining": [
@@ -71,6 +120,36 @@
       "title": "First-party and non-game production entries",
       "summary": "Publish Checkers and one non-game app after actual asset review and host publication.",
       "priority": "medium"
+    },
+    {
+      "id": "ATR-107-AUTH",
+      "title": "Build reusable Social-owned web login and trusted Atrium launch exchange",
+      "summary": "Approved design in docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc; not implemented in v0.4.9.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-107-PLATFORMS",
+      "title": "Versioned platform-capability game manifest and install/launch compatibility enforcement",
+      "summary": "Approved design in docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc; not implemented in v0.4.9.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-107-INSTALL",
+      "title": "Offline-capable web installation and optional independent desktop launcher lifecycle",
+      "summary": "Approved design in docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc; not implemented in v0.4.9.",
+      "priority": "medium"
+    },
+    {
+      "id": "ATR-107-PAGES-LIVE",
+      "title": "Validate live Pages publication and approved catalog promotion",
+      "summary": "Actual GitHub Pages setting, manual workflow dispatch, HTTPS browser acceptance and operator publication of a real reviewed catalog are pending.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-108-LOOPRD-DISCOVERY",
+      "title": "Implement trusted Looprd game discovery and reviewed registration reconciliation",
+      "summary": "Implement optional same-revision atriumd.yaml sidecar fetch after successful Looprd component activation; reconcile sidecar-only changes, authenticated deployment announcement, separate API/frontend origin mapping, pending review, idempotence and safe deletion. Source validator exists in v0.5.5; runtime discovery does not. First Atrium operator-scoped candidate endpoint completed v0.5.5; automatic DAPI SourceReader/runtime hook, machine attestation and reviewed publication remain.",
+      "priority": "high"
     }
   ]
 }

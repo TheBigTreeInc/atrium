@@ -1,0 +1,10 @@
+Atrium v0.5.4 local source check evidence (2026-10-18)
+- Canonical Checkers and Registry YAML generators --check: passed.
+- Composed Atrium source: 1 Looprd component, 6 resources, 10 models, 14 handlers.
+- Python unittest discover: 137 tests passed, including pending candidate intake, idempotence, publisher conflicts, portable sidecar and CLI dry run.
+- JavaScript npm test: 8 tests passed.
+- npm run build and npm run verify: passed (static Pages output).
+- Sidecar validator direct CLI and deployer dry run: passed.
+- Package determinism and extracted source checks: see final packaging smoke.
+- NOT RUN: pinned DAPI server, GitHub CI, real Windows ZipRunner import, actual Looprd automatic sidecar reconciler or remote operator submission.
+- Migration v2 to v3 must be tested with a backup on a disposable live Looprd environment before production.

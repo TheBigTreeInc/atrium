@@ -1,6 +1,28 @@
+## Atrium v0.5.5 — Windows ZipRunner build repair
+
+This patch fixes the missing httpx import during test discovery and CP1252 decoding failures in AsciiDoc source tests. No gameplay or registry behavior changed.
+
+## Atrium v0.5.5 — Reviewed discovery candidate intake (first runtime pass)
+
+A new operator-scoped `POST/GET /registry/discovery/candidates` stores validated
+`atriumd/v1` metadata as a **pending candidate**, never as a published game.
+An operator/deployer can submit it after a game Looprd component has activated
+using `tools/announce_atriumd.py`; it reads a private API key from a local file
+and takes the deployment ID plus immutable source revision as parameters.
+
+**No automatic source reconciliation hook is installed in DAPI yet.** The remote
+component remains authoritative for identity, sessions, multiplayer, and game state.
+Atrium's SQLite schema advances additively from v2 to v3; back up the current
+Atrium DB before live activation. Existing approved releases remain intact.
+See `docs/P1_054_DISCOVERY_INTAKE.adoc`.
+
+## Atrium 0.5.5 — portable `atriumd.yaml` discovery sidecar
+
+This pass ships a strict parser and example for an optional `atriumd.yaml` sibling to portable `looprd.yaml`. Looprd source-loader integration and actual automatic Atrium registration require separate backend implementation and are not active yet. See `docs/ATRIUMD_SIDECAR.adoc`.
+
 # Atrium — Games, apps and shared game services
 
-> **P1 / v0.4.6 source candidate.** Looprd is a specification; DAPI is the runtime.
+> **P1 / v0.5.5 source candidate.** Looprd is a specification; DAPI is the runtime.
 > Tavi remains a separate client of the Social/Atrium services.
 
 **Git repository:** https://github.com/TheBigTreeInc/atrium (the v0.3.0 foundation was imported to main before this pass). **ZipRunner project:** `atrium`.
@@ -38,7 +60,7 @@ source changes. This must be reviewed and committed as a normal source change.
 python tools/package_zip.py
 ```
 
-This builds a deterministic `dist/atrium-0.4.6-ziprunner.zip` including mandatory
+This builds a deterministic `dist/atrium-0.5.5-ziprunner.zip` including mandatory
 `.ziprunner-workboard-update.json`, producer manifest, verified-plan format and
 optional hashed `ziprunner.looprd.json`. ZipRunner is the authority that actually
 imports the ZIP and records observed build/test status.
@@ -142,3 +164,47 @@ The registry/API and database schema v2 are unchanged.
 ## v0.4.7 — Windows regression compatibility
 
 The 0.4.6 ZipRunner Windows build proved SQLAlchemy-dependent registry tests execute successfully, but two mocked test paths expected POSIX `/` separators while `pathlib.Path` correctly emitted Windows `\` separators. v0.4.7 normalizes those unittest expectations to native `str(Path(...))`, adds a host-path regression test, and preserves the working isolated dependency bootstrap. The registry API and data schema are unchanged.
+
+## v0.4.8 — GitHub Actions portability and pinned DAPI build
+
+The source checkout pins LF endings for Looprd YAML and other source formats in
+`.gitattributes` (the component sidecar hashes exact raw YAML bytes). GitHub
+Actions builds the **pinned DAPI** management-panel CSS using DAPI's own Node 24
+Sass build (`npm ci --ignore-scripts && npm run build:ui`) *before* importing
+`looprd.app` in the disposable smoke test. The CSS is a generated, ignored
+_upstream artifact and **is not bundled in Atrium's source ZIP**.
+
+New static regression checks enforce CSS prerequisite ordering, pinned DAPI
+revision, source LF/hash stability, and v0.4.8 CI artifact identity. GitHub Actions
+results still require a new CI run; this release is **not** a claim of deployed
+DAPI compatibility. Database schema stays at v2.
+
+## v0.4.9 — approved architecture: Pages, shared identity and game installations
+
+This is a documentation-only candidate, NOT a login or installer release.
+`docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc` specifies:
+
+* Atrium (GitHub Pages frontend + Looprd component) is the standalone game
+  launcher and registry, with optional reviewed web/PWA/native installation.
+* Users register once in Social; a reusable Social web-auth service will let
+  them log into Atrium directly, while Tavi remains a chat client that can
+  open Atrium without forwarding Social credentials into games.
+* Games declare supported platforms and capabilities; a Windows-only game
+  is never offered as installable on a phone. A local server is optional
+  for a future Atrium desktop launcher, not mandatory for mobile devices.
+
+User sessions, PWA installation, artifact delivery, GitHub Pages publication
+and Social tickets are NOT implemented by this documentation pass. No DAPI
+schema migration or new component is performed.
+
+## v0.5.0 — Pages static storefront deployment
+
+Run `npm test && npm run build && npm run verify`. The new GitHub Actions **Publish reviewed Atrium Pages** workflow requires explicit operator dispatch and Pages configuration. See `docs/P1_050_PAGES.adoc`. No Social sign-in, native installs, Pages auto-push or Looprd DB migration.
+
+## v0.5.1 — Game registration specification (documentation only)
+
+`docs/GAME_REGISTRATION_AND_HOST_SDK.adoc` defines what v0.5.0 can currently register, how its reviewed catalog reaches GitHub Pages, and the proposed v2 hosted-game/SDK/identity integration with The Life Loop. `examples/life.atrium-game-v2.example.json` is an unimplemented design fixture. Current registry, DAPI schema v2, Pages publication and gameplay code are unchanged.
+
+## v0.5.5 — Looprd-native game discovery specification
+
+`docs/LOOPRD_GAME_DISCOVERY.adoc` describes the game-owned `looprd.yaml` handler, trusted registration announcement, review gate, and optional direct verified Social identity. No game auto-discovery, submission endpoint, data migration, or live Life publication is implemented by this documentation-only pass.

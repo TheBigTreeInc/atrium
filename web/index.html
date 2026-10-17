@@ -1,4 +1,26 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>App Browser (preview)</title>
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Atrium — reviewed browser games and applications">
+<title>Atrium · Games</title>
 <style>
-:root{color-scheme:dark;font-family:system-ui,Segoe UI,sans-serif}body{background:#121b23;color:#eaf0f5;margin:0}header{padding:24px 30px;background:#172734;border-bottom:1px solid #38505e}h1{margin:0;font-size:27px}main{max-width:1100px;margin:24px auto;padding:0 20px}.muted{color:#a4b8c5}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}.tile{background:#20313b;border:1px solid #3c5665;border-radius:12px;padding:20px}button{background:#406c7a;color:white;border:0;padding:10px;border-radius:7px;cursor:pointer}#stage{margin-top:25px;min-height:80px}iframe{width:100%;height:520px;border:1px solid #4e6572;border-radius:9px}small{display:block;margin-top:10px}</style></head>
-<body><header><h1>App Browser <small class="muted">Standalone web · Tavi-ready service client</small></h1></header><main><p class="muted">Preview shell. Live applications appear only after an approved catalog endpoint and executable asset are configured. No dummy users or fake online games are displayed.</p><div class="grid" id="apps"><article class="tile"><h2>No published apps yet</h2><p>Catalog service requires operator enrollment and publisher review.</p></article></div><div id="stage" aria-live="polite"></div></main><script type="module" src="./main.mjs"></script></body></html>
+:root{color-scheme:dark;font-family:system-ui,"Segoe UI",sans-serif}
+body{background:#111a20;color:#ebf1f3;margin:0}
+header{padding:26px max(20px,calc((100vw - 1080px)/2));background:#15262e;border-bottom:1px solid #344f58}
+h1{margin:0;font-size:30px;font-weight:700}small,.muted{color:#a9c0c7}
+main{max-width:1080px;margin:25px auto;padding:0 20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:15px}
+.tile{background:#1c3038;border:1px solid #385560;border-radius:12px;padding:20px}
+.tile h2{margin-top:0}button{background:#347a7b;color:#fff;border:1px solid #5db2ad;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600}
+button:hover{background:#42918e}button:focus-visible{outline:3px solid #afebde;outline-offset:2px}
+#stage{margin-top:25px;min-height:80px}iframe{width:100%;height:520px;border:1px solid #547079;border-radius:9px}
+.subtitle{font-size:14px;margin-top:7px}.smallprint{font-size:13px;line-height:1.6}
+</style></head><body>
+<header><h1>Atrium</h1><div class="subtitle muted">Games and applications · web preview</div></header>
+<main>
+<p class="muted">Browse operator-reviewed web games. Atrium works independently of Tavi; shared Social sign-in and game installation are being developed, and are not active in this version.</p>
+<section aria-label="Published apps"><h2>Available games and applications</h2>
+<div class="grid" id="apps"><article class="tile"><h2>Loading catalog…</h2></article></div></section>
+<section id="stage" aria-live="polite" aria-label="Game viewport"></section>
+<p class="smallprint muted">The public catalog contains only approved releases. Games load inside an isolated browser frame. No Social credentials or operator keys are shared with them.</p>
+</main><script type="module" src="./main.mjs"></script></body></html>

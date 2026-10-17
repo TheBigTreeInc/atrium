@@ -1,0 +1,40 @@
+{
+  "schema": "atrium.game/v2",
+  "id": "life.loop",
+  "publisher": "thebigtreeinc",
+  "title": "The Life Loop",
+  "version": "0.5.74",
+  "kind": "game",
+  "summary": "A browser-based life simulation inspired by classic Jones gameplay.",
+  "platforms": [
+    {
+      "runtime": "web",
+      "formFactors": ["desktop", "tablet", "phone"],
+      "launch": {
+        "mode": "hosted",
+        "url": "https://REPLACE_WITH_REVIEWED_LIFE_PAGES_ORIGIN_AND_PATH/",
+        "embedPolicy": "external-first"
+      },
+      "install": {"mode": "none"},
+      "reviewed": false
+    }
+  ],
+  "backend": {
+    "kind": "looprd",
+    "component": "the-life-loop",
+    "apiOrigin": "https://REPLACE_WITH_REVIEWED_LOOPRD_ORIGIN",
+    "auth": "existing-game-room-code",
+    "services": ["game-owned-room-session"]
+  },
+  "atriumIntegration": {
+    "protocol": "atrium.host/v1",
+    "optional": true,
+    "requestedCapabilities": ["context.read", "lobby.create", "lobby.join", "activity.publish", "save.checkpoint"]
+  },
+  "artifacts": {
+    "web": {
+      "sha256": "REPLACE_WITH_VERIFIED_DEPLOYMENT_ARTIFACT_DIGEST",
+      "sizeBytes": null
+    }
+  }
+}

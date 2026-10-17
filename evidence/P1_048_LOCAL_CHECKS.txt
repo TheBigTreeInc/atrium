@@ -1,0 +1,38 @@
+Atrium v0.4.8 — Local source and ZIP verification
+Date: 2026-10-17 (Europe/Amsterdam)
+
+Source baseline: atrium-0.4.7-ziprunner.zip, extracted to a new source tree.
+Confirmed upstream GitHub Actions failure: run 39063029334 (main commit 16cc86e), 2026-10-17.
+  Windows job: raw-byte looprd.yaml sha256 mismatch (suspected checkout CRLF; original checkout bytes not independently inspected).
+  Linux job: pinned DAPI import requires generated panel_assets/panel.css absent before DAPI UI compile.
+
+New changes: 
+  - .gitattributes includes '*.yaml text eol=lf', '*.yml text eol=lf', etc.
+  - workflow selects Node 24 for pinned DAPI panel and executes npm ci --ignore-scripts; npm run build:ui before importing DAPI Python.
+  - assert generated panel.css exists before DAPI smoke.
+  - new tests/test_ci_integrations.py checking line-ending/hash, pinned CSS build sequencing, current CI ZIP names.
+  - source package explicitly includes .gitattributes; no _upstream or runtime state.
+
+Observed local checks (PASS):
+  python -m unittest discover -s tests -v: 91 tests, 0 failures/errors
+  npm test: 8 tests, 0 failures
+  npm run build: PASS
+  npm run verify: PASS
+  python tools/build_registry_spec.py --check: PASS
+  python tools/build_spec.py --check: PASS
+  python tools/check_specs.py: PASS
+  two deterministic ZIP packages gave identical SHA-256: PASS
+  local git clone with core.autocrlf=true: checked out looprd.yaml as LF and validated raw sha256 sidecar (PASS)
+
+NOT RUN (requires network/Windows/authorized operator):
+  - actual updated GitHub Actions Windows job and pinned DAPI Linux startup smoke.
+  - upstream ZipRunner spec validator (not available in local working environment).
+  - live target Windows ZipRunner import.
+  - DAPI runtime activation and source deployment.
+
+Python version: 3.13.5
+SQLAlchemy version: 2.0.50
+PyYAML version: 6.0.3
+Node version: v22.16.0
+
+No secrets, credentials, active configuration, published release, or migration.

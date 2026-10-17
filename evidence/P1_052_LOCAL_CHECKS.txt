@@ -1,0 +1,1 @@
+v0.5.2 Looprd discovery design and v1 API isolation: awaiting local checks. No live service tests executed.

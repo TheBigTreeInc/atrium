@@ -8,6 +8,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON = ROOT / '.venv' / ('Scripts/python.exe' if os.name == 'nt' else 'bin/python')
 COMMANDS = [
+    ['tools/validate_atriumd.py', 'examples/life.atriumd.yaml', '--component', 'the-life-loop'],
     ['tools/build_registry_spec.py', '--check'],
     ['tools/build_spec.py', '--check'],
     ['tools/check_specs.py'],

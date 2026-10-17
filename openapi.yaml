@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Atrium Registry API
-  version: 0.4.6
+  version: 0.5.5
   description: >-
     Application-owned contract for registry handlers below
     /looprd/atrium/v1. Consult the DAPI-generated OpenAPI document for
@@ -119,3 +119,18 @@ paths:
         '200': {description: Publisher status changed; app events emitted}
         '403': {description: Insufficient publisher approval scope}
         '409': {description: Publisher already has this status}
+
+  /registry/discovery/candidates:
+    post:
+      summary: Operator-attested sidecar discovery candidate; never publishes
+      description: >-
+        Requires a private apps:approve component key. Deployment ID and Git SHA
+        are operator assertions, not independently verified Looprd attestations.
+      responses:
+        '200': {description: Pending or unchanged discovery candidate}
+        '403': {description: Not authorized}
+        '422': {description: Invalid sidecar or deployment envelope}
+    get:
+      summary: Operator-only discovery candidate queue
+      responses:
+        '200': {description: Up to 100 pending and previously reviewed candidates}

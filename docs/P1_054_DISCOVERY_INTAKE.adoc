@@ -1,0 +1,71 @@
+= Atrium 0.5.5 — Review-pending Looprd sidecar ingestion
+:revnumber: 0.5.5
+:revdate: 2026-10-18
+:toc: left
+
+== Deployment boundary and implementation status
+
+This pass implements a real Atrium DAPI handler, `POST /looprd/atrium/v1/registry/discovery/candidates`, and a private `GET` queue at the same path. Both handlers require `apps:approve` in the existing `auth.mode: database` realm. It is **NOT** a remotely trusted automatic service registration protocol yet. Only an approved operator holding this scoped key can assert a Looprd deployment ID and source revision. Do not expose this key to web applications or individual games. The sidecar remains URL-free and is validated again by Atrium server-side.
+
+The handler stores a separate `AtriumDiscoveryCandidate` row. A game is not added to `App`, `AppRelease`, the authenticated registry catalog or the public GitHub Pages catalog. A candidate is not a publisher approval, proof of domain ownership, artifact integrity or executable-code admission. Future workflow must prove the developer controls the publisher and map `originRef` to a vetted deployment binding before publication.
+
+`pac-labs/dapi` `Runtime._reconcile()` does NOT currently probe the sidecar or auto-call this endpoint. That remains the next integration required for entirely automatic registration. The operator command below is a working test/pilot handoff, not an alternative implementation hidden in the game code.
+
+== One-time operator migration
+
+The root `looprd.yaml` changes only Atrium's own storage from schemaVersion 2 to **3**, with an additive `CREATE TABLE AtriumDiscoveryCandidate`. It retains the prior v2 publisher/submission/release tables and all existing metadata. Back up the Atrium database, validate against the pinned DAPI runtime, and activate the descriptor through operator-controlled deployment. Do not automatically roll back the database schema when reverting source.
+
+== Candidate envelope
+
+[source,json]
+----
+{
+  "deploymentId": "approved-deployment",
+  "component": "the-life-loop",
+  "sourceRevision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "sidecar": {
+    "schema": "atriumd/v1",
+    "component": "the-life-loop",
+    "game": {
+      "id": "life.loop",
+      "publisher": "thebigtreeinc",
+      "title": "The Life Loop",
+      "kind": "game",
+      "platforms": [{"runtime":"web","formFactors":["desktop","tablet","phone"],"installMode":"none"}],
+      "launch": {"mode":"hosted-web","originRef":"game-web","entrypoint":"index.html"}
+    }
+  }
+}
+----
+
+The revision above is an illustrative 40-hex stand-in, NOT the real Life revision. The operator must use the successfully activated full commit ID. `deploymentId` is a stable, operator-assigned environment identity, not a host name or a self-asserted random UUID. It is not independently attested yet; restricting the write endpoint to a trusted operator key is an interim security gate.
+
+== Practical pilot (after Looprd activation)
+
+[source,shell]
+----
+python tools/announce_atriumd.py \
+  --sidecar examples/life.atriumd.yaml \
+  --component the-life-loop \
+  --deployment-id approved-deployment \
+  --source-revision REPLACE_WITH_ACTIVATED_40_HEX_COMMIT \
+  --dry-run
+----
+
+After reviewing the dry run, supply `--atrium-origin https://YOUR_LOOPRD_PUBLIC_ORIGIN` and `--credential-file /path/to/private-atrium-scoped-key`, without `--dry-run`. The command submits to the fixed `/looprd/atrium/v1/registry/discovery/candidates` endpoint. Its HTTP client refuses redirects, has a bounded timeout and never places the key in the sidecar, URL, or Git. No game source needs to call Atrium.
+
+GET the same endpoint with the scoped operator key to inspect candidates. A successful POST reports `created`, `updated` or `unchanged`, with `status: pending`; it does NOT report publication. The record includes a canonical sidecar digest, a source revision and the last review status, but the read endpoint omits full sidecar bytes to avoid accidental broad metadata projection.
+
+== Replay, ownership and failure rules
+
+* Existing `(deploymentId, component)` records update in place. Same source revision and identical document produce an unchanged response; a changed revision/content becomes pending review again.
+* A publisher conflict with an existing candidate or published game is rejected; anonymous callers receive no enrollment capability.
+* URLs, secrets, privileged session delegation, mismatched component ID, unsupported platforms and malformed descriptors are rejected before storage.
+* No automatic public snapshot export, remote code execution, asset download, DAPI service activation, or game data modification.
+* A missing sidecar is normal for Looprd. Its absence is NOT an automatic request to unregister an existing game.
+* A temporary network outage or missing approval does not affect game activation. The operator script exits on remote rejection; retry is safe.
+* Remote per-deployment machine credentials, same-revision source fetching, durable delivery retries, and an actual automated Looprd reconciliation hook are **not included yet**.
+
+== Next core pass
+
+In `pac-labs/dapi` update the `SourceReader` to read an optional sibling at the SAME resolved commit as `looprd.yaml`, and schedule discovery after the checkpoint is successfully published, without blocking the component. Drive candidate handoff from an opt-in deployment-owned secret/mapping. Preserve retry state and identify missing sidecars separately from transient failures. For remote Atrium receivers, machine-to-machine authentication must be independently designed; Looprd's `ctx.call()` only works within one runtime and does not magically authenticate across hosts.

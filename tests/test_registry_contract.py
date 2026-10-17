@@ -9,7 +9,7 @@ from tools.check_specs import ROOT
 
 class RegistryContractTests(unittest.TestCase):
     def test_manifest_json_schema_matches_runtime(self):
-        contract = json.loads((ROOT/'schemas/atrium-app-v1.schema.json').read_text())
+        contract = json.loads((ROOT/'schemas/atrium-app-v1.schema.json').read_text(encoding='utf-8'))
         assert contract['additionalProperties'] is False
         assert set(contract['properties']) == FIELDS
         assert set(contract['required']) == FIELDS - {'permissions'}
@@ -20,15 +20,15 @@ class RegistryContractTests(unittest.TestCase):
         assert contract['properties']['publisher']['pattern'] == PUBLISHER_ID.pattern
 
     def test_openapi_matches_reviewed_routes(self):
-        documented = yaml.safe_load((ROOT/'openapi.yaml').read_text())
-        composed = yaml.safe_load((ROOT/'modules/registry/looprd.yaml').read_text())
+        documented = yaml.safe_load((ROOT/'openapi.yaml').read_text(encoding='utf-8'))
+        composed = yaml.safe_load((ROOT/'modules/registry/looprd.yaml').read_text(encoding='utf-8'))
         routes = {(h['path'], h.get('method','GET').lower()) for h in composed['handlers']}
         for path, methods in documented['paths'].items():
             for method in methods:
                 assert (path, method) in routes, (path, method)
 
     def test_generated_registry_source_does_not_import_local_modules(self):
-        composed = yaml.safe_load((ROOT/'modules/registry/looprd.yaml').read_text())
+        composed = yaml.safe_load((ROOT/'modules/registry/looprd.yaml').read_text(encoding='utf-8'))
         for handler in composed['handlers']:
             if handler.get('kind') == 'python':
                 assert 'from src.' not in handler['source']

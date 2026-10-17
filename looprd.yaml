@@ -1,6 +1,6 @@
 apiVersion: looprd/v1
 component: atrium
-release: 0.4.7
+release: 0.5.5
 api:
   version: v1
 auth:
@@ -17,7 +17,7 @@ auth:
   - apps:approve
 database:
   backend: sqlite
-  schemaVersion: 2
+  schemaVersion: 3
   migrations:
   - version: 2
     statements:
@@ -33,6 +33,14 @@ database:
       NULL, "version" VARCHAR(48) NOT NULL, "publisherId" VARCHAR(120) NOT NULL, "manifest"
       JSON NOT NULL, "digest" VARCHAR(64) NOT NULL, "approvedAt" VARCHAR(40) NOT NULL,
       UNIQUE ("appId", "version"))
+  - version: 3
+    statements:
+    - CREATE TABLE "AtriumDiscoveryCandidate" ("id" INTEGER PRIMARY KEY, "deploymentId"
+      VARCHAR(96) NOT NULL, "component" VARCHAR(48) NOT NULL, "gameId" VARCHAR(120)
+      NOT NULL, "publisherId" VARCHAR(120) NOT NULL, "sourceRevision" VARCHAR(40)
+      NOT NULL, "fingerprint" VARCHAR(64) NOT NULL, "sidecar" JSON NOT NULL,
+      "status" VARCHAR(32) NOT NULL, "updatedAt" VARCHAR(40) NOT NULL,
+      UNIQUE("deploymentId", "component"))
 requires:
 - spec.includes
 - events.transactional

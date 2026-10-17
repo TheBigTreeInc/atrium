@@ -1,0 +1,53 @@
+= Atrium sidecar discovery: `atriumd.yaml` next to `looprd.yaml`
+:revnumber: 0.5.5
+:revdate: 2026-10-18
+:toc: left
+
+== Status
+
+This is the agreed target design and an implemented *source-side validator/example* in Atrium v0.5.5. The `pac-labs/dapi` runtime sidecar-watcher hook is **not yet implemented**. Atrium now has an operator-scoped candidate ingestion endpoint and a deployer-invoked CLI, described in `docs/P1_054_DISCOVERY_INTAKE.adoc`. No one should claim that adding this file today registers a game. Game servers, identity, sessions and published catalog behavior are unchanged. This release adds an authenticated candidate API and an additive Atrium-only migration to schema v3.
+
+== Two independent files
+
+`looprd.yaml` is the unchanged portable game backend contract consumed by Looprd. `atriumd.yaml` is an OPTIONAL sibling in the SAME directory as the root `looprd.yaml`; it is NOT an `includes` fragment and must never be inserted into Looprd's own strict root schema. This avoids an Atrium dependency for non-Atrium Looprd installations.
+
+Use `examples/life.atriumd.yaml` as the schema `atriumd/v1` example. Run `python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop` to validate the portable metadata before publication. The sidecar states game identity, publisher, user-facing title, supported runtimes/form factors, logical launch path, and OPTIONAL service capability declarations. Neither file contains deployed server addresses, frontend origins, secrets, API tokens or fixed personal identity values. `component` MUST match the successfully activated Looprd component ID. `originRef: game-web` is a name, **not a URL**.
+
+== Proposed source reconciliation hook in Looprd core
+
+The correct trigger is **successful component activation or successful source reconciliation**, not addition of each HTTP `handlers` endpoint. It must also detect standalone sidecar-only updates while `looprd.yaml` stays the same. Implement the following in `pac-labs/dapi`:
+
+. `SourceReader` already resolves each `sources.yaml` entry's root `looprd.yaml` via local path, HTTPS, or GitHub repository/ref. Resolve the optional sibling `atriumd.yaml` using the **same resolved source location and immutable commit SHA** as the activated component. For local sources use the same directory. For HTTPS only attempt bounded same-directory/same-origin reads when allowed by source policy, without guessing unrelated hosts or following redirects. For GitHub resolve the ref once per reconciliation and fetch both files at the same revision; never mix revisions.
+. Parse/validate `atriumd/v1` as an independent document (bounded bytes and fields) after the component's successful activation and checkpoint publication. A missing sidecar is normal and means no Atrium metadata. Invalid sidecar, 403, network failure, or deployment's lack of Atrium integration **does not stop the component**. Report diagnostics; do not treat a network error as voluntary opt-out.
+. Compute a metadata fingerprint that includes the successful component generation, resolved source identity and sidecar bytes. Compare on every reconciliation, including when there is no API handler/spec change. Queue a bounded non-blocking discovery *candidate* event only when needed. Persist the last delivered generation/fingerprint with replay/retry; duplicate delivery must be harmless. A process crash or unavailable Atrium must not block or roll back Looprd activation.
+. An operator explicitly enables Atrium advertisement per Looprd deployment and privately configures the Atrium destination/trusted service credential. Local trusted service calls may use Looprd service-contract mechanisms within the SAME runtime. Remote Atrium requires independently authenticated HTTPS machine-to-machine delivery; `ctx.call` is not a remote RPC. Neither service keys nor private management credentials appear in public metadata or browser requests.
+. Atrium derives the game API base from the **trusted Looprd source/deployment configuration already used to activate the component**. Do not infer a public reverse-proxy origin from a local spec file: if the runtime lacks an externally advertised base address, the operator must supply a mapping. Game uniqueness is `(publisher, game.id)` and instance uniqueness is a separately authenticated `(deploymentId, component)`, never a raw URL or unverified sender-provided UUID.
+. Atrium validates the declaration and publisher/deployment ownership, records or updates a pending candidate (idempotent by instance, game, content fingerprint), and requires existing operator/publisher review and immutable artifact evidence before public listing. The Pages catalog updates only through its reviewed publication flow. Sidecar changes never implicitly authorize code, expose private endpoints, change database schema or alter game credentials.
+. When sidecar vanishes after a *successful* source change, mark this instance as no longer advertising and request review/availability reconciliation; do not delete the game's data or silently revoke all historical releases. Temporary fetch failure keeps last known reviewed release with an explicit stale/availability status according to operator policy.
+
+== The web launch origin is a separate deployment concern
+
+Looprd's source tells its resolver where the **API component** is loaded; that is NOT necessarily the public game frontend. The Life Loop, for example, may expose its API through Looprd and its frontend through GitHub Pages. `game.launch.entrypoint: index.html` is relative to a separate logical `originRef: game-web`. A deployment binding (private/operational config), combined with a verified immutable release, must resolve `game-web` to the actual Pages origin or other approved hosting endpoint. No derivation of GitHub Pages hostname or custom domain from the repository name is guaranteed. Missing launch mapping means the candidate can be discovered but not made launchable or published in the player-facing catalog.
+
+== Portable example file
+
+[source,yaml]
+----
+include::../examples/life.atriumd.yaml[]
+----
+
+The Life Loop's existing `looprd.yaml` remains generated from its own game code, so the game repo can add the independent sibling file without modifying its generator. Its room-code/participant-token gameplay, database and sessions remain authoritative. Its later use of verified Social identity must rely on a trusted issuer and subject; Atrium neither duplicates nor forwards Tavi profile bearer secrets.
+
+== Acceptance criteria
+
+* Sidecar absent: component activates normally and no candidate is announced.
+* Sidecar invalid, inaccessible or Atrium unreachable: component still activates and diagnostics/retry record the problem; existing approved releases are not silently erased.
+* Same Git SHA is used for Looprd spec and sidecar; sidecar-only changes are recognized at the next successful reconcile even if no new endpoint is added.
+* URL, full path, secret, unknown property, mismatched component ID and unsupported platform declaration are rejected by the sidecar validator. It cannot request privilege escalation or auto-install a native package.
+* Source sidecar mentions `game-web` as a logical origin reference only; static Pages launch waits for a verified deployment binding.
+* Events are idempotent, signed/authenticated by the configured Looprd deployment integration, review-gated and never made public by presence alone.
+* Removing sidecar does not delete any independent Life data or disable Looprd component.
+
+== Ownership
+
+`pac-labs/dapi`: source-loader sidecar probing and optional deployer-authorized advertisement after successful activation. `TheBigTreeInc/atrium`: sidecar schema/parser, operator-scoped pending candidate ingest (implemented), future dedicated machine trust/publisher review, instance catalog, storefront. `TheBigTreeInc/life`: optional version-controlled `atriumd.yaml` sibling. `TheBigTreeInc/social`: reusable user account authority, no new registration responsibility.

@@ -1,0 +1,24 @@
+schema: atriumd/v1
+component: the-life-loop
+game:
+  id: life.loop
+  publisher: thebigtreeinc
+  title: The Life Loop
+  summary: A classic-inspired life simulation
+  kind: game
+  platforms:
+    - runtime: web
+      formFactors: [desktop, tablet, phone]
+      installMode: none
+  launch:
+    mode: hosted-web
+    originRef: game-web
+    entrypoint: index.html
+  services:
+    - component: the-life-loop
+      role: multiplayer
+  integration:
+    atriumOptional: true
+    sessions: game-owned
+    state: game-owned
+    identity: game-owned

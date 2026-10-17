@@ -1,0 +1,7 @@
+= Looprd-native game discovery (superseded design)
+:revnumber: 0.5.3
+:revdate: 2026-10-18
+
+The revised canonical approach is `docs/ATRIUMD_SIDECAR.adoc` with optional `atriumd.yaml` alongside the **portable**, unchanged `looprd.yaml`. Earlier draft `schema: atrium.looprd-game-discovery/v1` and `handlers:` / `kind: response` / `/atrium/discovery` required an extra endpoint and embedded a frontend URL; that is no longer preferred. Do NOT add a game-specific metadata handler or absolute URL for Atrium discovery. These were *never implemented*.
+
+The optional `atriumd.yaml` is fetched with the game's same resolved Looprd source and revision on successful source reconciliation. Local + remote instance advertisement is opt-in and only produces a `pending_review` candidate. Cross-runtime calls require authenticated HTTPS; `ctx.call` works only in the same runtime. Tavi `realm: tavi-social` is a separate identity integration, never copied by Atrium. No Looprd/Atrium implementation of automatic registration currently exists; the sidecar source validator/example is implemented, not the deployment hook.

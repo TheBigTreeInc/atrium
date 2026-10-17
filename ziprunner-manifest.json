@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.4.7",
-    "base_version": "0.4.6",
+    "version": "0.5.5",
+    "base_version": "0.5.4",
     "source_revision": "b65b0a2f40e377cf57c66f5e784bdfe57839ed10"
   },
   "update": {
-    "id": "ATR-P1-20261017-008",
+    "id": "ATR-P1-20261018-016",
     "kind": "source_update",
-    "created_at": "2026-10-17T21:16:20+02:00",
-    "summary": "v0.4.7: correct POSIX-only unittest mock path expectations on Windows after v0.4.6 proved registry SQLAlchemy dependencies work."
+    "created_at": "2026-10-17T22:19:00+02:00",
+    "summary": "v0.5.5 Windows ZipRunner build repair: optional httpx lazy import, isolated CLI dependency, explicit UTF-8 source tests"
   },
   "planned_work": [
     {
@@ -37,6 +37,42 @@
       "title": "Align configured legacy ZipRunner recipe with isolated Python checks",
       "acceptance_criteria": "Both source recipes use protected .venv, stable operator-facing recipe refresh guidance exists, and only a Windows ZipRunner log using setup_build_env.py/run_python_checks.py can validate target fix.",
       "priority": "critical"
+    },
+    {
+      "id": "ATR-104-CI",
+      "title": "Cross-platform CI and pinned DAPI UI build prerequisites",
+      "acceptance_criteria": "Windows Git checkout passes raw YAML hash test; pinned DAPI UI Sass compile precedes runtime import; source ZIP package excludes upstream generated assets and passes official interchange validator.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-107-ARCH",
+      "title": "Document platform hosting, unified identity and installation ownership",
+      "acceptance_criteria": "Canonical AsciiDoc documents approved scope, preserves source-vs-proposal distinction, test checks cross-file links, and operator can review all security/deployment boundaries.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-107-PAGES",
+      "title": "Implement GitHub Pages static storefront and manual release workflow",
+      "acceptance_criteria": "Subpath-safe build, .nojekyll, source tests and manually triggered GitHub Pages workflow; operator verifies live Pages site separately.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-108-GAME-SPEC",
+      "title": "Specify independently hosted game registration and optional Atrium native host SDK",
+      "acceptance_criteria": "v1 operator flow and immutable single-HTML limitation grounded in source; v2 isolated as unimplemented proposal; Life fixture, package, docs and checks consistent.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-108-LOOPRD-DISCOVERY",
+      "title": "Implement trusted Looprd game discovery and reviewed registration reconciliation",
+      "acceptance_criteria": "Deploy/source announcement and remote publisher submission discover reviewed game descriptors without proxying game authentication/state; rejection and revocation checks; existing Life game standalone unaffected.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-109-CANDIDATES",
+      "title": "Operator-scoped sidecar candidate intake and additive schema v3",
+      "priority": "high",
+      "acceptance_criteria": "Candidate ingestion idempotent and review-only, rejects invalid source, unauthorized caller, publisher takeover and absolute URLs; no public catalog changes."
     }
   ],
   "done_work": [
@@ -128,6 +164,105 @@
           "description": "Cross-platform native path conversion assertions"
         }
       ]
+    },
+    {
+      "id": "ATR-104-CI",
+      "summary": "Shipped .gitattributes, DAPI Node 24 CSS build prerequisites and statically guarded test ordering, current ZIP source rules and version references. CI run remains to be performed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": ".github/workflows/verify.yml",
+          "description": "CI compiles pinned DAPI panel CSS before smoke and runs Windows tests"
+        },
+        {
+          "kind": "source",
+          "ref": ".gitattributes",
+          "description": "LF for hashed Looprd YAML on Windows checkout"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_ci_integrations.py",
+          "description": "Source regressions for checkout and DAPI UI build prerequisites"
+        }
+      ]
+    },
+    {
+      "id": "ATR-107-ARCH",
+      "summary": "Approved product boundaries added to architecture/docs with source regression; no service implementation claimed.",
+      "evidence": [
+        {
+          "kind": "documentation",
+          "ref": "docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc",
+          "description": "Canonical decisions and acceptance gates"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_platform_architecture.py",
+          "description": "Cross-document source design checks"
+        }
+      ]
+    },
+    {
+      "id": "ATR-107-PAGES",
+      "summary": "Pages workflow added, static storefront improvements and subpath-safe build verified locally. Live publish needs manual operator review.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": ".github/workflows/pages.yml",
+          "description": "On-demand reviewed publication workflow"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/build.mjs",
+          "description": "Build standalone GitHub Pages static assets"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_pages_deployment.py",
+          "description": "Regression checks of Pages trust boundary"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_050_PAGES.adoc",
+          "description": "Deployment instructions and limitations"
+        }
+      ]
+    },
+    {
+      "id": "ATR-108-GAME-SPEC",
+      "summary": "Extend documented game registration with Looprd game discovery contract and source tests, no service implementation.",
+      "evidence": [
+        {
+          "kind": "documentation",
+          "ref": "docs/LOOPRD_GAME_DISCOVERY.adoc",
+          "description": "Complete discovered-game publisher review and independent game ownership design"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_looprd_game_discovery_design.py",
+          "description": "No unsupported Looprd root fields or fake API assertions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/GAME_REGISTRATION_AND_HOST_SDK.adoc",
+          "description": "Concrete v1 current and v2 proposal with Life adaptation steps"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_game_registration_contract.py",
+          "description": "v1/v2 separation and package documentation coverage"
+        },
+        {
+          "kind": "source",
+          "ref": "examples/life.atrium-game-v2.example.json",
+          "description": "Non-executable Life draft manifest sample"
+        }
+      ]
+    },
+    {
+      "id": "ATR-109-CANDIDATES",
+      "title": "Operator-scoped Atrium candidate ingestion",
+      "summary": "Implemented non-publishing v3 candidate storage, private GET/POST endpoint, shared sidecar contract, deployer CLI and negative tests. No DAPI core watcher."
     }
   ],
   "todo_work": [],
@@ -135,39 +270,100 @@
     "model_reported": "partial",
     "checks": [
       {
-        "id": "ATR-P1-047-LOCAL",
-        "description": "Full Python and Node suites, native mock Path checks, deterministic package",
+        "id": "ATR-P1-048-LOCAL",
+        "description": "Full source Python/Node suites, YAML Git checkout simulation, source lint and deterministic ZIP",
         "status": "passed",
-        "environment": "Linux Python 3.13.5, SQLAlchemy 2.0.50, PyYAML 6.0.3, Node; Windows ZipRunner import not run",
-        "command": "python -m unittest discover -s tests -v && npm test && npm run build && npm run verify",
-        "evidence_ref": "evidence/P1_047_LOCAL_CHECKS.txt"
+        "environment": "Local Linux Python 3.13.5, SQLAlchemy 2.0.50, PyYAML 6.0.3, Node v22.16.0",
+        "command": "python -m unittest discover -s tests -v && npm test && npm run build && npm run verify && python tools/package_zip.py",
+        "evidence_ref": "evidence/P1_048_LOCAL_CHECKS.txt"
       },
       {
-        "id": "ATR-P1-047-WINDOWS",
-        "description": "Live ZipRunner using refreshed active project recipe",
+        "id": "ATR-P1-048-GITHUB",
+        "description": "Actual pinned DAPI smoke and Windows checkout on GitHub Actions",
         "status": "not_run",
-        "reason": "Actual 0.4.7 Windows ZipRunner import pending."
+        "reason": "Requires the operator-reviewed source commit/push and GitHub Actions execution."
       },
       {
-        "id": "ATR-P1-047-UPSTREAM",
-        "description": "Pinned official DAPI and ZipRunner interchange validators",
+        "id": "ATR-P1-048-ZIPRUNNER",
+        "description": "Windows project source ZIP v0.4.8 import",
         "status": "not_run",
-        "reason": "Official pinned DAPI semantic validation awaits CI."
+        "reason": "Requires real ZipRunner target."
+      },
+      {
+        "id": "ATR-P1-049-LOCAL",
+        "description": "Documentation contract + full local source regression checks and deterministic package",
+        "status": "passed",
+        "reason": "Source Python (94) and Node (8), static build/verify pass; deterministic ZIP and fresh-extraction checks recorded in separate packaging run.",
+        "environment": "Local Linux Python 3.13, Node 22",
+        "command": "python -m unittest discover -s tests -v && npm test && npm run build && npm run verify && python tools/package_zip.py",
+        "evidence_ref": "evidence/P1_049_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "ATR-P1-049-WINDOWS",
+        "description": "Windows target import and GitHub Actions confirmation",
+        "status": "not_run",
+        "reason": "Requires operator-run ZipRunner/GitHub Actions."
+      },
+      {
+        "id": "ATR-P1-050-LOCAL",
+        "description": "97 Python tests, 8 JavaScript tests, spec source checks, Pages static build/verify and metadata linkage verified locally",
+        "status": "passed",
+        "reason": "This is source evidence only; hosted Pages, target Windows and pinned DAPI integration still require independent verification.",
+        "environment": "Local Linux Python 3.13, Node 22",
+        "command": "python -m unittest discover -s tests -q && npm test && npm run build && npm run verify && python tools/package_zip.py",
+        "evidence_ref": "evidence/P1_050_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "ATR-P1-050-PAGES",
+        "description": "Live Pages deployment on operator repository",
+        "status": "not_run",
+        "reason": "Only an authorized operator may configure Pages and dispatch the publish workflow."
+      },
+      {
+        "id": "ATR-P1-051-LOCAL",
+        "description": "Source v1/v2 doc contract regression, 101 Python tests, 8 Node tests, Pages static build verification and deterministic ZIP",
+        "status": "passed",
+        "reason": "Verified locally only; hosted v2 registration, Life integration and Windows/CI acceptance not yet implemented.",
+        "evidence_ref": "evidence/P1_051_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "ATR-P1-051-LIFE-PILOT",
+        "description": "Real Life v2 registration, hosted launch and SDK acceptance",
+        "status": "not_run",
+        "reason": "Proposed v2 registry, hosted game launcher, social identity and SDK are not implemented."
+      },
+      {
+        "id": "ATR-P1-052-LOCAL",
+        "description": "Docs-only Looprd discovery source assertions, Python/Node checks and deterministic source ZIP",
+        "status": "not_run",
+        "reason": "Will record local checks separately; no claim of live discovery or operator acceptance.",
+        "evidence_ref": "evidence/P1_052_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "ATR-P1-054-LOCAL",
+        "description": "Python/Node full local suites, candidate bridge tests, source archive rebuild",
+        "status": "passed",
+        "reason": "136 Python tests and 8 JavaScript tests, static asset build/verify, source lint; full bundle reconciliation pending fresh-extraction step.",
+        "evidence_ref": "evidence/P1_054_LOCAL_CHECKS.txt"
       }
     ]
   },
   "handover": {
-    "next_pass": "Import v0.4.7 and confirm the Windows regression suite passes; proceed with Registry publisher ownership challenge and public discovery only after this acceptance.",
+    "next_pass": "Implement DAPI SourceReader + runtime optional sidecar detection and authenticated delivery after successful component activation; keep game and social principals independent.",
     "risks": [
-      "The Windows target must still execute the source tests successfully; source runner credentials/deployment untouched.",
-      "DAPI schema v2 live activation requires separate operator checks."
+      "Linux pinned DAPI runtime smoke may reveal a subsequent integration issue after panel CSS is built; awaiting actual CI.",
+      "Windows runner Git checkout LF behavior needs observed GitHub Actions confirmation.",
+      "No live DAPI schema v2 activation or remote app publication performed."
     ],
     "blockers": [
-      "Windows target acceptance for v0.4.7 remains outstanding."
+      "Live GitHub Pages settings/production publication, CI and ZipRunner Windows import require separate operator execution."
     ],
     "notes": [
-      "Single ZipRunner project atrium; no new DAPI component or migration schema version.",
-      "Producer test evidence does not replace operator acceptance."
+      "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
+      "Shared Social sign-in and game installation remain unimplemented; do not expose a database API key in Pages.",
+      "Game public catalog is deliberately empty until reviewed bytes and snapshot are published.",
+      "v0.5.1 adds an explicit Life/hosted-game registration design and sample only; current v1 cannot register current multi-MiB Life build.",
+      "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field."
     ]
   },
   "operator_actions": [
@@ -195,11 +391,41 @@
       "id": "ATR-P1-OP-047",
       "description": "Import v0.4.7 and verify the two corrected path mock assertions and full registry suite pass on Windows.",
       "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-048",
+      "description": "Review and commit v0.4.8, rerun GitHub Actions Windows and pinned DAPI jobs, inspect errors and verify actual ZipRunner import before acceptance.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-049",
+      "description": "Review v0.4.9 design-only source ZIP; independently approve any future Social authentication or game installation changes before deployment.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-050",
+      "description": "Review and import v0.5.0, commit using approved workflow, manually enable Pages and dispatch workflow after review; verify live site.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-051",
+      "description": "Review v0.5.1 game registration spec, preserve v1 runtime behavior and do not submit draft Life v2 JSON to current operator API.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-052",
+      "description": "Review Looprd game discovery spec and keep all new registration endpoint examples as proposed; no runtime feature or remote publisher enrollment is automatic.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-054",
+      "description": "Back up Atrium DB, approve additive schema v3 on disposable Looprd before production; verify operator-key-only discovery and no public catalog effect.",
+      "status": "required"
     }
   ],
   "release": {
     "requested": false,
     "requires_operator_approval": true,
-    "notes": "Source-only test compatibility patch; no database migration, API modification, or automated push/deploy."
+    "notes": "No auto publishing or DAPI game discovery hook; operator-controlled schema v3 activation and private candidate receipt only."
   }
 }

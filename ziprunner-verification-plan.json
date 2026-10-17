@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.4.7",
+  "version": "0.5.5",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -86,6 +86,119 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ATR-104-CI",
+      "criteria": [
+        {
+          "id": "ATR-104-CI-AC-SOURCE",
+          "description": "Windows checkout hash portability and pinned DAPI panel CSS build sequence are enforced by source regression checks.",
+          "mode": "automated",
+          "checks": [
+            "ATR-104-CI-T1"
+          ]
+        },
+        {
+          "id": "ATR-104-CI-AC-GITHUB",
+          "description": "Official GitHub Actions and ZipRunner target acceptance remains independent of source checks.",
+          "mode": "manual",
+          "checks": [
+            "ATR-104-CI-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-107-ARCH",
+      "criteria": [
+        {
+          "id": "ATR-107-ARCH-AC-SOURCE",
+          "description": "Approved product boundaries and future implementation are accurately documented.",
+          "mode": "automated",
+          "checks": [
+            "ATR-107-ARCH-T1"
+          ]
+        },
+        {
+          "id": "ATR-107-ARCH-AC-OPERATOR",
+          "description": "Operator confirms proposed scope vs implemented functionality.",
+          "mode": "manual",
+          "checks": [
+            "ATR-107-ARCH-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-107-PAGES",
+      "criteria": [
+        {
+          "id": "ATR-107-PAGES-AC-STATIC",
+          "description": "Source and Pages build are subpath-safe, reviewable, credential-free, and manually triggered only.",
+          "mode": "automated",
+          "checks": [
+            "ATR-107-PAGES-T1"
+          ]
+        },
+        {
+          "id": "ATR-107-PAGES-AC-LIVE",
+          "description": "Operator validates public site at GitHub Pages after review and manual dispatch.",
+          "mode": "manual",
+          "checks": [
+            "ATR-107-PAGES-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-108-GAME-SPEC",
+      "criteria": [
+        {
+          "id": "ATR-108-GAME-SPEC-AC-SOURCE",
+          "description": "Source-accurate v1 registration and explicit v2 draft separated in documentation and examples.",
+          "mode": "automated",
+          "checks": [
+            "ATR-108-GAME-SPEC-T1"
+          ]
+        },
+        {
+          "id": "ATR-108-GAME-SPEC-AC-REVIEW",
+          "description": "Operator confirms Life adapter proposal and prevents claims of v2 live runtime.",
+          "mode": "manual",
+          "checks": [
+            "ATR-108-GAME-SPEC-M1"
+          ]
+        },
+        {
+          "id": "ATR-108-GAME-SPEC-AC-LOOPRD-DISCOVERY",
+          "description": "Document a spec-compliant discovery handler, explicit registration bootstrap and independent game verified principal.",
+          "mode": "automated",
+          "checks": [
+            "ATR-108-GAME-SPEC-T2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-109-CANDIDATES",
+      "criteria": [
+        {
+          "id": "ATR-109-CANDIDATES-AC-SOURCE",
+          "description": "Validate sidecar, persist idempotent pending candidates and reject unauthorized publishing",
+          "mode": "automated",
+          "checks": [
+            "ATR-109-CANDIDATES-T1"
+          ]
+        },
+        {
+          "id": "ATR-109-CANDIDATES-AC-OPERATOR",
+          "description": "Operator confirms no effect on game ownership, existing releases, or public catalog on target Looprd",
+          "mode": "manual",
+          "checks": [
+            "ATR-109-CANDIDATES-M1"
+          ]
+        }
+      ]
     }
   ],
   "checks": [
@@ -161,7 +274,119 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Windows target ZipRunner verification",
-      "instructions": "Import v0.4.7 using existing atrium project. Confirm 88 Python tests pass on Windows, including catalog/registry integration tests, without path separator failures. Confirm build succeeds before marking operator review complete."
+      "instructions": "Import v0.4.8 using existing atrium project. Confirm 88 Python tests pass on Windows, including catalog/registry integration tests, without path separator failures. Confirm build succeeds before marking operator review complete."
+    },
+    {
+      "id": "ATR-104-CI-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Static test of DAPI CI prerequisites and LF policy",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_ci_integrations.py",
+      "assertions": [
+        "Pinned DAPI Node 24 Sass compilation happens after checkout and before smoke.",
+        "looprd.yaml line endings are LF and the link SHA matches raw bytes.",
+        "New source ZIP includes .gitattributes and release CI uses 0.4.8."
+      ]
+    },
+    {
+      "id": "ATR-104-CI-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "CI and Windows acceptance on actual targets",
+      "instructions": "Push to the authorized Atrium repository, rerun GitHub Actions: confirm Windows Python and YAML hash pass; verify pinned DAPI CSS compilation and live disposable smoke; verify official ZipRunner source ZIP validator, then import v0.4.8 in Windows ZipRunner."
+    },
+    {
+      "id": "ATR-107-ARCH-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Source-backed architecture contract regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_platform_architecture.py",
+      "assertions": [
+        "Tavi remains chat; Atrium launches games; Social owns user registration; Pages is static; platform compatibility and install modes are scoped as future work."
+      ]
+    },
+    {
+      "id": "ATR-107-ARCH-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Review the approved documentation direction",
+      "instructions": "Verify Social account registration is shared, Tavi is chat only with Atrium launch, Atrium is Pages+Looprd, and platform-aware installation remains planned rather than claimed working."
+    },
+    {
+      "id": "ATR-107-PAGES-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "GitHub Pages handoff and publishing boundary test",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_pages_deployment.py",
+      "assertions": [
+        "Pages workflow only runs on workflow_dispatch and runs checks before deployment.",
+        "Static web path is subpath-safe and includes no operator credentials or fake authentication.",
+        "Registry database schema stays 2; .nojekyll enters source archive and build output."
+      ]
+    },
+    {
+      "id": "ATR-107-PAGES-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Independent hosted Pages acceptance",
+      "instructions": "After an approved Git commit and manual dispatch, confirm Pages hosts /<repo>/ with relative imports; empty catalog remains empty, and verified published games load only from reviewed immutable origins. No client Social/operator credential is present."
+    },
+    {
+      "id": "ATR-108-GAME-SPEC-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Source contract/doc separation tests",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_game_registration_contract.py",
+      "assertions": [
+        "Existing v1 schema rejects v2 fields.",
+        "Life v2 example is non-executable, uses existing Life component and platform-safe install:none.",
+        "Asciidoc explicitly states operator registration and larger hosted game follow-up."
+      ]
+    },
+    {
+      "id": "ATR-108-GAME-SPEC-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Review external hosted Life launch plan and source/runtime boundary",
+      "instructions": "Inspect Life web build origin, snapshot/export operator process, verify no v2 API, Social login or native install exists in current Atrium. Confirm proposed session and SDK calls never send Social bearer tokens to Life."
+    },
+    {
+      "id": "ATR-108-GAME-SPEC-T2",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Source-only Looprd discovery design regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_looprd_game_discovery_design.py",
+      "assertions": [
+        "Discovery uses existing Looprd handler fields, not unknown root metadata.",
+        "Atrium runtime/API is unchanged; no registration endpoint is misrepresented as implemented.",
+        "Document game-owned session/identity and separate trusted deployment/publisher announcement."
+      ]
+    },
+    {
+      "id": "ATR-109-CANDIDATES-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Operator-scoped discovery candidate idempotence and validation tests",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_discovery_candidates.py",
+      "assertions": [
+        "New candidate is pending and never enters AppRelease or the public catalog.",
+        "Same source revision and document are idempotent; changed revision triggers review.",
+        "Publisher takeover, URLs, bad component IDs and privileged game session claims are rejected.",
+        "Deployer CLI sends an operator-key protected HTTPS request without redirect forwarding."
+      ]
+    },
+    {
+      "id": "ATR-109-CANDIDATES-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Live DAPI schema v3 migration and operator candidate intake",
+      "instructions": "Back up real Atrium DB. Validate schema v2\u2192v3 on restored disposable environment. After Life activation, run deployer CLI with a private approved component key; verify candidate GET is operator-only, public catalog unchanged, and game sessions continue independently."
     }
   ]
 }

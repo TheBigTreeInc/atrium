@@ -9,7 +9,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.4.7-ziprunner.zip'
+NAME = 'atrium-0.5.5-ziprunner.zip'
 SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
@@ -26,7 +26,7 @@ def source_files():
         if not path.is_file():
             continue
         if (path.suffix not in SUFFIXES and path.name not in
-                {'.gitignore', '.ziprunner-workboard-update.json', '.ziprunner-post-update-tests.json'}):
+                {'.gitignore', '.gitattributes', '.nojekyll', '.ziprunner-workboard-update.json', '.ziprunner-post-update-tests.json'}):
             raise ValueError(f'unlisted source extension: {rel}')
         if rel.as_posix().startswith('/') or '..' in rel.parts:
             raise ValueError('unsafe package entry')
@@ -36,7 +36,7 @@ def source_files():
 
 def main():
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text())
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.4.7'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.5'
     link = json.loads((ROOT/'ziprunner.looprd.json').read_text())
     assert link['project'] == 'atrium' and link['component'] == 'atrium'
     actual_hash = hashlib.sha256((ROOT/link['specification']).read_bytes()).hexdigest()

@@ -1,0 +1,41 @@
+= Atrium v0.5.0 — GitHub Pages storefront foundation
+:revnumber: 0.5.0
+:revdate: 2026-10-17
+:toc: left
+
+== Implemented
+
+* `web/` builds the standalone approved-catalog reader and SHA256-isolated iframe host.
+* Build output includes relative module URLs and a `.nojekyll` sentinel, so GitHub Pages project paths and custom-domain roots use the same files.
+* `.github/workflows/pages.yml` runs *only* on explicit `workflow_dispatch`, not on push; it checks the client and publishes `dist/` using official GitHub Pages actions after the repository/environment permits it.
+* Empty catalog yields an honest empty state; no demo users, fake games or client-held Looprd operator credentials.
+* Python+Node regression checks cover the Pages workflow's manual gate, static build structure and trusted catalog handling.
+
+== What is not implemented
+
+* Enabling Pages in GitHub Settings, selecting custom domain, DNS and HTTPS: operator actions.
+* Social-owned reusable web authentication, redirect/launch handoff and Atrium player sessions.
+* Dynamic live read of protected Atrium API from GitHub Pages. The authenticated DAPI database-key API cannot be exposed safely from client JavaScript.
+* Automatic export/publication of approved `catalog.json`: operator must export read-only snapshot from the active DB with `tools/export_catalog.py`, check release integrity, and explicitly stage/review the file before publishing it.
+* PWA offline game installation and native installer/download policy. Existing v1 game manifest is HTML-only and not a generic native release.
+
+== Operator deployment procedure
+
+. Review the source ZIP and commit/push it with the operator-approved Git flow.
+. In the GitHub repository Settings -> Pages, choose **Build and deployment: GitHub Actions**. Optionally require environment review on `github-pages`.
+. Review `web/catalog.json`. It starts empty and deliberately displays no fabricated games. To publish an approved game, export using the existing protected command, audit metadata and asset location, and commit/stage a reviewed public `web/catalog.json` through your normal release controls.
+. Run Actions -> **Publish reviewed Atrium Pages** -> Run workflow. The workflow validates and uploads the static build and then deploys it. No secrets are passed to the static page.
+. Open the Pages URL, including repository subpath where applicable. Verify main.mjs and `src/*.mjs` resolve; the empty-state message is normal before app publication.
+. For a real app, ensure the immutable HTTPS entry's CORS allows the Pages origin; game asset digest is checked client-side before running under `sandbox=allow-scripts` with no `allow-same-origin`.
+. Disable an approved game on the backend and republish the static catalog; note browser/cache invalidation is not automated yet.
+
+== Security boundary
+
+Do not embed Social bearer tokens, Looprd management keys, database API keys, service secrets, runtime endpoints with credentials, or generated databases into the repository/site. GitHub Pages is public, static, and unprivileged. Future direct login belongs to the Social authentication service and must be explicitly implemented with one-time codes or another verified, origin/audience-bound protocol. Tavi remains the chat client, optionally opening Atrium.
+
+== Acceptance
+
+* Verified static output works under `/<repo>/` and custom-domain root without absolute URL imports.
+* Operator-triggered Pages workflow produces content after source checks; no publication occurs on Git push or ZipRunner import.
+* Public catalog is empty unless reviewed data is supplied and approved; no credential path to a game frame.
+* No application DB schema change or automatically invoked Social login.

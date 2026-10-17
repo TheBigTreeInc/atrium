@@ -104,13 +104,13 @@ P1 acceptance: submit -> review -> publish -> discover -> disable succeeds; unau
 
 == P2 — Social identity and permission bridge (target 0.5.0)
 
-* `ATR-201` Agree explicit short-lived, audience-scoped *game grant* issuance/verification with Social. User authenticates to Social; Social signs/issues a game credential for the selected DAPI origin/component and the permitted scopes. Do not forward normal Social bearer tokens into games or third-party services. Expiry, nonce, replay resistance and revocation must be specified.
+* `ATR-201` Agree explicit short-lived, audience-scoped *game grant* issuance/verification with Social, accessible both via Tavi launch and a Social-owned independent web-login interface. User registers only with Social; Social signs/issues a game credential for the selected DAPI origin/component and the permitted scopes. Do not forward normal Social bearer tokens into games or third-party services. Expiry, nonce, replay resistance and revocation must be specified.
 * `ATR-202` Implement DAPI verified principal adapter using authoritative game-grant verification, stable `realm/subject`, session expiry, user/scopes, auditable failure handling. Preserve separate management/operator authority.
 * `ATR-203` Central authorization policy for join/leave/play/spectate/chat/invite/ranking/publisher review; server checks table membership and row visibility on every action and event. Apply least-privilege access to private table events and replay.
 * `ATR-204` Provide a client SDK session broker used by browser and Tavi, with account switching, refresh, logout, revocation and no unsafe credential persistence.
 * `ATR-205` Keep Tavi's existing operator-curated public `game_catalog` as compatibility/fallback until its `tavi.game-catalog/v1` adapter reads approved Atrium entries. Eliminate duplicated authoritative catalogs only after client parity.
 
-P2 acceptance: stolen/mismatched grants, revoked sessions, cross-account reads, alternate realm, audience confusion and publisher escalation are rejected; real same-account browser/Tavi sessions work with no second password prompt.
+P2 acceptance: stolen/mismatched grants, revoked sessions, cross-account reads, alternate realm, audience confusion and publisher escalation are rejected; Tavi-launch and direct-browser Atrium sessions map to one Social account and one Atrium player with no duplicate account registration. Browser direct login may require Social credentials if no prior session exists.
 
 == P3 — Reusable game lifecycle and playable Checkers (target 0.6.0)
 
@@ -140,8 +140,8 @@ P4 acceptance: a low-population casual lounge contains a controlled mix of staff
 * `ATR-502` Immutable versioned asset distribution plan on API origin: signed publisher version and SHA-256 digest, CSP/MIME rules, immutable cache headers, digest-verifying loader, asset rollback and revocation; if DAPI core cannot serve static modules, use a hardened reverse-proxy asset service under the same API hostname or implement an upstream-reviewed extension.
 * `ATR-503` AppHost with sandboxed iframe for external apps, minimal `postMessage` bridge with exact origin, nonce, capability allowlist and interaction consent. Trusted first-party JS modules may use audited signed ES-module loading but never receive raw Social tokens or blanket Tauri/OS APIs.
 * `ATR-504` Responsive standalone Atrium portal, GitHub Pages workflow, app discovery, detail views, Play, rooms, friends via Social, accessibility and localization baseline.
-* `ATR-505` Thin Tavi integration in the existing `TheBigTreeInc/social` repository and *its own existing ZipRunner project*, not a new Atrium project: use existing `game_catalog` compatibility endpoint and compact game webview; switch source of approved entries to Atrium after tests.
-* `ATR-506` Cross-platform static web, Windows Tavi and Android smoke. Load newly approved app without recompilation; revoke and block already-disabled versions on the next policy check. No phone shell, native app installer or unrelated Tavi admin panel.
+* `ATR-505` Thin Tavi integration in the existing `TheBigTreeInc/social` repository and its own existing ZipRunner project: Tavi stays a chat client with a lightweight Open Atrium navigation/launch action. Do not require a game webview or local game installer inside Tavi. Keep the current operator-curated Social catalog as optional compatibility until Atrium discovery is accepted.
+* `ATR-506` Cross-platform Pages browser, Windows Tavi launch and mobile-browser smoke. Load approved Atrium web games without recompiling Tavi, block incompatible native packages from mobile and respect revocation. Native installation and offline assets are independent Atrium capabilities, not a Tavi admin panel.
 
 P5 acceptance: publish one reviewed client version, open it on GitHub-hosted web and Tavi, and update to another version without a Tavi rebuild; an unapproved module cannot read Social secrets, invoke native commands or silently open arbitrary endpoints.
 
@@ -228,3 +228,45 @@ Recommended first single ZipRunner pass is `atrium` v0.3.0 with `ATR-P0-001` thr
 * https://github.com/pac-labs/ziprunner-spec
 * https://github.com/TheBigTreeInc/social/blob/main/docs/JAVASCRIPT_CLIENT.adoc
 
+
+== Approved GitHub Pages, unified Social account and installation architecture (v0.4.9 design)
+
+See `docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc`. The existing P2/P5 goals
+remain, but their acceptance now requires a direct Atrium login using the
+*same Social account* (Tavi optional), a GitHub Pages / Looprd cross-origin
+security plan, and platform-aware web/PWA/native artifact handling.
+
+Dependencies, to implement in later passes rather than claim implemented now:
+
+* `ATR-201` / `ATR-204`: Social-owned login UI + short-lived verification flow,
+  and Atrium session broker mapped by issuer+subject without a second signup.
+* `ATR-504`: reviewed GitHub Pages static deployment and Looprd API endpoint
+  configuration, no privileged browser keys and tested CORS / CSRF boundaries.
+* `ATR-505`: Tavi Chat retains only navigation to Atrium; no new game browser.
+* `ATR-507`: new platform-aware schema version, capability validation and per-device
+  discovery/launch filtering; never present a PC-only native game as mobile-installable.
+* `ATR-508`: reviewed installation/update/uninstall lifecycle for offline-capable
+  web bundles / PWAs, then optional independent desktop launcher and local
+  content delivery where technically needed; keep phones free of an HTTP daemon.
+
+Do not auto-create another Looprd identity component or a native mobile package
+installer as part of this documentation-only pass.
+
+== v0.5.0 Pages implementation evidence
+
+The first part of `ATR-107-PAGES` is implemented: relative-path-safe static output, `.nojekyll` and an operator-dispatched GitHub Pages workflow that checks public assets before publication. See `docs/P1_050_PAGES.adoc`. This does not implement Social login, direct authenticated Looprd API access, automatic catalog synchronization or game installation.
+
+== v0.5.1 first external game registration contract
+
+The approved direction for independently hosted games, Life/Jones as first candidate, platform-aware registration and a future optional `atrium.host/v1` integration adapter is documented in `docs/GAME_REGISTRATION_AND_HOST_SDK.adoc`. Current `atrium.app/v1` still requires an operator-approved <=1 MiB immutable HTML entry; Life's current offline HTML is too large and its multi-asset Pages site needs a separately reviewed hosted-site launch mode. `examples/life.atrium-game-v2.example.json` is a design fixture, not importable current registry data. This v0.5.1 pass **only documents and regression-tests the contract**. No v2 service, real Life publication, Social login, SQL migration, SDK or installer is claimed.
+
+
+== Looprd-native discovery: activation is not Atrium registration (v0.5.3)
+
+The game-owned Looprd `looprd.yaml` can expose a normal read-only discovery handler, but the root Looprd descriptor cannot add an unrecognized `atrium:` field. Atrium learns the game endpoint through a scoped deployment-side announcement (for an admitted local component) or a reviewed external publisher registration; the deployment reconciler and Atrium discovery API are proposed and **not implemented** in v0.5.3. A discovery hit becomes a pending reviewed registry candidate, never automatic publication or backend activation. The game's Looprd database, session tokens and verified Social account principal remain game-owned. The existing Life service has public room-token auth; shared verified Social principal adoption is separate work. Full source: `docs/LOOPRD_GAME_DISCOVERY.adoc`.
+
+== v0.5.3 portable sidecar discovery
+Replace the proposed extra game discovery handler with `atriumd.yaml` alongside portable `looprd.yaml`, per `docs/ATRIUMD_SIDECAR.adoc`. The portable parser and tests are present; DAPI source-loader hook, machine authentication, reviewed Atrium instance registry and frontend origin binding are still required.
+
+== v0.5.5 Atrium reviewed discovery candidate implementation
+The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.

@@ -28,6 +28,7 @@ jobs:
       - name: Strict source spec and Python tests
         run: |
           python tools/check_specs.py
+          python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop
           python -m unittest discover -s tests -v
       - name: Node tests and deterministic web build
         run: |
@@ -48,6 +49,19 @@ jobs:
           ref: 341005206094862853435ad68801be7ff28c4490
           path: _upstream/ziprunner-spec
           persist-credentials: false
+      # Pinned DAPI checkout excludes generated panel.css from Git. Its runtime
+      # imports that asset at startup; compile it with DAPI's own locked Sass toolchain.
+      - name: Select DAPI UI build toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build pinned DAPI panel CSS
+        working-directory: _upstream/dapi
+        run: |
+          npm ci --ignore-scripts
+          npm run build:ui
+      - name: Assert pinned DAPI generated CSS exists
+        run: test -s _upstream/dapi/looprd/panel_assets/panel.css
       - name: Validate against actual DAPI
         run: |
           python -m pip install -e _upstream/dapi
@@ -57,13 +71,13 @@ jobs:
       - name: Build and validate ZipRunner source ZIP
         run: |
           python tools/package_zip.py
-          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.4.7-ziprunner.zip --expected-project atrium --require-verification-plan
+          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.5-ziprunner.zip --expected-project atrium --require-verification-plan
           python _upstream/ziprunner-spec/tools/validate.py looprd ziprunner.looprd.json --root . --expected-project atrium
       - name: Upload source ZIP for operator review (no auto-deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: atrium-0.4.7-ziprunner
-          path: dist/atrium-0.4.7-ziprunner.zip
+          name: atrium-0.5.5-ziprunner
+          path: dist/atrium-0.5.5-ziprunner.zip
           if-no-files-found: error
 
   windows-ziprunner-build:

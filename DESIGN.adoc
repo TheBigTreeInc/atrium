@@ -1,5 +1,5 @@
 = Atrium Design
-:revnumber: 0.4.4
+:revnumber: 0.5.5
 :revdate: 2026-10-17
 :toc: left
 
@@ -54,3 +54,42 @@ registration. A numbered source update can document and test the recipe, but
 only an operator-controlled project-settings refresh can activate it. Use
 `docs/P1_044_IMPORT.adoc` for the acceptance and non-destructive recovery
 procedure. No production database schema or game API change is implied.
+
+== Approved platform direction (v0.4.9)
+
+Atrium is the *launcher, registry and installation manager*; Tavi remains the
+Social messenger and only launches Atrium via a lightweight navigation action.
+Both Tavi launch and direct Atrium login use the *same* account authority owned
+by the Social repository; the user registers once. Social supplies an independent
+web login interface and a trusted short-lived grant bridge, not a second user
+database. This does not imply the existing `game_ticket` placeholder works.
+
+Atrium's public static client is hosted on GitHub Pages, and all authenticated
+state/API operations live in Looprd. The reviewed game manifest must evolve to
+declare supported platforms and distribution methods. Atrium filters discovery,
+installation and launch by verified platform compatibility. Web/PWA games can
+be available on mobile; local HTTP hosting is optional only for a separate
+future desktop launcher and is *not required on mobile*.
+
+These are design requirements only in v0.4.9. See
+`docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc` for the deployment boundaries,
+security controls, data ownership, explicit non-goals and acceptance criteria.
+
+== GitHub Pages implementation milestone (v0.5.0)
+
+The first part of `ATR-107-PAGES` is implemented: relative-path-safe static output, `.nojekyll` and an operator-dispatched GitHub Pages workflow that checks public assets before publication. See `docs/P1_050_PAGES.adoc`. This does not implement Social login, direct authenticated Looprd API access, automatic catalog synchronization or game installation.
+
+== Game distribution and Atrium host SDK design (v0.5.1)
+
+The approved direction for independently hosted games, Life/Jones as first candidate, platform-aware registration and a future optional `atrium.host/v1` integration adapter is documented in `docs/GAME_REGISTRATION_AND_HOST_SDK.adoc`. Current `atrium.app/v1` still requires an operator-approved <=1 MiB immutable HTML entry; Life's current offline HTML is too large and its multi-asset Pages site needs a separately reviewed hosted-site launch mode. `examples/life.atrium-game-v2.example.json` is a design fixture, not importable current registry data. This v0.5.1 pass **only documents and regression-tests the contract**. No v2 service, real Life publication, Social login, SQL migration, SDK or installer is claimed.
+
+
+== Looprd-native discovery: activation is not Atrium registration (v0.5.5)
+
+The game-owned Looprd `looprd.yaml` can expose a normal read-only discovery handler, but the root Looprd descriptor cannot add an unrecognized `atrium:` field. Atrium learns the game endpoint through a scoped deployment-side announcement (for an admitted local component) or a reviewed external publisher registration; the deployment reconciler and Atrium discovery API are proposed and **not implemented** in v0.5.5. A discovery hit becomes a pending reviewed registry candidate, never automatic publication or backend activation. The game's Looprd database, session tokens and verified Social account principal remain game-owned. The existing Life service has public room-token auth; shared verified Social principal adoption is separate work. Full source: `docs/LOOPRD_GAME_DISCOVERY.adoc`.
+
+== v0.5.5 portable discovery sidecars
+See `docs/ATRIUMD_SIDECAR.adoc`: opt-in game `atriumd.yaml` alongside portable `looprd.yaml`, no URLs, publisher review still required. Sidecar validation is implemented; Looprd activation hook and Atrium registration are future work.
+
+== v0.5.5 Atrium reviewed discovery candidate implementation
+The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.

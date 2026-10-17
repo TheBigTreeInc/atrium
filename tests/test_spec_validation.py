@@ -8,7 +8,7 @@ from tools.check_specs import compose, parse, verify, MAX_BYTES
 class SpecValidationTests(unittest.TestCase):
     def test_actual_spec_is_one_component(self):
         document = verify()
-        self.assertEqual(document['release'], '0.4.7')
+        self.assertEqual(document['release'], '0.5.5')
         self.assertIn('spec.includes', document['requires'])
 
     def test_duplicate_key_rejected(self):

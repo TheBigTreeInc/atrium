@@ -1,0 +1,10 @@
+{
+  "id": "life.loop",
+  "title": "The Life Loop",
+  "version": "0.5.74",
+  "publisher": "thebigtreeinc",
+  "kind": "game",
+  "entry": "https://REPLACE_WITH_APPROVED_ORIGIN/assets/REPLACE_WITH_SHA256/index.html",
+  "sha256": "REPLACE_WITH_SHA256",
+  "permissions": []
+}

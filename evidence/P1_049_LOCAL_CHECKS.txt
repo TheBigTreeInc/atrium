@@ -1,0 +1,9 @@
+Atrium v0.4.9 architecture-only source verification; 2026-10-17
+
+Python: 94 tests PASSED (including tests/test_platform_architecture.py).
+JavaScript: 8 tests PASSED.
+Static web: npm run build PASSED; npm run verify PASSED.
+Specification: tools/check_specs.py source lint passed as part of Python tests.
+A deterministic source ZIP build and fresh extraction will be checked separately.
+Limitations: No target Windows ZipRunner, upstream DAPI runtime, GitHub Pages publication or Social/Tavi server changes performed by this pass.
+The authentication, platforms, installation and launch contracts are planned, not implemented.

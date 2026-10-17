@@ -1,0 +1,8 @@
+Atrium v0.5.1 local source validation, 2026-10-17 (Europe/Amsterdam)
+python -m unittest discover -s tests -q: 101 tests passed.
+npm test: 8 JavaScript tests passed.
+npm run build: passed (static Pages output).
+npm run verify: passed (relative links, protected static artifact boundaries).
+python tools/package_zip.py: passed; output manifest/package consistency and archive integrity checked.
+Documentation-only change: current v1 registry and Looprd schema 2 unchanged; proposed game/v2 manifest, SDK and Life hosted launch are not implemented.
+Actual GitHub Actions, installed Windows ZipRunner, live Pages, and Life registration: NOT RUN.

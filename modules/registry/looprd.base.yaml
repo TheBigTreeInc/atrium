@@ -159,6 +159,50 @@ models:
     unique:
     - - appId
       - version
+  AtriumDiscoveryCandidate:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      deploymentId:
+        type: string
+        maxLength: 96
+        required: true
+      component:
+        type: string
+        maxLength: 48
+        required: true
+      gameId:
+        type: string
+        maxLength: 120
+        required: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      sourceRevision:
+        type: string
+        maxLength: 40
+        required: true
+      fingerprint:
+        type: string
+        maxLength: 64
+        required: true
+      sidecar:
+        type: json
+        required: true
+      status:
+        type: string
+        maxLength: 32
+        required: true
+      updatedAt:
+        type: string
+        maxLength: 40
+        required: true
+    unique:
+    - - deploymentId
+      - component
 resources:
   apps:
     model: App
