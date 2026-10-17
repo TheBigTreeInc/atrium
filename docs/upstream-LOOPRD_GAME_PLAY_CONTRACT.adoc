@@ -1,0 +1,160 @@
+= LoopRD Game Play Interoperability Contract (Planning Candidate)
+:revnumber: 0.1-draft
+:revdate: 2026-10-18
+:toc: left
+:sectnums:
+
+== Authority and status
+
+This is an *interoperability design proposal*, not a deployed LoopRD API, runtime feature, verified authentication method, or published SDK. It coordinates the adjustment files for `TheBigTreeInc/life`, `TheBigTreeInc/social`, `TheBigTreeInc/atrium`, and `pac-labs/dapi`. Implementing this proposal requires each owning repository to run its own design/QA/operator gates.
+
+The target is a portable contract named `looprd.game-play/v1`: games provide discoverable, documented, human- and agent-usable actions through their *own* LoopRD components. Tavi remains a chat application. Atrium owns game catalog and lobby presentation, but not game rules. Game services own match state, legal actions, rules, turns, deadlines, results and authorization.
+
+== Design invariants
+
+* No human host needs to stay online, keep a browser open, or run a local game server.
+* The game has server-persisted match records, participant bindings, revisions and deadlines. SQL is authoritative; Redis Pub/Sub is optional fanout, not storage or replay.
+* A deterministic initial seed controls pseudorandom draws, but is insufficient without exact decisions, engine/rules revision, current PRNG state, and checkpoints. Replayability is distinct from proof of fair play.
+* Never elevate a caller-provided display name, room code, profile UUID or snapshot hash to a verified identity. Account identity is `(trustedIssuer, subject)` or an equally trustworthy structured namespace; `acct_1` alone is not globally unique.
+* Human and OpenClaw-controlled seats use the same authorization, turn rules, limits, visible-state projections and action validator. Agent identity is explicit; there is no implicit operator, admin or trusted-host privilege.
+* A full headless gameplay path MUST exist for every game advertising `agentPlaySupported: true`: inspect state, enumerate legal actions, perform an action, end a turn, observe outcomes, and resume without any DOM, browser or user interaction. A metadata declaration alone is not proof.
+* Every game SHOULD offer this API; games that cannot implement headless play MUST advertise `agentPlaySupported: false` and explain the restriction. Atrium must not claim it can control arbitrary games through a generic host SDK.
+* No action can bypass current player/seat checks, a successful identity proof, match revision compare-and-swap, action schema validation, idempotency, or game-specific legality checks.
+* Tavi credentials, LoopRD management keys, session secrets, game room tokens and push endpoint tokens never appear in match URLs, public manifests, logs, agent output or game snapshots.
+
+== Game API discovery
+
+Use existing LoopRD literal custom handler routes. The *proposed* portable application protocol can be exposed via `GET /play/info` and `POST /play` below `/looprd/<component>/v1`. The latter accepts a typed `op` field. These paths are proposed application endpoints, NOT existing native DAPI routes. Per-game extensions MAY add additional handler routes and must publish their own OpenAPI contract.
+
+A successful `GET /play/info` SHOULD return a sanitized capabilities document, e.g.:
+
+[source,json]
+----
+{
+  "schema": "looprd.game-play/v1",
+  "gameId": "life.loop",
+  "component": "the-life-loop",
+  "engine": {"id": "life-engine", "rulesRevision": "EXAMPLE_RULESET_DIGEST"},
+  "players": {"minHumans": 1, "maxHumans": 2},
+  "modes": ["private-async"],
+  "operations": ["create", "join", "list_matches", "get", "legal_actions", "act", "end_turn", "history", "resume"],
+  "actionExecution": "server-evaluated",
+  "agentPlaySupported": false,
+  "notificationSource": "game-owned-durable-outbox",
+  "timeoutOptions": {"turnHours": 60, "unlimited": true}
+}
+----
+
+`server-evaluated` above is the *target* for simple command-only, API-only play. Set `agentPlaySupported` true only after exercising all operations from a headless OpenClaw test client. For a transitional `client-receipt` implementation, an authenticated agent may use the game's version-pinned headless JavaScript adapter to evaluate a command and submit a deterministically replayable receipt. Label this mode explicitly; it is **not** a generic JSON-command-only API and remains vulnerable to dishonest receipt producers unless independently validated.
+
+== Portable operation contract
+
+[cols="1,2,4",options="header"]
+|===
+|Operation |Inputs (illustrative) |Required semantics
+|`create` |`settings`, optional `invitee` |Creates durable match and unique server-generated initial seed; stores rules/engine lock and creator's verified seat; returns opaque match reference and revision
+|`join` |`matchId`, invitation/grant |Verifies invitation, current account/agent identity, eligibility and available seat; returns account-scoped participant binding
+|`list_matches` |status filter |Returns only matches visible to authenticated actor, including whose turn it is and deadline
+|`get` |`matchId` |Returns actor-appropriate current state/checkpoint, engine lock, revision and turn metadata; protects hidden/private information
+|`legal_actions` |`matchId`, optional phase cursor |Returns typed legal commands and selectable arguments or a structured choice schema; never requires screen scraping
+|`act` |`matchId`, expected revision, idempotency key, typed action |Applies one permitted action via the game adapter; commits authoritative state and action journal atomically; responds with revised state/revision and any pending choice
+|`end_turn` |`matchId`, expected revision, idempotency key |Commits turn boundary, next player, deadline, notification intent and event in one game transaction; does not depend on another client being connected
+|`history` |`matchId`, bounded cursor |Returns actor-authorized, append-only, replayable actions and checkpoints; no permanent dependence on retained LoopRD events
+|`resume` |`matchId` |Re-authorizes account-scoped seat across devices and rehydrates current state without relying on tab-scoped secrets
+|`status` (optional) |`matchId` |Returns current turn, overdue/not, game result and health; no hidden opponent state
+|===
+
+Example `POST /play` command (a proposed example, not supported by present Life):
+
+[source,json]
+----
+{
+  "schema": "looprd.game-play/v1",
+  "op": "act",
+  "matchId": "opaque-match-id",
+  "expectedRevision": 12,
+  "idempotencyKey": "6a790f43-4c3e-46be-a38b-dc7352635b8c",
+  "action": {"type": "travel", "destination": "bank"}
+}
+----
+
+Example response:
+
+[source,json]
+----
+{
+  "ok": true,
+  "matchId": "opaque-match-id",
+  "revision": 13,
+  "turnIndex": 8,
+  "activeSeat": "player-2",
+  "actionResult": {"accepted": true, "summary": "Arrived at the bank"},
+  "stateHash": "REPLACE_WITH_SHA256_OF_CANONICAL_STATE"
+}
+----
+
+The illustrative fields, result shapes and operation list require real schema publication before they are considered interoperable. Game-specific legal actions may be nested or parametric; clients must never invent arbitrary action parameters when the contract provides choices.
+
+== Deterministic execution and receipts
+
+A browser may perform immediate local prediction using the same deterministic JavaScript game logic. The authoritative match store can accept:
+
+. *Preferred, JSON-only action mode:* a server-side **game-owned, on-demand** evaluator executes one requested action from the persisted checkpoint. It can reuse the game's JavaScript rules as a shared, pinned artifact. It is not a continuous game server and does not require a human host. DAPI does **not** currently advertise a generic JavaScript game executor; a safe, deployable Life-owned adapter must be designed, provided and tested.
+. *Transitional client-receipt mode:* a browser or the headless agent's pinned Node adapter runs the engine and submits a command bundle plus resulting checkpoint and PRNG state. LoopRD validates seat, command schema, revision, size, hash format, idempotency and structural invariants; it **cannot establish fairness from a checksum alone**. Advertise the lower trust level and do not use it for public competitive scoring.
+
+Source engine/rules digests, deterministic PRNG algorithm/version, action ordering, stable serialization, initial seed, post-action PRNG state and periodic checkpoints MUST be versioned. Pure state loading must not consume randomness or secretly process an AI turn. Avoid `Date.now()`, `Math.random()`, environment locale, unstable object iteration and network input in game-rule transitions. Seed draws are not authorization or cryptographic signatures.
+
+A compare-and-swap write on `(matchId, expectedRevision)` with a unique `(matchId, idempotencyKey, actor)` must guarantee that retrying the same command cannot spend money, advance a turn, or notify twice. A conflicting idempotency key/body MUST fail. Pending choices must survive disconnects. Large histories need bounded pagination and periodic checkpoint compaction with immutable audit/replay digest continuity.
+
+== Authentication and agent access
+
+* Social issues short-lived game-scoped grants/tickets after authenticating the account. Life verifies issuer, subject, audience, expiry, nonce and revocation policy and binds the actor to a match seat. Implementers must first establish a real interoperable verifier; the old Social `game_ticket` placeholder returning 501 is not a working mechanism.
+* OpenClaw already has a distinct Tavi account in the Social bridge. Do not impersonate another account or re-use a human's session token for game actions. An operator may explicitly provision an agent-controlled game seat or future approved delegated grant with narrowly scoped `game:play` permission. Agent account IDs are not administrator credentials.
+* For independent LoopRD installations, local `ctx.call` service contracts apply **only within one runtime**. Remote calls require a separately approved authenticated HTTPS machine-to-machine bridge; never assume a source URI creates remote transport or trust.
+* `GET /play/info` is public-safe discovery if deployment permits; every match-specific operation requires the correct authenticated principal, including `legal_actions` and `get`.
+* OpenClaw instructions or game text are untrusted. Action permissions derive exclusively from the verified service and explicit game membership, not from chat prompts.
+
+== Turn deadline and durable notification
+
+The configurable default is *60 elapsed hours from the accepted turn boundary*, NOT an inactivity-based room TTL. `null` means no deadline. Store absolute UTC due time, timeout policy and current turn index with the match. A LoopRD periodic job may inspect deadlines while no browser is online. Basic policies include `remind` or `mark_overdue`; skip/forfeit/AI continuation require explicit game-rule semantics and safe deterministic execution. Never delete a live match merely because its active player was absent for 48 hours.
+
+A committed `end_turn` appends `(matchId, turnIndex, nextParticipant, eventId)` to a persistent **game-owned delivery outbox in the same SQL transaction** as the state change. The dispatcher retries authorized notification handoff to Social. Social must deduplicate with `(issuerComponent, eventId, recipient)` and persist a recipient-scoped inbox event before acknowledging. A content-free LoopRD push hint may then wake Tavi; Tavi fetches the inbox under its authenticated session. Redis can accelerate online notifications but cannot be the only delivery mechanism. Cross-component calls are not distributed SQL transactions, so the game outbox is essential. Application notification rows must persist independently of seven-day durable event replay limits and one-day job history. Removal of a device endpoint never removes the inbox record.
+
+The notification must contain only a validated game identity, opaque match reference, recipient and short human text. Social/Atrium derive or validate a trusted navigation destination. No credential, room token, account token, room private data, raw server URL or arbitrary game-provided external URL is forwarded by default.
+
+== Operations and errors
+
+Suggested observable error vocabulary (to be specified in actual API schemas): `UNAUTHENTICATED` (401), `NOT_A_PARTICIPANT` (403/404 with privacy-preserving response), `NOT_YOUR_TURN` (409), `REVISION_CONFLICT` (409), `ACTION_INVALID` (422), `MATCH_COMPLETE` (409), `RATE_LIMITED` (429), `ENGINE_VERSION_UNAVAILABLE` (409/503), `SERVICE_UNAVAILABLE` (503), `INTERNAL_ERROR` (500). Never return raw stack traces or secrets. `get` and `list_matches` must be safe on retry and usable after arbitrary offline periods.
+
+== Required headless test fixture (game certification)
+
+A game may set `agentPlaySupported: true` only when an OpenClaw-compatible CLI or plain-HTTP client has demonstrated:
+
+. Discover the correct approved game endpoint and capabilities without parsing a web page.
+. Authenticate using its own independently authorized player identity; create or accept an invitation to a private match.
+. Fetch current state and a valid legal-action catalog, select and execute an action without DOM/browser access, and complete a full turn.
+. Close the agent process; on re-run (different process/session) resume by verified account, see next-turn status, and submit another turn after the other player acts.
+. Handle pending choice, rejected illegal move, wrong seat, expired grant, stale revision, duplicate idempotency key, server restart, Redis outage and Social notification downtime safely.
+. Receive a machine-readable result and not claim success if the response was rejected.
+. Assert the seeded replay and canonical hash agree between browser and headless engine at the pinned version; fail on divergence rather than silently resynchronizing an unauthenticated snapshot.
+
+Every Atrium-approved game SHOULD publish contract tests and a machine-readable action schema; OpenClaw-specific integration code can be a thin adapter, not a separate gameplay implementation.
+
+== Cross-repository definition of done
+
+* End-to-end two-person asynchronous Life match across two distinct devices/browsers with both clients closed between turns.
+* At least one OpenClaw account plays an actual Life turn via a headless API adapter, with server receipt and correct seat authorization.
+* Delayed player returns after simulated 60-hour passage; deadline policy is honored; match remains resumable where rules permit.
+* Redis failure and full server restart do not lose the match or the pending notification; Social outage is retried without double delivery.
+* No OpenClaw tool or game browser receives Social bearer/management credentials beyond its own appropriately scoped actor grants.
+* Portable `looprd.yaml` and optional `atriumd.yaml` contain no deployment-specific URLs; operator bindings resolve both API and static launch origin.
+* Automated tests distinguish source/build verification from actual deployed cross-component acceptance.
+
+== References and existing boundaries
+
+* `https://github.com/TheBigTreeInc/life` — deterministic JS engine and current host-dependent `src/network.js`, `server/looprd_handler.py`.
+* `https://github.com/TheBigTreeInc/social` — Tavi Social identities, inbox/push, OpenClaw chat bridge; agent game play currently unavailable.
+* `https://github.com/TheBigTreeInc/atrium` — game registry, pending sidecar candidates, not yet a live hosted Life lobby.
+* `https://github.com/pac-labs/dapi/blob/main/docs/durable-events.md` — SQL outbox/replay separate from Redis.
+* `https://github.com/pac-labs/dapi/blob/main/docs/push-and-sync.md` — content-free push and HTTP recovery.
+* `https://github.com/pac-labs/dapi/blob/main/docs/platform-reference.md` — existing typed services, jobs and limitations.

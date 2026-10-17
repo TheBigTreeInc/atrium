@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.5",
-  "summary": "v0.5.5 adds operator-authenticated idempotent Atrium discovery candidate intake (separate non-public schema v3 table) and a deployer CLI; DAPI automatic sidecar reconciliation remains pending.",
+  "version": "0.5.6",
+  "summary": "v0.5.6 implements strict game-play discovery info validation and documents critical differences from shared multiplayer request; runtime multiplayer not yet implemented.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -72,7 +72,7 @@
     {
       "id": "ATR-108-GAME-SPEC",
       "title": "Specify independently hosted game registration and optional Atrium native host SDK",
-      "summary": "v0.5.5 adds a source-side portable atriumd/v1 validator and example plus documented optional Looprd sidecar reconciliation; existing Atrium registry and game backend behavior unchanged.",
+      "summary": "v0.5.6 adds a source-side portable atriumd/v1 validator and example plus documented optional Looprd sidecar reconciliation; existing Atrium registry and game backend behavior unchanged.",
       "operator_checks": [
         "Verify Life v2 example is explicitly NOT accepted by existing v1 registry and current installed Atrium still shows no unapproved Life entry.",
         "Review real v1 registration/export procedures and proposed SDK security/standalone fallback before implementing v2.",
@@ -85,7 +85,7 @@
       "title": "Persist reviewed-only portable game discovery candidates",
       "summary": "Operator-key protected candidate POST/GET validates portable atriumd/v1, records immutable source revision/fingerprint per deployment/component, rejects publisher takeover and never publishes. Atrium DB schema v3 additive.",
       "operator_checks": [
-        "Back up Atrium SQLite DB before v2→v3; verify schema migration on disposable deployment and test existing publisher history.",
+        "Back up Atrium SQLite DB before v2\u2192v3; verify schema migration on disposable deployment and test existing publisher history.",
         "After external Looprd game activates, use deployer command with private apps:approve key; verify candidate appears only in operator GET queue and public Pages catalog stays unchanged."
       ]
     }
@@ -148,7 +148,7 @@
     {
       "id": "ATR-108-LOOPRD-DISCOVERY",
       "title": "Implement trusted Looprd game discovery and reviewed registration reconciliation",
-      "summary": "Implement optional same-revision atriumd.yaml sidecar fetch after successful Looprd component activation; reconcile sidecar-only changes, authenticated deployment announcement, separate API/frontend origin mapping, pending review, idempotence and safe deletion. Source validator exists in v0.5.5; runtime discovery does not. First Atrium operator-scoped candidate endpoint completed v0.5.5; automatic DAPI SourceReader/runtime hook, machine attestation and reviewed publication remain.",
+      "summary": "Implement optional same-revision atriumd.yaml sidecar fetch after successful Looprd component activation; reconcile sidecar-only changes, authenticated deployment announcement, separate API/frontend origin mapping, pending review, idempotence and safe deletion. Source validator exists in v0.5.6; runtime discovery does not. First Atrium operator-scoped candidate endpoint completed v0.5.6; automatic DAPI SourceReader/runtime hook, machine attestation and reviewed publication remain.",
       "priority": "high"
     }
   ]

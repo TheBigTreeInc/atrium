@@ -1,0 +1,100 @@
+= Atrium — Asynchronous Game Discovery, Lobbies and API-Agent Compatibility Adjustment
+:revnumber: 0.1-draft
+:revdate: 2026-10-18
+:toc: left
+:sectnums:
+
+== Authority, current state and intended change
+
+Planning adjustment for `TheBigTreeInc/atrium`. Atrium is the independent game catalog, launch destination, installation/deep-link and lobby *presentation* layer. Life (or another registered game) owns its actual match seats, membership authorization, action rules, state, deadlines and results. Social is the account identity/notification authority; Tavi is chat-only. The game must continue to work without Atrium, including direct web and headless API modes.
+
+Current inspected Atrium v0.5.5 has a reviewed operator registry, static Pages catalog and initial isolated <=1 MiB HTML `srcdoc` AppHost; a candidate `atriumd/v1` parser and operator-only discovery candidate API; no implemented automatic DAPI sidecar hook, no Social sign-in, no published hosted Life integration, no operational shared multiplayer lobby and no working game host SDK. Proposed `atrium.game/v2` and `atrium.host/v1` in `docs/GAME_REGISTRATION_AND_HOST_SDK.adoc` are NOT implemented API contracts. Do not mark these functions Done based on documentation alone.
+
+Update canonical `DESIGN.adoc`, `PROJECT_PLAN.adoc`, `docs/ROADMAP.adoc`, `docs/GAME_REGISTRATION_AND_HOST_SDK.adoc`, `docs/ATRIUMD_SIDECAR.adoc`, `docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc`, and the reviewed catalog schema only after the corresponding implementation gate.
+
+== User-facing Life journey (target)
+
+. User opens Atrium directly or from a small Tavi chat app/invitation action. If account login is needed, use Social-owned login/grant bridge; never relay Tavi's reusable bearer credential to Life.
+. Atrium displays Life's reviewed card, supported web/phone/desktop platforms, private asynchronous game mode, active matches and `agentPlaySupported` truthfully reported from the game capability service.
+. User selects New Game, Continue or Join Invite. Atrium presents Life-provided settings (Classic/Modern, Jones, per-turn deadline/unlimited) and room lobby choices; it does not implement Life rules.
+. Atrium invokes Life's authorized `looprd.game-play/v1` operations to create or join. Life returns match ID, selected configuration, current seat and authoritative state. No human host is necessary to leave the lobby.
+. Atrium opens the reviewed Life static frontend through a hosted-web route or external browser if embedding is unsuitable. It passes only an opaque match reference and uses a trusted exchange; no game/Social credential is put into URL/query/hash.
+. Life can be closed immediately after an action or turn. When someone else finishes, Social delivers a notification to Tavi, which links back to Atrium. Atrium resolves account authorization and enters Life's current match without requiring previous browser/tab/session storage.
+. A nonhuman participant using OpenClaw may join a separately authorized seat via Life's LoopRD API. Atrium may show `Agent`/`Staff` presentation metadata but does not launch or operate the bot process or treat every game as agent-capable.
+
+== Registration and URL-free sources
+
+The optional portable `atriumd.yaml` remains adjacent to the game repo's `looprd.yaml`, with no embedded backend URLs, Pages origins, tokens or deployment identity. Atrium v0.5.5 accepts only pending operator-reviewed discovery candidates, not automatically public releases. DAPI must probe the sidecar at the same immutable source revision after successful component activation, then announce it using explicitly configured, trusted deployment binding. Atrium separately reviews/approves publisher, game API origin and a named logical static frontend origin such as `game-web`. A source repo is never assumed to be the public game deployment.
+
+Do not make unknown `atriumd.yaml` keys silently valid. To advertise async/API support in the future, validate a versioned sidecar extension (or fetch the actual runtime `/play/info` endpoint from a reviewed API origin) and require both registry/operator review and capability evidence. The source sidecar is descriptive; availability and compatibility must be queried from real game deployment before offering Join/Continue.
+
+Example capability badges (only if supported by tests): `Playable on Web`, `Async Turns`, `Continue Game`, `Agent API`. Never advertise `Agent API` based only on a manuscript flag. Life should not be forced to support Atrium SDK when launched standalone.
+
+== Hosted web launch, not the legacy isolated HTML-only loader
+
+Current v1 isolated AppHost hashes one <=1 MiB HTML document and places it into a sandboxed `srcdoc` iframe; it cannot directly represent Life's multi-asset GitHub Pages build. Implement a separate *reviewed* hosted-web launch mode for static game distributions. Respect iframe CSP/`frame-ancestors`, top-level storage restrictions, sandbox permissions and platform policies. The default fallback can be `open-external` or a dedicated tab. Never add broad `allow-same-origin`/download/popups to all games merely to make one legacy app work. Verify manifest, approved deployment binding, allowed origin, version and an immutable asset/release digest as applicable. Use HTTPS except allowed local test modes.
+
+Atrium frontend remains public static GitHub Pages, while dynamic identity, match and registry operations use trusted LoopRD origins; never place private operator credentials in a Pages bundle. Direct Atrium login and Tavi-to-Atrium handoff must resolve the same Social identity `(issuer, subject)`.
+
+== Generic lobby view and game-owned state
+
+Atrium SHALL provide reusable layout and navigation for game lobbies, but never a competing match authority. It reads the game's `create/join/get/list_matches/legal_actions/status` operations and must handle a game that offers no lobby or whose lobby is already game-owned. The game controls seats, readiness, options, valid start transitions, computer opponents, timeout policy, matchmaking visibility and participant rights. Atrium shows game-returned states, not speculative room membership.
+
+For Life's first milestone, show only tested operations: Private Create, Join Invitation, Continue, Current Player, Per-turn Deadline and Game Mode. Do not show public matchmaking, achievements or agent controls if not implemented. `Join by 10-character code` can remain a Life-specific fallback; the preferred Atrium/Tavi deep link uses a server-bound opaque invitation/match reference and re-authenticates on open. A visible `60 hours` is the selected *turn policy*, not a requirement to keep the host online.
+
+== Reusable game API certification / OpenClaw
+
+Each approved game SHOULD provide a game-owned `looprd.game-play/v1` interface reachable over the approved LoopRD backend. The target common operations are `create`, `join`, `list_matches`, `get`, `legal_actions`, `act`, `end_turn`, `history`, `resume` and relevant status. Atrium does not implement these commands itself. The registered game owns action schemas, state projections, deterministic engine/rules lock, error semantics and authorization. A client can discover the game API and complete legal turns without any browser UI.
+
+Require an explicit tested `agentPlaySupported: true` capability before listing the game as OpenClaw-compatible. Approval evidence:
+
+* A separate agent-controlled Social account obtains game-scoped authorization, joins a private match and receives a seat, without becoming a Social admin or impersonating a human.
+* The headless OpenClaw client obtains game state/available moves and completes a valid turn via approved LoopRD API calls, then resumes after restart. It can operate with either a game-provided trusted command evaluator or, while transparently labeled, a version-pinned headless deterministic client receipt adapter.
+* Denied action, wrong seat, expired ticket, stale state, duplicate idempotency key, pending choice and completed match are machine-readable and safe.
+* A game's action contract must be portable across agents; no hidden OpenClaw-only game endpoint or uncontrolled page automation is the only path.
+* Atrium's catalog and runtime capability report distinguish source proposal, backend-deployed, headless-tested and operator-published states. A game cannot claim support merely because the sidecar says so.
+
+`Staff` remains the visible label for platform-controlled computer/game participants where appropriate; not every bot or user-controlled OpenClaw account is automatically Staff. Keep agent identity distinctly attributable and avoid presenting an AI account as a human without disclosure.
+
+== Life launch/link handoff contract
+
+The durable event from Life → Social includes `gameId` and `matchId` as opaque references. Tavi action chooses `open-atrium` rather than raw unreviewed Life URL. Atrium receives the reference, reads current Social login state (or offers Social login), requests a short-lived game-scoped grant from Social and asks Life whether the account is a valid participant; only then route to the reviewed Life static frontend and session. A blocked, expired, revoked or unauthorized invitation must fail safely, even if an old card still exists in a DM. Do not depend on user-entered LoopRD server FQDN when opening a registered game: resolved deployment bindings provide that address securely.
+
+No automatic credential pass-through inside sandboxed iframes. If an embedded game needs host interactions, negotiate the reviewed `atrium.host/v1` optional bridge with strict origin/frame binding, capabilities and per-launch nonce; an externally opened game uses a separately verified account grant instead.
+
+== Asynchronous lifecycle UI
+
+Atrium obtains `list_matches` from each approved game deployment for the logged-in user, not from stale static catalog JSON. Suggested minimal indicators: `Your turn`, `Waiting for friend`, `Overdue`, `No deadline`, `Finished`, `Service unavailable`. Every state is game-derived. A player who comes back after 60 hours sees the authoritative game status. Do not auto-create an opponent or make the original creator the execution host.
+
+Game state, notifications and session recovery are separate concerns: Life stores matches; Social stores turn inbox; Atrium coordinates navigation. If Social is unavailable, the game may remain directly playable by independently authorized game sessions. If Atrium is unavailable, direct Life launch remains possible; lack of one UI does not erase a match.
+
+== Work plan
+
+[cols="1,2,4",options="header"]
+|===
+|Task |Dependencies |Operator acceptance
+|`ATR-GAME-01` |DAPI sidecar reconciliation + deployment bindings |Real Life sidecar enters pending candidate review with no URL in YAML; approved binding and storefront publish are explicit and review-gated
+|`ATR-GAME-02` |01 |Reviewed hosted-web Life launch works on desktop and phone; no inappropriate iframe privileges; external fallback tested
+|`ATR-GAME-03` |Social scoped auth + Life `/play` |Private lobby create/join/continue uses Life states/ACL; no parallel lobby membership storage
+|`ATR-GAME-04` |Life headless API |Catalog metadata/capability probe and OpenClaw certification, with negative agent permission tests
+|`ATR-GAME-05` |Social notification contract |Tavi deep-link and active matches experience across logout/login, new device, expired invite and prolonged offline gap
+|===
+
+== Regression and integration verification
+
+* Atrium has the correct title, Life version, tested platform capability and resolved approved launch origin; no automatically guessed Pages hostname.
+* Browser launches Life's static multi-asset build; standalone mode remains available when Atrium is absent.
+* Start private match, leave for >60 simulated hours with both devices closed, re-open from Tavi notification and continue according to game policy.
+* Invite a second Social account; a different/blocked account cannot take its seat or read private match information.
+* OpenClaw account plays by LoopRD API without Atrium frontend; Atrium merely advertises verified support.
+* Failed Social authentication, missing backend, stale match revision, vanished published asset and disallowed embedded origin are displayed safely.
+* DAPI approval/revocation and catalog publication preserve old approved immutable versions and do not silently publish new game code.
+* Same publisher/game ID across different deployment instances is tracked separately; same source template can run on multiple hosts without URL edits.
+
+== References
+
+* `https://github.com/TheBigTreeInc/atrium/blob/main/DESIGN.adoc`
+* `https://github.com/TheBigTreeInc/atrium/blob/main/docs/GAME_REGISTRATION_AND_HOST_SDK.adoc`
+* `https://github.com/TheBigTreeInc/atrium/blob/main/docs/ATRIUMD_SIDECAR.adoc`
+* `https://github.com/TheBigTreeInc/atrium/blob/main/docs/P1_054_DISCOVERY_INTAKE.adoc`
+* `https://github.com/TheBigTreeInc/life`

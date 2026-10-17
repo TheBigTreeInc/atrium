@@ -1,0 +1,24 @@
+{
+  "protocol": "looprd.game-play/v1",
+  "gameId": "life.loop",
+  "component": "the-life-loop",
+  "engine": {
+    "version": "PROPOSED_PINNED_ENGINE",
+    "digest": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "operations": [
+    "create",
+    "join",
+    "list_matches",
+    "get",
+    "legal_actions",
+    "act",
+    "end_turn",
+    "history",
+    "resume"
+  ],
+  "capabilities": {
+    "asyncTurns": true,
+    "agentPlaySupported": false
+  }
+}

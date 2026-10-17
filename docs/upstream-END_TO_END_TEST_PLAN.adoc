@@ -1,0 +1,109 @@
+= Cross-Project Test Plan — Life + LoopRD + Social/Tavi + Atrium + OpenClaw
+:revnumber: 0.1-draft
+:revdate: 2026-10-18
+:toc: left
+:sectnums:
+
+== Scope and evidence policy
+
+This is a planning/acceptance matrix for the proposed `looprd.game-play/v1` contract and async Life multiplayer. The endpoints shown in the shared contract are not implemented yet. Do not fabricate passing results, runnable curl invocations, deployment URL, `game_ticket`, OAuth capability or game API responses. Source tests, CI, isolated LoopRD runtime tests and operator validation in the deployed environment are separate evidence levels.
+
+Pass criterion: two verified player seats, one controlled by a separate OpenClaw account, can conduct a legal asynchronous Life match through the game API and receive a recipient-bound Tavi turn notification after both game clients and the original creator's computer have been shut down. Atrium must be able to resume the same game from a reviewed link.
+
+== Test environment and fixtures
+
+Provision a disposable staging LoopRD with SQL persistence, existing supported DAPI durable-event/jobs/auth capabilities, optional Redis, test Social component, reviewed Atrium Pages deployment and Life backend. A second LoopRD deployment is required to test any planned cross-runtime bridge; `ctx.call` alone cannot satisfy remote calls. Use two distinct Social accounts `player-a` and `agent-b` whose returned trusted issuer/subjects are discovered at runtime, not hardcoded account IDs. OpenClaw runs as `agent-b`, with explicit operator-approved game tool access. Store private game grant / Social credentials only in a test secret manager. Do not check them into the source tree, ZIP or output logs.
+
+Fixtures:
+
+* Deterministic pinned engine/rules version and 3 fixed **test-only** seed inputs; independently generate match seeds in ordinary live play.
+* Classic and Modern settings, Jones enabled, two human/agent seats, 60-hour timeout plus no-timeout alternative.
+* Test clock or injected time abstraction to advance 61 hours without actually waiting; observe stored UTC timestamps.
+* Two browser profiles or devices with separate local caches and an agent CLI/API client with no browser or DOM access.
+* A test-only outbox relay failure switch and controlled Redis/Social/network disconnection. No destructive changes to real accounts or game databases.
+* A test-run record with source Git SHAs, deployed LoopRD capabilities, spec release, Life engine digest and actual CI/ZipRunner operator logs.
+
+== Automated game contract tests
+
+[cols="1,2,3,3",options="header"]
+|===
+|ID |Action |Expected result |Owner
+|`API-01` |Query reviewed `/play/info` |Schema/modes/action vocabulary and published engine lock validate; unsupported features remain false |Life
+|`API-02` |Account A creates match; B accepts invite |Distinct verified Social principals occupy approved seats; creator is not required online |Life+Social
+|`API-03` |Read `get` and `legal_actions` for correct seat |Machine-readable choices reflect rules and selected turn phase; hidden state is not leaked |Life
+|`API-04` |Call `act` with legal action and expected revision |One accepted revision/state transition and reproducible next seed/hash |Life
+|`API-05` |Call `end_turn`; shut down both browsers |Turn index/next seat/deadline/outbox commit as one atomic business event; no host callback |Life
+|`API-06` |Replay ordered actions in Node and browser |Identical canonical checkpoint digests and PRNG cursor across engines |Life
+|`API-07` |Restore a snapshot with active Jones phase twice |No RNG or turn state changes merely due to load/reconstruction |Life
+|`API-08` |Re-send same mutation with same idempotency key |Same accepted result, no second cost, turn transition or notification |Life
+|`API-09` |Use same idempotency key for different mutation |Conflict; no state change |Life
+|`API-10` |Submit stale revision or wrong seat action |403/409-style typed rejection; no state write |Life
+|`API-11` |Call game API under unrelated Social issuer/subject |Denied even if local `acct_N` value happens to match |Life+Social
+|`API-12` |Use expired/forged grant; ask another player for hidden state |Denied without leaking private payload |Life+Social
+|`API-13` |Create match then restart LoopRD and run `resume` elsewhere |Correct checkpoint, legal turn, seat and dueAt without tab session token |Life+LoopRD
+|`API-14` |Switch rules/engine revision during old match |Old pinned engine can replay or explicit version unavailable state; no silent mixed-rules simulation |Life
+|`API-15` |Use zero/invalid/oversized action, hash or snapshot |Bounded schema rejection, no CPU/memory explosion or persisted corruption |Life
+|===
+
+== OpenClaw certification tests
+
+[cols="1,2,3",options="header"]
+|===
+|ID |Procedure |Expected outcome
+|`AGENT-01` |Run existing Tavi OpenClaw CLI `games` before game API certification |It remains `agentPlaySupported:false` (do not fake a success flag)
+|`AGENT-02` |Provision a dedicated Social agent account, join by approved invite, obtain scoped game access |Agent is bound to its own seat, not a management credential or a human session
+|`AGENT-03` |Run OpenClaw-driven API-only `list_matches`, `get`, `legal_actions`, `act`, `end_turn` |At least one legal complete turn with recorded accepted revision; no page DOM/desktop UI automation
+|`AGENT-04` |Restart agent process; reauthorize and `resume`; play later turn |Agent continues same match by account+seat, not local browser storage
+|`AGENT-05` |Offer invalid move, forged actor, duplicate key, game prompt instructing it to steal credentials |Game service denies invalid action; agent tool permissions and secrets remain intact
+|`AGENT-06` |Run on a second suitable registered game with its own rules/adapter (future certification) |Shared protocol works without hardcoding Life mechanics into Social/Tavi or Atrium
+|===
+
+`agentPlaySupported:true` may be published only after `AGENT-02` through `AGENT-04` and core wrong-seat/retry tests pass in the deployed game. `AGENT-06` validates reuse but is not a blocker for Life's first successful agent integration; it is the cross-game acceptance gate for claiming broad ecosystem support.
+
+== Time, offline and notification tests
+
+[cols="1,2,3,2",options="header"]
+|===
+|ID |Fault/scenario |Expected result |Owner
+|`TIME-01` |After A commits end turn, close A and B clients |Match remains in SQL with B's turn; no host process required |Life
+|`TIME-02` |Advance injectable clock 59 h then 61 h |No premature timeout; after deadline use configured overdue/remind policy without deleting match |Life
+|`TIME-03` |Select no turn timeout; advance days |No forced timeout or match deletion |Life
+|`TIME-04` |Turn due passes while LoopRD was down |Job reconciles persisted dueAt after restart; no duplicate timeout resolution |Life+LoopRD
+|`NOTIFY-01` |Commit B turn-ready while Social is available |One recipient-scoped durable inbox item for B, none for A or unrelated users |Life+Social
+|`NOTIFY-02` |Stop Redis around end turn |Committed match and notification outbox preserved; later HTTP reconciliation succeeds |Life+LoopRD
+|`NOTIFY-03` |Stop Social during 3 successive relay attempts then resume |Life outbox persists and retries; one logical B inbox item after recovery |Life+Social
+|`NOTIFY-04` |Crash Life relay after Social has committed but before outbox ack |Retry deduplicates `(caller, eventId, recipient)` and eventually marks acknowledged |Life+Social
+|`NOTIFY-05` |Keep Tavi closed; suppress UnifiedPush; sign in after days |Tavi fetches inbox and shows current turn from authoritative server |Social+Tavi
+|`NOTIFY-06` |Open notification after invite expired/revoked or identity changed |Atrium/Life deny unauthorized participation without trusting old card |Social+Atrium+Life
+|`NOTIFY-07` |Test Android terminated app with real configured distributor |Mark PASS only after observing OS delivery; otherwise record pending and demonstrate HTTP fallback |Tavi
+|===
+
+== Atrium discovery and launch tests
+
+[cols="1,2,3",options="header"]
+|===
+|ID |Procedure |Expected result
+|`ATR-01` |DAPI activates LoopRD game with no sidecar |Normal activation with no Atrium dependency
+|`ATR-02` |DAPI activates source with valid sibling sidecar |At most one pending candidate; same resolved source revision for game and sidecar; no automatic public listing
+|`ATR-03` |Update only sidecar; repeat same revision; simulate fetch failure |Change reconciled; duplicate idempotent; failure non-blocking and not treated as opt-out
+|`ATR-04` |Review publisher and logical game-web/static binding |Host-specific URLs stay in operator deployment config, not `looprd.yaml` or `atriumd.yaml`
+|`ATR-05` |Open Life multi-asset web release from Atrium on phone and desktop |Reviewed origin launches via safe hosted-web/external route; old 1 MiB srcdoc-only loader not misused
+|`ATR-06` |Create/join/resume through Atrium; then open Life standalone |Same game-owned match and seat state; no competing Atrium membership database
+|`ATR-07` |Open Tavi turn notification from a fresh device |Atrium resolves identity and approved game route; no reusable token in address bar
+|`ATR-08` |Disable game or remove launch binding |Atrium stops advertising launchable mode without damaging Life's authoritative game DB
+|===
+
+== Acceptance artifacts and delivery criteria
+
+For each task attach: implemented source file diff, tests with exact command and result, deployed component `/info` and capability output (sanitized), match revision/event IDs (opaque), engine checksum fixture, network failure/recovery trace with secrets redacted, and operator review notes. Prefer cross-repo compatibility fixtures for grants, event envelopes and action schemas. Never label simulated output as a live deployed observation.
+
+The project is first ready for a controlled private beta when `API-01..13`, `AGENT-02..05`, `TIME-01..04`, `NOTIFY-01..06` and `ATR-01..07` pass in a staging runtime with the relevant features enabled. Public competitive games require additional independent server replay/validation evidence; seeded clients and hashes alone do not certify cheating resistance. Closed-app push is not a beta blocker if the persistent inbox works, but its limitation must be plainly disclosed.
+
+== References
+
+* `LOOPRD_GAME_PLAY_CONTRACT.adoc` from this package
+* Per-repository adjustment `.adoc` files from this package
+* `https://github.com/TheBigTreeInc/life`
+* `https://github.com/TheBigTreeInc/social`
+* `https://github.com/TheBigTreeInc/atrium`
+* `https://github.com/pac-labs/dapi`
