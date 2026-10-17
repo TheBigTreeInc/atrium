@@ -1,0 +1,98 @@
+### python tools/build_spec.py --check (exit 0)
+Checkers fragment matches canonical Python source
+
+### python tools/check_specs.py (exit 0)
+Source composition checks: 6 resources, 6 models, 5 handlers and scoped events
+
+### python -m unittest discover -s tests -v (exit 0)
+test_approved_immutable_entry (test_catalog.CatalogTests.test_approved_immutable_entry) ... ok
+test_does_not_publish_untrusted_metadata (test_catalog.CatalogTests.test_does_not_publish_untrusted_metadata) ... ok
+test_invalid_capability (test_catalog.CatalogTests.test_invalid_capability) ... ok
+test_rejects_query_credentials_and_fragment (test_catalog.CatalogTests.test_rejects_query_credentials_and_fragment) ... ok
+test_unapproved_endpoint (test_catalog.CatalogTests.test_unapproved_endpoint) ... ok
+test_capture_forced (test_checkers.CheckersTest.test_capture_forced) ... ok
+test_chain_jump_mandatory (test_checkers.CheckersTest.test_chain_jump_mandatory) ... ok
+test_crown_ends_turn (test_checkers.CheckersTest.test_crown_ends_turn) ... ok
+test_invalid_board_rejected (test_checkers.CheckersTest.test_invalid_board_rejected) ... ok
+test_legal_move_updates_state (test_checkers.CheckersTest.test_legal_move_updates_state) ... ok
+test_staff_is_deterministic (test_checkers.CheckersTest.test_staff_is_deterministic) ... ok
+test_stale_spec_guard (test_checkers.CheckersTest.test_stale_spec_guard) ... ok
+test_start_has_seven_moves (test_checkers.CheckersTest.test_start_has_seven_moves) ... ok
+test_adapter_implements_shared_interface (test_game_contract.GameContractTests.test_adapter_implements_shared_interface) ... ok
+test_invalid_state_rejected (test_game_contract.GameContractTests.test_invalid_state_rejected) ... ok
+test_legal_actions_and_replay_are_deterministic (test_game_contract.GameContractTests.test_legal_actions_and_replay_are_deterministic) ... ok
+test_staff_action_is_legal (test_game_contract.GameContractTests.test_staff_action_is_legal) ... ok
+test_demonstration_occupies_bounded_subset (test_staff.StaffTests.test_demonstration_occupies_bounded_subset) ... ok
+test_empty_is_default (test_staff.StaffTests.test_empty_is_default) ... ok
+test_invalid_occupancy_rejected (test_staff.StaffTests.test_invalid_occupancy_rejected) ... ok
+test_no_fake_social_or_administration (test_staff.StaffTests.test_no_fake_social_or_administration) ... ok
+test_no_staff_in_ranked_even_demonstration (test_staff.StaffTests.test_no_staff_in_ranked_even_demonstration) ... ok
+test_only_selected_tables (test_staff.StaffTests.test_only_selected_tables) ... ok
+test_checkers_source_is_embedded (test_unified_spec.UnifiedSpecTests.test_checkers_source_is_embedded) ... ok
+test_component_composition (test_unified_spec.UnifiedSpecTests.test_component_composition) ... ok
+test_only_root_defines_identity (test_unified_spec.UnifiedSpecTests.test_only_root_defines_identity) ... ok
+test_source_index_one_entry (test_unified_spec.UnifiedSpecTests.test_source_index_one_entry) ... ok
+
+----------------------------------------------------------------------
+Ran 27 tests in 1.174s
+
+OK
+Source composition checks: 6 resources, 6 models, 5 handlers and scoped events
+
+### npm test (exit 0)
+
+> atrium@0.2.0 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: accept approved immutable origin
+ok 1 - accept approved immutable origin
+  ---
+  duration_ms: 1.136343
+  type: 'test'
+  ...
+# Subtest: deny unknown origin
+ok 2 - deny unknown origin
+  ---
+  duration_ms: 0.375272
+  type: 'test'
+  ...
+# Subtest: deny URL query and fragments
+ok 3 - deny URL query and fragments
+  ---
+  duration_ms: 0.213837
+  type: 'test'
+  ...
+# Subtest: deny HTTP except explicit localhost mode
+ok 4 - deny HTTP except explicit localhost mode
+  ---
+  duration_ms: 0.211909
+  type: 'test'
+  ...
+# Subtest: requires SHA256 integrity metadata
+ok 5 - requires SHA256 integrity metadata
+  ---
+  duration_ms: 0.724492
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 84.101384
+
+### npm run build (exit 0)
+
+> atrium@0.2.0 build
+> node tools/build.mjs
+
+static web output at dist/ (not deployed)
+
+### Not executed
+Official upstream DAPI CLI semantic validation / live activation: not_run (DAPI not installed in this execution environment).
+ZipRunner installed client acceptance: not_run (no target ZipRunner available).
+GitHub push/Pages publish/Tavi integration: not_run.

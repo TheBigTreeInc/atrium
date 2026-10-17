@@ -1,0 +1,917 @@
+{
+  "schema": "looprd.games.research-catalog/v1",
+  "asOf": "2026-10-16",
+  "completeness": "partial-documented-catalog; NOT all 1400+ later partner games",
+  "entries": [
+    {
+      "title": "Backgammon",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-backgammon"
+    },
+    {
+      "title": "Checkers",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-checkers"
+    },
+    {
+      "title": "Chess",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-chess"
+    },
+    {
+      "title": "Go",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-go"
+    },
+    {
+      "title": "Reversi",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-reversi"
+    },
+    {
+      "title": "Bridge",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-bridge"
+    },
+    {
+      "title": "Cribbage",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-cribbage"
+    },
+    {
+      "title": "Euchre",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-euchre"
+    },
+    {
+      "title": "Gin",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-gin"
+    },
+    {
+      "title": "Hearts",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-hearts"
+    },
+    {
+      "title": "Poker",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "Virtual points only; no real-money gambling",
+      "id": "yahoo-poker"
+    },
+    {
+      "title": "Spades",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "A",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-spades"
+    },
+    {
+      "title": "Chinese Checkers",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-chinese-checkers"
+    },
+    {
+      "title": "Dominoes",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "Historical listing also spelled Dominos",
+      "id": "yahoo-dominoes"
+    },
+    {
+      "title": "Dots",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P1",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-dots"
+    },
+    {
+      "title": "Mah Jong",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-mah-jong"
+    },
+    {
+      "title": "Naval Command",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-naval-command"
+    },
+    {
+      "title": "Bingo",
+      "category": "Board/strategy",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-bingo"
+    },
+    {
+      "title": "Literati",
+      "category": "Words/social",
+      "delivery": "browser",
+      "wave": "P2",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "Yahoo-specific mechanics and interface need source-by-source reconstruction",
+      "id": "yahoo-literati"
+    },
+    {
+      "title": "Word Racer",
+      "category": "Words/social",
+      "delivery": "browser",
+      "wave": "P2",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "Yahoo-specific mechanics and interface need source-by-source reconstruction",
+      "id": "yahoo-word-racer"
+    },
+    {
+      "title": "Yahoo! Graffiti",
+      "category": "Words/social",
+      "delivery": "browser",
+      "wave": "P2",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "Yahoo-specific mechanics and interface need source-by-source reconstruction",
+      "id": "yahoo-yahoo-graffiti"
+    },
+    {
+      "title": "Pool",
+      "category": "Arcade/action",
+      "delivery": "browser",
+      "wave": "P2",
+      "evidence": "B",
+      "engine": "realtime",
+      "notes": "Yahoo-specific mechanics and interface need source-by-source reconstruction",
+      "id": "yahoo-pool"
+    },
+    {
+      "title": "Yahoo! Towers",
+      "category": "Arcade/action",
+      "delivery": "browser",
+      "wave": "P2",
+      "evidence": "B",
+      "engine": "realtime",
+      "notes": "Yahoo-specific mechanics and interface need source-by-source reconstruction",
+      "id": "yahoo-yahoo-towers"
+    },
+    {
+      "title": "Blackjack",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "Virtual points only; no real-money gambling",
+      "id": "yahoo-blackjack"
+    },
+    {
+      "title": "Canasta",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-canasta"
+    },
+    {
+      "title": "Contract Bridge",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "Likely overlapping historical listing with Bridge; validate as variant, not duplicate executable",
+      "id": "yahoo-contract-bridge"
+    },
+    {
+      "title": "Go Fish",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-go-fish"
+    },
+    {
+      "title": "Go-Stop",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-go-stop"
+    },
+    {
+      "title": "Hold Em Poker",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "Virtual points only; no real-money gambling",
+      "id": "yahoo-hold-em-poker"
+    },
+    {
+      "title": "Pinochle",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-pinochle"
+    },
+    {
+      "title": "Sheepshead",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "turn",
+      "notes": "",
+      "id": "yahoo-sheepshead"
+    },
+    {
+      "title": "Pyramids",
+      "category": "Cards",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "",
+      "id": "yahoo-pyramids"
+    },
+    {
+      "title": "Tornado 21",
+      "category": "Cards",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "",
+      "id": "yahoo-tornado-21"
+    },
+    {
+      "title": "Deuces Wild Video Poker",
+      "category": "Cards",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "Virtual points only; no real-money gambling",
+      "id": "yahoo-deuces-wild-video-poker"
+    },
+    {
+      "title": "Double Down Video Poker",
+      "category": "Cards",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "Virtual points only; no real-money gambling",
+      "id": "yahoo-double-down-video-poker"
+    },
+    {
+      "title": "All-in-One Solitaire",
+      "category": "Cards",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-all-in-one-solitaire"
+    },
+    {
+      "title": "FreeCell Solitaire",
+      "category": "Cards",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Historical spelling variants: Freecell Solitaire",
+      "id": "yahoo-freecell-solitaire"
+    },
+    {
+      "title": "Klondike Solitaire",
+      "category": "Cards",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-klondike-solitaire"
+    },
+    {
+      "title": "Solitaire 13",
+      "category": "Cards",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-solitaire-13"
+    },
+    {
+      "title": "JigWords",
+      "category": "Board/strategy",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-jigwords"
+    },
+    {
+      "title": "Mah Jong Medley",
+      "category": "Board/strategy",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mah-jong-medley"
+    },
+    {
+      "title": "Mah Jong Towers Eternity",
+      "category": "Board/strategy",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mah-jong-towers-eternity"
+    },
+    {
+      "title": "Mahjong Escape",
+      "category": "Board/strategy",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mahjong-escape"
+    },
+    {
+      "title": "Poker Pop",
+      "category": "Board/strategy",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-poker-pop"
+    },
+    {
+      "title": "Saints and Sinners Bingo",
+      "category": "Board/strategy",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-saints-and-sinners-bingo"
+    },
+    {
+      "title": "TextTwist",
+      "category": "Words/social",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-texttwist"
+    },
+    {
+      "title": "Mushroomer",
+      "category": "Arcade/action",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "",
+      "id": "yahoo-mushroomer"
+    },
+    {
+      "title": "Treasure Hunt 2",
+      "category": "Arcade/action",
+      "delivery": "browser/mixed",
+      "wave": "P3",
+      "evidence": "B",
+      "engine": "round",
+      "notes": "",
+      "id": "yahoo-treasure-hunt-2"
+    },
+    {
+      "title": "JT's Blocks",
+      "category": "Arcade/action",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "A",
+      "engine": "round",
+      "notes": "",
+      "id": "yahoo-jt-s-blocks"
+    },
+    {
+      "title": "Dice Slider",
+      "category": "Arcade/action",
+      "delivery": "browser",
+      "wave": "P3",
+      "evidence": "A",
+      "engine": "round",
+      "notes": "",
+      "id": "yahoo-dice-slider"
+    },
+    {
+      "title": "Catan",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-catan"
+    },
+    {
+      "title": "Chessmaster Challenge",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-chessmaster-challenge"
+    },
+    {
+      "title": "Emperor's Mahjong",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-emperor-s-mahjong"
+    },
+    {
+      "title": "Jigsaw: Great Art",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-jigsaw-great-art"
+    },
+    {
+      "title": "Jigsaw: Landscapes",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-jigsaw-landscapes"
+    },
+    {
+      "title": "Jigsaw: Medley",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-jigsaw-medley"
+    },
+    {
+      "title": "Jigsaw: Pet",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-jigsaw-pet"
+    },
+    {
+      "title": "Luxor Mahjong",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-luxor-mahjong"
+    },
+    {
+      "title": "Mah Jong Adventures",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mah-jong-adventures"
+    },
+    {
+      "title": "Mah Jong Garden",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mah-jong-garden"
+    },
+    {
+      "title": "Mah Jong Jade Expedition",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mah-jong-jade-expedition"
+    },
+    {
+      "title": "Mah-Jomino",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mah-jomino"
+    },
+    {
+      "title": "Mahjong Match",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mahjong-match"
+    },
+    {
+      "title": "Super Mah Jong",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-super-mah-jong"
+    },
+    {
+      "title": "Monopoly 3",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-monopoly-3"
+    },
+    {
+      "title": "Sudoku: Latin Squares",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-sudoku-latin-squares"
+    },
+    {
+      "title": "Word Slinger",
+      "category": "Board/strategy",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-word-slinger"
+    },
+    {
+      "title": "Chester",
+      "category": "Board/strategy",
+      "delivery": "skill",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-chester"
+    },
+    {
+      "title": "Mahjong Treasure",
+      "category": "Board/strategy",
+      "delivery": "skill",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mahjong-treasure"
+    },
+    {
+      "title": "Mahjong Fortuna",
+      "category": "Board/strategy",
+      "delivery": "skill",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-mahjong-fortuna"
+    },
+    {
+      "title": "Midas Mahjong",
+      "category": "Board/strategy",
+      "delivery": "skill",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-midas-mahjong"
+    },
+    {
+      "title": "Addiction Solitaire",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-addiction-solitaire"
+    },
+    {
+      "title": "Aloha Solitaire",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-aloha-solitaire"
+    },
+    {
+      "title": "Aloha TriPeaks",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-aloha-tripeaks"
+    },
+    {
+      "title": "Ancient 4 in 1 GamePak",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-ancient-4-in-1-gamepak"
+    },
+    {
+      "title": "Ancient Hearts and Spades",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-ancient-hearts-and-spades"
+    },
+    {
+      "title": "Ancient Tri-Jong",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-ancient-tri-jong"
+    },
+    {
+      "title": "Ancient Tripeaks",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-ancient-tripeaks"
+    },
+    {
+      "title": "Five Card Deluxe",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-five-card-deluxe"
+    },
+    {
+      "title": "Golf Solitaire",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-golf-solitaire"
+    },
+    {
+      "title": "Hotel Solitaire",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-hotel-solitaire"
+    },
+    {
+      "title": "Poker Superstars II",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-poker-superstars-ii"
+    },
+    {
+      "title": "Super Solitaire",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-super-solitaire"
+    },
+    {
+      "title": "Super Solitaire 2",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-super-solitaire-2"
+    },
+    {
+      "title": "Turbo Solitaire",
+      "category": "Cards",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-turbo-solitaire"
+    },
+    {
+      "title": "Honey Combo",
+      "category": "Cards",
+      "delivery": "skill",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-honey-combo"
+    },
+    {
+      "title": "Pyramid",
+      "category": "Cards",
+      "delivery": "skill",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "",
+      "id": "yahoo-pyramid"
+    },
+    {
+      "title": "Pac-Man",
+      "category": "Arcade/action",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-pac-man"
+    },
+    {
+      "title": "Tradewinds",
+      "category": "Arcade/action",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-tradewinds"
+    },
+    {
+      "title": "Tradewinds 2",
+      "category": "Arcade/action",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-tradewinds-2"
+    },
+    {
+      "title": "Tradewinds Legends",
+      "category": "Arcade/action",
+      "delivery": "download",
+      "wave": "P4",
+      "evidence": "B",
+      "engine": "solo",
+      "notes": "Third-party/proprietary title: rights and assets review required",
+      "id": "yahoo-tradewinds-legends"
+    }
+  ]
+}

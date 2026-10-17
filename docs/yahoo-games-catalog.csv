@@ -1,0 +1,92 @@
+id,title,category,delivery,wave,evidence,engine,notes
+yahoo-backgammon,Backgammon,Board/strategy,browser,P1,A,turn,
+yahoo-checkers,Checkers,Board/strategy,browser,P1,A,turn,
+yahoo-chess,Chess,Board/strategy,browser,P1,A,turn,
+yahoo-go,Go,Board/strategy,browser,P1,A,turn,
+yahoo-reversi,Reversi,Board/strategy,browser,P1,A,turn,
+yahoo-bridge,Bridge,Cards,browser,P1,A,turn,
+yahoo-cribbage,Cribbage,Cards,browser,P1,A,turn,
+yahoo-euchre,Euchre,Cards,browser,P1,A,turn,
+yahoo-gin,Gin,Cards,browser,P1,A,turn,
+yahoo-hearts,Hearts,Cards,browser,P1,A,turn,
+yahoo-poker,Poker,Cards,browser,P1,A,turn,Virtual points only; no real-money gambling
+yahoo-spades,Spades,Cards,browser,P1,A,turn,
+yahoo-chinese-checkers,Chinese Checkers,Board/strategy,browser,P1,B,turn,
+yahoo-dominoes,Dominoes,Board/strategy,browser,P1,B,turn,Historical listing also spelled Dominos
+yahoo-dots,Dots,Board/strategy,browser,P1,B,turn,
+yahoo-mah-jong,Mah Jong,Board/strategy,browser,P3,B,turn,
+yahoo-naval-command,Naval Command,Board/strategy,browser,P3,B,turn,
+yahoo-bingo,Bingo,Board/strategy,browser,P3,B,turn,
+yahoo-literati,Literati,Words/social,browser,P2,B,turn,Yahoo-specific mechanics and interface need source-by-source reconstruction
+yahoo-word-racer,Word Racer,Words/social,browser,P2,B,round,Yahoo-specific mechanics and interface need source-by-source reconstruction
+yahoo-yahoo-graffiti,Yahoo! Graffiti,Words/social,browser,P2,B,round,Yahoo-specific mechanics and interface need source-by-source reconstruction
+yahoo-pool,Pool,Arcade/action,browser,P2,B,realtime,Yahoo-specific mechanics and interface need source-by-source reconstruction
+yahoo-yahoo-towers,Yahoo! Towers,Arcade/action,browser,P2,B,realtime,Yahoo-specific mechanics and interface need source-by-source reconstruction
+yahoo-blackjack,Blackjack,Cards,browser,P3,B,turn,Virtual points only; no real-money gambling
+yahoo-canasta,Canasta,Cards,browser,P3,B,turn,
+yahoo-contract-bridge,Contract Bridge,Cards,browser,P3,B,turn,"Likely overlapping historical listing with Bridge; validate as variant, not duplicate executable"
+yahoo-go-fish,Go Fish,Cards,browser,P3,B,turn,
+yahoo-go-stop,Go-Stop,Cards,browser,P3,B,turn,
+yahoo-hold-em-poker,Hold Em Poker,Cards,browser,P3,B,turn,Virtual points only; no real-money gambling
+yahoo-pinochle,Pinochle,Cards,browser,P3,B,turn,
+yahoo-sheepshead,Sheepshead,Cards,browser,P3,B,turn,
+yahoo-pyramids,Pyramids,Cards,browser/mixed,P3,B,round,
+yahoo-tornado-21,Tornado 21,Cards,browser/mixed,P3,B,round,
+yahoo-deuces-wild-video-poker,Deuces Wild Video Poker,Cards,browser/mixed,P3,B,round,Virtual points only; no real-money gambling
+yahoo-double-down-video-poker,Double Down Video Poker,Cards,browser/mixed,P3,B,round,Virtual points only; no real-money gambling
+yahoo-all-in-one-solitaire,All-in-One Solitaire,Cards,browser/mixed,P3,B,solo,
+yahoo-freecell-solitaire,FreeCell Solitaire,Cards,browser/mixed,P3,B,solo,Historical spelling variants: Freecell Solitaire
+yahoo-klondike-solitaire,Klondike Solitaire,Cards,browser/mixed,P3,B,solo,
+yahoo-solitaire-13,Solitaire 13,Cards,browser,P3,B,solo,
+yahoo-jigwords,JigWords,Board/strategy,browser/mixed,P3,B,solo,
+yahoo-mah-jong-medley,Mah Jong Medley,Board/strategy,browser/mixed,P3,B,solo,
+yahoo-mah-jong-towers-eternity,Mah Jong Towers Eternity,Board/strategy,browser/mixed,P3,B,solo,
+yahoo-mahjong-escape,Mahjong Escape,Board/strategy,browser/mixed,P3,B,solo,
+yahoo-poker-pop,Poker Pop,Board/strategy,browser/mixed,P3,B,solo,
+yahoo-saints-and-sinners-bingo,Saints and Sinners Bingo,Board/strategy,browser/mixed,P3,B,solo,
+yahoo-texttwist,TextTwist,Words/social,browser/mixed,P3,B,solo,
+yahoo-mushroomer,Mushroomer,Arcade/action,browser,P3,B,round,
+yahoo-treasure-hunt-2,Treasure Hunt 2,Arcade/action,browser/mixed,P3,B,round,
+yahoo-jt-s-blocks,JT's Blocks,Arcade/action,browser,P3,A,round,
+yahoo-dice-slider,Dice Slider,Arcade/action,browser,P3,A,round,
+yahoo-catan,Catan,Board/strategy,download,P4,B,solo,Third-party/proprietary title: rights and assets review required
+yahoo-chessmaster-challenge,Chessmaster Challenge,Board/strategy,download,P4,B,solo,Third-party/proprietary title: rights and assets review required
+yahoo-emperor-s-mahjong,Emperor's Mahjong,Board/strategy,download,P4,B,solo,
+yahoo-jigsaw-great-art,Jigsaw: Great Art,Board/strategy,download,P4,B,solo,
+yahoo-jigsaw-landscapes,Jigsaw: Landscapes,Board/strategy,download,P4,B,solo,
+yahoo-jigsaw-medley,Jigsaw: Medley,Board/strategy,download,P4,B,solo,
+yahoo-jigsaw-pet,Jigsaw: Pet,Board/strategy,download,P4,B,solo,
+yahoo-luxor-mahjong,Luxor Mahjong,Board/strategy,download,P4,B,solo,
+yahoo-mah-jong-adventures,Mah Jong Adventures,Board/strategy,download,P4,B,solo,
+yahoo-mah-jong-garden,Mah Jong Garden,Board/strategy,download,P4,B,solo,
+yahoo-mah-jong-jade-expedition,Mah Jong Jade Expedition,Board/strategy,download,P4,B,solo,
+yahoo-mah-jomino,Mah-Jomino,Board/strategy,download,P4,B,solo,
+yahoo-mahjong-match,Mahjong Match,Board/strategy,download,P4,B,solo,
+yahoo-super-mah-jong,Super Mah Jong,Board/strategy,download,P4,B,solo,
+yahoo-monopoly-3,Monopoly 3,Board/strategy,download,P4,B,solo,Third-party/proprietary title: rights and assets review required
+yahoo-sudoku-latin-squares,Sudoku: Latin Squares,Board/strategy,download,P4,B,solo,
+yahoo-word-slinger,Word Slinger,Board/strategy,download,P4,B,solo,
+yahoo-chester,Chester,Board/strategy,skill,P4,B,solo,
+yahoo-mahjong-treasure,Mahjong Treasure,Board/strategy,skill,P4,B,solo,
+yahoo-mahjong-fortuna,Mahjong Fortuna,Board/strategy,skill,P4,B,solo,
+yahoo-midas-mahjong,Midas Mahjong,Board/strategy,skill,P4,B,solo,
+yahoo-addiction-solitaire,Addiction Solitaire,Cards,download,P4,B,solo,
+yahoo-aloha-solitaire,Aloha Solitaire,Cards,download,P4,B,solo,
+yahoo-aloha-tripeaks,Aloha TriPeaks,Cards,download,P4,B,solo,
+yahoo-ancient-4-in-1-gamepak,Ancient 4 in 1 GamePak,Cards,download,P4,B,solo,
+yahoo-ancient-hearts-and-spades,Ancient Hearts and Spades,Cards,download,P4,B,solo,
+yahoo-ancient-tri-jong,Ancient Tri-Jong,Cards,download,P4,B,solo,
+yahoo-ancient-tripeaks,Ancient Tripeaks,Cards,download,P4,B,solo,
+yahoo-five-card-deluxe,Five Card Deluxe,Cards,download,P4,B,solo,
+yahoo-golf-solitaire,Golf Solitaire,Cards,download,P4,B,solo,
+yahoo-hotel-solitaire,Hotel Solitaire,Cards,download,P4,B,solo,
+yahoo-poker-superstars-ii,Poker Superstars II,Cards,download,P4,B,solo,Third-party/proprietary title: rights and assets review required
+yahoo-super-solitaire,Super Solitaire,Cards,download,P4,B,solo,
+yahoo-super-solitaire-2,Super Solitaire 2,Cards,download,P4,B,solo,
+yahoo-turbo-solitaire,Turbo Solitaire,Cards,download,P4,B,solo,
+yahoo-honey-combo,Honey Combo,Cards,skill,P4,B,solo,
+yahoo-pyramid,Pyramid,Cards,skill,P4,B,solo,
+yahoo-pac-man,Pac-Man,Arcade/action,download,P4,B,solo,Third-party/proprietary title: rights and assets review required
+yahoo-tradewinds,Tradewinds,Arcade/action,download,P4,B,solo,Third-party/proprietary title: rights and assets review required
+yahoo-tradewinds-2,Tradewinds 2,Arcade/action,download,P4,B,solo,Third-party/proprietary title: rights and assets review required
+yahoo-tradewinds-legends,Tradewinds Legends,Arcade/action,download,P4,B,solo,Third-party/proprietary title: rights and assets review required

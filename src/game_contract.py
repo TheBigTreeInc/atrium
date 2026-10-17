@@ -1,0 +1,23 @@
+"""Reusable engine contract for turn-based games; pure domain interface (not a deployed API)."""
+from typing import Any, Protocol, runtime_checkable
+
+@runtime_checkable
+class GameEngine(Protocol):
+    game_id: str
+    ruleset: str
+
+    def initial_state(self) -> dict[str, Any]: ...
+    def legal_actions(self, state: dict[str, Any]) -> list: ...
+    def transition(self, state: dict[str, Any], action: Any) -> dict[str, Any]: ...
+    def staff_action(self, state: dict[str, Any]) -> Any | None: ...
+    def outcome(self, state: dict[str, Any]) -> dict[str, Any]: ...
+    def serialize(self, state: dict[str, Any]) -> dict[str, Any]: ...
+    def deserialize(self, document: dict[str, Any]) -> dict[str, Any]: ...
+
+
+def replay(engine: GameEngine, actions: list) -> dict[str, Any]:
+    """Replay accepted actions from a fresh deterministic initial state."""
+    state = engine.initial_state()
+    for action in actions:
+        state = engine.transition(state, action)
+    return state

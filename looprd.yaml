@@ -1,0 +1,45 @@
+# One registered Looprd component. Nested files are imports, NOT additional servers.
+# Requires a DAPI version that implements `spec.includes`.
+apiVersion: looprd/v1
+component: atrium
+release: 0.3.0
+api:
+  version: v1
+auth:
+  mode: database
+  scopes:
+    - apps:read
+    - apps:publish
+    - apps:events
+    - arcade:read
+    - arcade:operator
+    - arcade:events
+    - checkers:read
+    - checkers:play
+database:
+  backend: sqlite
+  schemaVersion: 1
+requires:
+  - spec.includes
+includes:
+  - modules/registry/looprd.yaml
+  - modules/arcade/looprd.yaml
+  - modules/games/checkers/looprd.yaml
+websocket:
+  path: /events
+limits:
+  requestsPerMinute: 120
+  burstPerSecond: 10
+  maxRows: 10000
+handlers:
+  - path: /info
+    method: GET
+    kind: response
+    response:
+      service: atrium
+      contract: atrium.platform/v1
+      phase: foundational
+      deploymentVerification: operator_required
+      modules: [registry, arcade, checkers]
+      staffDisplayLabel: Staff
+      socialLoginIntegrated: false

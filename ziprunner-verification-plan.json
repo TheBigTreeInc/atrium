@@ -1,0 +1,165 @@
+{
+  "schema": "ziprunner.verification-plan/v1",
+  "project": "atrium",
+  "version": "0.3.0",
+  "tasks": [
+    {
+      "id": "ATR-P0-001",
+      "criteria": [
+        {
+          "id": "ATR-P0-001-AC1",
+          "description": "Reconcile unified Atrium baseline into one source tree is demonstrable in the packaged source test.",
+          "mode": "automated",
+          "checks": [
+            "ATR-P0-001-T1"
+          ]
+        },
+        {
+          "id": "ATR-P0-001-AC2",
+          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "mode": "manual",
+          "checks": [
+            "ATR-P0-001-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-P0-002",
+      "criteria": [
+        {
+          "id": "ATR-P0-002-AC1",
+          "description": "Pin DAPI and ZipRunner validation tooling is demonstrable in the packaged source test.",
+          "mode": "automated",
+          "checks": [
+            "ATR-P0-002-T1"
+          ]
+        },
+        {
+          "id": "ATR-P0-002-AC2",
+          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "mode": "manual",
+          "checks": [
+            "ATR-P0-002-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-P0-003",
+      "criteria": [
+        {
+          "id": "ATR-P0-003-AC1",
+          "description": "Add reproducible build and source safety regressions is demonstrable in the packaged source test.",
+          "mode": "automated",
+          "checks": [
+            "ATR-P0-003-T1"
+          ]
+        },
+        {
+          "id": "ATR-P0-003-AC2",
+          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "mode": "manual",
+          "checks": [
+            "ATR-P0-003-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-P0-005",
+      "criteria": [
+        {
+          "id": "ATR-P0-005-AC1",
+          "description": "Preserve architecture, roadmap and task identity is demonstrable in the packaged source test.",
+          "mode": "automated",
+          "checks": [
+            "ATR-P0-005-T1"
+          ]
+        },
+        {
+          "id": "ATR-P0-005-AC2",
+          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "mode": "manual",
+          "checks": [
+            "ATR-P0-005-M1"
+          ]
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "ATR-P0-001-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Packaged test for Reconcile unified Atrium baseline into one source tree",
+      "runner_ref": "atrium-p0-source-unit",
+      "assertions": [
+        "Reconcile unified Atrium baseline into one source tree has source-asserted behavior and negative test coverage."
+      ],
+      "test_ref": "tests/test_unified_spec.py"
+    },
+    {
+      "id": "ATR-P0-001-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator acceptance for Reconcile unified Atrium baseline into one source tree",
+      "instructions": "Verify the package is offered only to ZipRunner project atrium and review the overlay against the README-only GitHub main before any push."
+    },
+    {
+      "id": "ATR-P0-002-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Packaged test for Pin DAPI and ZipRunner validation tooling",
+      "runner_ref": "atrium-p0-source-unit",
+      "assertions": [
+        "Pin DAPI and ZipRunner validation tooling has source-asserted behavior and negative test coverage."
+      ],
+      "test_ref": "tests/test_release_pipeline.py"
+    },
+    {
+      "id": "ATR-P0-002-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator acceptance for Pin DAPI and ZipRunner validation tooling",
+      "instructions": "Run GitHub Actions after importing source and confirm pinned DAPI CLI, smoke test and official ZipRunner validator complete successfully."
+    },
+    {
+      "id": "ATR-P0-003-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Packaged test for Add reproducible build and source safety regressions",
+      "runner_ref": "atrium-p0-source-unit",
+      "assertions": [
+        "Add reproducible build and source safety regressions has source-asserted behavior and negative test coverage."
+      ],
+      "test_ref": "tests/test_spec_validation.py"
+    },
+    {
+      "id": "ATR-P0-003-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator acceptance for Add reproducible build and source safety regressions",
+      "instructions": "Run Python and Node tests under trusted ZipRunner recipe, reproduce the artifact SHA-256 locally and review generated files."
+    },
+    {
+      "id": "ATR-P0-005-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Packaged test for Preserve architecture, roadmap and task identity",
+      "runner_ref": "atrium-p0-source-unit",
+      "assertions": [
+        "Preserve architecture, roadmap and task identity has source-asserted behavior and negative test coverage."
+      ],
+      "test_ref": "tests/test_release_pipeline.py"
+    },
+    {
+      "id": "ATR-P0-005-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator acceptance for Preserve architecture, roadmap and task identity",
+      "instructions": "Review historic 0.2 task IDs and P0 new IDs in ZipRunner; ensure no completed/approved tasks are overwritten."
+    }
+  ]
+}

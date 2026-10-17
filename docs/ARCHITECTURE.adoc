@@ -1,0 +1,98 @@
+= Atrium — Shared Looprd Component Architecture
+:revnumber: 0.3.0
+:toc: left
+
+== Product and specification boundary
+
+`Atrium` is a provisional application ecosystem product name. `looprd/v1` is a
+specification implemented by `pac-labs/dapi`. `Tavi` is a separate social client
+that may embed the app browser or show links. The browser at `web/` is a
+standalone static frontend. No project should treat DAPI or Looprd as a brand.
+
+== Single project and single runtime component
+
+The authoritative root is `looprd.yaml` (`component: atrium`, `requires: [spec.includes]`).
+Nested YAML under `modules/` uses DAPI import fragments; it does not make distinct
+DAPI components, separate databases, separate auth realms, or independent
+release lifecycles. A source index entry references ONLY this root file.
+`pac-labs/dapi` docs/specification-imports.md governs this behavior.
+
+[plantuml,atrium-architecture,svg]
+----
+@startuml
+rectangle "Web portal / Tavi AppHost" as clients
+rectangle "DAPI runtime (Looprd spec)" as runtime {
+ rectangle "atrium /v1" as main {
+  rectangle "registry" as reg
+  rectangle "arcade + Staff policy" as arc
+  rectangle "game engines (Checkers first)" as games
+ }
+}
+rectangle "Existing Social service" as social
+clients --> main
+main ..> social : future verified principal adapter
+@enduml
+----
+
+== Repository ownership
+
+One existing repository, `TheBigTreeInc/atrium` (currently only README on main), and one
+ZipRunner recipe `project.zr` (`project_key: atrium`). Source trees are modular:
+
+* `modules/registry/looprd.yaml`: shared application and publisher index.
+* `modules/arcade/looprd.yaml`: lounges, tables, matches, Staff policy metadata.
+* `modules/games/checkers/looprd.yaml`: first game's handlers and data models.
+* `src/*.py`: canonical reusable pure game and policy engines.
+* `src/game_contract.py` and `src/checkers_adapter.py`: source-first common engine protocol, replay and checkers implementation.
+* `web/` + `src/apphost.mjs`: independent portal and sandboxed extension loader.
+* `docs/yahoo-games-catalog.*`: porting research, not playable releases.
+* `examples/sources.*.yaml`: examples only; no machine config or credentials.
+
+== Game scaling model
+
+All games share: principals, lobbies, table types, invitations, scoring receipts,
+rank rules, Staff identity/exclusion, replay contracts, stateless rules interface,
+asset metadata, and client UI host protocol. New game engines should implement a
+versioned shared interface for state initialization, action validation, transition,
+legal actions, scoring, serialization, Staff move decision and replay. Games should
+be data-driven when possible; adding every new game as a new schema/table/route
+should not be required. Nested imports permit code organization, not automatic
+unbounded growth. DAPI currently enforces 64 imported files, eight levels and
+1 MiB total assembled YAML; feature families or compiled fragments avoid that limit.
+
+== Security and Staff
+
+Display label: `Staff`; internal type `staff_bot`, not a real employee/moderator.
+Every staff identity must be clearly described as computer-controlled; it is
+ineligible for friendship and DMs. Human-only and ranked tables never gain Staff.
+Only permitted casual tables are populated, subject to configurable budgets and
+human-first admission. A future runtime actor must enforce this server-side.
+
+The current auth.mode database scopes are an operator-only development boundary,
+not user authentication. The subsequent pass must implement verified Social
+principals safely without forwarding arbitrary Social secrets, then apply
+per-player table membership checks and unauthorized observer filters. Do not expose
+private matches via broad CRUD/subscriptions merely because a key has a read scope.
+
+The web AppHost currently supports SHA-256 checked HTML in a sandboxed iframe and
+has no authenticated parent bridge. Hash checking is integrity, not publisher
+signature verification. Signed, versioned asset hosting under the API origin is
+planned, not yet implemented. Tavi must not become a phone or an app installer.
+
+== Release and deployment
+
+ZipRunner handles a source ZIP as one project. Publishing Git commits, updating the
+node's DAPI sources index, deploying source changes or migrations, and enabling
+trusted Python handlers require explicit operator controls. Rollback of a YAML
+candidate does not revert a committed SQL migration. Project state and credentials
+must remain outside source packages. Repeatable build/test steps validate all
+nested fragments and generated handlers before managed installation.
+
+== Next passes
+
+. Introduce verified Social realm and scoped player identity handoff.
+. Build authoritative table join/leave, private seat validation and turn storage.
+. Add shared game action interface, result reconciliation, and Staff agents.
+. Build dynamic consented app catalog, publisher review and API-based asset hosting.
+. Integrate Tavi dynamically without bundling per-game app clients.
+. Extend rules and UI for the wider researched Yahoo Games catalog.

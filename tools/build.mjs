@@ -1,0 +1,10 @@
+import {rm,mkdir,copyFile,readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const out=path.join(root,'dist');await rm(out,{recursive:true,force:true});await mkdir(path.join(out,'src'),{recursive:true});
+for(const file of ['index.html','main.mjs','catalog.json'])await copyFile(path.join(root,'web',file),path.join(out,file));
+await copyFile(path.join(root,'src','apphost.mjs'),path.join(out,'src','apphost.mjs'));
+const entry = await readFile(path.join(out,'main.mjs'),'utf8');
+await (await import('node:fs/promises')).writeFile(path.join(out,'main.mjs'),entry.replace("from '../src/apphost.mjs'","from './src/apphost.mjs'"));
+console.log('static web output at dist/ (not deployed)');

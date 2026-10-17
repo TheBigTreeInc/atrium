@@ -1,0 +1,50 @@
+= atrium Engineering Standard
+:doctype: article
+:toc:
+
+== Purpose
+Keep the project understandable to humans and coding agents, reduce regression risk, and prevent legacy complexity from growing unchecked.
+
+== Source shape
+* Target authored source files at 400 lines or fewer; 500 lines is a hard review threshold.
+* Existing oversized files are recorded as debt and follow a no-growth ratchet.
+* Target functions at 40 lines or fewer and review functions over 80 lines.
+* Split by cohesive domain responsibility; avoid dumping-ground modules.
+
+== Change design
+* One bounded purpose per change.
+* Material architecture, persistence, API, workflow, or security changes update `DESIGN.adoc`.
+* Record important decisions with context, alternatives, consequences, migration, and rollback.
+* Extend an accepted architecture instead of adding a silent parallel path.
+
+== Regression discipline
+* Defects require regression tests; new behavior requires acceptance and failure-path tests.
+* Use characterization tests before refactoring legacy behavior.
+* Run focused tests, the full suite, and fresh-package validation.
+
+== Dependencies
+* Prefer the standard library and existing dependencies.
+* New dependencies require a concrete benefit, maintenance assessment, and simple setup.
+* Generated, vendored, and runtime data are excluded from source audits and packages.
+
+== Agent context
+`AGENTS.md` is the entry point. `INSTRUCT.md`, `DESIGN.adoc`, `PROJECT_PLAN.adoc`, `CODING.md`, and `TESTING.md` remain authoritative for their domains.
+
+== Self-help improvement loop
+* ZipRunner converts measured legacy debt into a global rolling window of Suggested engineering passes.
+* Review/characterization comes before extraction; broad rewrites are prohibited.
+* Generated passes remain operator-gated and never move to To do automatically.
+* A later audit may prove implementation evidence, but only Manager/QA-approved completed work enters operator Review and only passed operator checks mark it Done.
+* Keep at most three generated engineering suggestions visible across all configured projects, normally one per project, while the full debt program remains durable in ZipRunner state.
+
+== Design-bounded automation
+* `DESIGN.adoc` and other authored AsciiDoc design documents are the authority for automatic work.
+* A covered card records the design-document fingerprint and exact section references.
+* A changed design fingerprint invalidates automatic admission until the card is checked again.
+* Missing or conflicting decisions become structured decision gaps on only the affected card; the current bounded run skips that card and may continue independent covered work.
+* Automatic work may design, admit, dispatch, revise, collect, and obtain Manager/QA approval when the per-project policy is enabled.
+* Approved completed work stops in operator Review with observable test instructions. Passing all checks marks Done; failed checks automatically resume bounded development with the operator's note.
+* Automation cannot make product decisions, confirm operator tests, apply, push, tag, publish, or release.
+
+== Machine-readable policy
+`ziprunner.quality.json` contains the thresholds, rolling improvement settings, design-boundary requirements, and regression rules used by ZipRunner's non-destructive audit.

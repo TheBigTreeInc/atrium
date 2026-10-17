@@ -1,0 +1,230 @@
+= Atrium: Implementation Plan and Dependency Workboard
+:revnumber: 0.3-draft
+:revdate: 2026-10-17
+:toc: left
+:toclevels: 3
+:sectnums:
+
+== Decision record and current state
+
+Product name `Atrium` is provisional. `Looprd` is the component specification, `pac-labs/dapi` is the runtime, `TheBigTreeInc/social` owns Social and the Tavi client. Public label for automated players is `Staff`, with internal actor kind `staff_bot`. It must be apparent on inspecting the profile or table that Staff is computer-controlled. Staff is not a Social friend, human moderator, or platform administrator.
+
+The authoritative intended source repository is `https://github.com/TheBigTreeInc/atrium`, with *one* ZipRunner project key `atrium`. As checked on 2026-10-17, its GitHub main branch contains only a README; the previously generated local `atrium-0.2.0-ziprunner.zip` is an unmerged source candidate, not a deployed service. Do not mark earlier locally reported source tests or build results as production verification.
+
+The initial DAPI root component is `component: atrium` at `looprd.yaml` with `requires: [spec.includes]` and nested fragments under `modules/`. Per DAPI's documented import semantics, fragments share authentication, database, API prefix, migration history, and reload lifecycle. This is *one* server component, not a dynamically created component per game. Import constraints: at most 64 files in the tree, eight levels, and 1 MiB combined UTF-8 content. Do not use an include as an untrusted executable plugin loader.
+
+The repository and ZipRunner project may house numerous pure rules implementations, client apps, manifests, tests and generator inputs. External publisher game servers, if needed, run independently behind approved service contracts; registering an external endpoint never causes its Python/server source to run in the DAPI process.
+
+== Architecture and authority boundaries
+
+[plantuml,architecture,svg]
+----
+@startuml
+actor Publisher
+rectangle "Atrium portal (GitHub Pages or static host)" as web
+rectangle "Tavi (independent Social client)" as tavi
+rectangle "Atrium AppHost / browser SDK" as host
+rectangle "DAPI / Looprd component 'atrium'" as dapi {
+  rectangle "registry + publisher review" as apps
+  rectangle "arcade, rooms, matches, Staff" as arcade
+  rectangle "shared rules/turn engine" as games
+}
+rectangle "Existing Social component" as social
+rectangle "Approved client assets / API-domain gateway" as assets
+rectangle "External publisher server (optional)" as external
+Publisher --> apps : submit/version/review
+web --> host
+tavi --> host
+host --> apps : discover approved version
+host --> arcade : authorized match actions
+host --> assets : fetch immutable client version
+arcade --> games
+arcade ..> social : identity grant / notifications contract
+arcade ..> external : authenticated game endpoint
+@enduml
+----
+
+=== API, runtime and asset boundary
+
+* DAPI handles API, durable SQL, verified authentication, bounded jobs, WebSocket events and component reload. Do not implement generic infrastructure a second time.
+* Atrium owns application rows, publishing decisions, tables, participants, ratings, Staff population, engine routing, immutable game release references and business authorization.
+* Social owns human accounts, sessions, friends, DMs, push devices and the Tavi messenger. Atrium must never copy Social passwords or send Social session credentials to arbitrary games.
+* AppHost owns the limited capabilities made available to a mounted app, not Social sessions or native OS privileges. Tavi is a frontend, not an app-store platform.
+* GitHub Pages can serve the static portal. A *versioned, pinned* asset gateway on the API origin is desired for Tavi's dynamic library. DAPI's expiring file-invitation/download service is unsuitable for permanent executable assets. Implement a reviewed static gateway/proxy or upstream endpoint extension before claiming API-served dynamic modules are live.
+* A game published externally can use an isolated HTTPS application entrypoint and a reviewed backend endpoint. Publication does not grant code execution or arbitrary network proxying on DAPI.
+
+=== Important single-component auth constraint
+
+DAPI applies the *root component auth mode* across generated routes. A `verified` Atrium component should not accidentally expose an unauthenticated writable registry. Public discovery can initially use a static approved catalog snapshot or a purpose-designed read-only guest capability verified server-side. If public anonymous GET inside an otherwise verified component is required, establish a supported upstream route-scoping contract or use a deliberately separate read-only DAPI facade (still in the same Atrium GitHub/ZipRunner project). Do not weaken write authorization to make the catalog public.
+
+=== Runtime code and scaling constraint
+
+DAPI's trusted Python handlers are declared as inline handler source in composed specifications, and dependencies are provided by its runtime image. Atrium's build pipeline may *generate reviewed handler source* from internal Python modules and validate the composed YAML. It may not assume arbitrary Python files in GitHub become importable automatically on the DAPI host. Games using compiled data/rule bundles require a fixed audited engine interpreter. One ASGI worker remains the current DAPI constraint; implement load-test gates before Pool/Towers real-time ambitions.
+
+== Release map and critical path
+
+Every pass is one *source update to the same ZipRunner project `atrium`*. The proposed versions are planning labels; not evidence of releases. Promote only after source/build tests, DAPI candidate validation, operator-gated deployment, and live functional checks.
+
+[cols="1,2,3,3",options="header"]
+|===
+| Pass | Outcome | Depends on | Exit criterion
+| P0 / 0.3.0 | Import and harden the unified baseline | Existing v0.2 source; GitHub repo | First validated single-project source ZIP in Git; DAPI candidate composes; tests and workboard complete
+| P1 / 0.4.0 | Registry and publication model | P0 | Reviewed game versions discoverable; draft cannot launch; immutable/disable paths tested
+| P2 / 0.5.0 | Trusted Social identity | P0, P1, Social contract | Distinct authenticated users receive game-scoped grants; revoked user cannot act; no shared Social tokens
+| P3 / 0.6.0 | Full Checkers match end-to-end | P2 | Two humans play and reconnect through authoritative state, including result and replay
+| P4 / 0.7.0 | Yahoo-style lounges and Staff | P3 | Staff joins only eligible tables; human-only and ranked remain bot-free; Staff never friends/DMs
+| P5 / 0.8.0 | Portable AppHost, web and Tavi | P1-P4, asset delivery | Newly published approved client appears and opens in browser/Tavi without a client rebuild
+| P6 / 0.9.0 | Third-party publisher flow | P1, P5 | Separately hosted, approved game registers and is revoked without DAPI code reload
+| P7 / 1.0.0 | Operations, security and public pilot | All preceding | Repeatable restore, load/abuse checks, rollback plan, launch acceptance and metrics
+| Post-1.0 | Yahoo port waves and new apps | Platform acceptance | Each new title meets evidence, rules, accessibility and real-game test gates
+|===
+
+First complete *vertical slice* is P3: start Checkers, join from two browsers, make legal moves, recover from disconnect, finish, and persist results. This should precede large-scale game porting or storefront visuals.
+
+== P0 — Baseline import and build discipline (target 0.3.0)
+
+* `ATR-P0-001` Bootstrap one GitHub repository, one `project.zr`, existing package import, `README`, license and coherent workboard. Reconcile the earlier v0.2 code with the Git branch before overlay; no forced history or database replacement.
+* `ATR-P0-002` Pin tested DAPI and ZipRunner spec references. Run `python -m looprd validate looprd.yaml` against composed fragments, use official ZipRunner package validator, preserve optional `ziprunner.looprd.json` integrity and full v2.3 verification metadata.
+* `ATR-P0-003` Add deterministic build/code-generation pipeline with hash stability, strict handler bundling, schema limits, `npm` and Python test suites and GitHub Actions. Validate local and GitHub source with the same commands.
+* `ATR-P0-004` Establish private staging deployment/sources registration and migration baseline. No credentials in Git, ZIPs or client artifacts. Check DAPI hot reload and offline retained generation without changing Social.
+* `ATR-P0-005` Consolidate AsciiDoc design, game-port catalog and stable workboard IDs. Identify historical sourcing confidence and third-party rights review per game.
+
+P0 acceptance: clean checkout builds; all generated source and DAPI fragments validate; one disposable DAPI runtime activates `atrium`; source ZIP roundtrips through ZipRunner and preserves protected files; live activation is recorded separately from ZipRunner build success.
+
+== P1 — Application registry and release model (target 0.4.0)
+
+* `ATR-101` Define `atrium.app/v1` manifest with stable `appId`, kind, publisher, name, visibility, icons/screenshots, version, client type, asset reference + digest, backend descriptor, minimum SDK, capabilities, permissions and localized strings. Publish JSON Schema and negative tests.
+* `ATR-102` Model `Publisher`, `App`, `AppVersion`, `Endpoint`, `Submission`, `ReviewDecision`, `Entitlement` and immutable release audit, using migrations and invariant checks. Enforce unique IDs and monotonic version transitions.
+* `ATR-103` Implement submission state machine: draft -> validation -> review -> published / rejected / disabled. Publisher ownership proof, reviewer privileges, service endpoint verification, immutable approved version, signed/hash-checked bundle identity, release tombstoning and rollback-to-previous-reviewed-version.
+* `ATR-104` Provide `/apps`, `/apps/{id}`, `/apps/{id}/versions`, `/publisher/submissions` (proposed custom API routes) and a read-only discovery projection; do not expose generic CRUD writes on public publishing tables. Add filter/pagination, category and compatibility querying.
+* `ATR-105` Durable catalog-change events, snapshot/replay and cache invalidation. No client may derive publisher privilege from a manifest value or upload.
+* `ATR-106` First-party game manifests (Checkers + stub catalog entries) plus one non-game application fixture proving registry is not game-only.
+
+P1 acceptance: submit -> review -> publish -> discover -> disable succeeds; unauthorized submission/approval and invalid endpoints are rejected; running clients never see unapproved artifacts; restart preserves versions and audit.
+
+== P2 — Social identity and permission bridge (target 0.5.0)
+
+* `ATR-201` Agree explicit short-lived, audience-scoped *game grant* issuance/verification with Social. User authenticates to Social; Social signs/issues a game credential for the selected DAPI origin/component and the permitted scopes. Do not forward normal Social bearer tokens into games or third-party services. Expiry, nonce, replay resistance and revocation must be specified.
+* `ATR-202` Implement DAPI verified principal adapter using authoritative game-grant verification, stable `realm/subject`, session expiry, user/scopes, auditable failure handling. Preserve separate management/operator authority.
+* `ATR-203` Central authorization policy for join/leave/play/spectate/chat/invite/ranking/publisher review; server checks table membership and row visibility on every action and event. Apply least-privilege access to private table events and replay.
+* `ATR-204` Provide a client SDK session broker used by browser and Tavi, with account switching, refresh, logout, revocation and no unsafe credential persistence.
+* `ATR-205` Keep Tavi's existing operator-curated public `game_catalog` as compatibility/fallback until its `tavi.game-catalog/v1` adapter reads approved Atrium entries. Eliminate duplicated authoritative catalogs only after client parity.
+
+P2 acceptance: stolen/mismatched grants, revoked sessions, cross-account reads, alternate realm, audience confusion and publisher escalation are rejected; real same-account browser/Tavi sessions work with no second password prompt.
+
+== P3 — Reusable game lifecycle and playable Checkers (target 0.6.0)
+
+* `ATR-301` Stable engine API: discover metadata, initial state, serialize, legal actions, transition, win/draw/forfeit, timeout, replay, Staff action. Version each rules implementation and bind matches to a pinned engine version.
+* `ATR-302` Generic `Room`, `Table`, `Seat`, `Match`, `Move`, `Result`, `EventCursor`, `RatingReceipt` storage and lifecycle with transactional state transitions. Avoid dedicated model/schema per ordinary game.
+* `ATR-303` Authoritative match API, optimistic revision or row lock, idempotency keys, player turn identity and validation, immutable replay log, bounded payloads and reconnect snapshots.
+* `ATR-304` DAPI durable WebSocket delivery and HTTP replay/snapshot for game events. Rejoin after network drop, missed event, reload and expired cursor; do not double-apply moves.
+* `ATR-305` Integrate Checkers rules and UI in the shared game adapter; compulsory captures, chained jumps, promotion, resignation, stalemate/timeout and result scoring must use verified fixtures.
+* `ATR-306` Browser-playable two-human end-to-end smoke, concurrency tests for simultaneous turns, result persistence and spectator redaction. Provide a one-command local test harness and disposable DAPI configuration.
+
+P3 acceptance: two actual clients finish a Checkers game while deliberately disconnecting one client; both converge to the same replay/state; duplicate/out-of-turn/forged actions fail; a result is committed once.
+
+== P4 — Arcade lobby, Staff and multiplayer policies (target 0.7.0)
+
+* `ATR-401` Yahoo-style game selection -> lounge -> table list -> seated table -> spectator flow, including private/password tables, table settings, chat using permitted Social channel integration, human-host controls, timers and table ownership.
+* `ATR-402` Synthetic identity type `staff_bot` with public badge `STAFF` and clear profile disclosure "Computer-controlled Staff player". This is distinct from human operators/moderators; it gets no DAPI management privileges.
+* `ATR-403` Server-side Staff admission policy by game, lounge, table mode, current human activity, per-lounge occupancy budget, wait time, difficulty and per-table toggles; prefer human opponents; do not fill every table.
+* `ATR-404` Hard social exclusions: no friendship, contact request, DMs, follower-style interactions or social account impersonation for Staff. Enforce on Social and Atrium APIs rather than relying only on hidden UI buttons.
+* `ATR-405` Staff move adapter/difficulty profiles with deterministic seeded fixtures, timeouts and safe fallbacks; no server CPU-starving search inside the ASGI event loop.
+* `ATR-406` Ranked, tournament and human-only modes exclude Staff unless an explicitly separate bot classification/ranking is defined. Store `staffPresent` in results and exclude those matches from human-only competitive rankings by default.
+
+P4 acceptance: a low-population casual lounge contains a controlled mix of staffed, empty and human-only tables; two real users can displace/avoid Staff according to policy; race tests cannot get a Staff seat into forbidden modes; Social friend/DM APIs reject Staff identities.
+
+== P5 — API-delivered AppHost and clients (target 0.8.0)
+
+* `ATR-501` Shared `@atrium/app-sdk` and `@atrium/game-sdk`, semver/protocol negotiation, typed permission bridge, launch handles, deep links and graceful unsupported-feature states.
+* `ATR-502` Immutable versioned asset distribution plan on API origin: signed publisher version and SHA-256 digest, CSP/MIME rules, immutable cache headers, digest-verifying loader, asset rollback and revocation; if DAPI core cannot serve static modules, use a hardened reverse-proxy asset service under the same API hostname or implement an upstream-reviewed extension.
+* `ATR-503` AppHost with sandboxed iframe for external apps, minimal `postMessage` bridge with exact origin, nonce, capability allowlist and interaction consent. Trusted first-party JS modules may use audited signed ES-module loading but never receive raw Social tokens or blanket Tauri/OS APIs.
+* `ATR-504` Responsive standalone Atrium portal, GitHub Pages workflow, app discovery, detail views, Play, rooms, friends via Social, accessibility and localization baseline.
+* `ATR-505` Thin Tavi integration in the existing `TheBigTreeInc/social` repository and *its own existing ZipRunner project*, not a new Atrium project: use existing `game_catalog` compatibility endpoint and compact game webview; switch source of approved entries to Atrium after tests.
+* `ATR-506` Cross-platform static web, Windows Tavi and Android smoke. Load newly approved app without recompilation; revoke and block already-disabled versions on the next policy check. No phone shell, native app installer or unrelated Tavi admin panel.
+
+P5 acceptance: publish one reviewed client version, open it on GitHub-hosted web and Tavi, and update to another version without a Tavi rebuild; an unapproved module cannot read Social secrets, invoke native commands or silently open arbitrary endpoints.
+
+== P6 — Independent publishers and externally hosted games (target 0.9.0)
+
+* `ATR-601` Publisher application/ownership challenge, roles, quotas, review queue, abuse response and suspension process; differentiate publisher admin from platform operator and Social friend permissions.
+* `ATR-602` Endpoint challenge plus HTTPS, domain/allowlist, redirect, DNS rebinding/SSRF and private-network rejection; trusted backend adapters use server-side scopes and timeouts.
+* `ATR-603` Approved external game backend protocol `atrium.game/v1` (describe, create, join, action, state snapshot, event/replay, finish) with version negotiation and signed service-to-service identity. Remote endpoints must not receive platform secrets or user passwords.
+* `ATR-604` CI publishing CLI/action from external repositories submits a *proposal* and artifacts; requires approval and provenance verification, never direct privileged auto-publish by possession of a GitHub URL.
+* `ATR-605` Revocation, incident disable, immutable match/version references, loss-of-publisher endpoint behavior and network failure degradation.
+* `ATR-606` Demonstrate one independently hosted test game and one non-game app across browser and Tavi without changes to Atrium's core source tree.
+
+P6 acceptance: register external test app, approve, play, update, suspend and revoke with no DAPI Python loading or Atrium source/deploy change; SSRF and permission test suite passes.
+
+== P7 — Operations and release readiness (target 1.0.0)
+
+* `ATR-701` Operations dashboard for game health, active tables, rule versions, Staff budgets, event lag, catalog submissions, errors and bug reports. Use existing DAPI diagnostics/reporting and operator grants rather than embedding an admin key into any client.
+* `ATR-702` Load test real-time games against one ASGI worker (latency, CPU, sockets, SQL locks, fanout, backpressure). Document practical capacity and split resource-heavy engines only when measurements require it.
+* `ATR-703` Security and privacy checks: login revocation, private data, app sandbox, malicious manifests, signatures, permissions, moderation, PII retention and incident response.
+* `ATR-704` Backups, restore drill, catalog/artifact rollback, database migration review, staged DAPI reload, no automatic data deletion and secrets rotation.
+* `ATR-705` Packaging and docs: source ZIP/interchange validator, CI provenance, AsciiDoc/API/SDK docs, reproducible distribution and operator acceptance artifacts.
+* `ATR-706` Accessibility, performance and device QA; moderation and abuse protections; licenses/trademarks/artwork authorization for Yahoo-inspired remakes and historical reference materials.
+
+P7 acceptance: staging-to-production promotion is operator-approved with a rollback/restore plan and preserved data; documented functional/security/load acceptance passes; incident disable works while ongoing matches are treated consistently.
+
+== Game-porting roadmap beyond first Checkers vertical slice
+
+Game catalog entries are research candidates, not blanket claims of original ownership or mechanics verified. Each game requires original-versus-modern rule evidence, rights/licensing review, UI behavior specification, engine compatibility, deterministic tests and manual comparison. Reuse generic capabilities by mechanic family.
+
+[cols="1,2,3",options="header"]
+|===
+| Wave | Candidate games | New shared capabilities
+| G1 / classic deterministic | Chess, Reversi, Backgammon, Dominoes | turn timers, special move rules, dice, draws, clock and resign handling
+| G2 / card and social tables | Hearts, Spades, Euchre, Gin, Cribbage, Poker variants | private hands, shuffles, bids, tricks, round scoring, partner teams
+| G3 / signature Yahoo games | Literati, Word Racer, Graffiti, Towers | dictionaries, timed grids, sketch stream, power-ups, fast repeated actions
+| G4 / physics and remaining catalog | Pool, other researched titles, original games | deterministic collision/physics, latency/interpolation, engine-specific load boundaries
+|===
+
+Each game is registered as data/versioned engine metadata. Only genuinely novel server behavior should introduce new trusted source handlers. New apps unrelated to games use the same Atrium publisher manifest but do not need an Arcade table.
+
+== Dependencies outside Atrium and change ownership
+
+[cols="1,3,3",options="header"]
+|===
+| Project | Integration obligation | Change policy
+| `pac-labs/dapi` | Existing spec.includes, verified principals, durable events, push, operator actions; possible static module gateway / public-catalog auth extension | Make an upstream issue/PR *only* if a tested missing capability is identified; separate runtime release and review
+| `TheBigTreeInc/social` | Scoped grants, game catalog compatibility, Staff exclusion, Tavi AppHost and notifications | Use existing Social/Tavi repository and ZipRunner project; no secret forwarding
+| `TheBigTreeInc/atrium` | All app-store, Arcade, Staff, rules engine, registry, SDK, static portal, publishing contracts | One repository, one ZipRunner project, one initial DAPI component with nested fragments
+| External publisher repos | Signed releases, manifests, optional independent game services | May have their own CI/project; not part of Atrium's ZipRunner intake
+|===
+
+== Stable workboard practice and checks
+
+The stable IDs above are proposed Atrium roadmap IDs; they are not reported as implemented. Track them in source-controlled `docs/WORKBOARD.json` or an import-compatible planner once source exists. For *each* delivery, create mandatory `.ziprunner-workboard-update.json` with only actually implemented tasks, source/test evidence and meaningful operator checks. Include `ziprunner-manifest.json`, `ziprunner-verification-plan.json`, optional `ziprunner.looprd.json` and direct-download SHA-256 handoff. A passing source test does not close the work item; independent QA/operator approval must reconcile the same task ID. Never send a metadata-only pseudo-source ZIP as if it were a completed release.
+
+CI pyramid: static JSON Schema, DAPI imported spec CLI, generated handler syntax/unit tests, engine property tests, SQLite transaction tests, API auth negative tests, WebSocket replay, real two-client integration, browser/Tavi UI, staging deployment and load/security checks. Link each test to the original acceptance criterion. Never declare unrun production or Windows/Android validation passed.
+
+== Risks and gates
+
+[cols="2,2,3",options="header"]
+|===
+| Risk | Impact | Gate/mitigation
+| Root verified auth blocks truly public catalog | Launch discovery mismatch | Static approved snapshot or tested guest-facade design before live onboarding
+| Untrusted publisher endpoint or module | Token theft, SSRF, native privilege escalation | Origin sandbox, consent, digest/signature, endpoint proof, no privileged client bridge
+| DAPI source imports used for every game | 64-file/1 MiB limit; unsafe deploy coupling | Data-driven games, compiled trusted module family, externally isolated servers when necessary
+| Local handler modules not importable in DAPI | False deployment confidence | Build/inline reviewed handler code and validate exact composed source with pinned DAPI
+| One worker and CPU-intensive Staff/physics | Lobby latency, dropped sockets | Process-offload bounded work and realistic load tests before fast-action releases
+| Social and Atrium duplicate accounts/catalog | Broken identity, inconsistent approval | Social as identity authority; Atrium as app catalog authority; explicit compatible bridge
+| Game versions modified during active play | Corrupt results/replays | Immutable rules hash and pinned match version; no silent mutation
+| SQL schema changes | Irreversible migration on rollback | Staging restore, additive migrations, operator gate; never assume image rollback rewinds database
+| Staff misrepresented as employees or humans | Deception and untrusted friend behavior | `STAFF` badge plus computer-controlled explanation; prevent Social friend/DM access server-side
+|===
+
+== Immediate next build scope
+
+Recommended first single ZipRunner pass is `atrium` v0.3.0 with `ATR-P0-001` through `ATR-P0-005` only. Put the current unified 0.2.0 implementation under version control, reconcile source changes, add official DAPI/ZipRunner validators, establish a repeatable single-source build and a disposable DAPI smoke run. Do not expand the roadmap into premature game-specific ZIPs or deploy user-authenticated registration before the Social grant contract is approved.
+
+== References checked on 2026-10-17
+
+* https://github.com/TheBigTreeInc/atrium
+* https://github.com/pac-labs/dapi/blob/main/docs/specification-imports.md
+* https://github.com/pac-labs/dapi/blob/main/docs/platform-reference.md
+* https://github.com/pac-labs/dapi/blob/main/docs/push-and-sync.md
+* https://github.com/pac-labs/ziprunner-spec
+* https://github.com/TheBigTreeInc/social/blob/main/docs/JAVASCRIPT_CLIENT.adoc
+

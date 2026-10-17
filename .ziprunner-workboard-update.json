@@ -1,0 +1,48 @@
+{
+  "schema": "ziprunner.workboard-update.v1",
+  "project": "atrium",
+  "version": "0.3.0",
+  "summary": "P0 v0.3.0: first single-project source update; consolidated baseline, pinned GitHub CI, strict import checks, deterministic packaging and roadmap, no automatic deployment.",
+  "implemented": [
+    {
+      "id": "ATR-P0-001",
+      "title": "Reconcile unified Atrium baseline into one source tree",
+      "summary": "Unified v0.2 prototype preserved in one v0.3 package; remote Git import not yet performed.",
+      "operator_checks": [
+        "Verify the package is offered only to ZipRunner project atrium and review the overlay against the README-only GitHub main before any push."
+      ]
+    },
+    {
+      "id": "ATR-P0-002",
+      "title": "Pin DAPI and ZipRunner validation tooling",
+      "summary": "Locked upstream SHAs and added GitHub workflow for DAPI semantic validation and official ZIP format checks; workflow not yet executed.",
+      "operator_checks": [
+        "Run GitHub Actions after importing source and confirm pinned DAPI CLI, smoke test and official ZipRunner validator complete successfully."
+      ]
+    },
+    {
+      "id": "ATR-P0-003",
+      "title": "Add reproducible build and source safety regressions",
+      "summary": "Added duplicate-key/import-limit negative tests, clean web build verification and deterministic source ZIP packaging.",
+      "operator_checks": [
+        "Run Python and Node tests under trusted ZipRunner recipe, reproduce the artifact SHA-256 locally and review generated files."
+      ]
+    },
+    {
+      "id": "ATR-P0-005",
+      "title": "Preserve architecture, roadmap and task identity",
+      "summary": "Included original research catalog, implementation roadmap, updated AsciiDoc and an explicit task ID collision-resolution note.",
+      "operator_checks": [
+        "Review historic 0.2 task IDs and P0 new IDs in ZipRunner; ensure no completed/approved tasks are overwritten."
+      ]
+    }
+  ],
+  "remaining": [
+    {
+      "id": "ATR-P0-004",
+      "title": "Import to Git and verify disposable live DAPI activation",
+      "summary": "Commit/push source with operator approval, run pinned GitHub CI, perform real ZipRunner intake and inspect disposable DAPI activation and API behavior.",
+      "priority": "high"
+    }
+  ]
+}

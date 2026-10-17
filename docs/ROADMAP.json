@@ -1,0 +1,435 @@
+{
+  "schema": "atrium.workplan/v1",
+  "project": "atrium",
+  "sourceRepository": "https://github.com/TheBigTreeInc/atrium",
+  "baseline": "P0 v0.3.0 source-update candidate; repo main held README only at generation",
+  "created": "2026-10-17",
+  "status": "planning_only",
+  "important": "Planning backlog, not ZipRunner update or verified completion",
+  "passes": [
+    {
+      "id": "P0",
+      "title": "Baseline import and build discipline",
+      "targetVersion": "0.3.0",
+      "tasks": [
+        {
+          "id": "ATR-P0-001",
+          "title": "Bootstrap one GitHub repository, one `project.zr`, existing package import, `README`, license and coherent workboard",
+          "description": "Bootstrap one GitHub repository, one `project.zr`, existing package import, `README`, license and coherent workboard. Reconcile the earlier v0.2 code with the Git branch before overlay; no forced history or database replacement.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-P0-002",
+          "title": "Pin tested DAPI and ZipRunner spec references",
+          "description": "Pin tested DAPI and ZipRunner spec references. Run `python -m looprd validate looprd.yaml` against composed fragments, use official ZipRunner package validator, preserve optional `ziprunner.looprd.json` integrity and full v2.3 verification metadata.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-P0-003",
+          "title": "Add deterministic build/code-generation pipeline with hash stability, strict handler bundling, schema limits, `npm` and Python test suites and GitHub Actions",
+          "description": "Add deterministic build/code-generation pipeline with hash stability, strict handler bundling, schema limits, `npm` and Python test suites and GitHub Actions. Validate local and GitHub source with the same commands.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-P0-004",
+          "title": "Establish private staging deployment/sources registration and migration baseline",
+          "description": "Establish private staging deployment/sources registration and migration baseline. No credentials in Git, ZIPs or client artifacts. Check DAPI hot reload and offline retained generation without changing Social.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-P0-005",
+          "title": "Consolidate AsciiDoc design, game-port catalog and stable workboard IDs",
+          "description": "Consolidate AsciiDoc design, game-port catalog and stable workboard IDs. Identify historical sourcing confidence and third-party rights review per game.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    },
+    {
+      "id": "P1",
+      "title": "Application registry and release model",
+      "targetVersion": "0.4.0",
+      "tasks": [
+        {
+          "id": "ATR-101",
+          "title": "Define `atrium.app/v1` manifest with stable `appId`, kind, publisher, name, visibility, icons/screenshots, version, client type, asset reference + digest, backend descriptor, minimum SDK, capabilities, permissions and localized strings",
+          "description": "Define `atrium.app/v1` manifest with stable `appId`, kind, publisher, name, visibility, icons/screenshots, version, client type, asset reference + digest, backend descriptor, minimum SDK, capabilities, permissions and localized strings. Publish JSON Schema and negative tests.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-102",
+          "title": "Model `Publisher`, `App`, `AppVersion`, `Endpoint`, `Submission`, `ReviewDecision`, `Entitlement` and immutable release audit, using migrations and invariant checks",
+          "description": "Model `Publisher`, `App`, `AppVersion`, `Endpoint`, `Submission`, `ReviewDecision`, `Entitlement` and immutable release audit, using migrations and invariant checks. Enforce unique IDs and monotonic version transitions.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-103",
+          "title": "Implement submission state machine: draft -> validation -> review -> published / rejected / disabled",
+          "description": "Implement submission state machine: draft -> validation -> review -> published / rejected / disabled. Publisher ownership proof, reviewer privileges, service endpoint verification, immutable approved version, signed/hash-checked bundle identity, release tombstoning and rollback-to-previous-reviewed-version.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-104",
+          "title": "Provide `/apps`, `/apps/{id}`, `/apps/{id}/versions`, `/publisher/submissions` (proposed custom API routes) and a read-only discovery projection; do not expose generic CRUD writes on public publishing tables",
+          "description": "Provide `/apps`, `/apps/{id}`, `/apps/{id}/versions`, `/publisher/submissions` (proposed custom API routes) and a read-only discovery projection; do not expose generic CRUD writes on public publishing tables. Add filter/pagination, category and compatibility querying.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-105",
+          "title": "Durable catalog-change events, snapshot/replay and cache invalidation",
+          "description": "Durable catalog-change events, snapshot/replay and cache invalidation. No client may derive publisher privilege from a manifest value or upload.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-106",
+          "title": "First-party game manifests (Checkers + stub catalog entries) plus one non-game application fixture proving registry is not game-only.",
+          "description": "First-party game manifests (Checkers + stub catalog entries) plus one non-game application fixture proving registry is not game-only.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    },
+    {
+      "id": "P2",
+      "title": "Social identity and permission bridge",
+      "targetVersion": "0.5.0",
+      "tasks": [
+        {
+          "id": "ATR-201",
+          "title": "Agree explicit short-lived, audience-scoped *game grant* issuance/verification with Social",
+          "description": "Agree explicit short-lived, audience-scoped *game grant* issuance/verification with Social. User authenticates to Social; Social signs/issues a game credential for the selected DAPI origin/component and the permitted scopes. Do not forward normal Social bearer tokens into games or third-party services. Expiry, nonce, replay resistance and revocation must be specified.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-202",
+          "title": "Implement DAPI verified principal adapter using authoritative game-grant verification, stable `realm/subject`, session expiry, user/scopes, auditable failure handling",
+          "description": "Implement DAPI verified principal adapter using authoritative game-grant verification, stable `realm/subject`, session expiry, user/scopes, auditable failure handling. Preserve separate management/operator authority.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-203",
+          "title": "Central authorization policy for join/leave/play/spectate/chat/invite/ranking/publisher review; server checks table membership and row visibility on every action and event",
+          "description": "Central authorization policy for join/leave/play/spectate/chat/invite/ranking/publisher review; server checks table membership and row visibility on every action and event. Apply least-privilege access to private table events and replay.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-204",
+          "title": "Provide a client SDK session broker used by browser and Tavi, with account switching, refresh, logout, revocation and no unsafe credential persistence.",
+          "description": "Provide a client SDK session broker used by browser and Tavi, with account switching, refresh, logout, revocation and no unsafe credential persistence.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-205",
+          "title": "Keep Tavi's existing operator-curated public `game_catalog` as compatibility/fallback until its `tavi.game-catalog/v1` adapter reads approved Atrium entries",
+          "description": "Keep Tavi's existing operator-curated public `game_catalog` as compatibility/fallback until its `tavi.game-catalog/v1` adapter reads approved Atrium entries. Eliminate duplicated authoritative catalogs only after client parity.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    },
+    {
+      "id": "P3",
+      "title": "Reusable game lifecycle and playable Checkers",
+      "targetVersion": "0.6.0",
+      "tasks": [
+        {
+          "id": "ATR-301",
+          "title": "Stable engine API: discover metadata, initial state, serialize, legal actions, transition, win/draw/forfeit, timeout, replay, Staff action",
+          "description": "Stable engine API: discover metadata, initial state, serialize, legal actions, transition, win/draw/forfeit, timeout, replay, Staff action. Version each rules implementation and bind matches to a pinned engine version.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-302",
+          "title": "Generic `Room`, `Table`, `Seat`, `Match`, `Move`, `Result`, `EventCursor`, `RatingReceipt` storage and lifecycle with transactional state transitions",
+          "description": "Generic `Room`, `Table`, `Seat`, `Match`, `Move`, `Result`, `EventCursor`, `RatingReceipt` storage and lifecycle with transactional state transitions. Avoid dedicated model/schema per ordinary game.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-303",
+          "title": "Authoritative match API, optimistic revision or row lock, idempotency keys, player turn identity and validation, immutable replay log, bounded payloads and reconnect snapshots.",
+          "description": "Authoritative match API, optimistic revision or row lock, idempotency keys, player turn identity and validation, immutable replay log, bounded payloads and reconnect snapshots.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-304",
+          "title": "DAPI durable WebSocket delivery and HTTP replay/snapshot for game events",
+          "description": "DAPI durable WebSocket delivery and HTTP replay/snapshot for game events. Rejoin after network drop, missed event, reload and expired cursor; do not double-apply moves.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-305",
+          "title": "Integrate Checkers rules and UI in the shared game adapter; compulsory captures, chained jumps, promotion, resignation, stalemate/timeout and result scoring must use verified fixtures.",
+          "description": "Integrate Checkers rules and UI in the shared game adapter; compulsory captures, chained jumps, promotion, resignation, stalemate/timeout and result scoring must use verified fixtures.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-306",
+          "title": "Browser-playable two-human end-to-end smoke, concurrency tests for simultaneous turns, result persistence and spectator redaction",
+          "description": "Browser-playable two-human end-to-end smoke, concurrency tests for simultaneous turns, result persistence and spectator redaction. Provide a one-command local test harness and disposable DAPI configuration.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    },
+    {
+      "id": "P4",
+      "title": "Arcade lobby, Staff and multiplayer policies",
+      "targetVersion": "0.7.0",
+      "tasks": [
+        {
+          "id": "ATR-401",
+          "title": "Yahoo-style game selection -> lounge -> table list -> seated table -> spectator flow, including private/password tables, table settings, chat using permitted Social channel integration, human-host controls, timers and table ownership.",
+          "description": "Yahoo-style game selection -> lounge -> table list -> seated table -> spectator flow, including private/password tables, table settings, chat using permitted Social channel integration, human-host controls, timers and table ownership.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-402",
+          "title": "Synthetic identity type `staff_bot` with public badge `STAFF` and clear profile disclosure \"Computer-controlled Staff player\"",
+          "description": "Synthetic identity type `staff_bot` with public badge `STAFF` and clear profile disclosure \"Computer-controlled Staff player\". This is distinct from human operators/moderators; it gets no DAPI management privileges.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-403",
+          "title": "Server-side Staff admission policy by game, lounge, table mode, current human activity, per-lounge occupancy budget, wait time, difficulty and per-table toggles; prefer human opponents; do not fill every table.",
+          "description": "Server-side Staff admission policy by game, lounge, table mode, current human activity, per-lounge occupancy budget, wait time, difficulty and per-table toggles; prefer human opponents; do not fill every table.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-404",
+          "title": "Hard social exclusions: no friendship, contact request, DMs, follower-style interactions or social account impersonation for Staff",
+          "description": "Hard social exclusions: no friendship, contact request, DMs, follower-style interactions or social account impersonation for Staff. Enforce on Social and Atrium APIs rather than relying only on hidden UI buttons.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-405",
+          "title": "Staff move adapter/difficulty profiles with deterministic seeded fixtures, timeouts and safe fallbacks; no server CPU-starving search inside the ASGI event loop.",
+          "description": "Staff move adapter/difficulty profiles with deterministic seeded fixtures, timeouts and safe fallbacks; no server CPU-starving search inside the ASGI event loop.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-406",
+          "title": "Ranked, tournament and human-only modes exclude Staff unless an explicitly separate bot classification/ranking is defined",
+          "description": "Ranked, tournament and human-only modes exclude Staff unless an explicitly separate bot classification/ranking is defined. Store `staffPresent` in results and exclude those matches from human-only competitive rankings by default.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    },
+    {
+      "id": "P5",
+      "title": "API-delivered AppHost and clients",
+      "targetVersion": "0.8.0",
+      "tasks": [
+        {
+          "id": "ATR-501",
+          "title": "Shared `@atrium/app-sdk` and `@atrium/game-sdk`, semver/protocol negotiation, typed permission bridge, launch handles, deep links and graceful unsupported-feature states.",
+          "description": "Shared `@atrium/app-sdk` and `@atrium/game-sdk`, semver/protocol negotiation, typed permission bridge, launch handles, deep links and graceful unsupported-feature states.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-502",
+          "title": "Immutable versioned asset distribution plan on API origin: signed publisher version and SHA-256 digest, CSP/MIME rules, immutable cache headers, digest-verifying loader, asset rollback and revocation; if DAPI core cannot serve static modules, use a hardened reverse-proxy asset service under the same API hostname or implement an upstream-reviewed extension.",
+          "description": "Immutable versioned asset distribution plan on API origin: signed publisher version and SHA-256 digest, CSP/MIME rules, immutable cache headers, digest-verifying loader, asset rollback and revocation; if DAPI core cannot serve static modules, use a hardened reverse-proxy asset service under the same API hostname or implement an upstream-reviewed extension.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-503",
+          "title": "AppHost with sandboxed iframe for external apps, minimal `postMessage` bridge with exact origin, nonce, capability allowlist and interaction consent",
+          "description": "AppHost with sandboxed iframe for external apps, minimal `postMessage` bridge with exact origin, nonce, capability allowlist and interaction consent. Trusted first-party JS modules may use audited signed ES-module loading but never receive raw Social tokens or blanket Tauri/OS APIs.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-504",
+          "title": "Responsive standalone Atrium portal, GitHub Pages workflow, app discovery, detail views, Play, rooms, friends via Social, accessibility and localization baseline.",
+          "description": "Responsive standalone Atrium portal, GitHub Pages workflow, app discovery, detail views, Play, rooms, friends via Social, accessibility and localization baseline.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-505",
+          "title": "Thin Tavi integration in the existing `TheBigTreeInc/social` repository and *its own existing ZipRunner project*, not a new Atrium project: use existing `game_catalog` compatibility endpoint and compact game webview; switch source of approved entries to Atrium after tests.",
+          "description": "Thin Tavi integration in the existing `TheBigTreeInc/social` repository and *its own existing ZipRunner project*, not a new Atrium project: use existing `game_catalog` compatibility endpoint and compact game webview; switch source of approved entries to Atrium after tests.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-506",
+          "title": "Cross-platform static web, Windows Tavi and Android smoke",
+          "description": "Cross-platform static web, Windows Tavi and Android smoke. Load newly approved app without recompilation; revoke and block already-disabled versions on the next policy check. No phone shell, native app installer or unrelated Tavi admin panel.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    },
+    {
+      "id": "P6",
+      "title": "Independent publishers and externally hosted games",
+      "targetVersion": "0.9.0",
+      "tasks": [
+        {
+          "id": "ATR-601",
+          "title": "Publisher application/ownership challenge, roles, quotas, review queue, abuse response and suspension process; differentiate publisher admin from platform operator and Social friend permissions.",
+          "description": "Publisher application/ownership challenge, roles, quotas, review queue, abuse response and suspension process; differentiate publisher admin from platform operator and Social friend permissions.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-602",
+          "title": "Endpoint challenge plus HTTPS, domain/allowlist, redirect, DNS rebinding/SSRF and private-network rejection; trusted backend adapters use server-side scopes and timeouts.",
+          "description": "Endpoint challenge plus HTTPS, domain/allowlist, redirect, DNS rebinding/SSRF and private-network rejection; trusted backend adapters use server-side scopes and timeouts.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-603",
+          "title": "Approved external game backend protocol `atrium.game/v1` (describe, create, join, action, state snapshot, event/replay, finish) with version negotiation and signed service-to-service identity",
+          "description": "Approved external game backend protocol `atrium.game/v1` (describe, create, join, action, state snapshot, event/replay, finish) with version negotiation and signed service-to-service identity. Remote endpoints must not receive platform secrets or user passwords.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-604",
+          "title": "CI publishing CLI/action from external repositories submits a *proposal* and artifacts; requires approval and provenance verification, never direct privileged auto-publish by possession of a GitHub URL.",
+          "description": "CI publishing CLI/action from external repositories submits a *proposal* and artifacts; requires approval and provenance verification, never direct privileged auto-publish by possession of a GitHub URL.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-605",
+          "title": "Revocation, incident disable, immutable match/version references, loss-of-publisher endpoint behavior and network failure degradation.",
+          "description": "Revocation, incident disable, immutable match/version references, loss-of-publisher endpoint behavior and network failure degradation.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-606",
+          "title": "Demonstrate one independently hosted test game and one non-game app across browser and Tavi without changes to Atrium's core source tree.",
+          "description": "Demonstrate one independently hosted test game and one non-game app across browser and Tavi without changes to Atrium's core source tree.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    },
+    {
+      "id": "P7",
+      "title": "Operations and release readiness",
+      "targetVersion": "1.0.0",
+      "tasks": [
+        {
+          "id": "ATR-701",
+          "title": "Operations dashboard for game health, active tables, rule versions, Staff budgets, event lag, catalog submissions, errors and bug reports",
+          "description": "Operations dashboard for game health, active tables, rule versions, Staff budgets, event lag, catalog submissions, errors and bug reports. Use existing DAPI diagnostics/reporting and operator grants rather than embedding an admin key into any client.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-702",
+          "title": "Load test real-time games against one ASGI worker (latency, CPU, sockets, SQL locks, fanout, backpressure)",
+          "description": "Load test real-time games against one ASGI worker (latency, CPU, sockets, SQL locks, fanout, backpressure). Document practical capacity and split resource-heavy engines only when measurements require it.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-703",
+          "title": "Security and privacy checks: login revocation, private data, app sandbox, malicious manifests, signatures, permissions, moderation, PII retention and incident response.",
+          "description": "Security and privacy checks: login revocation, private data, app sandbox, malicious manifests, signatures, permissions, moderation, PII retention and incident response.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-704",
+          "title": "Backups, restore drill, catalog/artifact rollback, database migration review, staged DAPI reload, no automatic data deletion and secrets rotation.",
+          "description": "Backups, restore drill, catalog/artifact rollback, database migration review, staged DAPI reload, no automatic data deletion and secrets rotation.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-705",
+          "title": "Packaging and docs: source ZIP/interchange validator, CI provenance, AsciiDoc/API/SDK docs, reproducible distribution and operator acceptance artifacts.",
+          "description": "Packaging and docs: source ZIP/interchange validator, CI provenance, AsciiDoc/API/SDK docs, reproducible distribution and operator acceptance artifacts.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        },
+        {
+          "id": "ATR-706",
+          "title": "Accessibility, performance and device QA; moderation and abuse protections; licenses/trademarks/artwork authorization for Yahoo-inspired remakes and historical reference materials.",
+          "description": "Accessibility, performance and device QA; moderation and abuse protections; licenses/trademarks/artwork authorization for Yahoo-inspired remakes and historical reference materials.",
+          "status": "planned",
+          "sourceEvidence": [],
+          "acceptance": "See corresponding pass exit criterion in AsciiDoc"
+        }
+      ]
+    }
+  ]
+}

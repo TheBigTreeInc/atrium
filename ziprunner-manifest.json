@@ -1,0 +1,199 @@
+{
+  "schema": "ziprunner.update-manifest/v1",
+  "spec_version": "1.0.0",
+  "project": {
+    "key": "atrium",
+    "version": "0.3.0",
+    "base_version": "0.2.0"
+  },
+  "update": {
+    "id": "ATR-P0-20261017-001",
+    "kind": "source_update",
+    "created_at": "2026-10-17T16:17:00+02:00",
+    "summary": "One ZipRunner project with source baseline P0 hardening; no deployment or Git push."
+  },
+  "planned_work": [
+    {
+      "id": "ATR-P0-001",
+      "title": "Reconcile unified Atrium baseline into one source tree",
+      "acceptance_criteria": "Source and tests demonstrate reconcile unified atrium baseline into one source tree; target ZipRunner/DAPI/Git acceptance must be separately observed.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-P0-002",
+      "title": "Pin DAPI and ZipRunner validation tooling",
+      "acceptance_criteria": "Source and tests demonstrate pin dapi and ziprunner validation tooling; target ZipRunner/DAPI/Git acceptance must be separately observed.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-P0-003",
+      "title": "Add reproducible build and source safety regressions",
+      "acceptance_criteria": "Source and tests demonstrate add reproducible build and source safety regressions; target ZipRunner/DAPI/Git acceptance must be separately observed.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-P0-005",
+      "title": "Preserve architecture, roadmap and task identity",
+      "acceptance_criteria": "Source and tests demonstrate preserve architecture, roadmap and task identity; target ZipRunner/DAPI/Git acceptance must be separately observed.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-P0-004",
+      "title": "Import to Git and verify disposable live DAPI activation",
+      "acceptance_criteria": "GitHub import, official CI and real disposable DAPI activation observed; no prod writes.",
+      "priority": "high"
+    }
+  ],
+  "done_work": [
+    {
+      "id": "ATR-P0-001",
+      "summary": "Unified v0.2 prototype preserved in one v0.3 package; remote Git import not yet performed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tests/test_unified_spec.py",
+          "description": "Packaged automated regression coverage"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P0_DELIVERY.adoc",
+          "description": "Source-delivery and operator checks documented"
+        }
+      ]
+    },
+    {
+      "id": "ATR-P0-002",
+      "summary": "Locked upstream SHAs and added GitHub workflow for DAPI semantic validation and official ZIP format checks; workflow not yet executed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Packaged automated regression coverage"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P0_DELIVERY.adoc",
+          "description": "Source-delivery and operator checks documented"
+        }
+      ]
+    },
+    {
+      "id": "ATR-P0-003",
+      "summary": "Added duplicate-key/import-limit negative tests, clean web build verification and deterministic source ZIP packaging.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tests/test_spec_validation.py",
+          "description": "Packaged automated regression coverage"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P0_DELIVERY.adoc",
+          "description": "Source-delivery and operator checks documented"
+        }
+      ]
+    },
+    {
+      "id": "ATR-P0-005",
+      "summary": "Included original research catalog, implementation roadmap, updated AsciiDoc and an explicit task ID collision-resolution note.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Packaged automated regression coverage"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P0_DELIVERY.adoc",
+          "description": "Source-delivery and operator checks documented"
+        }
+      ]
+    }
+  ],
+  "todo_work": [
+    {
+      "id": "ATR-P0-004",
+      "status": "review",
+      "next_action": "Commit/push source with operator approval, run pinned GitHub CI, perform real ZipRunner intake and inspect disposable DAPI activation and API behavior.",
+      "blockers": [
+        "Operator-controlled Git import and remote CI/DAPI execution not performed in source authoring environment."
+      ]
+    }
+  ],
+  "validation": {
+    "model_reported": "partial",
+    "checks": [
+      {
+        "id": "P0-PY",
+        "description": "Local Python unit tests including negative include cases",
+        "status": "passed",
+        "command": "python -m unittest discover -s tests -v",
+        "environment": "local Linux Python 3.11+/PyYAML 6.0.3",
+        "evidence_ref": "evidence/P0_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "P0-NODE",
+        "description": "Local Node tests, browser build and built artifact verification",
+        "status": "passed",
+        "command": "npm test && npm run build && npm run verify",
+        "environment": "local Node.js",
+        "evidence_ref": "evidence/P0_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "P0-DAPI",
+        "description": "Pinned upstream DAPI validation and staging startup",
+        "status": "not_run",
+        "reason": "DAPI upstream source/CLI unavailable locally; GitHub CI and operator must execute."
+      },
+      {
+        "id": "P0-ZR",
+        "description": "Official ZipRunner v2.3 package validation and target intake",
+        "status": "not_run",
+        "reason": "Pinned upstream validator and target ZipRunner were not available in local container."
+      },
+      {
+        "id": "P0-GIT",
+        "description": "Commit/push to TheBigTreeInc/atrium and GitHub Actions",
+        "status": "not_run",
+        "reason": "User/operator must authorize Git actions; repository main only contained README."
+      }
+    ]
+  },
+  "handover": {
+    "next_pass": "Import package into atrium, review and commit/push, execute pinned CI with DAPI disposable smoke; then P1 versioned registry implementation.",
+    "risks": [
+      "DAPI semantic validation not yet observed with upstream toolchain.",
+      "One operator-scoped DAPI component is not an anonymous public catalog or Social player API.",
+      "Nested game handler is source-only, not authoritative multiplayer."
+    ],
+    "blockers": [
+      "Remote CI and live activation require approved source import and target DAPI environment."
+    ],
+    "notes": [
+      "No passwords, tokens, database rows or operator approvals in ZIP.",
+      "Previously delivered v0.2 IDs ATR-001..004 are not repurposed; see docs/TASK_ID_COMPATIBILITY.adoc."
+    ]
+  },
+  "operator_actions": [
+    {
+      "id": "P0-IMPORT",
+      "description": "Review ZipRunner import into atrium and approve Git source commit/push separately",
+      "status": "required"
+    },
+    {
+      "id": "P0-VALIDATE",
+      "description": "Run GitHub Actions pinned upstream validators, then disposable real DAPI activation",
+      "status": "required"
+    },
+    {
+      "id": "P0-RELEASE",
+      "description": "Assess Work board verification evidence; decide release and activation independently",
+      "status": "required"
+    }
+  ],
+  "release": {
+    "requested": false,
+    "requires_operator_approval": true,
+    "notes": "Source package is not deployed and is awaiting operator review."
+  }
+}

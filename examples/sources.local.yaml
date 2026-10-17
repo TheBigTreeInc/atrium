@@ -1,0 +1,7 @@
+# Merge this one entry into your node's existing sources list after operator review.
+# Local paths resolve relative to the sources file, adjust for your deployment.
+apiVersion: looprd/v1
+components:
+  - id: atrium
+    specification: ../looprd.yaml
+    enabled: true

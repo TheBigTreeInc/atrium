@@ -1,0 +1,2 @@
+# Local source tooling only. DAPI runtime dependencies are managed by pac-labs/dapi.
+PyYAML==6.0.3

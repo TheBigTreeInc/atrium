@@ -1,0 +1,45 @@
+Atrium P0 v0.3.0 local source verification — 2026-10-17
+Author-side observations only; not ZipRunner/CI or live deployment verification.
+Python: Python 3.13.5
+Node: v22.16.0
+PyYAML: 6.0.3
+
+$ python tools/build_spec.py --check
+Checkers fragment matches canonical Python source
+$ python tools/check_specs.py
+Atrium composition: one component, 6 resources, 6 models, 5 handlers (source lint)
+$ python -m unittest discover -s tests -v
+
+----------------------------------------------------------------------
+Ran 40 tests in 1.406s
+
+OK
+Atrium composition: one component, 6 resources, 6 models, 5 handlers (source lint)
+Atrium composition: one component, 6 resources, 6 models, 5 handlers (source lint)
+$ npm test
+  ---
+  duration_ms: 1.144499
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 111.45913
+$ npm run build
+
+> atrium@0.3.0 build
+> node tools/build.mjs
+
+static web output at dist/ (not deployed)
+$ npm run verify
+
+> atrium@0.3.0 verify
+> node tools/verify_web.mjs
+
+Verified standalone static portal artifacts (no deployment implied)
+Not run: official DAPI CLI, official ZipRunner validator, GitHub Actions, live ZipRunner intake, live DAPI activation.

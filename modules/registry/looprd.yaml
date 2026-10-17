@@ -1,0 +1,115 @@
+models:
+  App:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      appId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      title:
+        type: string
+        required: true
+        maxLength: 160
+      publisher:
+        type: string
+        required: true
+        maxLength: 120
+      category:
+        type: string
+        required: true
+        maxLength: 48
+      version:
+        type: string
+        required: true
+        maxLength: 48
+      status:
+        type: string
+        required: true
+        maxLength: 32
+      manifest:
+        type: json
+        required: true
+  RegisteredEndpoint:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      endpointId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      appId:
+        type: string
+        required: true
+        maxLength: 120
+      origin:
+        type: string
+        required: true
+        maxLength: 512
+      capabilities:
+        type: json
+        required: true
+      enabled:
+        type: boolean
+        required: true
+resources:
+  apps:
+    model: App
+    path: /apps
+    operations:
+    - list
+    - get
+    - create
+    - update
+    permissions:
+      list:
+      - apps:read
+      get:
+      - apps:read
+      create:
+      - apps:publish
+      update:
+      - apps:publish
+  endpoints:
+    model: RegisteredEndpoint
+    path: /endpoints
+    operations:
+    - list
+    - get
+    - create
+    - update
+    permissions:
+      list:
+      - apps:read
+      get:
+      - apps:read
+      create:
+      - apps:publish
+      update:
+      - apps:publish
+websocket:
+  resources:
+  - apps
+  - endpoints
+  permissions:
+    apps:
+    - apps:events
+    endpoints:
+    - apps:events
+handlers:
+- path: /registry/info
+  kind: response
+  response:
+    service: apps
+    contract: atrium.registry/v1
+    status: prototype
+    publicCatalog: false
+    publisherManagement: operator_scoped
+    note: Social verified-principal delegation and public read-only catalog are future
+      gates.

@@ -1,0 +1,48 @@
+= atrium Design
+:doctype: article
+:toc:
+
+== Goal
+Describe the product goal, users, data boundaries, and first useful build target.
+
+== System overview
+Describe the major parts of the application, their responsibilities, and how they communicate.
+
+[cols="1,2,2",options="header"]
+|===
+|Component |Purpose |Notes
+|UI / Client |User-facing interaction |Define screens, routes, status areas, and error handling.
+|Backend / Service |Business logic and APIs |Define API contracts and persistence boundaries.
+|Storage / Runtime data |Local or server-side state |Must stay outside source publish unless explicitly reviewed.
+|CI / Release |Builds and publishes artifacts |Prefer CI-built containers/software over local publish.
+|===
+
+== Data boundaries
+Document every runtime/private data directory here and whether ZipRunner should protect it from overlay and source publish.
+
+== Update flow
+. Apply source zip into a local project folder.
+. Run local build/test/start commands.
+. Capture only build-passed source.
+. Publish source through a clean Git checkout.
+. Let CI build/publish artifacts.
+. Run manual/gated deploy or restart steps.
+
+== Automation authority
+* Authored sections in this document are the boundary for automated design and implementation.
+* Every automated action must cite the exact governing document and section.
+* Agents must not invent a product, architecture, persistence, API, workflow, data, or safety decision.
+* When a required decision is missing or conflicts with this design, stop only the affected scope, record the question under Open decisions, and identify independent work that remains safe to continue.
+* Manager/QA approval moves completed work into operator Review; it does not mark the work Done.
+* Operator Review contains observable tests with expected results. Only the operator may confirm those tests and close the task as Done.
+* Failed operator tests return the same task to bounded development with recorded direction; missing design decisions block only the affected scope.
+* Apply, push, tag, publish, and release remain explicit operator gates.
+
+== Open decisions
+Record unresolved decisions here with affected scope, available options, consequences, and the role authorized to decide. An unresolved decision is not permission to choose a default silently.
+
+== Architecture decisions
+Record material decisions with context, alternatives, consequences, migration, and rollback notes.
+
+== API documentation
+If the project exposes an API, maintain `openapi.yaml` or `openapi.yml`. Agents should inspect OpenAPI before changing endpoints, clients, or generated API types.

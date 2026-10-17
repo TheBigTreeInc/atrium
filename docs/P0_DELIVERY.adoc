@@ -1,0 +1,65 @@
+= Atrium P0 / v0.3.0 — First source package
+:toc: left
+
+== Boundary
+
+This is one source-update ZIP for the new Git repository `TheBigTreeInc/atrium`
+and existing ZipRunner identity `atrium`. Its DAPI identity is `component: atrium`
+and the nested files are *fragments*, not standalone components.
+
+== Delivered in this source pass
+
+* `ATR-P0-001`: imported/reconciled the prior unified v0.2.0 source candidate
+  into a clean portable v0.3.0 source tree. GitHub main was README-only at
+  preparation time; no remote commit has been performed.
+* `ATR-P0-002`: pinned SHA references for DAPI and ZipRunner spec, with upstream
+  validators in GitHub Actions; validation needs an actual CI run.
+* `ATR-P0-003`: repeatable build checks; stricter YAML import linter and negative
+  tests; deterministic ZIP producer and static build verification.
+* `ATR-P0-005`: retained Atrium architecture, Yahoo research catalog, roadmap and
+  explicit task ID compatibility.
+
+== Pending
+
+* `ATR-P0-004`: operator-reviewed Git import and disposable DAPI runtime
+  activation. CI, real ZipRunner intake, and live staging status must be
+  recorded independently and must not be marked passed merely because static
+  tests pass here.
+
+== Local quick checks
+
+[source,shell]
+----
+python -m pip install -r requirements-dev.txt
+python tools/build_spec.py --check
+python tools/check_specs.py
+python -m unittest discover -s tests -v
+npm test
+npm run build
+npm run verify
+python tools/package_zip.py
+----
+
+== Official platform acceptance in CI
+
+The GitHub workflow checks out pinned upstream versions and runs:
+
+[source,shell]
+----
+python -m looprd validate looprd.yaml
+python -m looprd validate examples/sources.local.yaml --sources
+python tools/smoke_dapi.py
+python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.3.0-ziprunner.zip --expected-project atrium --require-verification-plan
+----
+
+These commands require the upstream source/checkouts; no bundled validator is
+falsely presented as upstream DAPI or ZipRunner. The disposable smoke uses a
+temporary data directory, a single component, and no production secrets.
+
+== Activation / release distinction
+
+Installing this ZIP through ZipRunner is source overlay, not automatic DAPI
+activation, schema migration, Git commit or release approval. The operator
+must explicitly review the Git changes, validate the real DAPI component,
+register the source after a safe backup, and observe the running API. Production
+Social/Tavi integration and dynamic app publishing are future milestones.

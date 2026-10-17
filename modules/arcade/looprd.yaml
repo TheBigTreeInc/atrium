@@ -1,0 +1,156 @@
+models:
+  Lounge:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      loungeId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      gameId:
+        type: string
+        required: true
+        maxLength: 120
+      label:
+        type: string
+        required: true
+        maxLength: 160
+      access:
+        type: string
+        required: true
+        maxLength: 32
+  GameTable:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      tableId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      loungeId:
+        type: string
+        required: true
+        maxLength: 120
+      gameId:
+        type: string
+        required: true
+        maxLength: 120
+      title:
+        type: string
+        required: true
+        maxLength: 160
+      capacity:
+        type: integer
+        required: true
+      staffPolicy:
+        type: string
+        required: true
+        maxLength: 32
+      tableState:
+        type: string
+        required: true
+        maxLength: 40
+      settings:
+        type: json
+        required: true
+  GameRecord:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      matchId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      tableId:
+        type: string
+        required: true
+        maxLength: 120
+      gameId:
+        type: string
+        required: true
+        maxLength: 120
+      status:
+        type: string
+        required: true
+        maxLength: 32
+      result:
+        type: json
+resources:
+  lounges:
+    model: Lounge
+    path: /lounges
+    operations:
+    - list
+    - get
+    - create
+    - update
+    permissions:
+      list:
+      - arcade:read
+      get:
+      - arcade:read
+      create:
+      - arcade:operator
+      update:
+      - arcade:operator
+  tables:
+    model: GameTable
+    path: /tables
+    operations:
+    - list
+    - get
+    - create
+    - update
+    permissions:
+      list:
+      - arcade:read
+      get:
+      - arcade:read
+      create:
+      - arcade:operator
+      update:
+      - arcade:operator
+  records:
+    model: GameRecord
+    path: /records
+    operations:
+    - list
+    - get
+    - create
+    permissions:
+      list:
+      - arcade:read
+      get:
+      - arcade:read
+      create:
+      - arcade:operator
+websocket:
+  resources:
+  - lounges
+  - tables
+  - records
+  permissions:
+    lounges:
+    - arcade:events
+    tables:
+    - arcade:events
+    records:
+    - arcade:events
+handlers:
+- path: /arcade/info
+  kind: response
+  response:
+    service: arcade
+    contract: atrium.arcade/v1
+    status: prototype
+    staffDisplayLabel: Staff
+    playerAuth: pending_social_verifier

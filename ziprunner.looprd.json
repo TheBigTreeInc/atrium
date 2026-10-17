@@ -1,0 +1,7 @@
+{
+  "schema": "ziprunner.looprd-link/v1",
+  "project": "atrium",
+  "component": "atrium",
+  "specification": "looprd.yaml",
+  "specification_sha256": "eff7a1e58bfdfe314cb2f93c52b2bfb1708edcb001769de1acf26ef72f3d5474"
+}

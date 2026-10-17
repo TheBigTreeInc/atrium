@@ -1,0 +1,99 @@
+"""American checkers (English draughts), 8x8 board; captures compulsory.
+
+Coordinates (row,column) from 0 to 7. 'r' (red) moves downward; 'b' upward.
+'R' and 'B' are kings. The move is a complete path, including all jumps.
+A man crowned during a jump ends its move immediately (American rules).
+"""
+
+EMPTY = '.'
+PLAYERS = {'r','b'}
+
+def initial_board():
+    return [''.join(('r' if r<3 else 'b' if r>4 else '.') if (r+c)%2 else '.' for c in range(8)) for r in range(8)]
+
+def validate_board(board):
+    if not isinstance(board,list) or len(board)!=8 or any(not isinstance(row,str) or len(row)!=8 for row in board):
+        raise ValueError('board must have eight strings of length eight')
+    for r in range(8):
+        for c in range(8):
+            x=board[r][c]
+            if x not in '.rbRB' or (x!='.' and (r+c)%2==0):
+                raise ValueError('invalid square')
+    return True
+
+def _enemy(a,b):return a.lower()!=b.lower() and a!='.' and b!='.'
+def _dirs(piece):
+    if piece.isupper():return ((1,1),(1,-1),(-1,1),(-1,-1))
+    return ((1,1),(1,-1)) if piece=='r' else ((-1,1),(-1,-1))
+def _in(r,c):return 0<=r<8 and 0<=c<8
+
+def _captures(board, r, c, path=None):
+    """Generate full capture sequences from a piece. Board is an 8x8 mutable array."""
+    piece=board[r][c];path=path or [(r,c)]
+    continuations=[]
+    for dr,dc in _dirs(piece):
+        mr,mc=r+dr,c+dc;rr,cc=r+dr*2,c+dc*2
+        if not _in(rr,cc) or not _enemy(piece,board[mr][mc]) or board[rr][cc]!='.':continue
+        nxt=[row[:] for row in board]
+        nxt[r][c]='.';nxt[mr][mc]='.'
+        crowned=(piece=='r' and rr==7) or (piece=='b' and rr==0)
+        nxt[rr][cc]=piece.upper() if crowned else piece
+        newpath=path+[(rr,cc)]
+        if crowned:
+            continuations.append(newpath)
+        else:
+            rest=_captures(nxt,rr,cc,newpath)
+            continuations.extend(rest or [newpath])
+    return continuations
+
+def legal_moves(board, player):
+    validate_board(board)
+    if player not in PLAYERS:raise ValueError('player must be r or b')
+    matrix=[list(s) for s in board]
+    jumps=[];walks=[]
+    for r in range(8):
+        for c in range(8):
+            p=matrix[r][c]
+            if p=='.' or p.lower()!=player:continue
+            jumps.extend(_captures(matrix,r,c))
+            for dr,dc in _dirs(p):
+                rr,cc=r+dr,c+dc
+                if _in(rr,cc) and matrix[rr][cc]=='.':walks.append([(r,c),(rr,cc)])
+    options=jumps if jumps else walks
+    return [ [[r,c] for r,c in path] for path in sorted(options) ]
+
+def apply_move(board,player,path):
+    moves=legal_moves(board,player)
+    if path not in moves:raise ValueError('illegal or incomplete move')
+    arr=[list(row) for row in board]
+    (r,c)=path[0];piece=arr[r][c];arr[r][c]='.'
+    for nr,nc in path[1:]:
+        if abs(nr-r)==2:
+            arr[(nr+r)//2][(nc+c)//2]='.'
+        r,c=nr,nc
+    if (piece=='r' and r==7) or (piece=='b' and r==0):piece=piece.upper()
+    arr[r][c]=piece
+    result=[''.join(row) for row in arr]
+    opponent='b' if player=='r' else 'r'
+    winner=player if not legal_moves(result,opponent) else None
+    return {'board':result,'turn':None if winner else opponent,'winner':winner}
+
+def staff_move(board,player):
+    """Deterministic baseline, deliberately labeled Staff; replace with ranked AI later."""
+    choices=legal_moves(board,player)
+    return choices[0] if choices else None
+
+async def handle(ctx):
+    """Stateless rules-oracle handler embedded in looprd.yaml at packaging time."""
+    body=ctx.body or {}
+    if not isinstance(body,dict):return {'error':'body must be an object'}
+    board=body.get('board', initial_board())
+    player=body.get('turn','r')
+    try:
+        moves=legal_moves(board,player)
+        if 'path' in body:
+            state=apply_move(board,player,body['path'])
+            return {'valid':True,'state':state,'legalMovesNext':legal_moves(state['board'],state['turn']) if state['turn'] else []}
+        return {'legalMoves':moves,'staffMove':staff_move(board,player)}
+    except (TypeError,ValueError) as exc:
+        return {'valid':False,'error':str(exc)}

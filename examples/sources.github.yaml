@@ -1,0 +1,9 @@
+# Example only: repo must exist and contain the final committed files.
+# Prefer a pinned 40-character commit SHA for rollout validation.
+apiVersion: looprd/v1
+components:
+  - id: atrium
+    repository: https://github.com/TheBigTreeInc/atrium.git
+    ref: main
+    specification: looprd.yaml
+    enabled: true

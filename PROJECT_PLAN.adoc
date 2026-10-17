@@ -1,0 +1,34 @@
+= atrium Project Plan
+:doctype: article
+:toc:
+
+== Product intent
+Describe the product goal, users, data boundaries, and first useful build target.
+
+== Planning rules
+* Planning is advisory and does not implement or approve work.
+* New ideas enter Suggested and require an operator or design-bounded policy decision before To do.
+* ZipRunner owns managed To do → In progress → Manager/QA assessment transitions.
+* Manager/QA is authoritative for technical acceptance and may expose approved completed work to operator Review.
+* The operator tests the installed behavior and alone marks the task Done or sends it back with direction.
+* Keep work items bounded and independently verifiable.
+
+== Current outcome
+Describe the first complete, useful outcome that proves the product direction.
+
+== Milestones
+[cols="1,3,3,2",options="header"]
+|===
+|Milestone |Outcome |Acceptance criteria |State
+|Foundation |Establish the minimum runnable project and documentation |The project starts locally and its purpose is unambiguous |Planned
+|First useful release |Deliver the first user-visible outcome |A user can complete the primary workflow |Suggested
+|===
+
+== Architecture decisions
+Record accepted architecture decisions and the reason for each decision. Use `DESIGN.adoc` for the full system design.
+
+== Risks and open questions
+List uncertainties, data/safety boundaries, dependencies, and decisions that need manager review.
+
+== Roadmap suggestion exchange
+The planning model must return future implementation work in a strict `ZIPRUNNER_ROADMAP_SUGGESTIONS v1` block. ZipRunner imports model-authored work into Suggested only.

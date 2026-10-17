@@ -1,0 +1,15 @@
+= Atrium task ID compatibility
+
+The local v0.2.0 ZipRunner package used stable task IDs ATR-001 (one project),
+ATR-002 (nested specification), ATR-003 (Checkers and Staff), and ATR-004
+(web/AppHost). The subsequent planning draft independently assigned ATR-001
+through ATR-005 to *different* P0 work; these semantic collisions must not
+silently replace prior ZipRunner operator workboard entries.
+
+The P0 v0.3.0 roadmap therefore uses `ATR-P0-001` through `ATR-P0-005`.
+P1 onward retains its unique `ATR-101` etc. IDs. Older v0.2 source evidence is
+preserved in the project, but is *not* converted to operator-verified completion.
+Existing ZipRunner records always remain authoritative for approvals/status.
+
+Any future ID reconciliation needs an explicit human-reviewed mapping, not a
+fresh task claiming previous work as Done.

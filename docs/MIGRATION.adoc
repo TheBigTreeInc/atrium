@@ -1,0 +1,23 @@
+= First unified project migration and safety
+:revnumber: 0.2.0
+
+Do not install the previous `atrium-apps`, `atrium-arcade`, `atrium-checkers`,
+and `atrium-portal` ZIPs after this unified package. The new ZipRunner project
+key is `atrium`; the DAPI component is also `atrium`. ZipRunner matching is exact.
+
+Existing local source directories, separate DAPI components or databases are
+not automatically combined, rewritten, migrated or deleted by this package.
+If earlier components were activated and hold data, back them up and plan an
+explicit operator-controlled migration with old IDs preserved until verified.
+The safe first-pass approach is to create the new `atrium` project alongside
+old source targets without deleting their files or secrets.
+
+DAPI requires `spec.includes` support and exactly one source-index entry for
+this root component. Ensure the runtime image supports the capability BEFORE
+adding a source entry. The source-list update is a separate explicit operator
+action, not a ZipRunner install side effect.
+
+The source file includes nested fragments from a single committed revision.
+Version-controlled publication of an artifact and live activation are separately
+reviewed steps. Avoid registering this example component in a shared production
+runtime until auth and row access controls are suitable for end users.

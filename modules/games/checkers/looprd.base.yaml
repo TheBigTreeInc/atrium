@@ -1,0 +1,39 @@
+models:
+  MatchSnapshot:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      matchId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      state:
+        type: json
+        required: true
+      status:
+        type: string
+        required: true
+        maxLength: 32
+resources:
+  snapshots:
+    model: MatchSnapshot
+    path: /snapshots
+    operations:
+    - list
+    - get
+    permissions:
+      list:
+      - checkers:read
+      get:
+      - checkers:read
+handlers:
+- path: /games/checkers/info
+  kind: response
+  response:
+    gameId: checkers
+    ruleset: american-checkers
+    status: stateless-rules-oracle
+    persistentMatchesEnabled: false

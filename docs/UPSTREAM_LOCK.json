@@ -1,0 +1,13 @@
+{
+  "schema": "atrium.upstream-lock/v1",
+  "date": "2026-10-17",
+  "dapi": {
+    "repository": "pac-labs/dapi",
+    "revision": "1d4d177e0ea8091fcc9f343e187b18dda03d90d6"
+  },
+  "ziprunnerSpec": {
+    "repository": "pac-labs/ziprunner-spec",
+    "revision": "341005206094862853435ad68801be7ff28c4490",
+    "version": "2.3.0"
+  }
+}

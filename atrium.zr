@@ -1,0 +1,20 @@
+{
+  "project_key": "atrium",
+  "display_name": "Atrium \u2014 shared registry and games",
+  "zip_match_patterns": [
+    "atrium-*-ziprunner.zip"
+  ],
+  "build_commands": [
+    "python tools/build_spec.py --check",
+    "python tools/check_specs.py",
+    "python -m unittest discover -s tests -v",
+    "npm test",
+    "npm run build",
+    "npm run verify"
+  ],
+  "start_commands": [],
+  "delete_missing_files": false,
+  "strip_single_root_folder": false,
+  "clean_git_tree": false,
+  "git_auto_push": false
+}
