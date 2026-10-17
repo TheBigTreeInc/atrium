@@ -3,197 +3,203 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.3.0",
-    "base_version": "0.2.0"
+    "version": "0.4.7",
+    "base_version": "0.4.6",
+    "source_revision": "b65b0a2f40e377cf57c66f5e784bdfe57839ed10"
   },
   "update": {
-    "id": "ATR-P0-20261017-001",
+    "id": "ATR-P1-20261017-008",
     "kind": "source_update",
-    "created_at": "2026-10-17T16:17:00+02:00",
-    "summary": "One ZipRunner project with source baseline P0 hardening; no deployment or Git push."
+    "created_at": "2026-10-17T21:16:20+02:00",
+    "summary": "v0.4.7: correct POSIX-only unittest mock path expectations on Windows after v0.4.6 proved registry SQLAlchemy dependencies work."
   },
   "planned_work": [
     {
-      "id": "ATR-P0-001",
-      "title": "Reconcile unified Atrium baseline into one source tree",
-      "acceptance_criteria": "Source and tests demonstrate reconcile unified atrium baseline into one source tree; target ZipRunner/DAPI/Git acceptance must be separately observed.",
+      "id": "ATR-104-PUBLIC",
+      "title": "Generate reviewed public app catalog snapshot",
+      "acceptance_criteria": "From a disposable database approve a game, supply its reviewed hash-named HTML and export to a public static test origin; no API credentials in browser. Corrupt asset, tamper release and confirm no new snapshot replaces the last valid bytes; verify a disabled publisher disappears after next export.",
       "priority": "high"
     },
     {
-      "id": "ATR-P0-002",
-      "title": "Pin DAPI and ZipRunner validation tooling",
-      "acceptance_criteria": "Source and tests demonstrate pin dapi and ziprunner validation tooling; target ZipRunner/DAPI/Git acceptance must be separately observed.",
+      "id": "ATR-103-REVOCATION",
+      "title": "Suspend and restore publishers without deleting releases",
+      "acceptance_criteria": "With apps:approve change active publisher to disabled; check existing releases remain and new catalog hides apps. Confirm wrong/missing scope fails and reactivation restores only still-published apps.",
       "priority": "high"
     },
     {
-      "id": "ATR-P0-003",
-      "title": "Add reproducible build and source safety regressions",
-      "acceptance_criteria": "Source and tests demonstrate add reproducible build and source safety regressions; target ZipRunner/DAPI/Git acceptance must be separately observed.",
+      "id": "ATR-104-PAGING",
+      "title": "Paginate authenticated reviewed-only catalog",
+      "acceptance_criteria": "Request catalog with apps:read, page limit 1, follow next until hasMore false; malformed after and limit return 422.",
       "priority": "high"
     },
     {
-      "id": "ATR-P0-005",
-      "title": "Preserve architecture, roadmap and task identity",
-      "acceptance_criteria": "Source and tests demonstrate preserve architecture, roadmap and task identity; target ZipRunner/DAPI/Git acceptance must be separately observed.",
-      "priority": "high"
-    },
-    {
-      "id": "ATR-P0-004",
-      "title": "Import to Git and verify disposable live DAPI activation",
-      "acceptance_criteria": "GitHub import, official CI and real disposable DAPI activation observed; no prod writes.",
-      "priority": "high"
+      "id": "ATR-104-BUILD",
+      "title": "Align configured legacy ZipRunner recipe with isolated Python checks",
+      "acceptance_criteria": "Both source recipes use protected .venv, stable operator-facing recipe refresh guidance exists, and only a Windows ZipRunner log using setup_build_env.py/run_python_checks.py can validate target fix.",
+      "priority": "critical"
     }
   ],
   "done_work": [
     {
-      "id": "ATR-P0-001",
-      "summary": "Unified v0.2 prototype preserved in one v0.3 package; remote Git import not yet performed.",
+      "id": "ATR-104-PUBLIC",
+      "summary": "Read-only SQLite snapshot exporter requires approved immutable releases and matching local HTML asset hashes; fail-closed atomic output; anonymous static portal consumes validated JSON.",
       "evidence": [
         {
-          "kind": "source",
-          "ref": "tests/test_unified_spec.py",
-          "description": "Packaged automated regression coverage"
+          "kind": "test",
+          "ref": "tests/test_public_export.py",
+          "description": "Local regression test implementation"
         },
         {
           "kind": "documentation",
-          "ref": "docs/P0_DELIVERY.adoc",
-          "description": "Source-delivery and operator checks documented"
+          "ref": "docs/P1_PUBLIC_CATALOG.adoc",
+          "description": "Service boundary and operator checks"
         }
       ]
     },
     {
-      "id": "ATR-P0-002",
-      "summary": "Locked upstream SHAs and added GitHub workflow for DAPI semantic validation and official ZIP format checks; workflow not yet executed.",
+      "id": "ATR-103-REVOCATION",
+      "summary": "Protected publisher status handler publishes transactional catalog invalidation events, hides active publisher games and keeps immutable releases.",
       "evidence": [
         {
-          "kind": "source",
-          "ref": "tests/test_release_pipeline.py",
-          "description": "Packaged automated regression coverage"
+          "kind": "test",
+          "ref": "tests/test_registry_runtime.py",
+          "description": "Local regression test implementation"
         },
         {
           "kind": "documentation",
-          "ref": "docs/P0_DELIVERY.adoc",
-          "description": "Source-delivery and operator checks documented"
+          "ref": "docs/P1_PUBLIC_CATALOG.adoc",
+          "description": "Service boundary and operator checks"
         }
       ]
     },
     {
-      "id": "ATR-P0-003",
-      "summary": "Added duplicate-key/import-limit negative tests, clean web build verification and deterministic source ZIP packaging.",
+      "id": "ATR-104-PAGING",
+      "summary": "Validated after/limit cursor contracts prevent unbounded client pages and preserve reviewed-only projections.",
       "evidence": [
         {
-          "kind": "source",
-          "ref": "tests/test_spec_validation.py",
-          "description": "Packaged automated regression coverage"
+          "kind": "test",
+          "ref": "tests/test_registry_runtime.py",
+          "description": "Local regression test implementation"
         },
         {
           "kind": "documentation",
-          "ref": "docs/P0_DELIVERY.adoc",
-          "description": "Source-delivery and operator checks documented"
+          "ref": "docs/P1_PUBLIC_CATALOG.adoc",
+          "description": "Service boundary and operator checks"
         }
       ]
     },
     {
-      "id": "ATR-P0-005",
-      "summary": "Included original research catalog, implementation roadmap, updated AsciiDoc and an explicit task ID collision-resolution note.",
+      "id": "ATR-104-BUILD",
+      "summary": "Portable native-Path mocks for dependency bridge; tests now match Windows and POSIX path semantics; real SQLAlchemy registry tests preserved.",
       "evidence": [
         {
           "kind": "source",
-          "ref": "tests/test_release_pipeline.py",
-          "description": "Packaged automated regression coverage"
+          "ref": "tools/setup_build_env.py",
+          "description": "Isolated dependency bootstrap used by trusted build recipe"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/run_python_checks.py",
+          "description": "Test runner uses venv interpreter explicitly"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_build_environment.py",
+          "description": "New regression coverage for build recipe, interpreter isolation and packaging protection"
+        },
+        {
+          "kind": "source",
+          "ref": "atrium.zr",
+          "description": "Corrected legacy project recipe: isolated environment setup and venv test runner"
         },
         {
           "kind": "documentation",
-          "ref": "docs/P0_DELIVERY.adoc",
-          "description": "Source-delivery and operator checks documented"
+          "ref": "docs/P1_045_ZR_IMPORT.adoc",
+          "description": "Observed cached recipe failure and exact operator-controlled refresh procedure"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_build_environment.py",
+          "description": "ABI mismatch and missing venv rejection tests"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_build_environment.py",
+          "description": "Cross-platform native path conversion assertions"
         }
       ]
     }
   ],
-  "todo_work": [
-    {
-      "id": "ATR-P0-004",
-      "status": "review",
-      "next_action": "Commit/push source with operator approval, run pinned GitHub CI, perform real ZipRunner intake and inspect disposable DAPI activation and API behavior.",
-      "blockers": [
-        "Operator-controlled Git import and remote CI/DAPI execution not performed in source authoring environment."
-      ]
-    }
-  ],
+  "todo_work": [],
   "validation": {
     "model_reported": "partial",
     "checks": [
       {
-        "id": "P0-PY",
-        "description": "Local Python unit tests including negative include cases",
+        "id": "ATR-P1-047-LOCAL",
+        "description": "Full Python and Node suites, native mock Path checks, deterministic package",
         "status": "passed",
-        "command": "python -m unittest discover -s tests -v",
-        "environment": "local Linux Python 3.11+/PyYAML 6.0.3",
-        "evidence_ref": "evidence/P0_LOCAL_CHECKS.txt"
+        "environment": "Linux Python 3.13.5, SQLAlchemy 2.0.50, PyYAML 6.0.3, Node; Windows ZipRunner import not run",
+        "command": "python -m unittest discover -s tests -v && npm test && npm run build && npm run verify",
+        "evidence_ref": "evidence/P1_047_LOCAL_CHECKS.txt"
       },
       {
-        "id": "P0-NODE",
-        "description": "Local Node tests, browser build and built artifact verification",
-        "status": "passed",
-        "command": "npm test && npm run build && npm run verify",
-        "environment": "local Node.js",
-        "evidence_ref": "evidence/P0_LOCAL_CHECKS.txt"
-      },
-      {
-        "id": "P0-DAPI",
-        "description": "Pinned upstream DAPI validation and staging startup",
+        "id": "ATR-P1-047-WINDOWS",
+        "description": "Live ZipRunner using refreshed active project recipe",
         "status": "not_run",
-        "reason": "DAPI upstream source/CLI unavailable locally; GitHub CI and operator must execute."
+        "reason": "Actual 0.4.7 Windows ZipRunner import pending."
       },
       {
-        "id": "P0-ZR",
-        "description": "Official ZipRunner v2.3 package validation and target intake",
+        "id": "ATR-P1-047-UPSTREAM",
+        "description": "Pinned official DAPI and ZipRunner interchange validators",
         "status": "not_run",
-        "reason": "Pinned upstream validator and target ZipRunner were not available in local container."
-      },
-      {
-        "id": "P0-GIT",
-        "description": "Commit/push to TheBigTreeInc/atrium and GitHub Actions",
-        "status": "not_run",
-        "reason": "User/operator must authorize Git actions; repository main only contained README."
+        "reason": "Official pinned DAPI semantic validation awaits CI."
       }
     ]
   },
   "handover": {
-    "next_pass": "Import package into atrium, review and commit/push, execute pinned CI with DAPI disposable smoke; then P1 versioned registry implementation.",
+    "next_pass": "Import v0.4.7 and confirm the Windows regression suite passes; proceed with Registry publisher ownership challenge and public discovery only after this acceptance.",
     "risks": [
-      "DAPI semantic validation not yet observed with upstream toolchain.",
-      "One operator-scoped DAPI component is not an anonymous public catalog or Social player API.",
-      "Nested game handler is source-only, not authoritative multiplayer."
+      "The Windows target must still execute the source tests successfully; source runner credentials/deployment untouched.",
+      "DAPI schema v2 live activation requires separate operator checks."
     ],
     "blockers": [
-      "Remote CI and live activation require approved source import and target DAPI environment."
+      "Windows target acceptance for v0.4.7 remains outstanding."
     ],
     "notes": [
-      "No passwords, tokens, database rows or operator approvals in ZIP.",
-      "Previously delivered v0.2 IDs ATR-001..004 are not repurposed; see docs/TASK_ID_COMPATIBILITY.adoc."
+      "Single ZipRunner project atrium; no new DAPI component or migration schema version.",
+      "Producer test evidence does not replace operator acceptance."
     ]
   },
   "operator_actions": [
     {
-      "id": "P0-IMPORT",
-      "description": "Review ZipRunner import into atrium and approve Git source commit/push separately",
+      "id": "ATR-P1-OP-041",
+      "description": "Review and import into atrium; run real target tests and approve static catalog publication independently",
       "status": "required"
     },
     {
-      "id": "P0-VALIDATE",
-      "description": "Run GitHub Actions pinned upstream validators, then disposable real DAPI activation",
+      "id": "ATR-P1-OP-042",
+      "description": "Run corrected build with internet/approved pip index and repeat to confirm isolated venv reuse; do not manually delete or overwrite local state.",
       "status": "required"
     },
     {
-      "id": "P0-RELEASE",
-      "description": "Assess Work board verification evidence; decide release and activation independently",
+      "id": "ATR-P1-OP-045",
+      "description": "Import canonical atrium.zr into EXISTING atrium project; approve active recipe; import v0.4.5 ZIP; inspect execution log and venv tests.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-046",
+      "description": "Import v0.4.6 and verify complete SQLAlchemy tests pass under saved legacy unittest command with compatible .venv.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-047",
+      "description": "Import v0.4.7 and verify the two corrected path mock assertions and full registry suite pass on Windows.",
       "status": "required"
     }
   ],
   "release": {
     "requested": false,
     "requires_operator_approval": true,
-    "notes": "Source package is not deployed and is awaiting operator review."
+    "notes": "Source-only test compatibility patch; no database migration, API modification, or automated push/deploy."
   }
 }

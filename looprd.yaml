@@ -1,30 +1,46 @@
-# One registered Looprd component. Nested files are imports, NOT additional servers.
-# Requires a DAPI version that implements `spec.includes`.
 apiVersion: looprd/v1
 component: atrium
-release: 0.3.0
+release: 0.4.7
 api:
   version: v1
 auth:
   mode: database
   scopes:
-    - apps:read
-    - apps:publish
-    - apps:events
-    - arcade:read
-    - arcade:operator
-    - arcade:events
-    - checkers:read
-    - checkers:play
+  - apps:read
+  - apps:publish
+  - apps:events
+  - arcade:read
+  - arcade:operator
+  - arcade:events
+  - checkers:read
+  - checkers:play
+  - apps:approve
 database:
   backend: sqlite
-  schemaVersion: 1
+  schemaVersion: 2
+  migrations:
+  - version: 2
+    statements:
+    - CREATE TABLE "Publisher" ("id" INTEGER PRIMARY KEY, "publisherId" VARCHAR(120)
+      NOT NULL UNIQUE, "displayName" VARCHAR(160) NOT NULL, "origins" JSON NOT NULL,
+      "status" VARCHAR(32) NOT NULL, "createdAt" VARCHAR(40) NOT NULL)
+    - CREATE TABLE "AppSubmission" ("id" INTEGER PRIMARY KEY, "submissionId" VARCHAR(64)
+      NOT NULL UNIQUE, "appId" VARCHAR(120) NOT NULL, "publisherId" VARCHAR(120) NOT
+      NULL, "version" VARCHAR(48) NOT NULL, "manifest" JSON NOT NULL, "digest" VARCHAR(64)
+      NOT NULL, "status" VARCHAR(32) NOT NULL, "submittedAt" VARCHAR(40) NOT NULL,
+      "reviewedAt" VARCHAR(40))
+    - CREATE TABLE "AppRelease" ("id" INTEGER PRIMARY KEY, "appId" VARCHAR(120) NOT
+      NULL, "version" VARCHAR(48) NOT NULL, "publisherId" VARCHAR(120) NOT NULL, "manifest"
+      JSON NOT NULL, "digest" VARCHAR(64) NOT NULL, "approvedAt" VARCHAR(40) NOT NULL,
+      UNIQUE ("appId", "version"))
 requires:
-  - spec.includes
+- spec.includes
+- events.transactional
+- events.replay
 includes:
-  - modules/registry/looprd.yaml
-  - modules/arcade/looprd.yaml
-  - modules/games/checkers/looprd.yaml
+- modules/registry/looprd.yaml
+- modules/arcade/looprd.yaml
+- modules/games/checkers/looprd.yaml
 websocket:
   path: /events
 limits:
@@ -32,14 +48,25 @@ limits:
   burstPerSecond: 10
   maxRows: 10000
 handlers:
-  - path: /info
-    method: GET
-    kind: response
-    response:
-      service: atrium
-      contract: atrium.platform/v1
-      phase: foundational
-      deploymentVerification: operator_required
-      modules: [registry, arcade, checkers]
-      staffDisplayLabel: Staff
-      socialLoginIntegrated: false
+- path: /info
+  method: GET
+  kind: response
+  response:
+    service: atrium
+    contract: atrium.platform/v1
+    phase: registry-snapshot-export
+    deploymentVerification: operator_required
+    modules:
+    - registry
+    - arcade
+    - checkers
+    staffDisplayLabel: Staff
+    socialLoginIntegrated: false
+    registry: atrium.registry/v1
+    catalogPublic: false
+  scopes:
+  - apps:read
+realtime:
+  delivery: durable
+  retentionSeconds: 86400
+  maxEvents: 10000

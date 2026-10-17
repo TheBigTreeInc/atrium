@@ -1,0 +1,13 @@
+Atrium v0.4.5 source checks — 2026-10-17 (author environment: Linux Python 3.13, Node 22)
+
+Observed author-side checks:
+- python tools/build_registry_spec.py --check: PASSED
+- python tools/build_spec.py --check: PASSED
+- python tools/check_specs.py: PASSED (1 composed component, 6 resources, 9 models, 12 handlers)
+- python -m unittest discover -s tests -v: PASSED (84 tests; includes the standalone .zr recipe schema+parity assertions)
+- npm test: PASSED (8 tests)
+- npm run build: PASSED
+- npm run verify: PASSED
+- python tools/package_zip.py: PASSED (deterministic source ZIP construction)
+
+Limitations: Python packages were available in the author sandbox; a clean offline pip bootstrap, actual Windows ZipRunner .zr import, active trusted recipe update, official pinned upstream validator, and live DAPI activation have not been demonstrated. No source push or deployment was performed.

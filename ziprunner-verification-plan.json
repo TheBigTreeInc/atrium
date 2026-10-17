@@ -1,88 +1,88 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.3.0",
+  "version": "0.4.7",
   "tasks": [
     {
-      "id": "ATR-P0-001",
+      "id": "ATR-104-PUBLIC",
       "criteria": [
         {
-          "id": "ATR-P0-001-AC1",
-          "description": "Reconcile unified Atrium baseline into one source tree is demonstrable in the packaged source test.",
+          "id": "ATR-104-PUBLIC-AC-SOURCE",
+          "description": "Read-only SQLite snapshot exporter requires approved immutable releases and matching local HTML asset hashes; fail-closed atomic output; anonymous static portal consumes validated JSON.",
           "mode": "automated",
           "checks": [
-            "ATR-P0-001-T1"
+            "ATR-104-PUBLIC-T1"
           ]
         },
         {
-          "id": "ATR-P0-001-AC2",
-          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "id": "ATR-104-PUBLIC-AC-OPERATOR",
+          "description": "Operator confirms the original acceptance on installed disposable target.",
           "mode": "manual",
           "checks": [
-            "ATR-P0-001-M1"
+            "ATR-104-PUBLIC-M1"
           ]
         }
       ]
     },
     {
-      "id": "ATR-P0-002",
+      "id": "ATR-103-REVOCATION",
       "criteria": [
         {
-          "id": "ATR-P0-002-AC1",
-          "description": "Pin DAPI and ZipRunner validation tooling is demonstrable in the packaged source test.",
+          "id": "ATR-103-REVOCATION-AC-SOURCE",
+          "description": "Protected publisher status handler publishes transactional catalog invalidation events, hides active publisher games and keeps immutable releases.",
           "mode": "automated",
           "checks": [
-            "ATR-P0-002-T1"
+            "ATR-103-REVOCATION-T1"
           ]
         },
         {
-          "id": "ATR-P0-002-AC2",
-          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "id": "ATR-103-REVOCATION-AC-OPERATOR",
+          "description": "Operator confirms the original acceptance on installed disposable target.",
           "mode": "manual",
           "checks": [
-            "ATR-P0-002-M1"
+            "ATR-103-REVOCATION-M1"
           ]
         }
       ]
     },
     {
-      "id": "ATR-P0-003",
+      "id": "ATR-104-PAGING",
       "criteria": [
         {
-          "id": "ATR-P0-003-AC1",
-          "description": "Add reproducible build and source safety regressions is demonstrable in the packaged source test.",
+          "id": "ATR-104-PAGING-AC-SOURCE",
+          "description": "Validated after/limit cursor contracts prevent unbounded client pages and preserve reviewed-only projections.",
           "mode": "automated",
           "checks": [
-            "ATR-P0-003-T1"
+            "ATR-104-PAGING-T1"
           ]
         },
         {
-          "id": "ATR-P0-003-AC2",
-          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "id": "ATR-104-PAGING-AC-OPERATOR",
+          "description": "Operator confirms the original acceptance on installed disposable target.",
           "mode": "manual",
           "checks": [
-            "ATR-P0-003-M1"
+            "ATR-104-PAGING-M1"
           ]
         }
       ]
     },
     {
-      "id": "ATR-P0-005",
+      "id": "ATR-104-BUILD",
       "criteria": [
         {
-          "id": "ATR-P0-005-AC1",
-          "description": "Preserve architecture, roadmap and task identity is demonstrable in the packaged source test.",
+          "id": "ATR-104-BUILD-AC-SOURCE",
+          "description": "Modern project.zr and legacy atrium.zr recipes are equivalent and invoke isolated venv setup and tests; project-local environment remains protected.",
           "mode": "automated",
           "checks": [
-            "ATR-P0-005-T1"
+            "ATR-104-BUILD-T1"
           ]
         },
         {
-          "id": "ATR-P0-005-AC2",
-          "description": "Target operator confirms original acceptance and deployment boundary.",
+          "id": "ATR-104-BUILD-AC-WINDOWS",
+          "description": "Windows ZipRunner adopts refreshed recipe and runs full regression tests in .venv, not the host Python.",
           "mode": "manual",
           "checks": [
-            "ATR-P0-005-M1"
+            "ATR-104-BUILD-M1"
           ]
         }
       ]
@@ -90,76 +90,78 @@
   ],
   "checks": [
     {
-      "id": "ATR-P0-001-T1",
+      "id": "ATR-104-PUBLIC-T1",
       "kind": "automated",
       "stage": "functional",
-      "description": "Packaged test for Reconcile unified Atrium baseline into one source tree",
-      "runner_ref": "atrium-p0-source-unit",
+      "description": "Source regression against bundled test",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_public_export.py",
       "assertions": [
-        "Reconcile unified Atrium baseline into one source tree has source-asserted behavior and negative test coverage."
-      ],
-      "test_ref": "tests/test_unified_spec.py"
+        "Security and positive source behavior are covered by this test implementation."
+      ]
     },
     {
-      "id": "ATR-P0-001-M1",
+      "id": "ATR-104-PUBLIC-M1",
       "kind": "manual",
       "stage": "acceptance",
-      "description": "Operator acceptance for Reconcile unified Atrium baseline into one source tree",
-      "instructions": "Verify the package is offered only to ZipRunner project atrium and review the overlay against the README-only GitHub main before any push."
+      "description": "Target observable confirmation",
+      "instructions": "From a disposable database approve a game, supply its reviewed hash-named HTML and export to a public static test origin; no API credentials in browser. Corrupt asset, tamper release and confirm no new snapshot replaces the last valid bytes; verify a disabled publisher disappears after next export."
     },
     {
-      "id": "ATR-P0-002-T1",
+      "id": "ATR-103-REVOCATION-T1",
       "kind": "automated",
       "stage": "functional",
-      "description": "Packaged test for Pin DAPI and ZipRunner validation tooling",
-      "runner_ref": "atrium-p0-source-unit",
+      "description": "Source regression against bundled test",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_registry_runtime.py",
       "assertions": [
-        "Pin DAPI and ZipRunner validation tooling has source-asserted behavior and negative test coverage."
-      ],
-      "test_ref": "tests/test_release_pipeline.py"
+        "Security and positive source behavior are covered by this test implementation."
+      ]
     },
     {
-      "id": "ATR-P0-002-M1",
+      "id": "ATR-103-REVOCATION-M1",
       "kind": "manual",
       "stage": "acceptance",
-      "description": "Operator acceptance for Pin DAPI and ZipRunner validation tooling",
-      "instructions": "Run GitHub Actions after importing source and confirm pinned DAPI CLI, smoke test and official ZipRunner validator complete successfully."
+      "description": "Target observable confirmation",
+      "instructions": "With apps:approve change active publisher to disabled; check existing releases remain and new catalog hides apps. Confirm wrong/missing scope fails and reactivation restores only still-published apps."
     },
     {
-      "id": "ATR-P0-003-T1",
+      "id": "ATR-104-PAGING-T1",
       "kind": "automated",
       "stage": "functional",
-      "description": "Packaged test for Add reproducible build and source safety regressions",
-      "runner_ref": "atrium-p0-source-unit",
+      "description": "Source regression against bundled test",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_registry_runtime.py",
       "assertions": [
-        "Add reproducible build and source safety regressions has source-asserted behavior and negative test coverage."
-      ],
-      "test_ref": "tests/test_spec_validation.py"
+        "Security and positive source behavior are covered by this test implementation."
+      ]
     },
     {
-      "id": "ATR-P0-003-M1",
+      "id": "ATR-104-PAGING-M1",
       "kind": "manual",
       "stage": "acceptance",
-      "description": "Operator acceptance for Add reproducible build and source safety regressions",
-      "instructions": "Run Python and Node tests under trusted ZipRunner recipe, reproduce the artifact SHA-256 locally and review generated files."
+      "description": "Target observable confirmation",
+      "instructions": "Request catalog with apps:read, page limit 1, follow next until hasMore false; malformed after and limit return 422."
     },
     {
-      "id": "ATR-P0-005-T1",
+      "id": "ATR-104-BUILD-T1",
       "kind": "automated",
       "stage": "functional",
-      "description": "Packaged test for Preserve architecture, roadmap and task identity",
-      "runner_ref": "atrium-p0-source-unit",
+      "description": "Bootstrapping order, isolation and repeat-build regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_build_environment.py",
       "assertions": [
-        "Preserve architecture, roadmap and task identity has source-asserted behavior and negative test coverage."
-      ],
-      "test_ref": "tests/test_release_pipeline.py"
+        "Windows and POSIX dependency-bridge tests expect native Path string representations, not POSIX-only literal mock paths.",
+        "The direct legacy Python test path executes actual SQLAlchemy and Starlette registry tests.",
+        "Both importable .zr recipes use the isolated build environment and protect .venv from the ZIP overlay."
+      ]
     },
     {
-      "id": "ATR-P0-005-M1",
+      "id": "ATR-104-BUILD-M1",
       "kind": "manual",
       "stage": "acceptance",
-      "description": "Operator acceptance for Preserve architecture, roadmap and task identity",
-      "instructions": "Review historic 0.2 task IDs and P0 new IDs in ZipRunner; ensure no completed/approved tasks are overwritten."
+      "description": "Windows target ZipRunner verification",
+      "instructions": "Import v0.4.7 using existing atrium project. Confirm 88 Python tests pass on Windows, including catalog/registry integration tests, without path separator failures. Confirm build succeeds before marking operator review complete."
     }
   ]
 }

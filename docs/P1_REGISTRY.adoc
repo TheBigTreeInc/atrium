@@ -1,0 +1,45 @@
+= Atrium P1 — Controlled registry service
+:revnumber: 0.4.0
+:revdate: 2026-10-17
+:toc: left
+
+== Runtime boundary
+`atrium` is one DAPI `looprd/v1` component. Nested registry, arcade and game specifications are compiled together. DAPI supplies SQL migrations, scoped API keys and transactional event replay. Registry handler Python is bundled into the generated YAML because DAPI cannot import sibling source files from the Git repository at runtime. `tools/build_registry_spec.py` must be run after Python source changes, with `--check` in CI/ZipRunner.
+
+== This pass: approved operator workflow
+. Operator provisions a component database key with `apps:approve` and `apps:read`; this is *never* a browser credential.
+. `POST /registry/publishers` registers an operator-attested publisher with exact HTTPS asset origins. Domain ownership has not yet been proven by automated challenge.
+. `POST /registry/submissions` validates strict `atrium.app/v1` metadata and records an immutable candidate digest. This operation is intentionally operator-scoped in this first release.
+. `POST /registry/reviews` makes a one-time approval/rejection decision; approval stores `AppRelease`, updates `App` and emits an `apps` event in the same SQL transaction.
+. `GET /registry/catalog` lists only *published* active apps whose active manifest matches a reviewed, digest-verified release and active publisher. Legacy unreviewed `App` rows cannot leak into discovery.
+. `POST /registry/disable` hides an active app without deleting its approved release or existing app data. Re-publishing requires a newly approved higher version; no automatic rollback to an older version is permitted.
+
+The contract is represented in `openapi.yaml` and `schemas/atrium-app-v1.schema.json`, with DAPI generating the authoritative deployed OpenAPI for all platform routes.
+
+== Security and authorization
+* DAPI `auth.mode: database`: all routes require a scoped DAPI key; `/registry/catalog` is *not* anonymously accessible yet. Anonymous discovery is a follow-up (no broadening of root authentication in the meantime).
+* `App` and `RegisteredEndpoint` generic CRUD is now read-only, and uses `apps:approve` for operator diagnostics; all publishing is performed by explicit reviewed handlers.
+* The server validates publisher ID, registered origins, immutable asset URI path, declared digest, kind, application ID, semantic version and declared permissions.
+* A submitted digest is a claim about immutable hosted content, *not* proof bytes have been downloaded or cryptographically inspected. Human review and later verification automation must check publisher control and the actual asset digest before public exposure.
+* Publisher attestations are not authenticated developer identities. Only operators may submit or approve for now; public submissions and ownership claims require a distinct capability.
+* Staff are separate service-controlled actors from humans and moderators; not managed by this pass.
+* Review a DB backup before activating schema version 2; three new tables are created with additive migration DDL. Never roll back the database schema automatically.
+
+== Contract limitations
+The registered app can describe a client URL; this release neither downloads it, loads JavaScript inside DAPI, proxies arbitrary endpoints, nor automatically activates new DAPI components. Social/Tavi account bridging and dynamically loading reviewed assets are future passes. Approved origin ownership, certificate control and actual asset digest verification remain operator review requirements, not source-proven properties.
+
+== Operator smoke
+. Back up the existing Atrium SQLite DB if schema v1 has ever been activated.
+. Validate `python -m looprd validate looprd.yaml` using the pinned DAPI revision.
+. Activate on a *disposable copy* with trusted Python enabled (`LOOPRD_ALLOW_PYTHON=true` and permitted `atrium` component); inspect schema version 2.
+. Provision scoped database keys privately. Verify no key → 401; wrong scope → 403.
+. With operator key, register an owned publisher and submit an immutable fixture URL whose content checksum was independently checked.
+. Before approval, `GET /registry/catalog` must return no submitted app. After approval it must return the vetted app; after disabling it must disappear.
+. Repeat after restart; ensure audit/submission/release history and current state survive. Attempt a duplicate version, older version, private-network URL, invalid capability and ownership takeover and verify rejection.
+. Check `apps` durable events and client recovery using DAPI replay. Do not use a production Social token or external publisher credentials.
+
+== Deferred scope
+The later P1 passes add independent publisher authentication, automated origin/asset proof, dynamic external service endpoint verification, entitlement policy, public guest catalog, catalog pagination and service consumers. The current 100-record catalog cap is an explicit provisional limit.
+
+== Follow-up 0.4.1: static public discovery
+See `docs/P1_PUBLIC_CATALOG.adoc` for a reviewed public snapshot, publisher suspension, paginated scoped discovery, and separate static-host publication. No anonymous DAPI endpoint or self-service publisher identity is added.

@@ -1,13 +1,13 @@
 {
   "schema": "ziprunner.post-update-tests.v1",
-  "version": "0.3.0",
+  "version": "0.4.7",
   "tests": [
     {
       "kind": "command",
       "semantic_id": "atrium-python-source-tests",
-      "definition_revision": "1",
+      "definition_revision": "3",
       "rerun_policy": "every_update",
-      "command": "python -m unittest discover -s tests -v",
+      "command": "python tools/run_python_checks.py",
       "attention_on_failure": true,
       "gating": false
     },

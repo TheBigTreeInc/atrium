@@ -37,6 +37,8 @@ handlers:
     ruleset: american-checkers
     status: stateless-rules-oracle
     persistentMatchesEnabled: false
+  scopes:
+  - checkers:read
 - path: /games/checkers/evaluate
   method: POST
   kind: python

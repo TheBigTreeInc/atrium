@@ -1,0 +1,25 @@
+= Atrium v0.4.6 — Legacy ZipRunner build verification
+
+== Observed failure
+
+ZipRunner 1.2.304.105 ran `python -m unittest discover -s tests -v` with system Python 3.13 after copying the v0.4.5 ZIP. The two SQLAlchemy-dependent test modules failed to import `sqlalchemy` while the build-environment test reported the isolated `.venv` healthy. The active saved trusted recipe was therefore not updated, independently of the conforming `project.zr` and `atrium.zr` producer files.
+
+== Bounded repair
+
+The two SQLAlchemy test modules explicitly call `tests._test_dependencies.require_test_dependencies` *before* their SQLAlchemy imports. If the standard interpreter lacks a dependency, the helper initializes `.venv` through `tools/setup_build_env.py` when absent (requires pip/package-index access), then checks `pyvenv.cfg` for matching Python major/minor versions and adds the existing `.venv` site-packages to that **test runner's** import path only. ABI mismatch remains a visible error, not a skipped test. A missing .venv is created through the isolated dependency bootstrap (never global pip). The command itself remains trusted ZipRunner configuration and is not overridden by ZIP data.
+
+== Operator checks
+
+. Import `atrium-0.4.6-ziprunner.zip` into existing `atrium`.
+. Confirm the legacy `python -m unittest discover -s tests -v` now completes the real public-export and registry-runtime tests; no skipped tests or missing SQLAlchemy errors.
+. Confirm the log reports `[atrium-tests] Legacy ZipRunner Python: using ABI-matched project .venv dependencies` if system Python lacks SQLAlchemy.
+. If the new recipe is installed, `python tools/setup_build_env.py` followed by `python tools/run_python_checks.py` remains the preferred path.
+. Verify protected .venv/private state is unmodified by source overlay and no global installation occurred.
+
+== Boundaries
+
+The static online ZipRunner specification defines the `ziprunner.zr/v1` recipe but does not authorize silent changes to trusted registered commands. This compatibility layer affects test modules only and is not deployed as a production DAPI runtime hook. No changes to registry schema v2, DAPI auth, live data, Git publishing, or deployment.
+
+== Diagnostic nuance
+
+The text `[build-env] Reusing verified isolated .venv` in the v0.4.5 ZipRunner log came from a **mocked unit test** in `test_build_environment.py`. It did not demonstrate a real setup command or existing virtual environment on the Windows host. v0.4.6 therefore bootstraps the project-local venv automatically when needed under the legacy test command.

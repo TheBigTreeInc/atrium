@@ -9,7 +9,7 @@
 
 Product name `Atrium` is provisional. `Looprd` is the component specification, `pac-labs/dapi` is the runtime, `TheBigTreeInc/social` owns Social and the Tavi client. Public label for automated players is `Staff`, with internal actor kind `staff_bot`. It must be apparent on inspecting the profile or table that Staff is computer-controlled. Staff is not a Social friend, human moderator, or platform administrator.
 
-The authoritative intended source repository is `https://github.com/TheBigTreeInc/atrium`, with *one* ZipRunner project key `atrium`. As checked on 2026-10-17, its GitHub main branch contains only a README; the previously generated local `atrium-0.2.0-ziprunner.zip` is an unmerged source candidate, not a deployed service. Do not mark earlier locally reported source tests or build results as production verification.
+The authoritative intended source repository is `https://github.com/TheBigTreeInc/atrium`, with *one* ZipRunner project key `atrium`. As checked later on 2026-10-17, GitHub main contains the P0/v0.3.0 source candidate. That does not establish installation or live deployment. Do not mark earlier locally reported source tests or build results as production verification.
 
 The initial DAPI root component is `component: atrium` at `looprd.yaml` with `requires: [spec.includes]` and nested fragments under `modules/`. Per DAPI's documented import semantics, fragments share authentication, database, API prefix, migration history, and reload lifecycle. This is *one* server component, not a dynamically created component per game. Import constraints: at most 64 files in the tree, eight levels, and 1 MiB combined UTF-8 content. Do not use an include as an untrusted executable plugin loader.
 

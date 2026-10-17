@@ -1,0 +1,12 @@
+Atrium v0.4.4 author-side verification — 2026-10-17 (Linux container)
+
+Source: retained v0.4.3 source plus versioned 0.4.4 handoff and registered-recipe-refresh documentation.
+- python tools/build_registry_spec.py --check: passed
+- python tools/build_spec.py --check: passed
+- python tools/check_specs.py: passed; 1 composed component, 6 resources, 9 models, 12 handlers (source lint)
+- python -m unittest discover -s tests -v: passed, 83 tests
+- npm test: passed, 8 tests
+- npm run build: passed; local static portal
+- npm run verify: passed; local static portal assets
+
+Limitations: tests used preinstalled Python dependencies; not an observed fresh Windows .venv pip install, trusted ZipRunner project configuration refresh, official pinned DAPI semantic validation, or operator acceptance. No Git push or DAPI activation was performed. Exact ZIP SHA is reported externally after packaging.

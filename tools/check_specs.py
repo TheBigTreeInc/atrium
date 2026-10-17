@@ -86,13 +86,13 @@ def compose(path, seen=None, depth=0, *, root=ROOT, budget=None):
 def verify():
     s = compose(ROOT / "looprd.yaml")
     assert s["component"] == "atrium", "only the Atrium component may be declared"
-    assert s["requires"] == ["spec.includes"], "pinned runtime requires spec.includes"
+    assert {"spec.includes", "events.replay", "events.transactional"} <= set(s["requires"]), "required DAPI capabilities missing"
     assert s["auth"]["mode"] == "database", "the current registry is operator-scoped only"
     assert set(s["resources"]) == {"apps", "endpoints", "lounges", "tables", "records", "snapshots"}
-    assert set(s["models"]) == {"App", "RegisteredEndpoint", "Lounge", "GameTable", "GameRecord", "MatchSnapshot"}
-    routes = [h["path"] for h in s["handlers"]] + [r["path"] for r in s["resources"].values()]
-    assert len(routes) == len(set(routes)), "duplicate HTTP route"
-    assert len(s["handlers"]) == 5
+    assert set(s["models"]) == {"App", "RegisteredEndpoint", "Publisher", "AppSubmission", "AppRelease", "Lounge", "GameTable", "GameRecord", "MatchSnapshot"}
+    routes = [(h["path"], h.get("method", "GET")) for h in s["handlers"]]
+    assert len(routes) == len(set(routes)), "duplicate handler method/path"
+    assert len(s["handlers"]) == 12
     for resource in s["resources"].values():
         assert resource["model"] in s["models"]
         for scopes in resource.get("permissions", {}).values():
@@ -102,8 +102,13 @@ def verify():
         assert set(scopes).issubset(s["auth"]["scopes"]), "unknown event scope"
     for handler in s["handlers"]:
         assert set(handler.get("scopes", [])).issubset(s["auth"]["scopes"])
-    assert s["database"]["schemaVersion"] == 1, "new migrations require a separate review"
-    print("Atrium composition: one component, 6 resources, 6 models, 5 handlers (source lint)")
+    assert s["database"]["schemaVersion"] == 2, "registry schema requires additive migration v2"
+    assert [m["version"] for m in s["database"]["migrations"]] == [2]
+    assert s["realtime"]["delivery"] == "durable"
+    assert s["resources"]["apps"]["operations"] == ["list", "get"]
+    assert s["resources"]["endpoints"]["operations"] == ["list", "get"]
+    assert all(h.get("scopes") for h in s["handlers"]), "all scoped handlers require permissions"
+    print("Atrium composition: one component, 6 resources, 9 models, 12 handlers (source lint)")
     return s
 
 

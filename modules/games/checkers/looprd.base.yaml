@@ -37,3 +37,5 @@ handlers:
     ruleset: american-checkers
     status: stateless-rules-oracle
     persistentMatchesEnabled: false
+  scopes:
+  - checkers:read

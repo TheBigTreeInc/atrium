@@ -1,0 +1,19 @@
+= Atrium v0.4.7 — Windows regression test portability
+
+== Observed evidence
+
+ZipRunner 1.2.304.105 imported v0.4.6 and ran the real registry/public-export SQLAlchemy tests successfully. The only two failed assertions compared `site.addsitedir` against Unix-style mock paths `/fake-test-venv` and `/created-test-venv`; native Windows `Path` conversion produced backslash-leading path strings. The build therefore failed even though the actual dependency bootstrap and registry functionality passed.
+
+== Fix
+
+Change the test fixtures to native relative `Path` instances and compare against `str(Path(...))` rather than hardcoding forward-slash paths. Add a regression that mocks a host-shaped .venv site-packages path and checks that the dependency helper forwards its native string representation. Test production dependency helper logic is unchanged.
+
+== Acceptance
+
+. ZipRunner imports the v0.4.7 source ZIP and executes Python tests successfully under Windows.
+. The complete public catalog and registry CRUD/review/suspension tests still execute and pass; no skips.
+. The Node tests and web static build succeed, and ZipRunner recognizes the successful version.
+
+== Compatibility and safety
+
+Source-only test correction; no API changes, database schema migration, data deletion, modifications to trusted active recipe, or automatic publishing.

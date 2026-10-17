@@ -1,34 +1,40 @@
-= atrium Project Plan
-:doctype: article
-:toc:
+= Atrium Project Plan
+:revnumber: 0.4.0
+:toc: left
 
 == Product intent
-Describe the product goal, users, data boundaries, and first useful build target.
-
-== Planning rules
-* Planning is advisory and does not implement or approve work.
-* New ideas enter Suggested and require an operator or design-bounded policy decision before To do.
-* ZipRunner owns managed To do → In progress → Manager/QA assessment transitions.
-* Manager/QA is authoritative for technical acceptance and may expose approved completed work to operator Review.
-* The operator tests the installed behavior and alone marks the task Done or sends it back with direction.
-* Keep work items bounded and independently verifiable.
+Independent browser/Tavi-accessible app and classic-games ecosystem with a dynamic registry, reusable game engine, social access and clearly labeled Staff opponents. Looprd defines the component format and DAPI executes it.
 
 == Current outcome
-Describe the first complete, useful outcome that proves the product direction.
+P0 v0.3.0 foundation is present in the GitHub repository. P1 v0.4.0 provides the first persistent, scoped, operator-reviewed app registry in source. It is an incremental candidate update to ZipRunner project `atrium`, *not* a deployed release.
 
-== Milestones
-[cols="1,3,3,2",options="header"]
+== Accepted release sequencing
+[cols="1,3,2",options="header"]
 |===
-|Milestone |Outcome |Acceptance criteria |State
-|Foundation |Establish the minimum runnable project and documentation |The project starts locally and its purpose is unambiguous |Planned
-|First useful release |Deliver the first user-visible outcome |A user can complete the primary workflow |Suggested
+|Phase |Acceptance gate |State
+|P0/0.3 |One-source project, pinned validation, baseline Checkers and portal |Source candidate, operator deployment still unverified
+|P1/0.4 |Schema v2; operator register/submit/review/disable; version checks; approved-only catalog; durable events |Source implemented, awaiting upstream/live validation
+|P1 follow-up |Public reader, independently verified publishers, automated URL/asset checks, endpoint version history, pagination, non-game fixture |Planned
+|P2/0.5 |Short-lived Social-issued game-scoped identities |Planned
+|P3/0.6 |Authoritative Checkers human match and disconnect recovery |Planned
+|P4/0.7 |Room/lobby/Tables and selective Staff participation |Planned
+|P5/0.8 |Shared AppHost and native/portal discovery |Planned
+|P6/0.9 |External publishers and scoped service endpoints |Planned
+|P7/1.0 |Operations, moderation, restore, load and public readiness |Planned
 |===
 
-== Architecture decisions
-Record accepted architecture decisions and the reason for each decision. Use `DESIGN.adoc` for the full system design.
+== Lifecycle rules
+Development reports describe source evidence only. ZipRunner's trusted verification and the operator's real acceptance tests govern the managed task state. The operator must approve push, release, migration and deployment separately. Historic tasks must be retained by their original IDs; build failure never marks work Done.
 
-== Risks and open questions
-List uncertainties, data/safety boundaries, dependencies, and decisions that need manager review.
+== References
+`DESIGN.adoc` defines accepted technical boundaries; `docs/ROADMAP.adoc` details previous planning tasks, and `docs/P1_REGISTRY.adoc` specifies the exact first registry delivery and remaining gates.
 
-== Roadmap suggestion exchange
-The planning model must return future implementation work in a strict `ZIPRUNNER_ROADMAP_SUGGESTIONS v1` block. ZipRunner imports model-authored work into Suggested only.
+== Registry public snapshot development pass 0.4.1
+Implemented candidate: scoped catalog pagination, publisher disable/restore and locally hash-checked public catalog export plus browser snapshot reader. Outstanding: authoritative publisher-domain proof, automatic live public discovery, Social/Tavi identity bridge and signed bundle distribution. See `docs/P1_PUBLIC_CATALOG.adoc`.
+
+== Windows ZipRunner acceptance gate for 0.4.4
+The operator must refresh the saved project recipe before processing the new
+numbered source ZIP. This is a prerequisite for the underlying registry
+publishing work to pass target-environment QA; a source-only recipe is not
+sufficient. Keep task `ATR-104-BUILD` open until the observed Windows log
+runs the isolated interpreter and the full tests pass.

@@ -1,0 +1,16 @@
+Atrium 0.4.1 source tests (2026-10-17)
+
+Commands executed in local isolated checkout derived from the previous v0.4.0 source candidate:
+python tools/build_spec.py --check                                  PASS
+python tools/build_registry_spec.py --check                         PASS
+python tools/check_specs.py                                         PASS (one DAPI component, 12 inline handlers)
+python -m unittest discover -s tests -q                             PASS (77 Python tests)
+npm test                                                            PASS (8 JavaScript tests)
+npm run build && npm run verify                                     PASS (static web assets)
+python tools/export_catalog.py --help                               PASS (direct CLI import smoke)
+python tools/package_zip.py                                        PASS (will recalculate after source metadata update)
+
+Official DAPI CLI semantic validation: NOT RUN locally (pinned runtime code not available).
+Official ZipRunner 2.3 package validator: NOT RUN locally (source not available).
+GitHub Actions/live DAPI runtime/operator acceptance: NOT RUN.
+Producer reports are not consumer-observed results.

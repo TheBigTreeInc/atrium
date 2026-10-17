@@ -1,0 +1,57 @@
+= Atrium P1 — Public catalog snapshot and publisher revocation
+:revnumber: 0.4.1
+:revdate: 2026-10-17
+:toc: left
+
+== Design authority and scope
+This pass extends `DESIGN.adoc`, `docs/ARCHITECTURE.adoc`, and `docs/P1_REGISTRY.adoc`.
+The `atrium` component remains `auth.mode: database`, with database schema v2 and a single root `looprd.yaml`. It is intentionally *not anonymous*. Public discovery uses a separately published, sanitized JSON snapshot; no DAPI operator key, Social session, or management token reaches the browser.
+
+== Publishing and trust flow
+. An approved operator registers a publisher with reviewed HTTPS origins and follows the existing submit/review path.
+. The operator obtains the exact immutable HTML payload through a trusted external process and audits the SHA-256. This pass does not perform remote TLS/DNS ownership challenges or autonomous network fetching.
+. The reviewed payload is stored in a local, trusted directory as `<sha256>.html` (never under source control).
+. A trusted operator or deployment pipeline exports a snapshot using read-only SQLite access:
++
+[source,sh]
+----
+python tools/export_catalog.py \
+  --database /srv/atrium-data/atrium.sqlite3 \
+  --assets-dir /srv/atrium-reviewed-assets \
+  --output /srv/atrium-public/catalog.json
+----
++
+. Publish the generated `catalog.json` to the same origin as the standalone portal through an explicitly reviewed static server, gateway or CI artifact publication. It does not happen on DAPI reload, submission approval, or a GitHub push automatically.
+. The web portal fetches `./catalog.json` without credentials and refreshes when focused and once per minute while foregrounded. It uses an isolated iframe and checks the actual fetched HTML digest again before loading it.
+
+== Export invariants
+* SQL access is `mode=ro`; the exporter never creates tables, writes or migrates the database.
+* Only `published` applications of currently `active` publishers with matching immutable `AppRelease` digests are eligible.
+* The current `Publisher.origins` list must still validate the manifest entry; changing approved origins invalidates prior entries.
+* Every selected HTML artifact must have verified local content bytes under its exact digest name and be at most 1 MiB.
+* Any mismatch, missing asset or malformed approved record fails the whole export before replacing the previous output.
+* Output is written to a temporary file and replaced atomically. The export is a snapshot, not a durable push/update service.
+* The output lists public app metadata and approved origins only; never credentials, submissions, reviews or database rows.
+* Disabled apps and disabled publishers disappear from *new* exports. Already-cached client data needs normal refresh/reload; urgent revocation additionally requires serving infrastructure cache invalidation and optionally blocking the affected origin.
+
+== Publisher suspension and scope
+`POST /registry/publishers/status` (scope `apps:approve`) accepts `publisherId` and `status` = `active` or `disabled`, updates the existing publisher row, and emits transactional catalog-change events for its live app rows. It does not delete releases, approvals or user data; restoring the publisher does not bypass separate app disable decisions.
+
+== Authenticated API pagination
+`GET /registry/catalog?after=<app-id>&limit=<1..100>` accepts strictly validated parameters, returns `next` and `hasMore`, and projects only approved apps. This remains a scoped `apps:read` API and is not a public endpoint. It is separate from the static public snapshot consumed by the web UI.
+
+== Constraints and follow-ups
+* Publisher control is operator-attested, **not** independently proven; DNS/HTTPS challenge/independent publisher authentication is still pending under `ATR-103-EXTERNAL`.
+* A hash-verified local HTML file does not guarantee the deployed HTTPS URL will serve identical bytes later; AppHost rejects digest mismatches at launch.
+* Automatic on-change public publication, signed public discovery, GitHub Pages synchronization, cross-origin endpoint claims, and Tavi/Social session bridging remain future work. No self-service publisher API is enabled.
+* Root-level Looprd imports still compose into one authenticated component. Native anonymous per-route authentication is not supported by the pinned DAPI contract; do not introduce a fake public key.
+* A separate public read-only service/mirror or approved web gateway may eventually replace static snapshots. That is an explicit architecture/security decision, not something this package deploys.
+
+== Operator acceptance
+. Back up the Atrium DB before any deployment; confirm the v0.4.1 descriptor keeps `schemaVersion: 2` (no new DB migrations).
+. Verify the publisher suspension API denies wrong/missing scopes, preserves release history and hides apps in catalog/events.
+. Approve a disposable app with a content-hash-pinned asset and export the snapshot from its database.
+. Serve the resulting catalog on a temporary static origin and confirm an anonymous browser sees only reviewed apps, with no DAPI keys in headers, local storage or the snapshot.
+. Corrupt an asset and repeat the export: it fails, and the prior public JSON remains byte-identical.
+. Disable the publisher, re-export and verify the app disappears without deleting its release; repeat after restart.
+. Validate composed YAML using the pinned DAPI CLI and the source ZIP using published ZipRunner 2.3.0 validator. Target installation, CI acceptance, asset network ownership and publisher proof remain operator responsibilities.

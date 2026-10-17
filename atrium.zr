@@ -1,20 +1,57 @@
 {
+  "schema": "ziprunner.zr/v1",
   "project_key": "atrium",
-  "display_name": "Atrium \u2014 shared registry and games",
-  "zip_match_patterns": [
+  "label": "Atrium — unified games and app registry (Looprd/DAPI)",
+  "match": [
     "atrium-*-ziprunner.zip"
   ],
-  "build_commands": [
-    "python tools/build_spec.py --check",
-    "python tools/check_specs.py",
-    "python -m unittest discover -s tests -v",
+  "command_subdir": ".",
+  "stop": [],
+  "stop_ports": [],
+  "build": [
+    "python tools/setup_build_env.py",
+    "python tools/run_python_checks.py",
     "npm test",
     "npm run build",
     "npm run verify"
   ],
-  "start_commands": [],
-  "delete_missing_files": false,
-  "strip_single_root_folder": false,
-  "clean_git_tree": false,
-  "git_auto_push": false
+  "start": [],
+  "build_window": "hidden",
+  "start_window": "managed",
+  "delete_missing": false,
+  "strip_single_root": false,
+  "protected_paths": [
+    ".git/**",
+    ".env",
+    ".env.*",
+    "*.sqlite",
+    "*.sqlite3",
+    "*.local.json",
+    "data/**",
+    "logs/**",
+    "state/**",
+    "secrets/**",
+    "node_modules/**",
+    "dist/**",
+    "ziprunner.config.json",
+    "ziprunner.project-state.json",
+    "*.pem",
+    "*.key",
+    "*.crt",
+    "*.pfx",
+    "private/**",
+    "server-state/**",
+    "runtime/**",
+    "uploads/**",
+    "packages/**",
+    "public-index/**",
+    "chrome-profile/**",
+    "target/**",
+    "build/**",
+    ".venv/**",
+    ".venv/"
+  ],
+  "require_clean_git_before_overlay": false,
+  "mechanisms_require_build_success": true,
+  "post_build_mechanisms": []
 }

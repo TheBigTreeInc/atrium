@@ -1,48 +1,56 @@
-= atrium Design
-:doctype: article
-:toc:
+= Atrium Design
+:revnumber: 0.4.4
+:revdate: 2026-10-17
+:toc: left
 
-== Goal
-Describe the product goal, users, data boundaries, and first useful build target.
+== Product goal and authority
+Atrium is an independent application and multiplayer game ecosystem. `Looprd` is a specification; DAPI is its implementation/runtime; `TheBigTreeInc/social` owns account relationships and Tavi. Tavi and the standalone browser portal are clients of Atrium, not owners of the catalog or game services. Publicly identifiable computer-controlled game participants use the label *Staff* and may not receive friendships or direct messages.
 
 == System overview
-Describe the major parts of the application, their responsibilities, and how they communicate.
+One ZipRunner project `atrium` owns a single main Looprd `component: atrium` and its nested declarative fragments, backed by one database and one root authorization policy. Trusted game rules and registry handlers are compiled into reviewed inline YAML code by deterministic source generators. DAPI loads nested fragments from pinned Git revisions; it does not execute arbitrary newly registered game source modules. External game publishers register vetted endpoints and client assets through Atrium's application-level registry.
 
-[cols="1,2,2",options="header"]
-|===
-|Component |Purpose |Notes
-|UI / Client |User-facing interaction |Define screens, routes, status areas, and error handling.
-|Backend / Service |Business logic and APIs |Define API contracts and persistence boundaries.
-|Storage / Runtime data |Local or server-side state |Must stay outside source publish unless explicitly reviewed.
-|CI / Release |Builds and publishes artifacts |Prefer CI-built containers/software over local publish.
-|===
+== P1 controlled registry architecture
+See `docs/P1_REGISTRY.adoc` and `openapi.yaml` for the active v0.4 contract. App manifests use the strict `atrium.app/v1` JSON schema. Operator-attested publishers, pending submissions, immutable approved releases, and active application projections are separate tables. Only approved releases with matching manifest digests and active publishers enter the catalog. Dynamic endpoint validation, automated file-byte verification, publisher self-service authentication, public guest discovery and client loading are explicitly deferred.
 
-== Data boundaries
-Document every runtime/private data directory here and whether ZipRunner should protect it from overlay and source publish.
+== Authentication and events
+DAPI's root `auth.mode: database` secures every handler. `apps:approve` authorizes the operator publishing endpoints. `apps:read` authorizes the read-only catalog; it is not a guest key. Raw `App` and `RegisteredEndpoint` resources expose no create/update/delete. Durable `apps` events are emitted with their database mutation in the same transaction; clients refresh catalog snapshots on receipt. DAPI's management key is never distributed to a client, and Tavi's Social bearer token is never forwarded to the registry or a game.
 
-== Update flow
-. Apply source zip into a local project folder.
-. Run local build/test/start commands.
-. Capture only build-passed source.
-. Publish source through a clean Git checkout.
-. Let CI build/publish artifacts.
-. Run manual/gated deploy or restart steps.
+== Persistent data and migration
+Version 2 adds `Publisher`, `AppSubmission` and `AppRelease` tables using additive SQL DDL. Existing `App` and `RegisteredEndpoint` tables remain intact, and older unreviewed records are not presented as published. Schema migrations are not reversed by ZIP rollback. Backup and rehearse migrations against disposable data before live activation. Runtime secrets, DB, source deployment indices and user state live outside the source repository.
 
-== Automation authority
-* Authored sections in this document are the boundary for automated design and implementation.
-* Every automated action must cite the exact governing document and section.
-* Agents must not invent a product, architecture, persistence, API, workflow, data, or safety decision.
-* When a required decision is missing or conflicts with this design, stop only the affected scope, record the question under Open decisions, and identify independent work that remains safe to continue.
-* Manager/QA approval moves completed work into operator Review; it does not mark the work Done.
-* Operator Review contains observable tests with expected results. Only the operator may confirm those tests and close the task as Done.
-* Failed operator tests return the same task to bounded development with recorded direction; missing design decisions block only the affected scope.
-* Apply, push, tag, publish, and release remain explicit operator gates.
+== Decision: one source repository, one component
+Alternatives considered: a repository/component per game, runtime dynamic includes, and data-driven registry. The chosen implementation is one reusable source repository/ZipRunner project, one root Looprd component and a data-driven published app catalog. DAPI `includes` composes fixed source fragments and shares their storage/security; it is *not* a runtime plugin loader. For specialized isolated backends, separate approved services remain possible without splitting the Atrium development repository.
+
+== Decision: operator-only P1 publication
+An unauthenticated storefront would conflict with current component-wide DAPI authentication. The accepted initial approach is operator-scoped publisher registration and approval plus authenticated read-only catalog. Guest access, independent publisher identity and automated asset/endpoint attestation require their own reviewed design and subsequent acceptance. Never weaken operator endpoints to make anonymous discovery work.
+
+== Development verification and release
+Run focused registry tests and the entire Python/Node suite before packaging. Build-generated `modules/registry/looprd.yaml` and `modules/games/checkers/looprd.yaml` must match canonical source. Pinned DAPI semantic validation, disposable end-to-end smoke, official ZipRunner package validation, and actual operator deployment are separate evidence levels. Git push and deployment remain operator-gated, and manager verification is not operator acceptance.
 
 == Open decisions
-Record unresolved decisions here with affected scope, available options, consequences, and the role authorized to decide. An unresolved decision is not permission to choose a default silently.
+* Public catalog authentication without granting write scopes: read-only facade, static signed catalog, or future route-scoping mechanism.
+* Cryptographic publisher domain ownership and immutable asset contents verification before external publication.
+* Independent developer credential issuance, entitlements, server endpoint isolation and third-party availability guarantees.
+* Permanent API-origin client asset distribution and safe Tavi/browser AppHost capability bridging.
 
-== Architecture decisions
-Record material decisions with context, alternatives, consequences, migration, and rollback notes.
+== Approved public catalog snapshot (v0.4.1)
+Atrium continues to use DAPI `auth.mode: database`; anonymous clients do not receive the scoped registry credential. A reviewed operator exports the approved catalog from read-only SQLite and locally SHA-256-verified HTML assets into a *separately served* static JSON document. This is not a live public DAPI endpoint, nor an automatic publishing operation. Publisher status may be changed only through `apps:approve` and immediately affects the authenticated projection and the next static export. See `docs/P1_PUBLIC_CATALOG.adoc`.
 
-== API documentation
-If the project exposes an API, maintain `openapi.yaml` or `openapi.yml`. Agents should inspect OpenAPI before changing endpoints, clients, or generated API types.
+=== ADR: no anonymous exception inside scoped DAPI
+The pinned DAPI authentication policy applies at component level. To avoid exposing privileged keys, static catalog export is the first low-risk public interface. Future gateways/mirrors require explicit operator review and tested cache/revocation semantics. No additional Looprd component is silently registered.
+
+== Decision: isolated dependency bootstrap for ZipRunner (v0.4.2)
+Atrium's source-side Python integration tests depend on PyYAML, SQLAlchemy and Starlette. On 2026-10-17, Windows ZipRunner used the host `python` to run those tests without installing requirements, failing to import `sqlalchemy`. The managed build must first prepare a project-local `.venv` using `python tools/setup_build_env.py`, then run the Python suite exclusively through `.venv` with `python tools/run_python_checks.py`. Windows and Linux virtualenv paths are selected programmatically. The build fails closed if dependency installation fails; it never falls back to an unrelated global interpreter. The environment is excluded from source ZIPs and protected across overlays; no local configuration or persistent game data is modified. No change to DAPI database schema v2, component identity or current registry APIs is made. Rollback: revert the trusted recipe, leaving `.venv` untouched; do not remove or migrate runtime data.
+
+== Decision: ZipRunner recipe precedence and compatibility (v0.4.3)
+
+Atrium ships two reviewed descriptions of the same project: `project.zr` and legacy `atrium.zr`. Both MUST declare the same build sequence (`setup_build_env.py`, `run_python_checks.py`, then Node checks) and protected paths. Registered operator-owned ZipRunner commands may remain cached and MUST be explicitly reviewed/refreshed when they differ. No untrusted ZIP may silently change operator execution policy.
+
+== Decision: saved ZipRunner recipe remains operator-owned (v0.4.4)
+The observed Windows build of v0.4.3 continued using registered stale host
+Python commands despite corrected `project.zr` and `atrium.zr` in the overlay.
+Source ZIPs must never automatically override the trusted local project
+registration. A numbered source update can document and test the recipe, but
+only an operator-controlled project-settings refresh can activate it. Use
+`docs/P1_044_IMPORT.adoc` for the acceptance and non-destructive recovery
+procedure. No production database schema or game API change is implied.

@@ -1,2 +1,4 @@
-# Local source tooling only. DAPI runtime dependencies are managed by pac-labs/dapi.
+# Isolated local tooling for Atrium build/tests. DAPI manages its runtime dependencies.
 PyYAML==6.0.3
+SQLAlchemy>=2.0.43,<2.1
+starlette>=0.45,<2

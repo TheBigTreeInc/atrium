@@ -1,25 +1,41 @@
-import {validateEntry,loadIsolatedApp} from '../src/apphost.mjs';
-const area=document.querySelector('#apps');
-const stage=document.querySelector('#stage');
-async function init(){
- try {
-   const response=await fetch('./catalog.json',{cache:'no-store'});
-   if(!response.ok)throw Error('catalog not published');
-   const data=await response.json();
-   if(!Array.isArray(data.apps)||!Array.isArray(data.allowedOrigins))throw Error('invalid catalog');
-   const published=data.apps.filter(x=>x.status==='published');
-   if(!published.length)return;
-   area.replaceChildren();
-   for (const item of published) {
-     const card=document.createElement('article');card.className='tile';
-     const name=document.createElement('h2');name.textContent=item.title;
-     const desc=document.createElement('p');desc.textContent=item.description || item.id;
-     const launch=document.createElement('button');launch.textContent='Open';
-     launch.addEventListener('click',async()=>{
-       stage.textContent='Opening verified app…';
-       try{await loadIsolatedApp(item,stage,data.allowedOrigins);}catch(e){stage.textContent='Cannot open app: '+e.message;}
-     });card.append(name,desc,launch);area.append(card);
-   }
- }catch(err){stage.textContent='Catalog unavailable: '+err.message;}
+import {loadIsolatedApp} from '../src/apphost.mjs';
+import {fetchPublicCatalog} from '../src/catalog_client.mjs';
+const area = document.querySelector('#apps');
+const stage = document.querySelector('#stage');
+let refreshInFlight = false;
+
+async function refreshCatalog() {
+  if (refreshInFlight) return;
+  refreshInFlight = true;
+  try {
+    const catalog = await fetchPublicCatalog();
+    area.replaceChildren();
+    if (!catalog.apps.length) {
+      const empty = document.createElement('p');
+      empty.textContent = 'No approved applications are currently published.';
+      area.append(empty);
+    }
+    for (const app of catalog.apps) {
+      const card = document.createElement('article'); card.className = 'tile';
+      const heading = document.createElement('h2'); heading.textContent = app.title;
+      const details = document.createElement('p'); details.textContent = app.id;
+      const button = document.createElement('button'); button.textContent = 'Open';
+      button.addEventListener('click', async () => {
+        stage.textContent = 'Opening verified app…';
+        try { await loadIsolatedApp(app, stage, catalog.allowedOrigins); }
+        catch (error) { stage.textContent = 'Cannot open app: ' + error.message; }
+      });
+      card.append(heading, details, button); area.append(card);
+    }
+  } catch (error) {
+    stage.textContent = 'Catalog unavailable: ' + error.message;
+  } finally {
+    refreshInFlight = false;
+  }
 }
-init();
+await refreshCatalog();
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) void refreshCatalog();
+});
+// Poll only while foregrounded; public snapshots are published separately.
+setInterval(() => { if (!document.hidden) void refreshCatalog(); }, 60000);

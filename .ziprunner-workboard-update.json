@@ -1,48 +1,76 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.3.0",
-  "summary": "P0 v0.3.0: first single-project source update; consolidated baseline, pinned GitHub CI, strict import checks, deterministic packaging and roadmap, no automatic deployment.",
+  "version": "0.4.7",
+  "summary": "P1 v0.4.7: fix Windows-native Path normalization in two v0.4.6 build-environment regression mocks; preserve the now-working real SQLAlchemy registry tests. No runtime/data changes.",
   "implemented": [
     {
-      "id": "ATR-P0-001",
-      "title": "Reconcile unified Atrium baseline into one source tree",
-      "summary": "Unified v0.2 prototype preserved in one v0.3 package; remote Git import not yet performed.",
+      "id": "ATR-104-PUBLIC",
+      "title": "Generate reviewed public app catalog snapshot",
+      "summary": "Read-only SQLite snapshot exporter requires approved immutable releases and matching local HTML asset hashes; fail-closed atomic output; anonymous static portal consumes validated JSON.",
       "operator_checks": [
-        "Verify the package is offered only to ZipRunner project atrium and review the overlay against the README-only GitHub main before any push."
+        "From a disposable database approve a game, supply its reviewed hash-named HTML and export to a public static test origin; no API credentials in browser.",
+        "Corrupt asset, tamper release and confirm no new snapshot replaces the last valid bytes; verify a disabled publisher disappears after next export."
       ]
     },
     {
-      "id": "ATR-P0-002",
-      "title": "Pin DAPI and ZipRunner validation tooling",
-      "summary": "Locked upstream SHAs and added GitHub workflow for DAPI semantic validation and official ZIP format checks; workflow not yet executed.",
+      "id": "ATR-103-REVOCATION",
+      "title": "Suspend and restore publishers without deleting releases",
+      "summary": "Protected publisher status handler publishes transactional catalog invalidation events, hides active publisher games and keeps immutable releases.",
       "operator_checks": [
-        "Run GitHub Actions after importing source and confirm pinned DAPI CLI, smoke test and official ZipRunner validator complete successfully."
+        "With apps:approve change active publisher to disabled; check existing releases remain and new catalog hides apps.",
+        "Confirm wrong/missing scope fails and reactivation restores only still-published apps."
       ]
     },
     {
-      "id": "ATR-P0-003",
-      "title": "Add reproducible build and source safety regressions",
-      "summary": "Added duplicate-key/import-limit negative tests, clean web build verification and deterministic source ZIP packaging.",
+      "id": "ATR-104-PAGING",
+      "title": "Paginate authenticated reviewed-only catalog",
+      "summary": "Validated after/limit cursor contracts prevent unbounded client pages and preserve reviewed-only projections.",
       "operator_checks": [
-        "Run Python and Node tests under trusted ZipRunner recipe, reproduce the artifact SHA-256 locally and review generated files."
+        "Request catalog with apps:read, page limit 1, follow next until hasMore false; malformed after and limit return 422."
       ]
     },
     {
-      "id": "ATR-P0-005",
-      "title": "Preserve architecture, roadmap and task identity",
-      "summary": "Included original research catalog, implementation roadmap, updated AsciiDoc and an explicit task ID collision-resolution note.",
+      "id": "ATR-104-BUILD",
+      "title": "Automatically prepare isolated Windows/Linux Python test dependencies",
+      "summary": "Fixed host-OS-native Path expectations in the two isolated dependency test mocks; added a regression that compares the path exactly as stringified by the host. The prior 0.4.6 SQLAlchemy setup works on target; this is only a test fix.",
       "operator_checks": [
-        "Review historic 0.2 task IDs and P0 new IDs in ZipRunner; ensure no completed/approved tasks are overwritten."
+        "Import v0.4.7 through ZipRunner; 88 Python tests including all registry and public-export tests pass under Windows Python 3.13.",
+        "Confirm no ModuleNotFoundError: sqlalchemy and no assertion failure comparing /fake-test-venv vs \\fake-test-venv.",
+        "Confirm npm tests and web build finish, and stable latest advances after a successful build."
       ]
     }
   ],
   "remaining": [
     {
       "id": "ATR-P0-004",
-      "title": "Import to Git and verify disposable live DAPI activation",
-      "summary": "Commit/push source with operator approval, run pinned GitHub CI, perform real ZipRunner intake and inspect disposable DAPI activation and API behavior.",
+      "title": "Official pinned DAPI and ZipRunner live validation",
+      "summary": "Target GitHub Actions/ZipRunner installed run and schema v2 activation remain operator gated and unobserved.",
       "priority": "high"
+    },
+    {
+      "id": "ATR-103-EXTERNAL",
+      "title": "Independent publisher challenge and remote asset ownership proof",
+      "summary": "Operator-attested domains and local hash-checked bytes do not establish HTTPS domain ownership or developer identity; implement challenge-based proof before self-service.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-104-LIVE",
+      "title": "Automatic public catalog gateway and cache revocation",
+      "summary": "Snapshots require explicit operator publication; add an approved automated guest-read gateway or content delivery pipeline, without exposing scoped DAPI credentials.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-105-REPLAY",
+      "title": "Runtime-tested durable replay and public catalog cache synchronization",
+      "summary": "Validate DAPI events, browser refresh/reconnect and forced revocation under a real hosted runtime.",
+      "priority": "medium"
+    },
+    {
+      "id": "ATR-106",
+      "title": "First-party and non-game production entries",
+      "summary": "Publish Checkers and one non-game app after actual asset review and host publication.",
+      "priority": "medium"
     }
   ]
 }

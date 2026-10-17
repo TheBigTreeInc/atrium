@@ -1,0 +1,16 @@
+Atrium v0.4.2 local author-side verification — 2026-10-17
+Environment: Linux, Python 3.13, Node 22; source dependencies preinstalled in author environment.
+Observed source checks:
+- python tools/build_registry_spec.py --check: PASS
+- python tools/build_spec.py --check: PASS
+- python tools/check_specs.py: PASS (single Atrium component, nested composition)
+- python -m unittest discover -s tests -q: PASS (82 tests)
+- npm test: PASS (8 tests)
+- npm run build: PASS
+- npm run verify: PASS
+- python -m unittest tests.test_build_environment -v: PASS (5 bootstrap contract regressions, included in 82)
+Bootstrap-specific evidence:
+- python tools/setup_build_env.py DID NOT complete on this sandbox because its pip index was unreachable (name resolution failure). The venv was created; requirements were NOT installed, and no success fingerprint was written. This is an environment/network limitation, not an observed successful bootstrap. The Windows ZipRunner/CI bootstrap remains UNVERIFIED.
+- Official pinned DAPI/ZipRunner validators and disposable live activation: NOT RUN here.
+- No database migration, Git push, or deployment performed.
+- Fresh extraction and deterministic package comparison performed later in packaging gate (see final handoff output).

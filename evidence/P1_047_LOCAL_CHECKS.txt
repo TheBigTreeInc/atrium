@@ -1,0 +1,12 @@
+Atrium v0.4.7 local source acceptance — 2026-10-17
+Python: 3.13.5 / SQLAlchemy 2.0.50 / PyYAML 6.0.3 / Starlette 0.50.0
+Focused: python -m unittest tests.test_build_environment -v — 11 passed
+Full: python -m unittest discover -s tests -v — 88 passed
+Handlers: python tools/build_spec.py --check — passed
+Registry: python tools/build_registry_spec.py --check — passed
+Composition: python tools/check_specs.py — passed (one component, 6 resources, 9 models, 12 handlers)
+JavaScript: npm test — 8 passed
+Web: npm run build && npm run verify — passed
+Windows 1.2.304.105 import: NOT YET RUN for 0.4.7; prior 0.4.6 Windows log showed two OS-specific assertion failures while SQLAlchemy registry tests passed
+Pinned upstream DAPI and ZipRunner validators: NOT RUN in this local check; GitHub CI configured
+No deployment, Git push, or database migration was performed.

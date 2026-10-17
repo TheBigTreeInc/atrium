@@ -1,0 +1,53 @@
+= Atrium 0.4.2 — Windows ZipRunner dependency repair
+:toc: left
+
+== Observed failure
+Windows ZipRunner processed `atrium-0.4.1-ziprunner.zip` successfully through extraction, protected-path overlay, Checkers generation and source syntax/spec lint. The Python test command failed importing `sqlalchemy` in `tests/test_public_export.py` and `tests/test_registry_runtime.py` because the selected host Python 3.13 environment lacked SQLAlchemy. The packaging did list this dependency but its build recipe did not install it.
+
+== Correction
+* `python tools/setup_build_env.py` creates `.venv` under the Atrium project and installs `requirements-dev.txt` using pip inside that virtual environment.
+* A fingerprint of the dependency file and host interpreter avoids unnecessary reinstalls. If deps disappear, bootstrap installs again. Existing global Python packages are not modified.
+* `python tools/run_python_checks.py` executes checked-in generated spec validation, composition lint and all Python unit tests through that virtual environment.
+* Trusted ZipRunner recipe executes setup before tests. Node checks run unchanged. `.venv/` is protected against overlay, and excluded from source archives and Git.
+* The GitHub Actions Windows matrix independently exercises the same recipe using Windows Python 3.13.
+
+== Limitations
+Initial pip install requires access to an approved package index or offline wheelhouse. Pip or network errors fail clearly; dependency installation is not bypassed. The source ZIP does not ship Python wheels, credentials or an already-created `.venv`.
+
+== Operator test
+. Import `atrium-0.4.2-ziprunner.zip` into the existing `atrium` ZipRunner project.
+. Confirm `setup_build_env.py` finishes successfully, followed by the Python suite and Node checks.
+. Retry without source change and confirm `[build-env] Reusing verified isolated .venv` in the log.
+. Confirm `.venv` is local/protected and was not copied from ZIP.
+. Verify DAPI `schemaVersion: 2` remains unchanged; the build pass does not activate a database migration.
+. Review GitHub Actions and ZipRunner independent acceptance before any push/deployment.
+
+
+== Follow-up root cause (v0.4.3)
+The reported Windows v0.4.2 target log confirms `.venv` was healthy, but the
+actual ZipRunner build still executed bare host `python -m unittest ...` and
+raised the same SQLAlchemy import errors. Inspection of v0.4.2 source identified
+**two distinct recipe files**: `project.zr` contained the updated venv bootstrap
+whereas `atrium.zr` retained the old system-Python `build_commands`. This
+explains the exact commands in the Windows job log.
+
+v0.4.3 synchronizes both recipe formats and introduces a regression test that
+requires identical build commands, protected paths and project keys. An installed
+ZipRunner may retain operator-controlled project settings separately from
+source files, so the operator must check/refresh the registered recipe once.
+
+The full expected build sequence is:
+
+[source,text]
+----
+python tools/setup_build_env.py
+python tools/run_python_checks.py
+npm test
+npm run build
+npm run verify
+----
+
+Only after that sequence is visible in the *actual Windows ZipRunner log* should
+the build repair be operator-accepted. Direct host `python -m unittest ...`
+remains an outdated command and is not an acceptable substitute. `schemaVersion`
+remains 2; do not delete or reset the database or `.venv` to repair this issue.

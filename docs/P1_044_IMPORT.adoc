@@ -1,0 +1,37 @@
+= Atrium 0.4.4 — Windows ZipRunner registered-recipe acceptance
+:toc: left
+
+== Observed target condition
+
+The operator's ZipRunner logs for 0.4.1, 0.4.2 and 0.4.3 show successful extraction/source overlay but an unsuccessful build. In 0.4.3, ZipRunner still executed `python tools/build_spec.py --check`, `python tools/check_specs.py`, and direct `python -m unittest discover -s tests -v`, using a Windows Store Python 3.13 without SQLAlchemy. The two tests `test_public_export` and `test_registry_runtime` could not import SQLAlchemy. This is not evidence that the registry's tested functionality failed.
+
+Version 0.4.3 source already had matching `project.zr` and `atrium.zr` recipes. Therefore the remaining blocker is trusted **registered** project configuration outside the source tree. A ZIP can update the source copy of those files but cannot grant itself permission to change stored operator build commands.
+
+== Import procedure
+
+. Select the existing `atrium` project in ZipRunner. Review its registered build command list (not just the source `project.zr` file).
+. Replace the trusted registered build commands with exactly the list below, using the project settings/configuration editor or explicitly refreshing/reimporting `atrium.zr`. Save the project settings.
+. Import the new `atrium-0.4.4-ziprunner.zip` as project `atrium`. Do not delete the existing project, `.venv`, SQLite database or state files.
+. Inspect the new job log. The first two build commands must be `setup_build_env.py` and `run_python_checks.py`. If the old direct `python -m unittest ...` command appears, the saved configuration has not changed: stop retrying ZIPs and fix that setting.
+. Confirm that the tests use `.venv\Scripts\python.exe`, SQLAlchemy imports, and all Python/Node builds pass. Operator acceptance remains separate.
+
+[source,text]
+----
+python tools/setup_build_env.py
+python tools/run_python_checks.py
+npm test
+npm run build
+npm run verify
+----
+
+== Safety, state and rollback
+
+* The source overlay does not authorize editing `ziprunner.config.json`, rewriting local project settings, modifying global Python, reinitializing databases or exposing credentials.
+* Python dependencies are installed only to the protected local `.venv` and only when needed. A configured package index is required for first installation, unless the verified environment exists.
+* Database schema remains 2; no new DAPI migrations, routes, model removals or externally accessible permissions are introduced in this numbered repair pass.
+* The last verified installed ZIP may still be 0.3.0. A failed source overlay does not prove a rollback occurred. Back up and review the local source diff before any deployment or Git push.
+* If an operator cannot change the saved build recipe, keep the failure visible and request a ZipRunner configuration repair. Do not skip the SQLAlchemy tests or promote a failed candidate.
+
+== Operator acceptance
+
+Evidence required: Windows log showing the new version's exact ZIP hash, build command sequence, venv installation/reuse, passing Python/Node tests, and ZipRunner's trusted verification/review state. The source package itself does not attest to these observations.

@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.zr/v1",
   "project_key": "atrium",
-  "label": "Atrium \u2014 unified games and app registry (Looprd/DAPI)",
+  "label": "Atrium — unified games and app registry (Looprd/DAPI)",
   "match": [
     "atrium-*-ziprunner.zip"
   ],
@@ -9,9 +9,8 @@
   "stop": [],
   "stop_ports": [],
   "build": [
-    "python tools/build_spec.py --check",
-    "python tools/check_specs.py",
-    "python -m unittest discover -s tests -v",
+    "python tools/setup_build_env.py",
+    "python tools/run_python_checks.py",
     "npm test",
     "npm run build",
     "npm run verify"
@@ -35,7 +34,22 @@
     "node_modules/**",
     "dist/**",
     "ziprunner.config.json",
-    "ziprunner.project-state.json"
+    "ziprunner.project-state.json",
+    "*.pem",
+    "*.key",
+    "*.crt",
+    "*.pfx",
+    "private/**",
+    "server-state/**",
+    "runtime/**",
+    "uploads/**",
+    "packages/**",
+    "public-index/**",
+    "chrome-profile/**",
+    "target/**",
+    "build/**",
+    ".venv/**",
+    ".venv/"
   ],
   "require_clean_git_before_overlay": false,
   "mechanisms_require_build_success": true,

@@ -1,0 +1,18 @@
+Atrium 0.4.3 author-side source verification, 2026-10-17
+Environment: Linux, Python 3.13, Node 22.16.0, existing source dependencies installed.
+Source: v0.4.2 ZIP extracted and patched; no target Windows ZipRunner installation.
+
+Commands executed successfully:
+ python tools/build_registry_spec.py --check
+ python tools/build_spec.py --check
+ python tools/check_specs.py
+ python -m unittest discover -s tests -q
+ npm test
+ npm run build
+ npm run verify
+ python tools/package_zip.py
+
+Results: 83 Python unit tests passed, 8 JavaScript tests passed, web build verified.
+Regression added: legacy atrium.zr and project.zr must have identical build/protected path contracts and virtualenv bootstrap first.
+Fresh extracted package test and repeated identical ZIP SHA-256 checked separately after packaging.
+Not performed: Windows ZipRunner project recipe reload; official pinned DAPI and ZipRunner validator execution.

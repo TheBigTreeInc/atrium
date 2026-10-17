@@ -58,6 +58,107 @@ models:
       enabled:
         type: boolean
         required: true
+  Publisher:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      displayName:
+        type: string
+        maxLength: 160
+        required: true
+      origins:
+        type: json
+        required: true
+      status:
+        type: string
+        maxLength: 32
+        required: true
+      createdAt:
+        type: string
+        maxLength: 40
+        required: true
+    unique:
+    - - publisherId
+  AppSubmission:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      submissionId:
+        type: string
+        maxLength: 64
+        required: true
+      appId:
+        type: string
+        maxLength: 120
+        required: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      version:
+        type: string
+        maxLength: 48
+        required: true
+      manifest:
+        type: json
+        required: true
+      digest:
+        type: string
+        maxLength: 64
+        required: true
+      status:
+        type: string
+        maxLength: 32
+        required: true
+      submittedAt:
+        type: string
+        maxLength: 40
+        required: true
+      reviewedAt:
+        type: string
+        maxLength: 40
+    unique:
+    - - submissionId
+  AppRelease:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      appId:
+        type: string
+        maxLength: 120
+        required: true
+      version:
+        type: string
+        maxLength: 48
+        required: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      manifest:
+        type: json
+        required: true
+      digest:
+        type: string
+        maxLength: 64
+        required: true
+      approvedAt:
+        type: string
+        maxLength: 40
+        required: true
+    unique:
+    - - appId
+      - version
 resources:
   apps:
     model: App
@@ -65,34 +166,22 @@ resources:
     operations:
     - list
     - get
-    - create
-    - update
     permissions:
       list:
-      - apps:read
+      - apps:approve
       get:
-      - apps:read
-      create:
-      - apps:publish
-      update:
-      - apps:publish
+      - apps:approve
   endpoints:
     model: RegisteredEndpoint
     path: /endpoints
     operations:
     - list
     - get
-    - create
-    - update
     permissions:
       list:
-      - apps:read
+      - apps:approve
       get:
-      - apps:read
-      create:
-      - apps:publish
-      update:
-      - apps:publish
+      - apps:approve
 websocket:
   resources:
   - apps
@@ -105,11 +194,2652 @@ websocket:
 handlers:
 - path: /registry/info
   kind: response
+  scopes:
+  - apps:read
   response:
-    service: apps
+    service: registry
     contract: atrium.registry/v1
-    status: prototype
+    status: reviewed-with-public-snapshot-export
     publicCatalog: false
-    publisherManagement: operator_scoped
-    note: Social verified-principal delegation and public read-only catalog are future
-      gates.
+    publisherOwnership: operator_attested
+    assetContentVerified: false
+    socialLoginIntegrated: false
+- path: /registry/publishers
+  method: POST
+  kind: python
+  scopes:
+  - apps:approve
+  source: |
+    """Strict, immutable application manifest contract for trusted review.
+
+    This validates *metadata*, not asset content, TLS origin ownership or publisher authority.
+    Those require separate operator/CI checks before publishing.
+    """
+    import hashlib
+    import ipaddress
+    import json
+    import re
+    from urllib.parse import urlsplit
+
+    APP_ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
+    PUBLISHER_ID = re.compile(r"^[a-z][a-z0-9-]{2,119}$")
+    VERSION = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    ALLOWED_KINDS = frozenset({'game', 'social', 'utility', 'application'})
+    PERMISSIONS = frozenset({'profile:read', 'game:join', 'notifications:read'})
+    FIELDS = frozenset({'id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256', 'permissions'})
+
+
+    def validate_origin(origin):
+        """Accept DNS-based HTTPS origins only; these still require ownership review."""
+        if not isinstance(origin, str) or len(origin) > 255:
+            raise ValueError('invalid origin')
+        try:
+            parts = urlsplit(origin)
+            host = parts.hostname or ''
+            port = parts.port
+        except ValueError:
+            raise ValueError('invalid origin') from None
+        if (parts.scheme != 'https' or not host or parts.username or parts.password or
+                parts.path or parts.query or parts.fragment or (port is not None and port != 443)):
+            raise ValueError('origin must be a clean HTTPS origin')
+        if (host in {'localhost', 'localhost.localdomain'} or host.endswith(('.local', '.localhost', '.internal'))
+                or '.' not in host or not re.fullmatch(r'[a-z0-9.-]+', host) or '..' in host):
+            raise ValueError('origin must use a public DNS hostname')
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError('IP addresses are not acceptable asset origins')
+        labels = host.split('.')
+        if (any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', x) for x in labels)
+                or all(x.isdecimal() for x in labels)):
+            raise ValueError('invalid public DNS origin')
+        normalized = 'https://' + host
+        if origin not in (normalized, normalized + ':443'):
+            raise ValueError('origin is not canonical')
+        return normalized
+
+
+    def validate_manifest(doc, *, approved_origins):
+        if not isinstance(doc, dict) or set(doc) - FIELDS:
+            raise ValueError('manifest is not an object or has unknown keys')
+        required = FIELDS - {'permissions'}
+        for field in required:
+            if not isinstance(doc.get(field), str) or not doc[field].strip():
+                raise ValueError('missing or invalid ' + field)
+        if not APP_ID.fullmatch(doc['id']) or not PUBLISHER_ID.fullmatch(doc['publisher']):
+            raise ValueError('invalid application or publisher ID')
+        if not VERSION.fullmatch(doc['version']) or len(doc['version']) > 48:
+            raise ValueError('invalid semantic version')
+        if not 1 <= len(doc['title']) <= 160 or doc['kind'] not in ALLOWED_KINDS:
+            raise ValueError('invalid title or app kind')
+        if not re.fullmatch(r'[a-f0-9]{64}', doc['sha256']):
+            raise ValueError('sha256 must be a lowercase digest')
+        entry = doc['entry']
+        try:
+            url = urlsplit(entry)
+        except ValueError:
+            raise ValueError('invalid entrypoint URL') from None
+        origin = validate_origin(url.scheme + '://' + (url.netloc or ''))
+        if (origin not in approved_origins or url.query or url.fragment or
+                not url.path.startswith('/assets/') or doc['sha256'] not in url.path.split('/')):
+            raise ValueError('entry must be an approved immutable asset URL')
+        if len(entry) > 512:
+            raise ValueError('entry is too long')
+        permissions = doc.get('permissions', [])
+        if (not isinstance(permissions, list) or len(permissions) > 12 or
+                any(not isinstance(p, str) or p not in PERMISSIONS for p in permissions) or
+                len(set(permissions)) != len(permissions)):
+            raise ValueError('invalid permissions')
+        return {k: doc[k] for k in ('id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256')} | {'permissions': permissions}
+
+
+    def canonical_hash(doc):
+        return hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+
+    """Operator-only durable registry handlers; generated inline into DAPI spec.
+
+    Clients never write App/Publisher/Release tables directly. All updates are reviewed.
+    """
+    import json
+    import uuid
+    from datetime import datetime, timezone
+
+    from sqlalchemy import text
+    from starlette.exceptions import HTTPException
+
+
+    def _fail(message, status=422):
+        raise HTTPException(status_code=status, detail=message)
+
+
+    def _body(ctx):
+        if not isinstance(ctx.body, dict):
+            _fail('expected a JSON object')
+        return ctx.body
+
+
+    def _when():
+        return datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+
+    def _row(session, statement, **values):
+        return session.execute(text(statement), values).mappings().first()
+
+
+    def _rows(session, statement, **values):
+        return [dict(x) for x in session.execute(text(statement), values).mappings()]
+
+
+    def _json(value):
+        return value if isinstance(value, (dict, list)) else json.loads(value)
+
+
+    def _as_json(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+
+    def _tx(ctx):
+        return ctx.transaction() if ctx.transaction else ctx.session_factory.begin()
+
+
+    def _emit(ctx, session, action, row_id, data):
+        event = {'resource': 'apps', 'action': action, 'id': row_id, 'data': data}
+        if ctx.emit:
+            ctx.emit(session, event)
+        else:
+            # Kept only for legacy DAPI with best-effort event delivery.
+            pass
+
+
+    def _publisher(session, publisher_id):
+        return _row(session, 'SELECT * FROM "Publisher" WHERE "publisherId"=:pid', pid=publisher_id)
+
+
+    def _submission(session, sid):
+        return _row(session, 'SELECT * FROM "AppSubmission" WHERE "submissionId"=:sid', sid=sid)
+
+
+    async def register_publisher(ctx):
+        body = _body(ctx)
+        publisher_id, name, origins = body.get('id'), body.get('name'), body.get('origins')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher ID')
+        if not isinstance(name, str) or not 1 <= len(name) <= 160:
+            _fail('invalid publisher name')
+        if not isinstance(origins, list) or not 1 <= len(origins) <= 8:
+            _fail('publisher requires 1-8 reviewed origins')
+        try:
+            origins = [validate_origin(x) for x in origins]
+        except ValueError as error:
+            _fail(str(error))
+        if len(origins) != len(set(origins)):
+            _fail('duplicate publisher origin')
+        with _tx(ctx) as session:
+            if _publisher(session, publisher_id):
+                _fail('publisher already exists', 409)
+            session.execute(text('INSERT INTO "Publisher" ("publisherId","displayName","origins","status","createdAt") '
+                                 'VALUES (:pid,:name,:origins,:status,:created)'),
+                            {'pid': publisher_id, 'name': name, 'origins': _as_json(origins),
+                             'status': 'active', 'created': _when()})
+        return {'publisherId': publisher_id, 'status': 'active', 'ownership': 'operator_attested'}
+
+
+    async def submit(ctx):
+        body = _body(ctx)
+        manifest = body.get('manifest')
+        if not isinstance(manifest, dict):
+            _fail('manifest must be an object')
+        if len(_as_json(manifest)) > 16384:
+            _fail('manifest too large', 413)
+        with _tx(ctx) as session:
+            publisher_id = manifest.get('publisher')
+            publisher = _publisher(session, publisher_id) if isinstance(publisher_id, str) else None
+            if not publisher or publisher['status'] != 'active':
+                _fail('publisher not approved', 403)
+            try:
+                checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+            except ValueError as error:
+                _fail(str(error))
+            existing = _row(session, 'SELECT "publisher" FROM "App" WHERE "appId"=:app', app=checked['id'])
+            if existing and existing['publisher'] != publisher_id:
+                _fail('app already belongs to another publisher', 409)
+            prior = _row(session, 'SELECT "id" FROM "AppSubmission" WHERE "appId"=:app AND '
+                         '"version"=:version AND "status" IN (\'pending\',\'approved\')',
+                         app=checked['id'], version=checked['version'])
+            if prior or _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                              app=checked['id'], version=checked['version']):
+                _fail('version already submitted or published', 409)
+            sid = uuid.uuid4().hex
+            session.execute(text('INSERT INTO "AppSubmission" '
+                                 '("submissionId","appId","publisherId","version","manifest","digest","status","submittedAt") '
+                                 'VALUES (:sid,:app,:pid,:version,:manifest,:digest,\'pending\',:created)'),
+                            {'sid': sid, 'app': checked['id'], 'pid': publisher_id, 'version': checked['version'],
+                             'manifest': _as_json(checked), 'digest': canonical_hash(checked), 'created': _when()})
+        return {'submissionId': sid, 'status': 'pending', 'digest': canonical_hash(checked)}
+
+
+    def _version_key(value):
+        match = VERSION.fullmatch(value)
+        return tuple(int(match.group(i)) for i in (1, 2, 3)) if match else (0, 0, 0)
+
+
+    def _update_app(session, manifest, digest):
+        app_id = manifest['id']
+        old = _row(session, 'SELECT "id","publisher","version","status" FROM "App" WHERE "appId"=:app', app=app_id)
+        if old and old['publisher'] != manifest['publisher']:
+            _fail('publisher ownership conflict', 409)
+        if old:
+            if _version_key(manifest['version']) <= _version_key(old['version']):
+                _fail('approved version must be newer than current version', 409)
+            session.execute(text('UPDATE "App" SET "title"=:title,"category"=:kind,"version"=:version,'
+                                 '"status"=\'published\',"manifest"=:manifest WHERE "appId"=:app'),
+                            {'title': manifest['title'], 'kind': manifest['kind'], 'version': manifest['version'],
+                             'manifest': _as_json(manifest), 'app': app_id})
+            return old['id'], 'updated'
+        session.execute(text('INSERT INTO "App" '
+                             '("appId","title","publisher","category","version","status","manifest") '
+                             'VALUES (:app,:title,:publisher,:kind,:version,\'published\',:manifest)'),
+                        {'app': app_id, 'title': manifest['title'], 'publisher': manifest['publisher'],
+                         'kind': manifest['kind'], 'version': manifest['version'], 'manifest': _as_json(manifest)})
+        inserted = _row(session, 'SELECT "id" FROM "App" WHERE "appId"=:app', app=app_id)
+        return inserted['id'], 'created'
+
+
+    async def review(ctx):
+        body = _body(ctx)
+        sid, decision = body.get('submissionId'), body.get('decision')
+        if not isinstance(sid, str) or len(sid) != 32 or decision not in ('approve', 'reject'):
+            _fail('invalid review decision')
+        with _tx(ctx) as session:
+            entry = _submission(session, sid)
+            if not entry:
+                _fail('unknown submission', 404)
+            if entry['status'] != 'pending':
+                _fail('submission already reviewed', 409)
+            manifest = _json(entry['manifest'])
+            if decision == 'approve':
+                publisher = _publisher(session, entry['publisherId'])
+                if not publisher or publisher['status'] != 'active':
+                    _fail('publisher not active', 403)
+                try:
+                    checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+                except ValueError as error:
+                    _fail(str(error))
+                if canonical_hash(checked) != entry['digest']:
+                    _fail('submitted manifest changed', 409)
+                existing = _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                                app=checked['id'], version=checked['version'])
+                if existing:
+                    _fail('immutable version already published', 409)
+                session.execute(text('INSERT INTO "AppRelease" '
+                                     '("appId","version","publisherId","manifest","digest","approvedAt") '
+                                     'VALUES (:app,:version,:pid,:manifest,:digest,:now)'),
+                                {'app': checked['id'], 'version': checked['version'], 'pid': checked['publisher'],
+                                 'manifest': _as_json(checked), 'digest': entry['digest'], 'now': _when()})
+                record_id, action = _update_app(session, checked, entry['digest'])
+                _emit(ctx, session, action, record_id, {'id': record_id, 'appId': checked['id'],
+                      'version': checked['version'], 'status': 'published'})
+            session.execute(text('UPDATE "AppSubmission" SET "status"=:status,"reviewedAt"=:now WHERE "submissionId"=:sid'),
+                            {'status': 'approved' if decision == 'approve' else 'rejected', 'now': _when(), 'sid': sid})
+        return {'submissionId': sid, 'status': 'approved' if decision == 'approve' else 'rejected'}
+
+
+    async def disable(ctx):
+        body = _body(ctx)
+        app_id = body.get('appId')
+        if not isinstance(app_id, str) or not APP_ID.fullmatch(app_id):
+            _fail('invalid app ID')
+        with _tx(ctx) as session:
+            row = _row(session, 'SELECT "id","status" FROM "App" WHERE "appId"=:app', app=app_id)
+            if not row:
+                _fail('unknown application', 404)
+            if row['status'] != 'published':
+                _fail('only published apps can be disabled', 409)
+            session.execute(text('UPDATE "App" SET "status"=\'disabled\' WHERE "appId"=:app'), {'app': app_id})
+            _emit(ctx, session, 'updated', row['id'], {'id': row['id'], 'appId': app_id, 'status': 'disabled'})
+        return {'appId': app_id, 'status': 'disabled'}
+
+
+    def _approved_catalog(session, *, after='', limit=10000):
+        """Project only active, immutable, reviewed releases; reject any tampering."""
+        rows = _rows(session, 'SELECT a."appId", a."publisher", a."version", a."manifest", '
+                     'r."digest", r."manifest" AS "reviewed", r."publisherId" AS "releasePublisher", '
+                     'p."origins" FROM "App" AS a JOIN "AppRelease" AS r '
+                     'ON a."appId"=r."appId" AND a."version"=r."version" '
+                     'JOIN "Publisher" AS p ON a."publisher"=p."publisherId" '
+                     'WHERE a."status"=\'published\' AND p."status"=\'active\' '
+                     'AND a."appId">:after ORDER BY a."appId" LIMIT :limit',
+                     after=after, limit=min(limit, 10001))
+        apps = []
+        for row in rows:
+            try:
+                manifest = _json(row['reviewed'])
+                actual = _json(row['manifest'])
+                checked = validate_manifest(manifest, approved_origins=set(_json(row['origins'])))
+                if (checked != manifest or manifest != actual or
+                        manifest['id'] != row['appId'] or manifest['version'] != row['version'] or
+                        manifest['publisher'] != row['publisher'] or row['releasePublisher'] != row['publisher'] or
+                        canonical_hash(manifest) != row['digest']):
+                    continue
+                apps.append(manifest)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+        return apps
+
+
+    async def catalog(ctx):
+        query = getattr(getattr(ctx, 'request', None), 'query_params', {})
+        after = query.get('after', '')
+        raw_limit = query.get('limit', '100')
+        if not isinstance(after, str) or len(after) > 120 or (after and not APP_ID.fullmatch(after)):
+            _fail('invalid catalog cursor')
+        if not isinstance(raw_limit, str) or not raw_limit.isascii() or not raw_limit.isdecimal():
+            _fail('invalid catalog page size')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 100:
+            _fail('catalog limit must be 1-100')
+        with ctx.session_factory() as session:
+            approved = _approved_catalog(session, after=after, limit=10001)
+        page = approved[:limit]
+        return {'schema': 'atrium.catalog/v1', 'apps': page,
+                'count': len(page), 'next': page[-1]['id'] if len(approved) > limit else None,
+                'hasMore': len(approved) > limit, 'authenticated': True}
+
+
+    async def change_publisher_status(ctx):
+        body = _body(ctx)
+        publisher_id, status = body.get('publisherId'), body.get('status')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher')
+        if status not in ('active', 'disabled'):
+            _fail('invalid publisher status')
+        with _tx(ctx) as session:
+            row = _publisher(session, publisher_id)
+            if not row:
+                _fail('publisher not found', 404)
+            if row['status'] == status:
+                _fail('publisher status already set', 409)
+            session.execute(text('UPDATE "Publisher" SET "status"=:status WHERE "publisherId"=:pid'),
+                            {'status': status, 'pid': publisher_id})
+            affected = _rows(session, 'SELECT "id","appId","version" FROM "App" '
+                             'WHERE "publisher"=:pid AND "status"=\'published\' ORDER BY "appId"', pid=publisher_id)
+            for app in affected:
+                _emit(ctx, session, 'updated', app['id'], {'id': app['id'], 'appId': app['appId'],
+                      'version': app['version'], 'status': 'publisher_' + status})
+        return {'publisherId': publisher_id, 'status': status, 'affectedApps': len(affected)}
+
+
+    async def submissions(ctx):
+        with ctx.session_factory() as session:
+            rows = _rows(session, 'SELECT "submissionId","appId","publisherId","version","digest",'
+                         '"status","submittedAt","reviewedAt" FROM "AppSubmission" '
+                         'ORDER BY "id" DESC LIMIT 100')
+        return {'submissions': rows}
+
+
+    async def handle(ctx):
+        return await register_publisher(ctx)
+- path: /registry/publishers/status
+  method: POST
+  kind: python
+  scopes:
+  - apps:approve
+  source: |
+    """Strict, immutable application manifest contract for trusted review.
+
+    This validates *metadata*, not asset content, TLS origin ownership or publisher authority.
+    Those require separate operator/CI checks before publishing.
+    """
+    import hashlib
+    import ipaddress
+    import json
+    import re
+    from urllib.parse import urlsplit
+
+    APP_ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
+    PUBLISHER_ID = re.compile(r"^[a-z][a-z0-9-]{2,119}$")
+    VERSION = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    ALLOWED_KINDS = frozenset({'game', 'social', 'utility', 'application'})
+    PERMISSIONS = frozenset({'profile:read', 'game:join', 'notifications:read'})
+    FIELDS = frozenset({'id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256', 'permissions'})
+
+
+    def validate_origin(origin):
+        """Accept DNS-based HTTPS origins only; these still require ownership review."""
+        if not isinstance(origin, str) or len(origin) > 255:
+            raise ValueError('invalid origin')
+        try:
+            parts = urlsplit(origin)
+            host = parts.hostname or ''
+            port = parts.port
+        except ValueError:
+            raise ValueError('invalid origin') from None
+        if (parts.scheme != 'https' or not host or parts.username or parts.password or
+                parts.path or parts.query or parts.fragment or (port is not None and port != 443)):
+            raise ValueError('origin must be a clean HTTPS origin')
+        if (host in {'localhost', 'localhost.localdomain'} or host.endswith(('.local', '.localhost', '.internal'))
+                or '.' not in host or not re.fullmatch(r'[a-z0-9.-]+', host) or '..' in host):
+            raise ValueError('origin must use a public DNS hostname')
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError('IP addresses are not acceptable asset origins')
+        labels = host.split('.')
+        if (any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', x) for x in labels)
+                or all(x.isdecimal() for x in labels)):
+            raise ValueError('invalid public DNS origin')
+        normalized = 'https://' + host
+        if origin not in (normalized, normalized + ':443'):
+            raise ValueError('origin is not canonical')
+        return normalized
+
+
+    def validate_manifest(doc, *, approved_origins):
+        if not isinstance(doc, dict) or set(doc) - FIELDS:
+            raise ValueError('manifest is not an object or has unknown keys')
+        required = FIELDS - {'permissions'}
+        for field in required:
+            if not isinstance(doc.get(field), str) or not doc[field].strip():
+                raise ValueError('missing or invalid ' + field)
+        if not APP_ID.fullmatch(doc['id']) or not PUBLISHER_ID.fullmatch(doc['publisher']):
+            raise ValueError('invalid application or publisher ID')
+        if not VERSION.fullmatch(doc['version']) or len(doc['version']) > 48:
+            raise ValueError('invalid semantic version')
+        if not 1 <= len(doc['title']) <= 160 or doc['kind'] not in ALLOWED_KINDS:
+            raise ValueError('invalid title or app kind')
+        if not re.fullmatch(r'[a-f0-9]{64}', doc['sha256']):
+            raise ValueError('sha256 must be a lowercase digest')
+        entry = doc['entry']
+        try:
+            url = urlsplit(entry)
+        except ValueError:
+            raise ValueError('invalid entrypoint URL') from None
+        origin = validate_origin(url.scheme + '://' + (url.netloc or ''))
+        if (origin not in approved_origins or url.query or url.fragment or
+                not url.path.startswith('/assets/') or doc['sha256'] not in url.path.split('/')):
+            raise ValueError('entry must be an approved immutable asset URL')
+        if len(entry) > 512:
+            raise ValueError('entry is too long')
+        permissions = doc.get('permissions', [])
+        if (not isinstance(permissions, list) or len(permissions) > 12 or
+                any(not isinstance(p, str) or p not in PERMISSIONS for p in permissions) or
+                len(set(permissions)) != len(permissions)):
+            raise ValueError('invalid permissions')
+        return {k: doc[k] for k in ('id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256')} | {'permissions': permissions}
+
+
+    def canonical_hash(doc):
+        return hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+
+    """Operator-only durable registry handlers; generated inline into DAPI spec.
+
+    Clients never write App/Publisher/Release tables directly. All updates are reviewed.
+    """
+    import json
+    import uuid
+    from datetime import datetime, timezone
+
+    from sqlalchemy import text
+    from starlette.exceptions import HTTPException
+
+
+    def _fail(message, status=422):
+        raise HTTPException(status_code=status, detail=message)
+
+
+    def _body(ctx):
+        if not isinstance(ctx.body, dict):
+            _fail('expected a JSON object')
+        return ctx.body
+
+
+    def _when():
+        return datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+
+    def _row(session, statement, **values):
+        return session.execute(text(statement), values).mappings().first()
+
+
+    def _rows(session, statement, **values):
+        return [dict(x) for x in session.execute(text(statement), values).mappings()]
+
+
+    def _json(value):
+        return value if isinstance(value, (dict, list)) else json.loads(value)
+
+
+    def _as_json(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+
+    def _tx(ctx):
+        return ctx.transaction() if ctx.transaction else ctx.session_factory.begin()
+
+
+    def _emit(ctx, session, action, row_id, data):
+        event = {'resource': 'apps', 'action': action, 'id': row_id, 'data': data}
+        if ctx.emit:
+            ctx.emit(session, event)
+        else:
+            # Kept only for legacy DAPI with best-effort event delivery.
+            pass
+
+
+    def _publisher(session, publisher_id):
+        return _row(session, 'SELECT * FROM "Publisher" WHERE "publisherId"=:pid', pid=publisher_id)
+
+
+    def _submission(session, sid):
+        return _row(session, 'SELECT * FROM "AppSubmission" WHERE "submissionId"=:sid', sid=sid)
+
+
+    async def register_publisher(ctx):
+        body = _body(ctx)
+        publisher_id, name, origins = body.get('id'), body.get('name'), body.get('origins')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher ID')
+        if not isinstance(name, str) or not 1 <= len(name) <= 160:
+            _fail('invalid publisher name')
+        if not isinstance(origins, list) or not 1 <= len(origins) <= 8:
+            _fail('publisher requires 1-8 reviewed origins')
+        try:
+            origins = [validate_origin(x) for x in origins]
+        except ValueError as error:
+            _fail(str(error))
+        if len(origins) != len(set(origins)):
+            _fail('duplicate publisher origin')
+        with _tx(ctx) as session:
+            if _publisher(session, publisher_id):
+                _fail('publisher already exists', 409)
+            session.execute(text('INSERT INTO "Publisher" ("publisherId","displayName","origins","status","createdAt") '
+                                 'VALUES (:pid,:name,:origins,:status,:created)'),
+                            {'pid': publisher_id, 'name': name, 'origins': _as_json(origins),
+                             'status': 'active', 'created': _when()})
+        return {'publisherId': publisher_id, 'status': 'active', 'ownership': 'operator_attested'}
+
+
+    async def submit(ctx):
+        body = _body(ctx)
+        manifest = body.get('manifest')
+        if not isinstance(manifest, dict):
+            _fail('manifest must be an object')
+        if len(_as_json(manifest)) > 16384:
+            _fail('manifest too large', 413)
+        with _tx(ctx) as session:
+            publisher_id = manifest.get('publisher')
+            publisher = _publisher(session, publisher_id) if isinstance(publisher_id, str) else None
+            if not publisher or publisher['status'] != 'active':
+                _fail('publisher not approved', 403)
+            try:
+                checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+            except ValueError as error:
+                _fail(str(error))
+            existing = _row(session, 'SELECT "publisher" FROM "App" WHERE "appId"=:app', app=checked['id'])
+            if existing and existing['publisher'] != publisher_id:
+                _fail('app already belongs to another publisher', 409)
+            prior = _row(session, 'SELECT "id" FROM "AppSubmission" WHERE "appId"=:app AND '
+                         '"version"=:version AND "status" IN (\'pending\',\'approved\')',
+                         app=checked['id'], version=checked['version'])
+            if prior or _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                              app=checked['id'], version=checked['version']):
+                _fail('version already submitted or published', 409)
+            sid = uuid.uuid4().hex
+            session.execute(text('INSERT INTO "AppSubmission" '
+                                 '("submissionId","appId","publisherId","version","manifest","digest","status","submittedAt") '
+                                 'VALUES (:sid,:app,:pid,:version,:manifest,:digest,\'pending\',:created)'),
+                            {'sid': sid, 'app': checked['id'], 'pid': publisher_id, 'version': checked['version'],
+                             'manifest': _as_json(checked), 'digest': canonical_hash(checked), 'created': _when()})
+        return {'submissionId': sid, 'status': 'pending', 'digest': canonical_hash(checked)}
+
+
+    def _version_key(value):
+        match = VERSION.fullmatch(value)
+        return tuple(int(match.group(i)) for i in (1, 2, 3)) if match else (0, 0, 0)
+
+
+    def _update_app(session, manifest, digest):
+        app_id = manifest['id']
+        old = _row(session, 'SELECT "id","publisher","version","status" FROM "App" WHERE "appId"=:app', app=app_id)
+        if old and old['publisher'] != manifest['publisher']:
+            _fail('publisher ownership conflict', 409)
+        if old:
+            if _version_key(manifest['version']) <= _version_key(old['version']):
+                _fail('approved version must be newer than current version', 409)
+            session.execute(text('UPDATE "App" SET "title"=:title,"category"=:kind,"version"=:version,'
+                                 '"status"=\'published\',"manifest"=:manifest WHERE "appId"=:app'),
+                            {'title': manifest['title'], 'kind': manifest['kind'], 'version': manifest['version'],
+                             'manifest': _as_json(manifest), 'app': app_id})
+            return old['id'], 'updated'
+        session.execute(text('INSERT INTO "App" '
+                             '("appId","title","publisher","category","version","status","manifest") '
+                             'VALUES (:app,:title,:publisher,:kind,:version,\'published\',:manifest)'),
+                        {'app': app_id, 'title': manifest['title'], 'publisher': manifest['publisher'],
+                         'kind': manifest['kind'], 'version': manifest['version'], 'manifest': _as_json(manifest)})
+        inserted = _row(session, 'SELECT "id" FROM "App" WHERE "appId"=:app', app=app_id)
+        return inserted['id'], 'created'
+
+
+    async def review(ctx):
+        body = _body(ctx)
+        sid, decision = body.get('submissionId'), body.get('decision')
+        if not isinstance(sid, str) or len(sid) != 32 or decision not in ('approve', 'reject'):
+            _fail('invalid review decision')
+        with _tx(ctx) as session:
+            entry = _submission(session, sid)
+            if not entry:
+                _fail('unknown submission', 404)
+            if entry['status'] != 'pending':
+                _fail('submission already reviewed', 409)
+            manifest = _json(entry['manifest'])
+            if decision == 'approve':
+                publisher = _publisher(session, entry['publisherId'])
+                if not publisher or publisher['status'] != 'active':
+                    _fail('publisher not active', 403)
+                try:
+                    checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+                except ValueError as error:
+                    _fail(str(error))
+                if canonical_hash(checked) != entry['digest']:
+                    _fail('submitted manifest changed', 409)
+                existing = _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                                app=checked['id'], version=checked['version'])
+                if existing:
+                    _fail('immutable version already published', 409)
+                session.execute(text('INSERT INTO "AppRelease" '
+                                     '("appId","version","publisherId","manifest","digest","approvedAt") '
+                                     'VALUES (:app,:version,:pid,:manifest,:digest,:now)'),
+                                {'app': checked['id'], 'version': checked['version'], 'pid': checked['publisher'],
+                                 'manifest': _as_json(checked), 'digest': entry['digest'], 'now': _when()})
+                record_id, action = _update_app(session, checked, entry['digest'])
+                _emit(ctx, session, action, record_id, {'id': record_id, 'appId': checked['id'],
+                      'version': checked['version'], 'status': 'published'})
+            session.execute(text('UPDATE "AppSubmission" SET "status"=:status,"reviewedAt"=:now WHERE "submissionId"=:sid'),
+                            {'status': 'approved' if decision == 'approve' else 'rejected', 'now': _when(), 'sid': sid})
+        return {'submissionId': sid, 'status': 'approved' if decision == 'approve' else 'rejected'}
+
+
+    async def disable(ctx):
+        body = _body(ctx)
+        app_id = body.get('appId')
+        if not isinstance(app_id, str) or not APP_ID.fullmatch(app_id):
+            _fail('invalid app ID')
+        with _tx(ctx) as session:
+            row = _row(session, 'SELECT "id","status" FROM "App" WHERE "appId"=:app', app=app_id)
+            if not row:
+                _fail('unknown application', 404)
+            if row['status'] != 'published':
+                _fail('only published apps can be disabled', 409)
+            session.execute(text('UPDATE "App" SET "status"=\'disabled\' WHERE "appId"=:app'), {'app': app_id})
+            _emit(ctx, session, 'updated', row['id'], {'id': row['id'], 'appId': app_id, 'status': 'disabled'})
+        return {'appId': app_id, 'status': 'disabled'}
+
+
+    def _approved_catalog(session, *, after='', limit=10000):
+        """Project only active, immutable, reviewed releases; reject any tampering."""
+        rows = _rows(session, 'SELECT a."appId", a."publisher", a."version", a."manifest", '
+                     'r."digest", r."manifest" AS "reviewed", r."publisherId" AS "releasePublisher", '
+                     'p."origins" FROM "App" AS a JOIN "AppRelease" AS r '
+                     'ON a."appId"=r."appId" AND a."version"=r."version" '
+                     'JOIN "Publisher" AS p ON a."publisher"=p."publisherId" '
+                     'WHERE a."status"=\'published\' AND p."status"=\'active\' '
+                     'AND a."appId">:after ORDER BY a."appId" LIMIT :limit',
+                     after=after, limit=min(limit, 10001))
+        apps = []
+        for row in rows:
+            try:
+                manifest = _json(row['reviewed'])
+                actual = _json(row['manifest'])
+                checked = validate_manifest(manifest, approved_origins=set(_json(row['origins'])))
+                if (checked != manifest or manifest != actual or
+                        manifest['id'] != row['appId'] or manifest['version'] != row['version'] or
+                        manifest['publisher'] != row['publisher'] or row['releasePublisher'] != row['publisher'] or
+                        canonical_hash(manifest) != row['digest']):
+                    continue
+                apps.append(manifest)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+        return apps
+
+
+    async def catalog(ctx):
+        query = getattr(getattr(ctx, 'request', None), 'query_params', {})
+        after = query.get('after', '')
+        raw_limit = query.get('limit', '100')
+        if not isinstance(after, str) or len(after) > 120 or (after and not APP_ID.fullmatch(after)):
+            _fail('invalid catalog cursor')
+        if not isinstance(raw_limit, str) or not raw_limit.isascii() or not raw_limit.isdecimal():
+            _fail('invalid catalog page size')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 100:
+            _fail('catalog limit must be 1-100')
+        with ctx.session_factory() as session:
+            approved = _approved_catalog(session, after=after, limit=10001)
+        page = approved[:limit]
+        return {'schema': 'atrium.catalog/v1', 'apps': page,
+                'count': len(page), 'next': page[-1]['id'] if len(approved) > limit else None,
+                'hasMore': len(approved) > limit, 'authenticated': True}
+
+
+    async def change_publisher_status(ctx):
+        body = _body(ctx)
+        publisher_id, status = body.get('publisherId'), body.get('status')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher')
+        if status not in ('active', 'disabled'):
+            _fail('invalid publisher status')
+        with _tx(ctx) as session:
+            row = _publisher(session, publisher_id)
+            if not row:
+                _fail('publisher not found', 404)
+            if row['status'] == status:
+                _fail('publisher status already set', 409)
+            session.execute(text('UPDATE "Publisher" SET "status"=:status WHERE "publisherId"=:pid'),
+                            {'status': status, 'pid': publisher_id})
+            affected = _rows(session, 'SELECT "id","appId","version" FROM "App" '
+                             'WHERE "publisher"=:pid AND "status"=\'published\' ORDER BY "appId"', pid=publisher_id)
+            for app in affected:
+                _emit(ctx, session, 'updated', app['id'], {'id': app['id'], 'appId': app['appId'],
+                      'version': app['version'], 'status': 'publisher_' + status})
+        return {'publisherId': publisher_id, 'status': status, 'affectedApps': len(affected)}
+
+
+    async def submissions(ctx):
+        with ctx.session_factory() as session:
+            rows = _rows(session, 'SELECT "submissionId","appId","publisherId","version","digest",'
+                         '"status","submittedAt","reviewedAt" FROM "AppSubmission" '
+                         'ORDER BY "id" DESC LIMIT 100')
+        return {'submissions': rows}
+
+
+    async def handle(ctx):
+        return await change_publisher_status(ctx)
+- path: /registry/submissions
+  method: POST
+  kind: python
+  scopes:
+  - apps:approve
+  source: |
+    """Strict, immutable application manifest contract for trusted review.
+
+    This validates *metadata*, not asset content, TLS origin ownership or publisher authority.
+    Those require separate operator/CI checks before publishing.
+    """
+    import hashlib
+    import ipaddress
+    import json
+    import re
+    from urllib.parse import urlsplit
+
+    APP_ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
+    PUBLISHER_ID = re.compile(r"^[a-z][a-z0-9-]{2,119}$")
+    VERSION = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    ALLOWED_KINDS = frozenset({'game', 'social', 'utility', 'application'})
+    PERMISSIONS = frozenset({'profile:read', 'game:join', 'notifications:read'})
+    FIELDS = frozenset({'id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256', 'permissions'})
+
+
+    def validate_origin(origin):
+        """Accept DNS-based HTTPS origins only; these still require ownership review."""
+        if not isinstance(origin, str) or len(origin) > 255:
+            raise ValueError('invalid origin')
+        try:
+            parts = urlsplit(origin)
+            host = parts.hostname or ''
+            port = parts.port
+        except ValueError:
+            raise ValueError('invalid origin') from None
+        if (parts.scheme != 'https' or not host or parts.username or parts.password or
+                parts.path or parts.query or parts.fragment or (port is not None and port != 443)):
+            raise ValueError('origin must be a clean HTTPS origin')
+        if (host in {'localhost', 'localhost.localdomain'} or host.endswith(('.local', '.localhost', '.internal'))
+                or '.' not in host or not re.fullmatch(r'[a-z0-9.-]+', host) or '..' in host):
+            raise ValueError('origin must use a public DNS hostname')
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError('IP addresses are not acceptable asset origins')
+        labels = host.split('.')
+        if (any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', x) for x in labels)
+                or all(x.isdecimal() for x in labels)):
+            raise ValueError('invalid public DNS origin')
+        normalized = 'https://' + host
+        if origin not in (normalized, normalized + ':443'):
+            raise ValueError('origin is not canonical')
+        return normalized
+
+
+    def validate_manifest(doc, *, approved_origins):
+        if not isinstance(doc, dict) or set(doc) - FIELDS:
+            raise ValueError('manifest is not an object or has unknown keys')
+        required = FIELDS - {'permissions'}
+        for field in required:
+            if not isinstance(doc.get(field), str) or not doc[field].strip():
+                raise ValueError('missing or invalid ' + field)
+        if not APP_ID.fullmatch(doc['id']) or not PUBLISHER_ID.fullmatch(doc['publisher']):
+            raise ValueError('invalid application or publisher ID')
+        if not VERSION.fullmatch(doc['version']) or len(doc['version']) > 48:
+            raise ValueError('invalid semantic version')
+        if not 1 <= len(doc['title']) <= 160 or doc['kind'] not in ALLOWED_KINDS:
+            raise ValueError('invalid title or app kind')
+        if not re.fullmatch(r'[a-f0-9]{64}', doc['sha256']):
+            raise ValueError('sha256 must be a lowercase digest')
+        entry = doc['entry']
+        try:
+            url = urlsplit(entry)
+        except ValueError:
+            raise ValueError('invalid entrypoint URL') from None
+        origin = validate_origin(url.scheme + '://' + (url.netloc or ''))
+        if (origin not in approved_origins or url.query or url.fragment or
+                not url.path.startswith('/assets/') or doc['sha256'] not in url.path.split('/')):
+            raise ValueError('entry must be an approved immutable asset URL')
+        if len(entry) > 512:
+            raise ValueError('entry is too long')
+        permissions = doc.get('permissions', [])
+        if (not isinstance(permissions, list) or len(permissions) > 12 or
+                any(not isinstance(p, str) or p not in PERMISSIONS for p in permissions) or
+                len(set(permissions)) != len(permissions)):
+            raise ValueError('invalid permissions')
+        return {k: doc[k] for k in ('id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256')} | {'permissions': permissions}
+
+
+    def canonical_hash(doc):
+        return hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+
+    """Operator-only durable registry handlers; generated inline into DAPI spec.
+
+    Clients never write App/Publisher/Release tables directly. All updates are reviewed.
+    """
+    import json
+    import uuid
+    from datetime import datetime, timezone
+
+    from sqlalchemy import text
+    from starlette.exceptions import HTTPException
+
+
+    def _fail(message, status=422):
+        raise HTTPException(status_code=status, detail=message)
+
+
+    def _body(ctx):
+        if not isinstance(ctx.body, dict):
+            _fail('expected a JSON object')
+        return ctx.body
+
+
+    def _when():
+        return datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+
+    def _row(session, statement, **values):
+        return session.execute(text(statement), values).mappings().first()
+
+
+    def _rows(session, statement, **values):
+        return [dict(x) for x in session.execute(text(statement), values).mappings()]
+
+
+    def _json(value):
+        return value if isinstance(value, (dict, list)) else json.loads(value)
+
+
+    def _as_json(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+
+    def _tx(ctx):
+        return ctx.transaction() if ctx.transaction else ctx.session_factory.begin()
+
+
+    def _emit(ctx, session, action, row_id, data):
+        event = {'resource': 'apps', 'action': action, 'id': row_id, 'data': data}
+        if ctx.emit:
+            ctx.emit(session, event)
+        else:
+            # Kept only for legacy DAPI with best-effort event delivery.
+            pass
+
+
+    def _publisher(session, publisher_id):
+        return _row(session, 'SELECT * FROM "Publisher" WHERE "publisherId"=:pid', pid=publisher_id)
+
+
+    def _submission(session, sid):
+        return _row(session, 'SELECT * FROM "AppSubmission" WHERE "submissionId"=:sid', sid=sid)
+
+
+    async def register_publisher(ctx):
+        body = _body(ctx)
+        publisher_id, name, origins = body.get('id'), body.get('name'), body.get('origins')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher ID')
+        if not isinstance(name, str) or not 1 <= len(name) <= 160:
+            _fail('invalid publisher name')
+        if not isinstance(origins, list) or not 1 <= len(origins) <= 8:
+            _fail('publisher requires 1-8 reviewed origins')
+        try:
+            origins = [validate_origin(x) for x in origins]
+        except ValueError as error:
+            _fail(str(error))
+        if len(origins) != len(set(origins)):
+            _fail('duplicate publisher origin')
+        with _tx(ctx) as session:
+            if _publisher(session, publisher_id):
+                _fail('publisher already exists', 409)
+            session.execute(text('INSERT INTO "Publisher" ("publisherId","displayName","origins","status","createdAt") '
+                                 'VALUES (:pid,:name,:origins,:status,:created)'),
+                            {'pid': publisher_id, 'name': name, 'origins': _as_json(origins),
+                             'status': 'active', 'created': _when()})
+        return {'publisherId': publisher_id, 'status': 'active', 'ownership': 'operator_attested'}
+
+
+    async def submit(ctx):
+        body = _body(ctx)
+        manifest = body.get('manifest')
+        if not isinstance(manifest, dict):
+            _fail('manifest must be an object')
+        if len(_as_json(manifest)) > 16384:
+            _fail('manifest too large', 413)
+        with _tx(ctx) as session:
+            publisher_id = manifest.get('publisher')
+            publisher = _publisher(session, publisher_id) if isinstance(publisher_id, str) else None
+            if not publisher or publisher['status'] != 'active':
+                _fail('publisher not approved', 403)
+            try:
+                checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+            except ValueError as error:
+                _fail(str(error))
+            existing = _row(session, 'SELECT "publisher" FROM "App" WHERE "appId"=:app', app=checked['id'])
+            if existing and existing['publisher'] != publisher_id:
+                _fail('app already belongs to another publisher', 409)
+            prior = _row(session, 'SELECT "id" FROM "AppSubmission" WHERE "appId"=:app AND '
+                         '"version"=:version AND "status" IN (\'pending\',\'approved\')',
+                         app=checked['id'], version=checked['version'])
+            if prior or _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                              app=checked['id'], version=checked['version']):
+                _fail('version already submitted or published', 409)
+            sid = uuid.uuid4().hex
+            session.execute(text('INSERT INTO "AppSubmission" '
+                                 '("submissionId","appId","publisherId","version","manifest","digest","status","submittedAt") '
+                                 'VALUES (:sid,:app,:pid,:version,:manifest,:digest,\'pending\',:created)'),
+                            {'sid': sid, 'app': checked['id'], 'pid': publisher_id, 'version': checked['version'],
+                             'manifest': _as_json(checked), 'digest': canonical_hash(checked), 'created': _when()})
+        return {'submissionId': sid, 'status': 'pending', 'digest': canonical_hash(checked)}
+
+
+    def _version_key(value):
+        match = VERSION.fullmatch(value)
+        return tuple(int(match.group(i)) for i in (1, 2, 3)) if match else (0, 0, 0)
+
+
+    def _update_app(session, manifest, digest):
+        app_id = manifest['id']
+        old = _row(session, 'SELECT "id","publisher","version","status" FROM "App" WHERE "appId"=:app', app=app_id)
+        if old and old['publisher'] != manifest['publisher']:
+            _fail('publisher ownership conflict', 409)
+        if old:
+            if _version_key(manifest['version']) <= _version_key(old['version']):
+                _fail('approved version must be newer than current version', 409)
+            session.execute(text('UPDATE "App" SET "title"=:title,"category"=:kind,"version"=:version,'
+                                 '"status"=\'published\',"manifest"=:manifest WHERE "appId"=:app'),
+                            {'title': manifest['title'], 'kind': manifest['kind'], 'version': manifest['version'],
+                             'manifest': _as_json(manifest), 'app': app_id})
+            return old['id'], 'updated'
+        session.execute(text('INSERT INTO "App" '
+                             '("appId","title","publisher","category","version","status","manifest") '
+                             'VALUES (:app,:title,:publisher,:kind,:version,\'published\',:manifest)'),
+                        {'app': app_id, 'title': manifest['title'], 'publisher': manifest['publisher'],
+                         'kind': manifest['kind'], 'version': manifest['version'], 'manifest': _as_json(manifest)})
+        inserted = _row(session, 'SELECT "id" FROM "App" WHERE "appId"=:app', app=app_id)
+        return inserted['id'], 'created'
+
+
+    async def review(ctx):
+        body = _body(ctx)
+        sid, decision = body.get('submissionId'), body.get('decision')
+        if not isinstance(sid, str) or len(sid) != 32 or decision not in ('approve', 'reject'):
+            _fail('invalid review decision')
+        with _tx(ctx) as session:
+            entry = _submission(session, sid)
+            if not entry:
+                _fail('unknown submission', 404)
+            if entry['status'] != 'pending':
+                _fail('submission already reviewed', 409)
+            manifest = _json(entry['manifest'])
+            if decision == 'approve':
+                publisher = _publisher(session, entry['publisherId'])
+                if not publisher or publisher['status'] != 'active':
+                    _fail('publisher not active', 403)
+                try:
+                    checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+                except ValueError as error:
+                    _fail(str(error))
+                if canonical_hash(checked) != entry['digest']:
+                    _fail('submitted manifest changed', 409)
+                existing = _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                                app=checked['id'], version=checked['version'])
+                if existing:
+                    _fail('immutable version already published', 409)
+                session.execute(text('INSERT INTO "AppRelease" '
+                                     '("appId","version","publisherId","manifest","digest","approvedAt") '
+                                     'VALUES (:app,:version,:pid,:manifest,:digest,:now)'),
+                                {'app': checked['id'], 'version': checked['version'], 'pid': checked['publisher'],
+                                 'manifest': _as_json(checked), 'digest': entry['digest'], 'now': _when()})
+                record_id, action = _update_app(session, checked, entry['digest'])
+                _emit(ctx, session, action, record_id, {'id': record_id, 'appId': checked['id'],
+                      'version': checked['version'], 'status': 'published'})
+            session.execute(text('UPDATE "AppSubmission" SET "status"=:status,"reviewedAt"=:now WHERE "submissionId"=:sid'),
+                            {'status': 'approved' if decision == 'approve' else 'rejected', 'now': _when(), 'sid': sid})
+        return {'submissionId': sid, 'status': 'approved' if decision == 'approve' else 'rejected'}
+
+
+    async def disable(ctx):
+        body = _body(ctx)
+        app_id = body.get('appId')
+        if not isinstance(app_id, str) or not APP_ID.fullmatch(app_id):
+            _fail('invalid app ID')
+        with _tx(ctx) as session:
+            row = _row(session, 'SELECT "id","status" FROM "App" WHERE "appId"=:app', app=app_id)
+            if not row:
+                _fail('unknown application', 404)
+            if row['status'] != 'published':
+                _fail('only published apps can be disabled', 409)
+            session.execute(text('UPDATE "App" SET "status"=\'disabled\' WHERE "appId"=:app'), {'app': app_id})
+            _emit(ctx, session, 'updated', row['id'], {'id': row['id'], 'appId': app_id, 'status': 'disabled'})
+        return {'appId': app_id, 'status': 'disabled'}
+
+
+    def _approved_catalog(session, *, after='', limit=10000):
+        """Project only active, immutable, reviewed releases; reject any tampering."""
+        rows = _rows(session, 'SELECT a."appId", a."publisher", a."version", a."manifest", '
+                     'r."digest", r."manifest" AS "reviewed", r."publisherId" AS "releasePublisher", '
+                     'p."origins" FROM "App" AS a JOIN "AppRelease" AS r '
+                     'ON a."appId"=r."appId" AND a."version"=r."version" '
+                     'JOIN "Publisher" AS p ON a."publisher"=p."publisherId" '
+                     'WHERE a."status"=\'published\' AND p."status"=\'active\' '
+                     'AND a."appId">:after ORDER BY a."appId" LIMIT :limit',
+                     after=after, limit=min(limit, 10001))
+        apps = []
+        for row in rows:
+            try:
+                manifest = _json(row['reviewed'])
+                actual = _json(row['manifest'])
+                checked = validate_manifest(manifest, approved_origins=set(_json(row['origins'])))
+                if (checked != manifest or manifest != actual or
+                        manifest['id'] != row['appId'] or manifest['version'] != row['version'] or
+                        manifest['publisher'] != row['publisher'] or row['releasePublisher'] != row['publisher'] or
+                        canonical_hash(manifest) != row['digest']):
+                    continue
+                apps.append(manifest)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+        return apps
+
+
+    async def catalog(ctx):
+        query = getattr(getattr(ctx, 'request', None), 'query_params', {})
+        after = query.get('after', '')
+        raw_limit = query.get('limit', '100')
+        if not isinstance(after, str) or len(after) > 120 or (after and not APP_ID.fullmatch(after)):
+            _fail('invalid catalog cursor')
+        if not isinstance(raw_limit, str) or not raw_limit.isascii() or not raw_limit.isdecimal():
+            _fail('invalid catalog page size')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 100:
+            _fail('catalog limit must be 1-100')
+        with ctx.session_factory() as session:
+            approved = _approved_catalog(session, after=after, limit=10001)
+        page = approved[:limit]
+        return {'schema': 'atrium.catalog/v1', 'apps': page,
+                'count': len(page), 'next': page[-1]['id'] if len(approved) > limit else None,
+                'hasMore': len(approved) > limit, 'authenticated': True}
+
+
+    async def change_publisher_status(ctx):
+        body = _body(ctx)
+        publisher_id, status = body.get('publisherId'), body.get('status')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher')
+        if status not in ('active', 'disabled'):
+            _fail('invalid publisher status')
+        with _tx(ctx) as session:
+            row = _publisher(session, publisher_id)
+            if not row:
+                _fail('publisher not found', 404)
+            if row['status'] == status:
+                _fail('publisher status already set', 409)
+            session.execute(text('UPDATE "Publisher" SET "status"=:status WHERE "publisherId"=:pid'),
+                            {'status': status, 'pid': publisher_id})
+            affected = _rows(session, 'SELECT "id","appId","version" FROM "App" '
+                             'WHERE "publisher"=:pid AND "status"=\'published\' ORDER BY "appId"', pid=publisher_id)
+            for app in affected:
+                _emit(ctx, session, 'updated', app['id'], {'id': app['id'], 'appId': app['appId'],
+                      'version': app['version'], 'status': 'publisher_' + status})
+        return {'publisherId': publisher_id, 'status': status, 'affectedApps': len(affected)}
+
+
+    async def submissions(ctx):
+        with ctx.session_factory() as session:
+            rows = _rows(session, 'SELECT "submissionId","appId","publisherId","version","digest",'
+                         '"status","submittedAt","reviewedAt" FROM "AppSubmission" '
+                         'ORDER BY "id" DESC LIMIT 100')
+        return {'submissions': rows}
+
+
+    async def handle(ctx):
+        return await submit(ctx)
+- path: /registry/reviews
+  method: POST
+  kind: python
+  scopes:
+  - apps:approve
+  source: |
+    """Strict, immutable application manifest contract for trusted review.
+
+    This validates *metadata*, not asset content, TLS origin ownership or publisher authority.
+    Those require separate operator/CI checks before publishing.
+    """
+    import hashlib
+    import ipaddress
+    import json
+    import re
+    from urllib.parse import urlsplit
+
+    APP_ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
+    PUBLISHER_ID = re.compile(r"^[a-z][a-z0-9-]{2,119}$")
+    VERSION = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    ALLOWED_KINDS = frozenset({'game', 'social', 'utility', 'application'})
+    PERMISSIONS = frozenset({'profile:read', 'game:join', 'notifications:read'})
+    FIELDS = frozenset({'id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256', 'permissions'})
+
+
+    def validate_origin(origin):
+        """Accept DNS-based HTTPS origins only; these still require ownership review."""
+        if not isinstance(origin, str) or len(origin) > 255:
+            raise ValueError('invalid origin')
+        try:
+            parts = urlsplit(origin)
+            host = parts.hostname or ''
+            port = parts.port
+        except ValueError:
+            raise ValueError('invalid origin') from None
+        if (parts.scheme != 'https' or not host or parts.username or parts.password or
+                parts.path or parts.query or parts.fragment or (port is not None and port != 443)):
+            raise ValueError('origin must be a clean HTTPS origin')
+        if (host in {'localhost', 'localhost.localdomain'} or host.endswith(('.local', '.localhost', '.internal'))
+                or '.' not in host or not re.fullmatch(r'[a-z0-9.-]+', host) or '..' in host):
+            raise ValueError('origin must use a public DNS hostname')
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError('IP addresses are not acceptable asset origins')
+        labels = host.split('.')
+        if (any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', x) for x in labels)
+                or all(x.isdecimal() for x in labels)):
+            raise ValueError('invalid public DNS origin')
+        normalized = 'https://' + host
+        if origin not in (normalized, normalized + ':443'):
+            raise ValueError('origin is not canonical')
+        return normalized
+
+
+    def validate_manifest(doc, *, approved_origins):
+        if not isinstance(doc, dict) or set(doc) - FIELDS:
+            raise ValueError('manifest is not an object or has unknown keys')
+        required = FIELDS - {'permissions'}
+        for field in required:
+            if not isinstance(doc.get(field), str) or not doc[field].strip():
+                raise ValueError('missing or invalid ' + field)
+        if not APP_ID.fullmatch(doc['id']) or not PUBLISHER_ID.fullmatch(doc['publisher']):
+            raise ValueError('invalid application or publisher ID')
+        if not VERSION.fullmatch(doc['version']) or len(doc['version']) > 48:
+            raise ValueError('invalid semantic version')
+        if not 1 <= len(doc['title']) <= 160 or doc['kind'] not in ALLOWED_KINDS:
+            raise ValueError('invalid title or app kind')
+        if not re.fullmatch(r'[a-f0-9]{64}', doc['sha256']):
+            raise ValueError('sha256 must be a lowercase digest')
+        entry = doc['entry']
+        try:
+            url = urlsplit(entry)
+        except ValueError:
+            raise ValueError('invalid entrypoint URL') from None
+        origin = validate_origin(url.scheme + '://' + (url.netloc or ''))
+        if (origin not in approved_origins or url.query or url.fragment or
+                not url.path.startswith('/assets/') or doc['sha256'] not in url.path.split('/')):
+            raise ValueError('entry must be an approved immutable asset URL')
+        if len(entry) > 512:
+            raise ValueError('entry is too long')
+        permissions = doc.get('permissions', [])
+        if (not isinstance(permissions, list) or len(permissions) > 12 or
+                any(not isinstance(p, str) or p not in PERMISSIONS for p in permissions) or
+                len(set(permissions)) != len(permissions)):
+            raise ValueError('invalid permissions')
+        return {k: doc[k] for k in ('id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256')} | {'permissions': permissions}
+
+
+    def canonical_hash(doc):
+        return hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+
+    """Operator-only durable registry handlers; generated inline into DAPI spec.
+
+    Clients never write App/Publisher/Release tables directly. All updates are reviewed.
+    """
+    import json
+    import uuid
+    from datetime import datetime, timezone
+
+    from sqlalchemy import text
+    from starlette.exceptions import HTTPException
+
+
+    def _fail(message, status=422):
+        raise HTTPException(status_code=status, detail=message)
+
+
+    def _body(ctx):
+        if not isinstance(ctx.body, dict):
+            _fail('expected a JSON object')
+        return ctx.body
+
+
+    def _when():
+        return datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+
+    def _row(session, statement, **values):
+        return session.execute(text(statement), values).mappings().first()
+
+
+    def _rows(session, statement, **values):
+        return [dict(x) for x in session.execute(text(statement), values).mappings()]
+
+
+    def _json(value):
+        return value if isinstance(value, (dict, list)) else json.loads(value)
+
+
+    def _as_json(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+
+    def _tx(ctx):
+        return ctx.transaction() if ctx.transaction else ctx.session_factory.begin()
+
+
+    def _emit(ctx, session, action, row_id, data):
+        event = {'resource': 'apps', 'action': action, 'id': row_id, 'data': data}
+        if ctx.emit:
+            ctx.emit(session, event)
+        else:
+            # Kept only for legacy DAPI with best-effort event delivery.
+            pass
+
+
+    def _publisher(session, publisher_id):
+        return _row(session, 'SELECT * FROM "Publisher" WHERE "publisherId"=:pid', pid=publisher_id)
+
+
+    def _submission(session, sid):
+        return _row(session, 'SELECT * FROM "AppSubmission" WHERE "submissionId"=:sid', sid=sid)
+
+
+    async def register_publisher(ctx):
+        body = _body(ctx)
+        publisher_id, name, origins = body.get('id'), body.get('name'), body.get('origins')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher ID')
+        if not isinstance(name, str) or not 1 <= len(name) <= 160:
+            _fail('invalid publisher name')
+        if not isinstance(origins, list) or not 1 <= len(origins) <= 8:
+            _fail('publisher requires 1-8 reviewed origins')
+        try:
+            origins = [validate_origin(x) for x in origins]
+        except ValueError as error:
+            _fail(str(error))
+        if len(origins) != len(set(origins)):
+            _fail('duplicate publisher origin')
+        with _tx(ctx) as session:
+            if _publisher(session, publisher_id):
+                _fail('publisher already exists', 409)
+            session.execute(text('INSERT INTO "Publisher" ("publisherId","displayName","origins","status","createdAt") '
+                                 'VALUES (:pid,:name,:origins,:status,:created)'),
+                            {'pid': publisher_id, 'name': name, 'origins': _as_json(origins),
+                             'status': 'active', 'created': _when()})
+        return {'publisherId': publisher_id, 'status': 'active', 'ownership': 'operator_attested'}
+
+
+    async def submit(ctx):
+        body = _body(ctx)
+        manifest = body.get('manifest')
+        if not isinstance(manifest, dict):
+            _fail('manifest must be an object')
+        if len(_as_json(manifest)) > 16384:
+            _fail('manifest too large', 413)
+        with _tx(ctx) as session:
+            publisher_id = manifest.get('publisher')
+            publisher = _publisher(session, publisher_id) if isinstance(publisher_id, str) else None
+            if not publisher or publisher['status'] != 'active':
+                _fail('publisher not approved', 403)
+            try:
+                checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+            except ValueError as error:
+                _fail(str(error))
+            existing = _row(session, 'SELECT "publisher" FROM "App" WHERE "appId"=:app', app=checked['id'])
+            if existing and existing['publisher'] != publisher_id:
+                _fail('app already belongs to another publisher', 409)
+            prior = _row(session, 'SELECT "id" FROM "AppSubmission" WHERE "appId"=:app AND '
+                         '"version"=:version AND "status" IN (\'pending\',\'approved\')',
+                         app=checked['id'], version=checked['version'])
+            if prior or _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                              app=checked['id'], version=checked['version']):
+                _fail('version already submitted or published', 409)
+            sid = uuid.uuid4().hex
+            session.execute(text('INSERT INTO "AppSubmission" '
+                                 '("submissionId","appId","publisherId","version","manifest","digest","status","submittedAt") '
+                                 'VALUES (:sid,:app,:pid,:version,:manifest,:digest,\'pending\',:created)'),
+                            {'sid': sid, 'app': checked['id'], 'pid': publisher_id, 'version': checked['version'],
+                             'manifest': _as_json(checked), 'digest': canonical_hash(checked), 'created': _when()})
+        return {'submissionId': sid, 'status': 'pending', 'digest': canonical_hash(checked)}
+
+
+    def _version_key(value):
+        match = VERSION.fullmatch(value)
+        return tuple(int(match.group(i)) for i in (1, 2, 3)) if match else (0, 0, 0)
+
+
+    def _update_app(session, manifest, digest):
+        app_id = manifest['id']
+        old = _row(session, 'SELECT "id","publisher","version","status" FROM "App" WHERE "appId"=:app', app=app_id)
+        if old and old['publisher'] != manifest['publisher']:
+            _fail('publisher ownership conflict', 409)
+        if old:
+            if _version_key(manifest['version']) <= _version_key(old['version']):
+                _fail('approved version must be newer than current version', 409)
+            session.execute(text('UPDATE "App" SET "title"=:title,"category"=:kind,"version"=:version,'
+                                 '"status"=\'published\',"manifest"=:manifest WHERE "appId"=:app'),
+                            {'title': manifest['title'], 'kind': manifest['kind'], 'version': manifest['version'],
+                             'manifest': _as_json(manifest), 'app': app_id})
+            return old['id'], 'updated'
+        session.execute(text('INSERT INTO "App" '
+                             '("appId","title","publisher","category","version","status","manifest") '
+                             'VALUES (:app,:title,:publisher,:kind,:version,\'published\',:manifest)'),
+                        {'app': app_id, 'title': manifest['title'], 'publisher': manifest['publisher'],
+                         'kind': manifest['kind'], 'version': manifest['version'], 'manifest': _as_json(manifest)})
+        inserted = _row(session, 'SELECT "id" FROM "App" WHERE "appId"=:app', app=app_id)
+        return inserted['id'], 'created'
+
+
+    async def review(ctx):
+        body = _body(ctx)
+        sid, decision = body.get('submissionId'), body.get('decision')
+        if not isinstance(sid, str) or len(sid) != 32 or decision not in ('approve', 'reject'):
+            _fail('invalid review decision')
+        with _tx(ctx) as session:
+            entry = _submission(session, sid)
+            if not entry:
+                _fail('unknown submission', 404)
+            if entry['status'] != 'pending':
+                _fail('submission already reviewed', 409)
+            manifest = _json(entry['manifest'])
+            if decision == 'approve':
+                publisher = _publisher(session, entry['publisherId'])
+                if not publisher or publisher['status'] != 'active':
+                    _fail('publisher not active', 403)
+                try:
+                    checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+                except ValueError as error:
+                    _fail(str(error))
+                if canonical_hash(checked) != entry['digest']:
+                    _fail('submitted manifest changed', 409)
+                existing = _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                                app=checked['id'], version=checked['version'])
+                if existing:
+                    _fail('immutable version already published', 409)
+                session.execute(text('INSERT INTO "AppRelease" '
+                                     '("appId","version","publisherId","manifest","digest","approvedAt") '
+                                     'VALUES (:app,:version,:pid,:manifest,:digest,:now)'),
+                                {'app': checked['id'], 'version': checked['version'], 'pid': checked['publisher'],
+                                 'manifest': _as_json(checked), 'digest': entry['digest'], 'now': _when()})
+                record_id, action = _update_app(session, checked, entry['digest'])
+                _emit(ctx, session, action, record_id, {'id': record_id, 'appId': checked['id'],
+                      'version': checked['version'], 'status': 'published'})
+            session.execute(text('UPDATE "AppSubmission" SET "status"=:status,"reviewedAt"=:now WHERE "submissionId"=:sid'),
+                            {'status': 'approved' if decision == 'approve' else 'rejected', 'now': _when(), 'sid': sid})
+        return {'submissionId': sid, 'status': 'approved' if decision == 'approve' else 'rejected'}
+
+
+    async def disable(ctx):
+        body = _body(ctx)
+        app_id = body.get('appId')
+        if not isinstance(app_id, str) or not APP_ID.fullmatch(app_id):
+            _fail('invalid app ID')
+        with _tx(ctx) as session:
+            row = _row(session, 'SELECT "id","status" FROM "App" WHERE "appId"=:app', app=app_id)
+            if not row:
+                _fail('unknown application', 404)
+            if row['status'] != 'published':
+                _fail('only published apps can be disabled', 409)
+            session.execute(text('UPDATE "App" SET "status"=\'disabled\' WHERE "appId"=:app'), {'app': app_id})
+            _emit(ctx, session, 'updated', row['id'], {'id': row['id'], 'appId': app_id, 'status': 'disabled'})
+        return {'appId': app_id, 'status': 'disabled'}
+
+
+    def _approved_catalog(session, *, after='', limit=10000):
+        """Project only active, immutable, reviewed releases; reject any tampering."""
+        rows = _rows(session, 'SELECT a."appId", a."publisher", a."version", a."manifest", '
+                     'r."digest", r."manifest" AS "reviewed", r."publisherId" AS "releasePublisher", '
+                     'p."origins" FROM "App" AS a JOIN "AppRelease" AS r '
+                     'ON a."appId"=r."appId" AND a."version"=r."version" '
+                     'JOIN "Publisher" AS p ON a."publisher"=p."publisherId" '
+                     'WHERE a."status"=\'published\' AND p."status"=\'active\' '
+                     'AND a."appId">:after ORDER BY a."appId" LIMIT :limit',
+                     after=after, limit=min(limit, 10001))
+        apps = []
+        for row in rows:
+            try:
+                manifest = _json(row['reviewed'])
+                actual = _json(row['manifest'])
+                checked = validate_manifest(manifest, approved_origins=set(_json(row['origins'])))
+                if (checked != manifest or manifest != actual or
+                        manifest['id'] != row['appId'] or manifest['version'] != row['version'] or
+                        manifest['publisher'] != row['publisher'] or row['releasePublisher'] != row['publisher'] or
+                        canonical_hash(manifest) != row['digest']):
+                    continue
+                apps.append(manifest)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+        return apps
+
+
+    async def catalog(ctx):
+        query = getattr(getattr(ctx, 'request', None), 'query_params', {})
+        after = query.get('after', '')
+        raw_limit = query.get('limit', '100')
+        if not isinstance(after, str) or len(after) > 120 or (after and not APP_ID.fullmatch(after)):
+            _fail('invalid catalog cursor')
+        if not isinstance(raw_limit, str) or not raw_limit.isascii() or not raw_limit.isdecimal():
+            _fail('invalid catalog page size')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 100:
+            _fail('catalog limit must be 1-100')
+        with ctx.session_factory() as session:
+            approved = _approved_catalog(session, after=after, limit=10001)
+        page = approved[:limit]
+        return {'schema': 'atrium.catalog/v1', 'apps': page,
+                'count': len(page), 'next': page[-1]['id'] if len(approved) > limit else None,
+                'hasMore': len(approved) > limit, 'authenticated': True}
+
+
+    async def change_publisher_status(ctx):
+        body = _body(ctx)
+        publisher_id, status = body.get('publisherId'), body.get('status')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher')
+        if status not in ('active', 'disabled'):
+            _fail('invalid publisher status')
+        with _tx(ctx) as session:
+            row = _publisher(session, publisher_id)
+            if not row:
+                _fail('publisher not found', 404)
+            if row['status'] == status:
+                _fail('publisher status already set', 409)
+            session.execute(text('UPDATE "Publisher" SET "status"=:status WHERE "publisherId"=:pid'),
+                            {'status': status, 'pid': publisher_id})
+            affected = _rows(session, 'SELECT "id","appId","version" FROM "App" '
+                             'WHERE "publisher"=:pid AND "status"=\'published\' ORDER BY "appId"', pid=publisher_id)
+            for app in affected:
+                _emit(ctx, session, 'updated', app['id'], {'id': app['id'], 'appId': app['appId'],
+                      'version': app['version'], 'status': 'publisher_' + status})
+        return {'publisherId': publisher_id, 'status': status, 'affectedApps': len(affected)}
+
+
+    async def submissions(ctx):
+        with ctx.session_factory() as session:
+            rows = _rows(session, 'SELECT "submissionId","appId","publisherId","version","digest",'
+                         '"status","submittedAt","reviewedAt" FROM "AppSubmission" '
+                         'ORDER BY "id" DESC LIMIT 100')
+        return {'submissions': rows}
+
+
+    async def handle(ctx):
+        return await review(ctx)
+- path: /registry/disable
+  method: POST
+  kind: python
+  scopes:
+  - apps:approve
+  source: |
+    """Strict, immutable application manifest contract for trusted review.
+
+    This validates *metadata*, not asset content, TLS origin ownership or publisher authority.
+    Those require separate operator/CI checks before publishing.
+    """
+    import hashlib
+    import ipaddress
+    import json
+    import re
+    from urllib.parse import urlsplit
+
+    APP_ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
+    PUBLISHER_ID = re.compile(r"^[a-z][a-z0-9-]{2,119}$")
+    VERSION = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    ALLOWED_KINDS = frozenset({'game', 'social', 'utility', 'application'})
+    PERMISSIONS = frozenset({'profile:read', 'game:join', 'notifications:read'})
+    FIELDS = frozenset({'id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256', 'permissions'})
+
+
+    def validate_origin(origin):
+        """Accept DNS-based HTTPS origins only; these still require ownership review."""
+        if not isinstance(origin, str) or len(origin) > 255:
+            raise ValueError('invalid origin')
+        try:
+            parts = urlsplit(origin)
+            host = parts.hostname or ''
+            port = parts.port
+        except ValueError:
+            raise ValueError('invalid origin') from None
+        if (parts.scheme != 'https' or not host or parts.username or parts.password or
+                parts.path or parts.query or parts.fragment or (port is not None and port != 443)):
+            raise ValueError('origin must be a clean HTTPS origin')
+        if (host in {'localhost', 'localhost.localdomain'} or host.endswith(('.local', '.localhost', '.internal'))
+                or '.' not in host or not re.fullmatch(r'[a-z0-9.-]+', host) or '..' in host):
+            raise ValueError('origin must use a public DNS hostname')
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError('IP addresses are not acceptable asset origins')
+        labels = host.split('.')
+        if (any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', x) for x in labels)
+                or all(x.isdecimal() for x in labels)):
+            raise ValueError('invalid public DNS origin')
+        normalized = 'https://' + host
+        if origin not in (normalized, normalized + ':443'):
+            raise ValueError('origin is not canonical')
+        return normalized
+
+
+    def validate_manifest(doc, *, approved_origins):
+        if not isinstance(doc, dict) or set(doc) - FIELDS:
+            raise ValueError('manifest is not an object or has unknown keys')
+        required = FIELDS - {'permissions'}
+        for field in required:
+            if not isinstance(doc.get(field), str) or not doc[field].strip():
+                raise ValueError('missing or invalid ' + field)
+        if not APP_ID.fullmatch(doc['id']) or not PUBLISHER_ID.fullmatch(doc['publisher']):
+            raise ValueError('invalid application or publisher ID')
+        if not VERSION.fullmatch(doc['version']) or len(doc['version']) > 48:
+            raise ValueError('invalid semantic version')
+        if not 1 <= len(doc['title']) <= 160 or doc['kind'] not in ALLOWED_KINDS:
+            raise ValueError('invalid title or app kind')
+        if not re.fullmatch(r'[a-f0-9]{64}', doc['sha256']):
+            raise ValueError('sha256 must be a lowercase digest')
+        entry = doc['entry']
+        try:
+            url = urlsplit(entry)
+        except ValueError:
+            raise ValueError('invalid entrypoint URL') from None
+        origin = validate_origin(url.scheme + '://' + (url.netloc or ''))
+        if (origin not in approved_origins or url.query or url.fragment or
+                not url.path.startswith('/assets/') or doc['sha256'] not in url.path.split('/')):
+            raise ValueError('entry must be an approved immutable asset URL')
+        if len(entry) > 512:
+            raise ValueError('entry is too long')
+        permissions = doc.get('permissions', [])
+        if (not isinstance(permissions, list) or len(permissions) > 12 or
+                any(not isinstance(p, str) or p not in PERMISSIONS for p in permissions) or
+                len(set(permissions)) != len(permissions)):
+            raise ValueError('invalid permissions')
+        return {k: doc[k] for k in ('id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256')} | {'permissions': permissions}
+
+
+    def canonical_hash(doc):
+        return hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+
+    """Operator-only durable registry handlers; generated inline into DAPI spec.
+
+    Clients never write App/Publisher/Release tables directly. All updates are reviewed.
+    """
+    import json
+    import uuid
+    from datetime import datetime, timezone
+
+    from sqlalchemy import text
+    from starlette.exceptions import HTTPException
+
+
+    def _fail(message, status=422):
+        raise HTTPException(status_code=status, detail=message)
+
+
+    def _body(ctx):
+        if not isinstance(ctx.body, dict):
+            _fail('expected a JSON object')
+        return ctx.body
+
+
+    def _when():
+        return datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+
+    def _row(session, statement, **values):
+        return session.execute(text(statement), values).mappings().first()
+
+
+    def _rows(session, statement, **values):
+        return [dict(x) for x in session.execute(text(statement), values).mappings()]
+
+
+    def _json(value):
+        return value if isinstance(value, (dict, list)) else json.loads(value)
+
+
+    def _as_json(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+
+    def _tx(ctx):
+        return ctx.transaction() if ctx.transaction else ctx.session_factory.begin()
+
+
+    def _emit(ctx, session, action, row_id, data):
+        event = {'resource': 'apps', 'action': action, 'id': row_id, 'data': data}
+        if ctx.emit:
+            ctx.emit(session, event)
+        else:
+            # Kept only for legacy DAPI with best-effort event delivery.
+            pass
+
+
+    def _publisher(session, publisher_id):
+        return _row(session, 'SELECT * FROM "Publisher" WHERE "publisherId"=:pid', pid=publisher_id)
+
+
+    def _submission(session, sid):
+        return _row(session, 'SELECT * FROM "AppSubmission" WHERE "submissionId"=:sid', sid=sid)
+
+
+    async def register_publisher(ctx):
+        body = _body(ctx)
+        publisher_id, name, origins = body.get('id'), body.get('name'), body.get('origins')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher ID')
+        if not isinstance(name, str) or not 1 <= len(name) <= 160:
+            _fail('invalid publisher name')
+        if not isinstance(origins, list) or not 1 <= len(origins) <= 8:
+            _fail('publisher requires 1-8 reviewed origins')
+        try:
+            origins = [validate_origin(x) for x in origins]
+        except ValueError as error:
+            _fail(str(error))
+        if len(origins) != len(set(origins)):
+            _fail('duplicate publisher origin')
+        with _tx(ctx) as session:
+            if _publisher(session, publisher_id):
+                _fail('publisher already exists', 409)
+            session.execute(text('INSERT INTO "Publisher" ("publisherId","displayName","origins","status","createdAt") '
+                                 'VALUES (:pid,:name,:origins,:status,:created)'),
+                            {'pid': publisher_id, 'name': name, 'origins': _as_json(origins),
+                             'status': 'active', 'created': _when()})
+        return {'publisherId': publisher_id, 'status': 'active', 'ownership': 'operator_attested'}
+
+
+    async def submit(ctx):
+        body = _body(ctx)
+        manifest = body.get('manifest')
+        if not isinstance(manifest, dict):
+            _fail('manifest must be an object')
+        if len(_as_json(manifest)) > 16384:
+            _fail('manifest too large', 413)
+        with _tx(ctx) as session:
+            publisher_id = manifest.get('publisher')
+            publisher = _publisher(session, publisher_id) if isinstance(publisher_id, str) else None
+            if not publisher or publisher['status'] != 'active':
+                _fail('publisher not approved', 403)
+            try:
+                checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+            except ValueError as error:
+                _fail(str(error))
+            existing = _row(session, 'SELECT "publisher" FROM "App" WHERE "appId"=:app', app=checked['id'])
+            if existing and existing['publisher'] != publisher_id:
+                _fail('app already belongs to another publisher', 409)
+            prior = _row(session, 'SELECT "id" FROM "AppSubmission" WHERE "appId"=:app AND '
+                         '"version"=:version AND "status" IN (\'pending\',\'approved\')',
+                         app=checked['id'], version=checked['version'])
+            if prior or _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                              app=checked['id'], version=checked['version']):
+                _fail('version already submitted or published', 409)
+            sid = uuid.uuid4().hex
+            session.execute(text('INSERT INTO "AppSubmission" '
+                                 '("submissionId","appId","publisherId","version","manifest","digest","status","submittedAt") '
+                                 'VALUES (:sid,:app,:pid,:version,:manifest,:digest,\'pending\',:created)'),
+                            {'sid': sid, 'app': checked['id'], 'pid': publisher_id, 'version': checked['version'],
+                             'manifest': _as_json(checked), 'digest': canonical_hash(checked), 'created': _when()})
+        return {'submissionId': sid, 'status': 'pending', 'digest': canonical_hash(checked)}
+
+
+    def _version_key(value):
+        match = VERSION.fullmatch(value)
+        return tuple(int(match.group(i)) for i in (1, 2, 3)) if match else (0, 0, 0)
+
+
+    def _update_app(session, manifest, digest):
+        app_id = manifest['id']
+        old = _row(session, 'SELECT "id","publisher","version","status" FROM "App" WHERE "appId"=:app', app=app_id)
+        if old and old['publisher'] != manifest['publisher']:
+            _fail('publisher ownership conflict', 409)
+        if old:
+            if _version_key(manifest['version']) <= _version_key(old['version']):
+                _fail('approved version must be newer than current version', 409)
+            session.execute(text('UPDATE "App" SET "title"=:title,"category"=:kind,"version"=:version,'
+                                 '"status"=\'published\',"manifest"=:manifest WHERE "appId"=:app'),
+                            {'title': manifest['title'], 'kind': manifest['kind'], 'version': manifest['version'],
+                             'manifest': _as_json(manifest), 'app': app_id})
+            return old['id'], 'updated'
+        session.execute(text('INSERT INTO "App" '
+                             '("appId","title","publisher","category","version","status","manifest") '
+                             'VALUES (:app,:title,:publisher,:kind,:version,\'published\',:manifest)'),
+                        {'app': app_id, 'title': manifest['title'], 'publisher': manifest['publisher'],
+                         'kind': manifest['kind'], 'version': manifest['version'], 'manifest': _as_json(manifest)})
+        inserted = _row(session, 'SELECT "id" FROM "App" WHERE "appId"=:app', app=app_id)
+        return inserted['id'], 'created'
+
+
+    async def review(ctx):
+        body = _body(ctx)
+        sid, decision = body.get('submissionId'), body.get('decision')
+        if not isinstance(sid, str) or len(sid) != 32 or decision not in ('approve', 'reject'):
+            _fail('invalid review decision')
+        with _tx(ctx) as session:
+            entry = _submission(session, sid)
+            if not entry:
+                _fail('unknown submission', 404)
+            if entry['status'] != 'pending':
+                _fail('submission already reviewed', 409)
+            manifest = _json(entry['manifest'])
+            if decision == 'approve':
+                publisher = _publisher(session, entry['publisherId'])
+                if not publisher or publisher['status'] != 'active':
+                    _fail('publisher not active', 403)
+                try:
+                    checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+                except ValueError as error:
+                    _fail(str(error))
+                if canonical_hash(checked) != entry['digest']:
+                    _fail('submitted manifest changed', 409)
+                existing = _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                                app=checked['id'], version=checked['version'])
+                if existing:
+                    _fail('immutable version already published', 409)
+                session.execute(text('INSERT INTO "AppRelease" '
+                                     '("appId","version","publisherId","manifest","digest","approvedAt") '
+                                     'VALUES (:app,:version,:pid,:manifest,:digest,:now)'),
+                                {'app': checked['id'], 'version': checked['version'], 'pid': checked['publisher'],
+                                 'manifest': _as_json(checked), 'digest': entry['digest'], 'now': _when()})
+                record_id, action = _update_app(session, checked, entry['digest'])
+                _emit(ctx, session, action, record_id, {'id': record_id, 'appId': checked['id'],
+                      'version': checked['version'], 'status': 'published'})
+            session.execute(text('UPDATE "AppSubmission" SET "status"=:status,"reviewedAt"=:now WHERE "submissionId"=:sid'),
+                            {'status': 'approved' if decision == 'approve' else 'rejected', 'now': _when(), 'sid': sid})
+        return {'submissionId': sid, 'status': 'approved' if decision == 'approve' else 'rejected'}
+
+
+    async def disable(ctx):
+        body = _body(ctx)
+        app_id = body.get('appId')
+        if not isinstance(app_id, str) or not APP_ID.fullmatch(app_id):
+            _fail('invalid app ID')
+        with _tx(ctx) as session:
+            row = _row(session, 'SELECT "id","status" FROM "App" WHERE "appId"=:app', app=app_id)
+            if not row:
+                _fail('unknown application', 404)
+            if row['status'] != 'published':
+                _fail('only published apps can be disabled', 409)
+            session.execute(text('UPDATE "App" SET "status"=\'disabled\' WHERE "appId"=:app'), {'app': app_id})
+            _emit(ctx, session, 'updated', row['id'], {'id': row['id'], 'appId': app_id, 'status': 'disabled'})
+        return {'appId': app_id, 'status': 'disabled'}
+
+
+    def _approved_catalog(session, *, after='', limit=10000):
+        """Project only active, immutable, reviewed releases; reject any tampering."""
+        rows = _rows(session, 'SELECT a."appId", a."publisher", a."version", a."manifest", '
+                     'r."digest", r."manifest" AS "reviewed", r."publisherId" AS "releasePublisher", '
+                     'p."origins" FROM "App" AS a JOIN "AppRelease" AS r '
+                     'ON a."appId"=r."appId" AND a."version"=r."version" '
+                     'JOIN "Publisher" AS p ON a."publisher"=p."publisherId" '
+                     'WHERE a."status"=\'published\' AND p."status"=\'active\' '
+                     'AND a."appId">:after ORDER BY a."appId" LIMIT :limit',
+                     after=after, limit=min(limit, 10001))
+        apps = []
+        for row in rows:
+            try:
+                manifest = _json(row['reviewed'])
+                actual = _json(row['manifest'])
+                checked = validate_manifest(manifest, approved_origins=set(_json(row['origins'])))
+                if (checked != manifest or manifest != actual or
+                        manifest['id'] != row['appId'] or manifest['version'] != row['version'] or
+                        manifest['publisher'] != row['publisher'] or row['releasePublisher'] != row['publisher'] or
+                        canonical_hash(manifest) != row['digest']):
+                    continue
+                apps.append(manifest)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+        return apps
+
+
+    async def catalog(ctx):
+        query = getattr(getattr(ctx, 'request', None), 'query_params', {})
+        after = query.get('after', '')
+        raw_limit = query.get('limit', '100')
+        if not isinstance(after, str) or len(after) > 120 or (after and not APP_ID.fullmatch(after)):
+            _fail('invalid catalog cursor')
+        if not isinstance(raw_limit, str) or not raw_limit.isascii() or not raw_limit.isdecimal():
+            _fail('invalid catalog page size')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 100:
+            _fail('catalog limit must be 1-100')
+        with ctx.session_factory() as session:
+            approved = _approved_catalog(session, after=after, limit=10001)
+        page = approved[:limit]
+        return {'schema': 'atrium.catalog/v1', 'apps': page,
+                'count': len(page), 'next': page[-1]['id'] if len(approved) > limit else None,
+                'hasMore': len(approved) > limit, 'authenticated': True}
+
+
+    async def change_publisher_status(ctx):
+        body = _body(ctx)
+        publisher_id, status = body.get('publisherId'), body.get('status')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher')
+        if status not in ('active', 'disabled'):
+            _fail('invalid publisher status')
+        with _tx(ctx) as session:
+            row = _publisher(session, publisher_id)
+            if not row:
+                _fail('publisher not found', 404)
+            if row['status'] == status:
+                _fail('publisher status already set', 409)
+            session.execute(text('UPDATE "Publisher" SET "status"=:status WHERE "publisherId"=:pid'),
+                            {'status': status, 'pid': publisher_id})
+            affected = _rows(session, 'SELECT "id","appId","version" FROM "App" '
+                             'WHERE "publisher"=:pid AND "status"=\'published\' ORDER BY "appId"', pid=publisher_id)
+            for app in affected:
+                _emit(ctx, session, 'updated', app['id'], {'id': app['id'], 'appId': app['appId'],
+                      'version': app['version'], 'status': 'publisher_' + status})
+        return {'publisherId': publisher_id, 'status': status, 'affectedApps': len(affected)}
+
+
+    async def submissions(ctx):
+        with ctx.session_factory() as session:
+            rows = _rows(session, 'SELECT "submissionId","appId","publisherId","version","digest",'
+                         '"status","submittedAt","reviewedAt" FROM "AppSubmission" '
+                         'ORDER BY "id" DESC LIMIT 100')
+        return {'submissions': rows}
+
+
+    async def handle(ctx):
+        return await disable(ctx)
+- path: /registry/catalog
+  method: GET
+  kind: python
+  scopes:
+  - apps:read
+  source: |
+    """Strict, immutable application manifest contract for trusted review.
+
+    This validates *metadata*, not asset content, TLS origin ownership or publisher authority.
+    Those require separate operator/CI checks before publishing.
+    """
+    import hashlib
+    import ipaddress
+    import json
+    import re
+    from urllib.parse import urlsplit
+
+    APP_ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
+    PUBLISHER_ID = re.compile(r"^[a-z][a-z0-9-]{2,119}$")
+    VERSION = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    ALLOWED_KINDS = frozenset({'game', 'social', 'utility', 'application'})
+    PERMISSIONS = frozenset({'profile:read', 'game:join', 'notifications:read'})
+    FIELDS = frozenset({'id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256', 'permissions'})
+
+
+    def validate_origin(origin):
+        """Accept DNS-based HTTPS origins only; these still require ownership review."""
+        if not isinstance(origin, str) or len(origin) > 255:
+            raise ValueError('invalid origin')
+        try:
+            parts = urlsplit(origin)
+            host = parts.hostname or ''
+            port = parts.port
+        except ValueError:
+            raise ValueError('invalid origin') from None
+        if (parts.scheme != 'https' or not host or parts.username or parts.password or
+                parts.path or parts.query or parts.fragment or (port is not None and port != 443)):
+            raise ValueError('origin must be a clean HTTPS origin')
+        if (host in {'localhost', 'localhost.localdomain'} or host.endswith(('.local', '.localhost', '.internal'))
+                or '.' not in host or not re.fullmatch(r'[a-z0-9.-]+', host) or '..' in host):
+            raise ValueError('origin must use a public DNS hostname')
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError('IP addresses are not acceptable asset origins')
+        labels = host.split('.')
+        if (any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', x) for x in labels)
+                or all(x.isdecimal() for x in labels)):
+            raise ValueError('invalid public DNS origin')
+        normalized = 'https://' + host
+        if origin not in (normalized, normalized + ':443'):
+            raise ValueError('origin is not canonical')
+        return normalized
+
+
+    def validate_manifest(doc, *, approved_origins):
+        if not isinstance(doc, dict) or set(doc) - FIELDS:
+            raise ValueError('manifest is not an object or has unknown keys')
+        required = FIELDS - {'permissions'}
+        for field in required:
+            if not isinstance(doc.get(field), str) or not doc[field].strip():
+                raise ValueError('missing or invalid ' + field)
+        if not APP_ID.fullmatch(doc['id']) or not PUBLISHER_ID.fullmatch(doc['publisher']):
+            raise ValueError('invalid application or publisher ID')
+        if not VERSION.fullmatch(doc['version']) or len(doc['version']) > 48:
+            raise ValueError('invalid semantic version')
+        if not 1 <= len(doc['title']) <= 160 or doc['kind'] not in ALLOWED_KINDS:
+            raise ValueError('invalid title or app kind')
+        if not re.fullmatch(r'[a-f0-9]{64}', doc['sha256']):
+            raise ValueError('sha256 must be a lowercase digest')
+        entry = doc['entry']
+        try:
+            url = urlsplit(entry)
+        except ValueError:
+            raise ValueError('invalid entrypoint URL') from None
+        origin = validate_origin(url.scheme + '://' + (url.netloc or ''))
+        if (origin not in approved_origins or url.query or url.fragment or
+                not url.path.startswith('/assets/') or doc['sha256'] not in url.path.split('/')):
+            raise ValueError('entry must be an approved immutable asset URL')
+        if len(entry) > 512:
+            raise ValueError('entry is too long')
+        permissions = doc.get('permissions', [])
+        if (not isinstance(permissions, list) or len(permissions) > 12 or
+                any(not isinstance(p, str) or p not in PERMISSIONS for p in permissions) or
+                len(set(permissions)) != len(permissions)):
+            raise ValueError('invalid permissions')
+        return {k: doc[k] for k in ('id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256')} | {'permissions': permissions}
+
+
+    def canonical_hash(doc):
+        return hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+
+    """Operator-only durable registry handlers; generated inline into DAPI spec.
+
+    Clients never write App/Publisher/Release tables directly. All updates are reviewed.
+    """
+    import json
+    import uuid
+    from datetime import datetime, timezone
+
+    from sqlalchemy import text
+    from starlette.exceptions import HTTPException
+
+
+    def _fail(message, status=422):
+        raise HTTPException(status_code=status, detail=message)
+
+
+    def _body(ctx):
+        if not isinstance(ctx.body, dict):
+            _fail('expected a JSON object')
+        return ctx.body
+
+
+    def _when():
+        return datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+
+    def _row(session, statement, **values):
+        return session.execute(text(statement), values).mappings().first()
+
+
+    def _rows(session, statement, **values):
+        return [dict(x) for x in session.execute(text(statement), values).mappings()]
+
+
+    def _json(value):
+        return value if isinstance(value, (dict, list)) else json.loads(value)
+
+
+    def _as_json(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+
+    def _tx(ctx):
+        return ctx.transaction() if ctx.transaction else ctx.session_factory.begin()
+
+
+    def _emit(ctx, session, action, row_id, data):
+        event = {'resource': 'apps', 'action': action, 'id': row_id, 'data': data}
+        if ctx.emit:
+            ctx.emit(session, event)
+        else:
+            # Kept only for legacy DAPI with best-effort event delivery.
+            pass
+
+
+    def _publisher(session, publisher_id):
+        return _row(session, 'SELECT * FROM "Publisher" WHERE "publisherId"=:pid', pid=publisher_id)
+
+
+    def _submission(session, sid):
+        return _row(session, 'SELECT * FROM "AppSubmission" WHERE "submissionId"=:sid', sid=sid)
+
+
+    async def register_publisher(ctx):
+        body = _body(ctx)
+        publisher_id, name, origins = body.get('id'), body.get('name'), body.get('origins')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher ID')
+        if not isinstance(name, str) or not 1 <= len(name) <= 160:
+            _fail('invalid publisher name')
+        if not isinstance(origins, list) or not 1 <= len(origins) <= 8:
+            _fail('publisher requires 1-8 reviewed origins')
+        try:
+            origins = [validate_origin(x) for x in origins]
+        except ValueError as error:
+            _fail(str(error))
+        if len(origins) != len(set(origins)):
+            _fail('duplicate publisher origin')
+        with _tx(ctx) as session:
+            if _publisher(session, publisher_id):
+                _fail('publisher already exists', 409)
+            session.execute(text('INSERT INTO "Publisher" ("publisherId","displayName","origins","status","createdAt") '
+                                 'VALUES (:pid,:name,:origins,:status,:created)'),
+                            {'pid': publisher_id, 'name': name, 'origins': _as_json(origins),
+                             'status': 'active', 'created': _when()})
+        return {'publisherId': publisher_id, 'status': 'active', 'ownership': 'operator_attested'}
+
+
+    async def submit(ctx):
+        body = _body(ctx)
+        manifest = body.get('manifest')
+        if not isinstance(manifest, dict):
+            _fail('manifest must be an object')
+        if len(_as_json(manifest)) > 16384:
+            _fail('manifest too large', 413)
+        with _tx(ctx) as session:
+            publisher_id = manifest.get('publisher')
+            publisher = _publisher(session, publisher_id) if isinstance(publisher_id, str) else None
+            if not publisher or publisher['status'] != 'active':
+                _fail('publisher not approved', 403)
+            try:
+                checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+            except ValueError as error:
+                _fail(str(error))
+            existing = _row(session, 'SELECT "publisher" FROM "App" WHERE "appId"=:app', app=checked['id'])
+            if existing and existing['publisher'] != publisher_id:
+                _fail('app already belongs to another publisher', 409)
+            prior = _row(session, 'SELECT "id" FROM "AppSubmission" WHERE "appId"=:app AND '
+                         '"version"=:version AND "status" IN (\'pending\',\'approved\')',
+                         app=checked['id'], version=checked['version'])
+            if prior or _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                              app=checked['id'], version=checked['version']):
+                _fail('version already submitted or published', 409)
+            sid = uuid.uuid4().hex
+            session.execute(text('INSERT INTO "AppSubmission" '
+                                 '("submissionId","appId","publisherId","version","manifest","digest","status","submittedAt") '
+                                 'VALUES (:sid,:app,:pid,:version,:manifest,:digest,\'pending\',:created)'),
+                            {'sid': sid, 'app': checked['id'], 'pid': publisher_id, 'version': checked['version'],
+                             'manifest': _as_json(checked), 'digest': canonical_hash(checked), 'created': _when()})
+        return {'submissionId': sid, 'status': 'pending', 'digest': canonical_hash(checked)}
+
+
+    def _version_key(value):
+        match = VERSION.fullmatch(value)
+        return tuple(int(match.group(i)) for i in (1, 2, 3)) if match else (0, 0, 0)
+
+
+    def _update_app(session, manifest, digest):
+        app_id = manifest['id']
+        old = _row(session, 'SELECT "id","publisher","version","status" FROM "App" WHERE "appId"=:app', app=app_id)
+        if old and old['publisher'] != manifest['publisher']:
+            _fail('publisher ownership conflict', 409)
+        if old:
+            if _version_key(manifest['version']) <= _version_key(old['version']):
+                _fail('approved version must be newer than current version', 409)
+            session.execute(text('UPDATE "App" SET "title"=:title,"category"=:kind,"version"=:version,'
+                                 '"status"=\'published\',"manifest"=:manifest WHERE "appId"=:app'),
+                            {'title': manifest['title'], 'kind': manifest['kind'], 'version': manifest['version'],
+                             'manifest': _as_json(manifest), 'app': app_id})
+            return old['id'], 'updated'
+        session.execute(text('INSERT INTO "App" '
+                             '("appId","title","publisher","category","version","status","manifest") '
+                             'VALUES (:app,:title,:publisher,:kind,:version,\'published\',:manifest)'),
+                        {'app': app_id, 'title': manifest['title'], 'publisher': manifest['publisher'],
+                         'kind': manifest['kind'], 'version': manifest['version'], 'manifest': _as_json(manifest)})
+        inserted = _row(session, 'SELECT "id" FROM "App" WHERE "appId"=:app', app=app_id)
+        return inserted['id'], 'created'
+
+
+    async def review(ctx):
+        body = _body(ctx)
+        sid, decision = body.get('submissionId'), body.get('decision')
+        if not isinstance(sid, str) or len(sid) != 32 or decision not in ('approve', 'reject'):
+            _fail('invalid review decision')
+        with _tx(ctx) as session:
+            entry = _submission(session, sid)
+            if not entry:
+                _fail('unknown submission', 404)
+            if entry['status'] != 'pending':
+                _fail('submission already reviewed', 409)
+            manifest = _json(entry['manifest'])
+            if decision == 'approve':
+                publisher = _publisher(session, entry['publisherId'])
+                if not publisher or publisher['status'] != 'active':
+                    _fail('publisher not active', 403)
+                try:
+                    checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+                except ValueError as error:
+                    _fail(str(error))
+                if canonical_hash(checked) != entry['digest']:
+                    _fail('submitted manifest changed', 409)
+                existing = _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                                app=checked['id'], version=checked['version'])
+                if existing:
+                    _fail('immutable version already published', 409)
+                session.execute(text('INSERT INTO "AppRelease" '
+                                     '("appId","version","publisherId","manifest","digest","approvedAt") '
+                                     'VALUES (:app,:version,:pid,:manifest,:digest,:now)'),
+                                {'app': checked['id'], 'version': checked['version'], 'pid': checked['publisher'],
+                                 'manifest': _as_json(checked), 'digest': entry['digest'], 'now': _when()})
+                record_id, action = _update_app(session, checked, entry['digest'])
+                _emit(ctx, session, action, record_id, {'id': record_id, 'appId': checked['id'],
+                      'version': checked['version'], 'status': 'published'})
+            session.execute(text('UPDATE "AppSubmission" SET "status"=:status,"reviewedAt"=:now WHERE "submissionId"=:sid'),
+                            {'status': 'approved' if decision == 'approve' else 'rejected', 'now': _when(), 'sid': sid})
+        return {'submissionId': sid, 'status': 'approved' if decision == 'approve' else 'rejected'}
+
+
+    async def disable(ctx):
+        body = _body(ctx)
+        app_id = body.get('appId')
+        if not isinstance(app_id, str) or not APP_ID.fullmatch(app_id):
+            _fail('invalid app ID')
+        with _tx(ctx) as session:
+            row = _row(session, 'SELECT "id","status" FROM "App" WHERE "appId"=:app', app=app_id)
+            if not row:
+                _fail('unknown application', 404)
+            if row['status'] != 'published':
+                _fail('only published apps can be disabled', 409)
+            session.execute(text('UPDATE "App" SET "status"=\'disabled\' WHERE "appId"=:app'), {'app': app_id})
+            _emit(ctx, session, 'updated', row['id'], {'id': row['id'], 'appId': app_id, 'status': 'disabled'})
+        return {'appId': app_id, 'status': 'disabled'}
+
+
+    def _approved_catalog(session, *, after='', limit=10000):
+        """Project only active, immutable, reviewed releases; reject any tampering."""
+        rows = _rows(session, 'SELECT a."appId", a."publisher", a."version", a."manifest", '
+                     'r."digest", r."manifest" AS "reviewed", r."publisherId" AS "releasePublisher", '
+                     'p."origins" FROM "App" AS a JOIN "AppRelease" AS r '
+                     'ON a."appId"=r."appId" AND a."version"=r."version" '
+                     'JOIN "Publisher" AS p ON a."publisher"=p."publisherId" '
+                     'WHERE a."status"=\'published\' AND p."status"=\'active\' '
+                     'AND a."appId">:after ORDER BY a."appId" LIMIT :limit',
+                     after=after, limit=min(limit, 10001))
+        apps = []
+        for row in rows:
+            try:
+                manifest = _json(row['reviewed'])
+                actual = _json(row['manifest'])
+                checked = validate_manifest(manifest, approved_origins=set(_json(row['origins'])))
+                if (checked != manifest or manifest != actual or
+                        manifest['id'] != row['appId'] or manifest['version'] != row['version'] or
+                        manifest['publisher'] != row['publisher'] or row['releasePublisher'] != row['publisher'] or
+                        canonical_hash(manifest) != row['digest']):
+                    continue
+                apps.append(manifest)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+        return apps
+
+
+    async def catalog(ctx):
+        query = getattr(getattr(ctx, 'request', None), 'query_params', {})
+        after = query.get('after', '')
+        raw_limit = query.get('limit', '100')
+        if not isinstance(after, str) or len(after) > 120 or (after and not APP_ID.fullmatch(after)):
+            _fail('invalid catalog cursor')
+        if not isinstance(raw_limit, str) or not raw_limit.isascii() or not raw_limit.isdecimal():
+            _fail('invalid catalog page size')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 100:
+            _fail('catalog limit must be 1-100')
+        with ctx.session_factory() as session:
+            approved = _approved_catalog(session, after=after, limit=10001)
+        page = approved[:limit]
+        return {'schema': 'atrium.catalog/v1', 'apps': page,
+                'count': len(page), 'next': page[-1]['id'] if len(approved) > limit else None,
+                'hasMore': len(approved) > limit, 'authenticated': True}
+
+
+    async def change_publisher_status(ctx):
+        body = _body(ctx)
+        publisher_id, status = body.get('publisherId'), body.get('status')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher')
+        if status not in ('active', 'disabled'):
+            _fail('invalid publisher status')
+        with _tx(ctx) as session:
+            row = _publisher(session, publisher_id)
+            if not row:
+                _fail('publisher not found', 404)
+            if row['status'] == status:
+                _fail('publisher status already set', 409)
+            session.execute(text('UPDATE "Publisher" SET "status"=:status WHERE "publisherId"=:pid'),
+                            {'status': status, 'pid': publisher_id})
+            affected = _rows(session, 'SELECT "id","appId","version" FROM "App" '
+                             'WHERE "publisher"=:pid AND "status"=\'published\' ORDER BY "appId"', pid=publisher_id)
+            for app in affected:
+                _emit(ctx, session, 'updated', app['id'], {'id': app['id'], 'appId': app['appId'],
+                      'version': app['version'], 'status': 'publisher_' + status})
+        return {'publisherId': publisher_id, 'status': status, 'affectedApps': len(affected)}
+
+
+    async def submissions(ctx):
+        with ctx.session_factory() as session:
+            rows = _rows(session, 'SELECT "submissionId","appId","publisherId","version","digest",'
+                         '"status","submittedAt","reviewedAt" FROM "AppSubmission" '
+                         'ORDER BY "id" DESC LIMIT 100')
+        return {'submissions': rows}
+
+
+    async def handle(ctx):
+        return await catalog(ctx)
+- path: /registry/submissions
+  method: GET
+  kind: python
+  scopes:
+  - apps:approve
+  source: |
+    """Strict, immutable application manifest contract for trusted review.
+
+    This validates *metadata*, not asset content, TLS origin ownership or publisher authority.
+    Those require separate operator/CI checks before publishing.
+    """
+    import hashlib
+    import ipaddress
+    import json
+    import re
+    from urllib.parse import urlsplit
+
+    APP_ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
+    PUBLISHER_ID = re.compile(r"^[a-z][a-z0-9-]{2,119}$")
+    VERSION = re.compile(r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+    ALLOWED_KINDS = frozenset({'game', 'social', 'utility', 'application'})
+    PERMISSIONS = frozenset({'profile:read', 'game:join', 'notifications:read'})
+    FIELDS = frozenset({'id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256', 'permissions'})
+
+
+    def validate_origin(origin):
+        """Accept DNS-based HTTPS origins only; these still require ownership review."""
+        if not isinstance(origin, str) or len(origin) > 255:
+            raise ValueError('invalid origin')
+        try:
+            parts = urlsplit(origin)
+            host = parts.hostname or ''
+            port = parts.port
+        except ValueError:
+            raise ValueError('invalid origin') from None
+        if (parts.scheme != 'https' or not host or parts.username or parts.password or
+                parts.path or parts.query or parts.fragment or (port is not None and port != 443)):
+            raise ValueError('origin must be a clean HTTPS origin')
+        if (host in {'localhost', 'localhost.localdomain'} or host.endswith(('.local', '.localhost', '.internal'))
+                or '.' not in host or not re.fullmatch(r'[a-z0-9.-]+', host) or '..' in host):
+            raise ValueError('origin must use a public DNS hostname')
+        try:
+            ipaddress.ip_address(host)
+        except ValueError:
+            pass
+        else:
+            raise ValueError('IP addresses are not acceptable asset origins')
+        labels = host.split('.')
+        if (any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', x) for x in labels)
+                or all(x.isdecimal() for x in labels)):
+            raise ValueError('invalid public DNS origin')
+        normalized = 'https://' + host
+        if origin not in (normalized, normalized + ':443'):
+            raise ValueError('origin is not canonical')
+        return normalized
+
+
+    def validate_manifest(doc, *, approved_origins):
+        if not isinstance(doc, dict) or set(doc) - FIELDS:
+            raise ValueError('manifest is not an object or has unknown keys')
+        required = FIELDS - {'permissions'}
+        for field in required:
+            if not isinstance(doc.get(field), str) or not doc[field].strip():
+                raise ValueError('missing or invalid ' + field)
+        if not APP_ID.fullmatch(doc['id']) or not PUBLISHER_ID.fullmatch(doc['publisher']):
+            raise ValueError('invalid application or publisher ID')
+        if not VERSION.fullmatch(doc['version']) or len(doc['version']) > 48:
+            raise ValueError('invalid semantic version')
+        if not 1 <= len(doc['title']) <= 160 or doc['kind'] not in ALLOWED_KINDS:
+            raise ValueError('invalid title or app kind')
+        if not re.fullmatch(r'[a-f0-9]{64}', doc['sha256']):
+            raise ValueError('sha256 must be a lowercase digest')
+        entry = doc['entry']
+        try:
+            url = urlsplit(entry)
+        except ValueError:
+            raise ValueError('invalid entrypoint URL') from None
+        origin = validate_origin(url.scheme + '://' + (url.netloc or ''))
+        if (origin not in approved_origins or url.query or url.fragment or
+                not url.path.startswith('/assets/') or doc['sha256'] not in url.path.split('/')):
+            raise ValueError('entry must be an approved immutable asset URL')
+        if len(entry) > 512:
+            raise ValueError('entry is too long')
+        permissions = doc.get('permissions', [])
+        if (not isinstance(permissions, list) or len(permissions) > 12 or
+                any(not isinstance(p, str) or p not in PERMISSIONS for p in permissions) or
+                len(set(permissions)) != len(permissions)):
+            raise ValueError('invalid permissions')
+        return {k: doc[k] for k in ('id', 'title', 'version', 'publisher', 'kind', 'entry', 'sha256')} | {'permissions': permissions}
+
+
+    def canonical_hash(doc):
+        return hashlib.sha256(json.dumps(doc, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+
+    """Operator-only durable registry handlers; generated inline into DAPI spec.
+
+    Clients never write App/Publisher/Release tables directly. All updates are reviewed.
+    """
+    import json
+    import uuid
+    from datetime import datetime, timezone
+
+    from sqlalchemy import text
+    from starlette.exceptions import HTTPException
+
+
+    def _fail(message, status=422):
+        raise HTTPException(status_code=status, detail=message)
+
+
+    def _body(ctx):
+        if not isinstance(ctx.body, dict):
+            _fail('expected a JSON object')
+        return ctx.body
+
+
+    def _when():
+        return datetime.now(timezone.utc).isoformat(timespec='seconds')
+
+
+    def _row(session, statement, **values):
+        return session.execute(text(statement), values).mappings().first()
+
+
+    def _rows(session, statement, **values):
+        return [dict(x) for x in session.execute(text(statement), values).mappings()]
+
+
+    def _json(value):
+        return value if isinstance(value, (dict, list)) else json.loads(value)
+
+
+    def _as_json(value):
+        return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+
+    def _tx(ctx):
+        return ctx.transaction() if ctx.transaction else ctx.session_factory.begin()
+
+
+    def _emit(ctx, session, action, row_id, data):
+        event = {'resource': 'apps', 'action': action, 'id': row_id, 'data': data}
+        if ctx.emit:
+            ctx.emit(session, event)
+        else:
+            # Kept only for legacy DAPI with best-effort event delivery.
+            pass
+
+
+    def _publisher(session, publisher_id):
+        return _row(session, 'SELECT * FROM "Publisher" WHERE "publisherId"=:pid', pid=publisher_id)
+
+
+    def _submission(session, sid):
+        return _row(session, 'SELECT * FROM "AppSubmission" WHERE "submissionId"=:sid', sid=sid)
+
+
+    async def register_publisher(ctx):
+        body = _body(ctx)
+        publisher_id, name, origins = body.get('id'), body.get('name'), body.get('origins')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher ID')
+        if not isinstance(name, str) or not 1 <= len(name) <= 160:
+            _fail('invalid publisher name')
+        if not isinstance(origins, list) or not 1 <= len(origins) <= 8:
+            _fail('publisher requires 1-8 reviewed origins')
+        try:
+            origins = [validate_origin(x) for x in origins]
+        except ValueError as error:
+            _fail(str(error))
+        if len(origins) != len(set(origins)):
+            _fail('duplicate publisher origin')
+        with _tx(ctx) as session:
+            if _publisher(session, publisher_id):
+                _fail('publisher already exists', 409)
+            session.execute(text('INSERT INTO "Publisher" ("publisherId","displayName","origins","status","createdAt") '
+                                 'VALUES (:pid,:name,:origins,:status,:created)'),
+                            {'pid': publisher_id, 'name': name, 'origins': _as_json(origins),
+                             'status': 'active', 'created': _when()})
+        return {'publisherId': publisher_id, 'status': 'active', 'ownership': 'operator_attested'}
+
+
+    async def submit(ctx):
+        body = _body(ctx)
+        manifest = body.get('manifest')
+        if not isinstance(manifest, dict):
+            _fail('manifest must be an object')
+        if len(_as_json(manifest)) > 16384:
+            _fail('manifest too large', 413)
+        with _tx(ctx) as session:
+            publisher_id = manifest.get('publisher')
+            publisher = _publisher(session, publisher_id) if isinstance(publisher_id, str) else None
+            if not publisher or publisher['status'] != 'active':
+                _fail('publisher not approved', 403)
+            try:
+                checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+            except ValueError as error:
+                _fail(str(error))
+            existing = _row(session, 'SELECT "publisher" FROM "App" WHERE "appId"=:app', app=checked['id'])
+            if existing and existing['publisher'] != publisher_id:
+                _fail('app already belongs to another publisher', 409)
+            prior = _row(session, 'SELECT "id" FROM "AppSubmission" WHERE "appId"=:app AND '
+                         '"version"=:version AND "status" IN (\'pending\',\'approved\')',
+                         app=checked['id'], version=checked['version'])
+            if prior or _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                              app=checked['id'], version=checked['version']):
+                _fail('version already submitted or published', 409)
+            sid = uuid.uuid4().hex
+            session.execute(text('INSERT INTO "AppSubmission" '
+                                 '("submissionId","appId","publisherId","version","manifest","digest","status","submittedAt") '
+                                 'VALUES (:sid,:app,:pid,:version,:manifest,:digest,\'pending\',:created)'),
+                            {'sid': sid, 'app': checked['id'], 'pid': publisher_id, 'version': checked['version'],
+                             'manifest': _as_json(checked), 'digest': canonical_hash(checked), 'created': _when()})
+        return {'submissionId': sid, 'status': 'pending', 'digest': canonical_hash(checked)}
+
+
+    def _version_key(value):
+        match = VERSION.fullmatch(value)
+        return tuple(int(match.group(i)) for i in (1, 2, 3)) if match else (0, 0, 0)
+
+
+    def _update_app(session, manifest, digest):
+        app_id = manifest['id']
+        old = _row(session, 'SELECT "id","publisher","version","status" FROM "App" WHERE "appId"=:app', app=app_id)
+        if old and old['publisher'] != manifest['publisher']:
+            _fail('publisher ownership conflict', 409)
+        if old:
+            if _version_key(manifest['version']) <= _version_key(old['version']):
+                _fail('approved version must be newer than current version', 409)
+            session.execute(text('UPDATE "App" SET "title"=:title,"category"=:kind,"version"=:version,'
+                                 '"status"=\'published\',"manifest"=:manifest WHERE "appId"=:app'),
+                            {'title': manifest['title'], 'kind': manifest['kind'], 'version': manifest['version'],
+                             'manifest': _as_json(manifest), 'app': app_id})
+            return old['id'], 'updated'
+        session.execute(text('INSERT INTO "App" '
+                             '("appId","title","publisher","category","version","status","manifest") '
+                             'VALUES (:app,:title,:publisher,:kind,:version,\'published\',:manifest)'),
+                        {'app': app_id, 'title': manifest['title'], 'publisher': manifest['publisher'],
+                         'kind': manifest['kind'], 'version': manifest['version'], 'manifest': _as_json(manifest)})
+        inserted = _row(session, 'SELECT "id" FROM "App" WHERE "appId"=:app', app=app_id)
+        return inserted['id'], 'created'
+
+
+    async def review(ctx):
+        body = _body(ctx)
+        sid, decision = body.get('submissionId'), body.get('decision')
+        if not isinstance(sid, str) or len(sid) != 32 or decision not in ('approve', 'reject'):
+            _fail('invalid review decision')
+        with _tx(ctx) as session:
+            entry = _submission(session, sid)
+            if not entry:
+                _fail('unknown submission', 404)
+            if entry['status'] != 'pending':
+                _fail('submission already reviewed', 409)
+            manifest = _json(entry['manifest'])
+            if decision == 'approve':
+                publisher = _publisher(session, entry['publisherId'])
+                if not publisher or publisher['status'] != 'active':
+                    _fail('publisher not active', 403)
+                try:
+                    checked = validate_manifest(manifest, approved_origins=set(_json(publisher['origins'])))
+                except ValueError as error:
+                    _fail(str(error))
+                if canonical_hash(checked) != entry['digest']:
+                    _fail('submitted manifest changed', 409)
+                existing = _row(session, 'SELECT "id" FROM "AppRelease" WHERE "appId"=:app AND "version"=:version',
+                                app=checked['id'], version=checked['version'])
+                if existing:
+                    _fail('immutable version already published', 409)
+                session.execute(text('INSERT INTO "AppRelease" '
+                                     '("appId","version","publisherId","manifest","digest","approvedAt") '
+                                     'VALUES (:app,:version,:pid,:manifest,:digest,:now)'),
+                                {'app': checked['id'], 'version': checked['version'], 'pid': checked['publisher'],
+                                 'manifest': _as_json(checked), 'digest': entry['digest'], 'now': _when()})
+                record_id, action = _update_app(session, checked, entry['digest'])
+                _emit(ctx, session, action, record_id, {'id': record_id, 'appId': checked['id'],
+                      'version': checked['version'], 'status': 'published'})
+            session.execute(text('UPDATE "AppSubmission" SET "status"=:status,"reviewedAt"=:now WHERE "submissionId"=:sid'),
+                            {'status': 'approved' if decision == 'approve' else 'rejected', 'now': _when(), 'sid': sid})
+        return {'submissionId': sid, 'status': 'approved' if decision == 'approve' else 'rejected'}
+
+
+    async def disable(ctx):
+        body = _body(ctx)
+        app_id = body.get('appId')
+        if not isinstance(app_id, str) or not APP_ID.fullmatch(app_id):
+            _fail('invalid app ID')
+        with _tx(ctx) as session:
+            row = _row(session, 'SELECT "id","status" FROM "App" WHERE "appId"=:app', app=app_id)
+            if not row:
+                _fail('unknown application', 404)
+            if row['status'] != 'published':
+                _fail('only published apps can be disabled', 409)
+            session.execute(text('UPDATE "App" SET "status"=\'disabled\' WHERE "appId"=:app'), {'app': app_id})
+            _emit(ctx, session, 'updated', row['id'], {'id': row['id'], 'appId': app_id, 'status': 'disabled'})
+        return {'appId': app_id, 'status': 'disabled'}
+
+
+    def _approved_catalog(session, *, after='', limit=10000):
+        """Project only active, immutable, reviewed releases; reject any tampering."""
+        rows = _rows(session, 'SELECT a."appId", a."publisher", a."version", a."manifest", '
+                     'r."digest", r."manifest" AS "reviewed", r."publisherId" AS "releasePublisher", '
+                     'p."origins" FROM "App" AS a JOIN "AppRelease" AS r '
+                     'ON a."appId"=r."appId" AND a."version"=r."version" '
+                     'JOIN "Publisher" AS p ON a."publisher"=p."publisherId" '
+                     'WHERE a."status"=\'published\' AND p."status"=\'active\' '
+                     'AND a."appId">:after ORDER BY a."appId" LIMIT :limit',
+                     after=after, limit=min(limit, 10001))
+        apps = []
+        for row in rows:
+            try:
+                manifest = _json(row['reviewed'])
+                actual = _json(row['manifest'])
+                checked = validate_manifest(manifest, approved_origins=set(_json(row['origins'])))
+                if (checked != manifest or manifest != actual or
+                        manifest['id'] != row['appId'] or manifest['version'] != row['version'] or
+                        manifest['publisher'] != row['publisher'] or row['releasePublisher'] != row['publisher'] or
+                        canonical_hash(manifest) != row['digest']):
+                    continue
+                apps.append(manifest)
+            except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+                continue
+        return apps
+
+
+    async def catalog(ctx):
+        query = getattr(getattr(ctx, 'request', None), 'query_params', {})
+        after = query.get('after', '')
+        raw_limit = query.get('limit', '100')
+        if not isinstance(after, str) or len(after) > 120 or (after and not APP_ID.fullmatch(after)):
+            _fail('invalid catalog cursor')
+        if not isinstance(raw_limit, str) or not raw_limit.isascii() or not raw_limit.isdecimal():
+            _fail('invalid catalog page size')
+        limit = int(raw_limit)
+        if not 1 <= limit <= 100:
+            _fail('catalog limit must be 1-100')
+        with ctx.session_factory() as session:
+            approved = _approved_catalog(session, after=after, limit=10001)
+        page = approved[:limit]
+        return {'schema': 'atrium.catalog/v1', 'apps': page,
+                'count': len(page), 'next': page[-1]['id'] if len(approved) > limit else None,
+                'hasMore': len(approved) > limit, 'authenticated': True}
+
+
+    async def change_publisher_status(ctx):
+        body = _body(ctx)
+        publisher_id, status = body.get('publisherId'), body.get('status')
+        if not isinstance(publisher_id, str) or not PUBLISHER_ID.fullmatch(publisher_id):
+            _fail('invalid publisher')
+        if status not in ('active', 'disabled'):
+            _fail('invalid publisher status')
+        with _tx(ctx) as session:
+            row = _publisher(session, publisher_id)
+            if not row:
+                _fail('publisher not found', 404)
+            if row['status'] == status:
+                _fail('publisher status already set', 409)
+            session.execute(text('UPDATE "Publisher" SET "status"=:status WHERE "publisherId"=:pid'),
+                            {'status': status, 'pid': publisher_id})
+            affected = _rows(session, 'SELECT "id","appId","version" FROM "App" '
+                             'WHERE "publisher"=:pid AND "status"=\'published\' ORDER BY "appId"', pid=publisher_id)
+            for app in affected:
+                _emit(ctx, session, 'updated', app['id'], {'id': app['id'], 'appId': app['appId'],
+                      'version': app['version'], 'status': 'publisher_' + status})
+        return {'publisherId': publisher_id, 'status': status, 'affectedApps': len(affected)}
+
+
+    async def submissions(ctx):
+        with ctx.session_factory() as session:
+            rows = _rows(session, 'SELECT "submissionId","appId","publisherId","version","digest",'
+                         '"status","submittedAt","reviewedAt" FROM "AppSubmission" '
+                         'ORDER BY "id" DESC LIMIT 100')
+        return {'submissions': rows}
+
+
+    async def handle(ctx):
+        return await submissions(ctx)

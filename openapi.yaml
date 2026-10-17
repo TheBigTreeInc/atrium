@@ -1,0 +1,121 @@
+openapi: 3.1.0
+info:
+  title: Atrium Registry API
+  version: 0.4.6
+  description: >-
+    Application-owned contract for registry handlers below
+    /looprd/atrium/v1. Consult the DAPI-generated OpenAPI document for
+    platform-managed resource routes. This DAPI registry is NOT anonymous; a separate static snapshot export is available.
+servers:
+  - url: /looprd/atrium/v1
+security:
+  - componentKey: []
+components:
+  securitySchemes:
+    componentKey:
+      type: http
+      scheme: bearer
+      description: Scoped DAPI database API key; never embed operator keys in browser apps
+  schemas:
+    AppManifest:
+      $ref: ./schemas/atrium-app-v1.schema.json
+paths:
+  /registry/info:
+    get:
+      summary: Registry feature status (apps:read)
+      responses:
+        '200': {description: Operator-controlled registry capabilities}
+  /registry/catalog:
+    get:
+      summary: Reviewed, enabled app manifests (apps:read)
+      responses:
+        '200': {description: Authenticated read-only app catalog}
+        '401': {description: Missing component key}
+        '403': {description: Missing apps:read permission}
+  /registry/publishers:
+    post:
+      summary: Operator attests publisher and approved origins (apps:approve)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, name, origins]
+              properties:
+                id: {type: string}
+                name: {type: string}
+                origins: {type: array, items: {type: string}}
+      responses:
+        '200': {description: Publisher registered and active}
+        '403': {description: Not approved}
+        '409': {description: Publisher already exists}
+  /registry/submissions:
+    get:
+      summary: Operator review queue (apps:approve)
+      responses:
+        '200': {description: Latest submissions}
+    post:
+      summary: Submit a draft for operator review (apps:approve)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [manifest]
+              properties:
+                manifest: {$ref: '#/components/schemas/AppManifest'}
+      responses:
+        '200': {description: Pending submission ID and manifest digest}
+        '403': {description: Publisher not approved}
+        '409': {description: Duplicate or ownership conflict}
+        '422': {description: Invalid manifest}
+  /registry/reviews:
+    post:
+      summary: Approve or reject a submission (apps:approve)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [submissionId, decision]
+              properties:
+                submissionId: {type: string}
+                decision: {enum: [approve, reject]}
+      responses:
+        '200': {description: Review recorded; approval activates app version}
+        '409': {description: Already reviewed or older version}
+  /registry/disable:
+    post:
+      summary: Disable published catalog entry without deleting releases (apps:approve)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [appId]
+              properties:
+                appId: {type: string}
+      responses:
+        '200': {description: App hidden from catalog}
+        '404': {description: Unknown app}
+  /registry/publishers/status:
+    post:
+      summary: Disable or restore reviewed publisher (apps:approve)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [publisherId, status]
+              properties:
+                publisherId: {type: string}
+                status: {type: string, enum: [active, disabled]}
+      responses:
+        '200': {description: Publisher status changed; app events emitted}
+        '403': {description: Insufficient publisher approval scope}
+        '409': {description: Publisher already has this status}

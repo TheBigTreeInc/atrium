@@ -1,0 +1,41 @@
+= Atrium v0.4.5 — Standards-compliant ZipRunner registration
+:toc: left
+
+== Root cause and specification
+
+The 0.4.1 through 0.4.4 failed Windows jobs still executed the pre-registered build commands and then raised `ModuleNotFoundError: No module named sqlalchemy`. This does not establish a fault in the app registry. The file named `atrium.zr` previously had undocumented JSON keys `build_commands`, `start_commands`, `match_patterns` and `delete_missing_files`, with no `schema`. Merely copying those aliases to match `project.zr` values could not establish adherence to the *published* `ziprunner.zr/v1` recipe contract.
+
+The published ZipRunner Interchange 2.3.0 package description and `examples/project.zr` define `schema: ziprunner.zr/v1`, `project_key`, `label`, `match`, `build`, `start`, `delete_missing`, `protected_paths`, and related keys. The v0.4.5 source now ships **byte-identical** `atrium.zr` (separately importable) and `project.zr` (within source ZIP). No active config or credentials are packaged.
+
+== Required operator import order
+
+. Download **both** `atrium.zr` and `atrium-0.4.5-ziprunner.zip`.
+. Use ZipRunner's project-registration `.zr` importer to target the **existing** `atrium` project. Inspect the proposed changes, including the project key and the build command list. Confirm they apply to the existing project instead of creating a duplicate.
+. Explicitly approve/apply the updated trusted project configuration. This operation is separate from source overlay; the spec does not authorize a source ZIP to rewrite saved settings automatically.
+. Import the v0.4.5 source ZIP into the `atrium` project.
+. Confirm the live job log shows the first two trusted build commands below, and check all Python tests run under the project's protected `.venv`.
+
+[source,text]
+----
+python tools/setup_build_env.py
+python tools/run_python_checks.py
+npm test
+npm run build
+npm run verify
+----
+
+If ZipRunner still executes `python -m unittest discover -s tests -v` directly, its active trusted configuration is stale; do not keep retrying source ZIPs until that mismatch is corrected in the project registration. Never bypass SQLAlchemy-dependent tests, mutate the global Python environment or delete private runtime directories.
+
+== Safety and boundaries
+
+* The project key and ZIP match pattern remain `atrium` and `atrium-*-ziprunner.zip`.
+* No code change to the application registry, runtime API or Looprd database schema v2.
+* Protected paths include `.venv/**`, `.git/**`, secrets, data, logs and runtime state; `delete_missing` remains false.
+* Acceptance requires a real imported `.zr` confirmation and succeeding Windows ZipRunner log, not just producer source tests.
+* Git push, operator review, database activation/migration and live deployment are independent gates.
+
+== Source references
+
+* https://github.com/pac-labs/ziprunner-spec/blob/main/docs/PACKAGING.md
+* https://github.com/pac-labs/ziprunner-spec/blob/main/examples/project.zr
+* https://github.com/pac-labs/ziprunner-spec/blob/main/docs/SAFETY.md

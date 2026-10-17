@@ -1,0 +1,10 @@
+Atrium v0.4.6 author-side checks, 2026-10-17.
+PASS: python tools/build_spec.py --check
+PASS: python tools/build_registry_spec.py --check
+PASS: python tools/check_specs.py — one component, 6 resources, 9 models, 12 handlers
+PASS: python -m unittest discover -s tests -v — 87 tests, no skip (includes existing SQLAlchemy migration, registry and public export tests)
+PASS: npm test — 8 JS tests
+PASS: npm run build; npm run verify — static catalog portal artifacts
+PASS: test-only dependency bridge, Python -S simulation without any system site packages, mounts ABI-matched venv test dependencies.
+PASS: unit coverage of missing .venv bootstrap path and mismatched Python ABI refusal (mocked filesystem/subprocess; no real Windows host mutation).
+NOT OBSERVED: real Windows ZipRunner intake/build, official pinned upstream DAPI/ZipRunner validator, live DAPI activation. CI contains a Windows legacy-direct-unittest check to exercise same failing path.

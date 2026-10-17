@@ -154,3 +154,5 @@ handlers:
     status: prototype
     staffDisplayLabel: Staff
     playerAuth: pending_social_verifier
+  scopes:
+  - arcade:read

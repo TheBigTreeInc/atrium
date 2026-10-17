@@ -1,13 +1,18 @@
-ZIPRUNNER_HANDOFF v1
-Project: atrium
-Version: 0.3.0
-Package: atrium-0.3.0-ziprunner.zip
-Kind: source_update
+# ZIPRUNNER_HANDOFF v1
 
-P0 delivers a single project with a nested DAPI component, CI, pinned upstream
-validator references, deterministic packaging and source-level regressions.
-DOES NOT deploy DAPI, push Git, create accounts, or activate a database schema.
+project: atrium
+artifact_type: source_zip
+version: 0.4.7
+filename: atrium-0.4.7-ziprunner.zip
+action: download_to_inbox
+notes: Repair two Windows-only regression test failures caused by POSIX mock path expectations; retain working SQLAlchemy setup and registry tests. No migration.
 
-Use project key `atrium`. Follow docs/P0_DELIVERY.adoc. Source import and
-staging activation remain awaiting operator review. Release approval, Git push,
-deployment and any schema migration require independent operator authorization.
+END_ZIPRUNNER_HANDOFF
+
+## Operator checks
+
+* Import the 0.4.7 ZIP into existing ZipRunner project `atrium`.
+* The same registered build recipe should now complete Python testing, including the real SQLAlchemy registry tests.
+* Confirm no `assert_called_once_with('/fake-test-venv')` or `assert_called_once_with('/created-test-venv')` mismatch.
+* Ensure npm tests/build/verification pass, then verify stable latest moved to 0.4.7.
+* No database migration, Looprd deployment, Git push, or trusted recipe overwrite is requested.

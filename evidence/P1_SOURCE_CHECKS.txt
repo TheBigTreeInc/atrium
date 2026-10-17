@@ -1,0 +1,23 @@
+Atrium v0.4.0 — author-source verification record
+Date: 2026-10-17 (Europe/Amsterdam)
+Source base: TheBigTreeInc/atrium main b65b0a2f40e377cf57c66f5e784bdfe57839ed10
+DAPI upstream pin: 1d4d177e0ea8091fcc9f343e187b18dda03d90d6
+ZipRunner-spec pin: 341005206094862853435ad68801be7ff28c4490 (v2.3.0)
+
+Local checks (these are author-run checks, not target-environment observations):
+- python tools/build_registry_spec.py --check: passed
+- python tools/build_spec.py --check: passed
+- python tools/check_specs.py: passed
+- python -m unittest discover -s tests -v: 52 tests passed (after final rerun)
+- npm test: 5 tests passed
+- npm run build: passed, static browser assets produced under dist/
+- npm run verify: passed
+- python tools/package_zip.py two-run reproducibility: passed; exact hash in delivery handoff
+- generated DAPI composed source tree below 1 MiB.
+
+NOT RUN in this author runtime:
+- Official pinned DAPI CLI semantic validation and authenticated integration smoke
+- Official ZipRunner v2.3 standalone validator on packaged ZIP
+- GitHub Actions workflow and any native ZipRunner overlay
+- Live DAPI source reconciliation or migrations on installed database
+- Operator approval, public launch, real publisher origin/asset ownership verification

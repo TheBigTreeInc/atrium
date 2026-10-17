@@ -1,0 +1,206 @@
+models:
+  App:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      appId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      title:
+        type: string
+        required: true
+        maxLength: 160
+      publisher:
+        type: string
+        required: true
+        maxLength: 120
+      category:
+        type: string
+        required: true
+        maxLength: 48
+      version:
+        type: string
+        required: true
+        maxLength: 48
+      status:
+        type: string
+        required: true
+        maxLength: 32
+      manifest:
+        type: json
+        required: true
+  RegisteredEndpoint:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      endpointId:
+        type: string
+        required: true
+        maxLength: 120
+        unique: true
+      appId:
+        type: string
+        required: true
+        maxLength: 120
+      origin:
+        type: string
+        required: true
+        maxLength: 512
+      capabilities:
+        type: json
+        required: true
+      enabled:
+        type: boolean
+        required: true
+  Publisher:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      displayName:
+        type: string
+        maxLength: 160
+        required: true
+      origins:
+        type: json
+        required: true
+      status:
+        type: string
+        maxLength: 32
+        required: true
+      createdAt:
+        type: string
+        maxLength: 40
+        required: true
+    unique:
+    - - publisherId
+  AppSubmission:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      submissionId:
+        type: string
+        maxLength: 64
+        required: true
+      appId:
+        type: string
+        maxLength: 120
+        required: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      version:
+        type: string
+        maxLength: 48
+        required: true
+      manifest:
+        type: json
+        required: true
+      digest:
+        type: string
+        maxLength: 64
+        required: true
+      status:
+        type: string
+        maxLength: 32
+        required: true
+      submittedAt:
+        type: string
+        maxLength: 40
+        required: true
+      reviewedAt:
+        type: string
+        maxLength: 40
+    unique:
+    - - submissionId
+  AppRelease:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      appId:
+        type: string
+        maxLength: 120
+        required: true
+      version:
+        type: string
+        maxLength: 48
+        required: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      manifest:
+        type: json
+        required: true
+      digest:
+        type: string
+        maxLength: 64
+        required: true
+      approvedAt:
+        type: string
+        maxLength: 40
+        required: true
+    unique:
+    - - appId
+      - version
+resources:
+  apps:
+    model: App
+    path: /apps
+    operations:
+    - list
+    - get
+    permissions:
+      list:
+      - apps:approve
+      get:
+      - apps:approve
+  endpoints:
+    model: RegisteredEndpoint
+    path: /endpoints
+    operations:
+    - list
+    - get
+    permissions:
+      list:
+      - apps:approve
+      get:
+      - apps:approve
+websocket:
+  resources:
+  - apps
+  - endpoints
+  permissions:
+    apps:
+    - apps:events
+    endpoints:
+    - apps:events
+handlers:
+- path: /registry/info
+  kind: response
+  scopes:
+  - apps:read
+  response:
+    service: registry
+    contract: atrium.registry/v1
+    status: reviewed-with-public-snapshot-export
+    publicCatalog: false
+    publisherOwnership: operator_attested
+    assetContentVerified: false
+    socialLoginIntegrated: false
