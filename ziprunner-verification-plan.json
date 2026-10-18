@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -199,6 +199,27 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ATR-104-CI-TODO-CONTRACT-060",
+      "criteria": [
+        {
+          "id": "ATR-104-CI-TODO-CONTRACT-060-AC-SOURCE",
+          "description": "ZipRunner todo schema and delivered verification-plan task IDs stay consistent",
+          "mode": "automated",
+          "checks": [
+            "ATR-104-CI-TODO-CONTRACT-060-T1"
+          ]
+        },
+        {
+          "id": "ATR-104-CI-TODO-CONTRACT-060-AC-OPERATOR",
+          "description": "Operator verifies exact GitHub Actions commit and installed ZIP without prematurely closing reviews",
+          "mode": "manual",
+          "checks": [
+            "ATR-104-CI-TODO-CONTRACT-060-M1"
+          ]
+        }
+      ]
     }
   ],
   "checks": [
@@ -386,7 +407,27 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Live DAPI schema v3 migration and operator candidate intake",
-      "instructions": "Back up real Atrium DB. Validate schema v2\u2192v3 on restored disposable environment. After Life activation, run deployer CLI with a private approved component key; verify candidate GET is operator-only, public catalog unchanged, and game sessions continue independently."
+      "instructions": "Back up real Atrium DB. Validate schema v2→v3 on restored disposable environment. After Life activation, run deployer CLI with a private approved component key; verify candidate GET is operator-only, public catalog unchanged, and game sessions continue independently."
+    },
+    {
+      "id": "ATR-104-CI-TODO-CONTRACT-060-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Verify manifest, workboard and verification plan task/check coverage",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_release_pipeline.py",
+      "assertions": [
+        "Every delivered implemented workboard ID has exactly one verification plan task; remaining tasks are not delivered.",
+        "All criteria reference declared checks of the expected kind, and automated tests exist in package.",
+        "ATR-108-LOOPRD-DISCOVERY remains planned, with valid todo status and next action."
+      ]
+    },
+    {
+      "id": "ATR-104-CI-TODO-CONTRACT-060-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator review of exact GitHub CI and installed ZIP",
+      "instructions": "Review v0.5.11 exact pushed commit; confirm both GitHub jobs and official pinned ZipRunner 2.3 validator pass. Run fresh post-update tests against installed ZIP bytes, and keep tickets in review until operator acceptance."
     }
   ]
 }

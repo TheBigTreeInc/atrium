@@ -8,7 +8,7 @@ from tools.package_zip import NAME, source_files, ROOT
 
 class P0ReleaseTests(unittest.TestCase):
     def test_package_identity_and_required_files(self):
-        self.assertEqual(NAME, 'atrium-0.5.10-ziprunner.zip')
+        self.assertEqual(NAME, 'atrium-0.5.11-ziprunner.zip')
         paths={path.relative_to(ROOT).as_posix() for path in source_files()}
         self.assertTrue({'.ziprunner-workboard-update.json','project.zr',
                          'ziprunner.looprd.json','ziprunner-verification-plan.json',
@@ -37,7 +37,7 @@ class P0ReleaseTests(unittest.TestCase):
         self.assertTrue(all(x.startswith(('ATR-P0-', 'ATR-10')) for x in ids))
         self.assertIn('ATR-P0-004',ids)
         self.assertEqual(update['project'],'atrium')
-        self.assertEqual(update['version'],'0.5.10')
+        self.assertEqual(update['version'],'0.5.11')
 
     def test_official_ziprunner_manifest_todo_contract(self):
         manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
@@ -54,7 +54,51 @@ class P0ReleaseTests(unittest.TestCase):
             self.assertTrue(isinstance(item['next_action'],str) and item['next_action'].strip())
             if item['status']=='blocked':
                 self.assertTrue(item.get('blockers'))
-        self.assertEqual(manifest['project']['version'],'0.5.10')
+        self.assertEqual(manifest['project']['version'],'0.5.11')
+
+    def test_verification_plan_exact_implemented_coverage(self):
+        """Pinned ZipRunner 2.3 verification-plan task and check linkage."""
+        board=json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
+        plan=json.loads((ROOT/'ziprunner-verification-plan.json').read_text(encoding='utf-8'))
+        manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+        implemented=[item['id'] for item in board['implemented']]
+        remaining={item['id'] for item in board['remaining']}
+        tasks=[item['id'] for item in plan['tasks']]
+        self.assertEqual(len(implemented),len(set(implemented)))
+        self.assertEqual(len(tasks),len(set(tasks)))
+        self.assertEqual(set(tasks),set(implemented))
+        self.assertFalse(set(tasks)&remaining)
+        self.assertEqual(set(implemented),{item['id'] for item in manifest['done_work']})
+        self.assertIn('ATR-104-CI-TODO-CONTRACT-060',tasks)
+        self.assertIn('ATR-108-LOOPRD-DISCOVERY',remaining)
+        self.assertEqual(plan['project'],board['project'])
+        self.assertEqual(plan['version'],board['version'])
+        self.assertEqual(plan['version'],manifest['project']['version'])
+        checks={check['id']:check for check in plan['checks']}
+        self.assertEqual(len(checks),len(plan['checks']))
+        used=set()
+        for task in plan['tasks']:
+            criteria=task['criteria']
+            self.assertTrue(criteria)
+            self.assertEqual(len({criterion['id'] for criterion in criteria}),len(criteria))
+            for criterion in criteria:
+                refs=criterion['checks']
+                self.assertTrue(refs)
+                self.assertEqual(len(refs),len(set(refs)))
+                self.assertTrue(set(refs)<=set(checks))
+                kinds={checks[ref]['kind'] for ref in refs}
+                expected={'automated':{'automated'},'manual':{'manual'},'mixed':{'automated','manual'}}[criterion['mode']]
+                self.assertEqual(kinds,expected)
+                used.update(refs)
+        self.assertEqual(used,set(checks))
+        files={p.relative_to(ROOT).as_posix() for p in source_files()}
+        for check in plan['checks']:
+            if check['kind']=='automated':
+                self.assertIn(check['test_ref'],files)
+                self.assertTrue(check.get('runner_ref'))
+                self.assertTrue(check.get('assertions'))
+            else:
+                self.assertTrue(check.get('instructions'))
 
     def test_commercial_secrets_are_not_packaged(self):
         names=[x.name for x in source_files()]

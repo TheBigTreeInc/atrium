@@ -1,4 +1,4 @@
-= Atrium v0.5.10 — Multiplayer Architecture: Requirements, Current State and Proposals
+= Atrium v0.5.11 — Multiplayer Architecture: Requirements, Current State and Proposals
 :revdate: 2026-10-18
 :toc: left
 :sectnums:
@@ -22,7 +22,7 @@ This document deliberately distinguishes *what the user requested*, *what the in
 
 [cols="1,3,2",options="header"]
 |===
-| Area | Current Atrium v0.5.10 source | Evidence / limitation
+| Area | Current Atrium v0.5.11 source | Evidence / limitation
 | Sidecar parsing | Portable `atriumd.yaml` example and source validator | `src/atriumd.py`; no automatic Looprd sidecar watcher
 | Discovery intake | Operator-scoped pending candidate API and deployer CLI | `src/registry_runtime.py`, `tools/announce_atriumd.py`; candidates are not published games
 | Gameplay protocol | Offline `looprd.game-play/v1` info validator and proposed fixture | `src/game_play_contract.py`; not a game API client or deployed certification

@@ -1,0 +1,25 @@
+= Atrium v0.5.11 — ZipRunner verification-plan alignment
+:toc:
+
+== Exact GitHub evidence
+
+* Pushed commit: `210e2055093d907f1e3c9a9ffbe66d3c593f5ecc` (v0.5.10).
+* Run: https://github.com/TheBigTreeInc/atrium/actions/runs/39111997352[Verify Atrium source, exact-commit push].
+* Windows ZipRunner build smoke passed.
+* Linux source, pinned DAPI, ZipRunner job failed at package validation. Prior Python, Node, frontend and disposable DAPI smoke checks succeeded.
+* Error: `verification task IDs must equal delivered implemented IDs (missing=['ATR-104-CI-TODO-CONTRACT-060'], extra=[])`.
+
+== Implemented
+
+* Preserve existing `ATR-104-CI-TODO-CONTRACT-060` Work board ticket in Review.
+* Add omitted verification-plan task, automated regression criterion and a separate manual operator acceptance criterion.
+* Declare automated check using `tests/test_release_pipeline.py` and an operator-only manual check.
+* New regression enforces exact equality of implemented IDs and plan tasks, and verifies check references, kind, identity and packaged test files.
+* Keep `ATR-108-LOOPRD-DISCOVERY` pending. No gameplay, identity or discovery behavior changed.
+
+== Remaining verification
+
+. Import the v0.5.11 ZIP; run fresh post-update checks for the exact installed SHA256.
+. Review before pushing; no automatic Git push, tag, deployment or release.
+. Check both GitHub Actions jobs and the pinned upstream package validator for the new exact commit.
+. CI success alone is not operator acceptance; no Work board status becomes Done automatically.

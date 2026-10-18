@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Atrium Registry API
-  version: 0.5.10
+  version: 0.5.11
   description: >-
     Application-owned contract for registry handlers below
     /looprd/atrium/v1. Consult the DAPI-generated OpenAPI document for

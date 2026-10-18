@@ -31,7 +31,7 @@ def main():
             assert client.get('/_looprd/health').status_code == 200
             assert 'atrium' in runtime.active, runtime.errors
             spec = runtime.active['atrium'].spec
-            assert spec.release == '0.5.10' and spec.database.schemaVersion == 3
+            assert spec.release == '0.5.11' and spec.database.schemaVersion == 3
             endpoint = '/looprd/atrium/v1'
             assert client.get(endpoint+'/registry/catalog').status_code == 401
             admin = {'Authorization': 'Bearer ' + admin_token}

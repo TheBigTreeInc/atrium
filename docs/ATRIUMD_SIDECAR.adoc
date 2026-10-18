@@ -1,11 +1,11 @@
 = Atrium sidecar discovery: `atriumd.yaml` next to `looprd.yaml`
-:revnumber: 0.5.10
+:revnumber: 0.5.11
 :revdate: 2026-10-18
 :toc: left
 
 == Status
 
-This is the agreed target design and an implemented *source-side validator/example* in Atrium v0.5.10. The `pac-labs/dapi` runtime sidecar-watcher hook is **not yet implemented**. Atrium now has an operator-scoped candidate ingestion endpoint and a deployer-invoked CLI, described in `docs/P1_054_DISCOVERY_INTAKE.adoc`. No one should claim that adding this file today registers a game. Game servers, identity, sessions and published catalog behavior are unchanged. This release adds an authenticated candidate API and an additive Atrium-only migration to schema v3.
+This is the agreed target design and an implemented *source-side validator/example* in Atrium v0.5.11. The `pac-labs/dapi` runtime sidecar-watcher hook is **not yet implemented**. Atrium now has an operator-scoped candidate ingestion endpoint and a deployer-invoked CLI, described in `docs/P1_054_DISCOVERY_INTAKE.adoc`. No one should claim that adding this file today registers a game. Game servers, identity, sessions and published catalog behavior are unchanged. This release adds an authenticated candidate API and an additive Atrium-only migration to schema v3.
 
 == Two independent files
 

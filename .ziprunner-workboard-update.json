@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.10",
-  "summary": "v0.5.10 repairs pinned ZipRunner manifest todo_work schema rejected by v0.5.9 exact-commit CI; Windows CI already passed. Operator acceptance remains pending.",
+  "version": "0.5.11",
+  "summary": "v0.5.11 repairs missing verification-plan coverage for existing ATR-104-CI-TODO-CONTRACT-060 after exact-commit v0.5.10 Linux CI failed. Windows CI passed. Operator acceptance remains pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -72,7 +72,7 @@
     {
       "id": "ATR-108-GAME-SPEC",
       "title": "Specify independently hosted game registration and optional Atrium native host SDK",
-      "summary": "v0.5.10 adds a source-side portable atriumd/v1 validator and example plus documented optional Looprd sidecar reconciliation; existing Atrium registry and game backend behavior unchanged.",
+      "summary": "v0.5.11 adds a source-side portable atriumd/v1 validator and example plus documented optional Looprd sidecar reconciliation; existing Atrium registry and game backend behavior unchanged.",
       "operator_checks": [
         "Verify Life v2 example is explicitly NOT accepted by existing v1 registry and current installed Atrium still shows no unapproved Life entry.",
         "Review real v1 registration/export procedures and proposed SDK security/standalone fallback before implementing v2.",
@@ -92,10 +92,10 @@
     {
       "id": "ATR-104-CI-TODO-CONTRACT-060",
       "title": "Repair ZipRunner manifest todo schema accepted by upstream validator",
-      "summary": "Exact SHA b97e6de CI failed in upstream package validation: todo_work[0] lacked status and next_action and contained unsupported summary. v0.5.10 supplies valid planned/next_action, preserves ATR-108-LOOPRD-DISCOVERY as unimplemented, adds regression tests.",
+      "summary": "Exact SHA b97e6de CI failed in upstream package validation: todo_work[0] lacked status and next_action and contained unsupported summary. v0.5.11 supplies valid planned/next_action, preserves ATR-108-LOOPRD-DISCOVERY as unimplemented, adds regression tests.",
       "priority": "high",
       "operator_checks": [
-        "Verify source ZIP official pinned ZipRunner validation passes for v0.5.10.",
+        "Verify source ZIP official pinned ZipRunner validation passes for v0.5.11.",
         "Verify ATR-108-LOOPRD-DISCOVERY stays planned; all existing IDs and criteria persist.",
         "Verify Linux DAPI/ZipRunner and Windows workflows pass on an exact pushed commit before approval."
       ]
@@ -159,13 +159,13 @@
     {
       "id": "ATR-108-LOOPRD-DISCOVERY",
       "title": "Implement trusted Looprd game discovery and reviewed registration reconciliation",
-      "summary": "Implement optional same-revision atriumd.yaml sidecar fetch after successful Looprd component activation; reconcile sidecar-only changes, authenticated deployment announcement, separate API/frontend origin mapping, pending review, idempotence and safe deletion. Source validator exists in v0.5.10; runtime discovery does not. First Atrium operator-scoped candidate endpoint completed v0.5.10; automatic DAPI SourceReader/runtime hook, machine attestation and reviewed publication remain.",
+      "summary": "Implement optional same-revision atriumd.yaml sidecar fetch after successful Looprd component activation; reconcile sidecar-only changes, authenticated deployment announcement, separate API/frontend origin mapping, pending review, idempotence and safe deletion. Source validator exists in v0.5.11; runtime discovery does not. First Atrium operator-scoped candidate endpoint completed v0.5.11; automatic DAPI SourceReader/runtime hook, machine attestation and reviewed publication remain.",
       "priority": "high"
     },
     {
       "id": "ATR-104-CI-VERIFY-059",
-      "title": "Verify v0.5.10 exact-commit GitHub Actions and operator acceptance",
-      "summary": "CI failures on v0.5.8 commit 039f9b9 identified; v0.5.10 fixes are locally checked only until pushed and observed on GitHub.",
+      "title": "Verify v0.5.11 exact-commit GitHub Actions and operator acceptance",
+      "summary": "CI failures on v0.5.8 commit 039f9b9 identified; v0.5.11 fixes are locally checked only until pushed and observed on GitHub.",
       "priority": "high"
     }
   ]
