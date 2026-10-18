@@ -1,0 +1,42 @@
+Atrium v0.5.18 — bounded CI smoke-repair verification
+Evidence date: 2026-10-19
+
+Upstream verified CI failure (previous version; not a success claim):
+  Exact GitHub commit: 3df644cd06c5c7b400174446277297bc8aa8b2a2
+  Run: https://github.com/TheBigTreeInc/atrium/actions/runs/39173201839
+  Windows ZipRunner build recipe smoke: success
+  Linux source validation and Python/Node suite: success
+  Linux DAPI disposable smoke: failure, line 149 expected 403, got 429 {"error":"request rate limit exceeded"}
+  Official ZipRunner package validation: skipped after failed smoke
+
+This repair:
+  tools/smoke_dapi.py: split legacy v1 and trusted v2 test phases into fresh DAPI
+    TestClient sessions sharing the same temporary SQLite database and keys.
+  DAPI component rate limits unchanged: requestsPerMinute=120, burstPerSecond=10.
+  Handler security, publisher approvals, v2 receiver contracts and DB schema unchanged.
+  New regression: tests/test_ci_integrations.py keeps phase isolation and
+    shared database invariant.
+
+Local verification on packaged source candidate:
+  Python 3.13: python tools/build_registry_spec.py --check             PASS
+  Python 3.13: python tools/build_spec.py --check                      PASS
+  Python 3.13: python tools/check_specs.py                             PASS
+  Python 3.13: python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop   PASS
+  Python 3.13: python -m unittest discover -s tests -q                 PASS: 228 tests (84.807 seconds)
+  Node 22: npm test                                                    PASS: 23 tests
+  Node 22: npm run build                                               PASS
+  Node 22: npm run verify                                              PASS
+  ZipRunner source ZIP integrity and deterministic reproducibility     PASS after packaging
+  37-ticket ZipRunner operator snapshot in docs preserved unchanged    PASS
+
+Not locally run, no success claimed:
+  Pinned DAPI runtime smoke against dc79897a54f69141ce300bbdadd3bdd6bd996d14:
+    runtime not available in container; public GitHub DNS unavailable.
+  Official pac-labs/ziprunner-spec 2.3 validator:
+    dependency not mounted; public GitHub DNS unavailable.
+  Exact new commit GitHub Actions and Windows target post-update acceptance:
+    not performed; operator-controlled push/CI/approval required.
+  Looprd 0.2.0 sender-to-Atrium deployed integration:
+    not performed; operator configuration, secrets and approval required.
+
+All source claims are local; no Git push, live deployment or operator acceptance.

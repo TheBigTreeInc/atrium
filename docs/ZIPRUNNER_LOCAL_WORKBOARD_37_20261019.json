@@ -1,0 +1,1279 @@
+{
+  "schema": "ziprunner.workboard-snapshot.v1",
+  "source": "ziprunner-local-durable-project-pass-state",
+  "project": "atrium",
+  "canonical_project_id": "",
+  "captured_at_utc": "2026-10-18T22:45:27+00:00",
+  "version": "0.5.17",
+  "state_updated_at": "2026-10-19T00:38:41.285197",
+  "total_tickets": 37,
+  "truncated": false,
+  "tickets": [
+    {
+      "id": "ATR-103-EXTERNAL",
+      "title": "Independent publisher challenge and remote asset ownership proof",
+      "summary": "Operator-attested domains and local hash-checked bytes do not establish HTTPS domain ownership or developer identity; implement challenge-based proof before self-service.",
+      "priority": "high",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T13:09:39",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Backup SQLite and validate additive schema v3→v4 on a disposable DAPI deployment without changing existing releases.",
+        "Issue challenge for an existing operator-approved publisher/origin, host exactly the returned bytes at the HTTPS proof URL, then verify via apps:approve scope.",
+        "Confirm private DNS, DNS rebinding, redirect, TLS failure, expired/replayed/reissued proof, wrong origin and second-publisher attempts fail closed.",
+        "Ensure public catalog and publisher approval remain unchanged; verification does not identify a Social user or approve publication."
+      ],
+      "operator_checks": [
+        "Backup SQLite and validate additive schema v3→v4 on a disposable DAPI deployment without changing existing releases.",
+        "Issue challenge for an existing operator-approved publisher/origin, host exactly the returned bytes at the HTTPS proof URL, then verify via apps:approve scope.",
+        "Confirm private DNS, DNS rebinding, redirect, TLS failure, expired/replayed/reissued proof, wrong origin and second-publisher attempts fail closed.",
+        "Ensure public catalog and publisher approval remain unchanged; verification does not identify a Social user or approve publication."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Source implements additive schema v4, scoped issue/verify/status endpoints and direct pinned public-IP HTTPS verification; proof never grants identity or publication."
+    },
+    {
+      "id": "ATR-104-CI-VERIFY-059",
+      "title": "Verify v0.5.9 exact-commit GitHub Actions and operator acceptance",
+      "summary": "CI failures on v0.5.8 commit 039f9b9 identified; v0.5.9 fixes are locally checked only until pushed and observed on GitHub.",
+      "priority": "high",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-104-LIVE",
+      "title": "Automatic public catalog gateway and cache revocation",
+      "summary": "Snapshots require explicit operator publication; add an approved automated guest-read gateway or content delivery pipeline, without exposing scoped DAPI credentials.",
+      "priority": "high",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T14:46:27",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "On disposable schema-v4 registry approve one reviewed app with matching verified immutable HTML. Start loopback gateway behind operator HTTPS proxy, manually configure approved GitHub Pages URL; verify anonymous browser sees app within 60 seconds without new Git commit.",
+        "Disable publisher/withdraw app, verify next GET has no revoked app and currently displayed iframe closes on foreground/next poll; test frontend cannot launch a revoked release.",
+        "Corrupt/remove reviewed asset or disable database; expect 503/no-store and browser clears listings/iframe, never stale fallback. Check strict CORS and no admin credentials anywhere in published assets.",
+        "Verify external HTTPS/TLS/proxy cache headers, CI and installed ZipRunner artifact; only operator approval may mark Done."
+      ],
+      "operator_checks": [
+        "On disposable schema-v4 registry approve one reviewed app with matching verified immutable HTML. Start loopback gateway behind operator HTTPS proxy, manually configure approved GitHub Pages URL; verify anonymous browser sees app within 60 seconds without new Git commit.",
+        "Disable publisher/withdraw app, verify next GET has no revoked app and currently displayed iframe closes on foreground/next poll; test frontend cannot launch a revoked release.",
+        "Corrupt/remove reviewed asset or disable database; expect 503/no-store and browser clears listings/iframe, never stale fallback. Check strict CORS and no admin credentials anywhere in published assets.",
+        "Verify external HTTPS/TLS/proxy cache headers, CI and installed ZipRunner artifact; only operator approval may mark Done."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Operator-run loopback gateway reads reviewed SQLite catalog and verifies asset hashes on every anonymous request; bounded fail-closed JSON/CORS/no-store response, Pages human-approved HTTPS gateway URL, foreground polling and iframe revocation guards. No automatic Pages release or publisher approval."
+    },
+    {
+      "id": "ATR-107-AUTH",
+      "title": "Build reusable Social-owned web login and trusted Atrium launch exchange",
+      "summary": "Approved design in docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc; not implemented in v0.4.9.",
+      "priority": "high",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-107-PAGES-LIVE",
+      "title": "Validate live Pages publication and approved catalog promotion",
+      "summary": "Actual GitHub Pages setting, manual workflow dispatch, HTTPS browser acceptance and operator publication of a real reviewed catalog are pending.",
+      "priority": "high",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-107-PLATFORMS",
+      "title": "Versioned platform-capability game manifest and install/launch compatibility enforcement",
+      "summary": "Approved design in docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc; not implemented in v0.4.9.",
+      "priority": "high",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-108-LOOPRD-DISCOVERY",
+      "title": "Implement trusted Looprd game discovery and reviewed registration reconciliation",
+      "summary": "Implement optional same-revision atriumd.yaml sidecar fetch after successful Looprd component activation; reconcile sidecar-only changes, authenticated deployment announcement, separate API/frontend origin mapping, pending review, idempotence and safe deletion. Source validator exists in v0.5.5; runtime discovery does not. First Atrium operator-scoped candidate endpoint completed v0.5.5; automatic DAPI SourceReader/runtime hook, machine attestation and reviewed publication remain.",
+      "priority": "high",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-P0-004",
+      "title": "Import to Git and verify disposable live DAPI activation",
+      "summary": "Commit/push source with operator approval, run pinned GitHub CI, perform real ZipRunner intake and inspect disposable DAPI activation and API behavior.",
+      "priority": "high",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "define-next-pass",
+      "title": "Define the next bounded implementation pass",
+      "summary": "Collect the latest project state and convert it into one reviewable implementation slice.",
+      "priority": "high",
+      "status": "suggested",
+      "acceptance_criteria": [
+        "The manager/QA session has reviewed the current project state.",
+        "The next pass has a bounded scope and screenshot/log/code-verifiable acceptance criteria.",
+        "Worker execution and promotion remain explicitly gated."
+      ]
+    },
+    {
+      "id": "ATR-103-REVOCATION",
+      "title": "Suspend and restore publishers without deleting releases",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-17T21:27:31",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "With apps:approve change active publisher to disabled; check existing releases remain and new catalog hides apps.",
+        "Confirm wrong/missing scope fails and reactivation restores only still-published apps."
+      ],
+      "operator_checks": [
+        "With apps:approve change active publisher to disabled; check existing releases remain and new catalog hides apps.",
+        "Confirm wrong/missing scope fails and reactivation restores only still-published apps."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Protected publisher status handler publishes transactional catalog invalidation events, hides active publisher games and keeps immutable releases."
+    },
+    {
+      "id": "ATR-104-BUILD",
+      "title": "Automatically prepare isolated Windows/Linux Python test dependencies",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-17T21:27:31",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Import v0.4.7 through ZipRunner; 88 Python tests including all registry and public-export tests pass under Windows Python 3.13.",
+        "Confirm no ModuleNotFoundError: sqlalchemy and no assertion failure comparing /fake-test-venv vs \\fake-test-venv.",
+        "Confirm npm tests and web build finish, and stable latest advances after a successful build."
+      ],
+      "operator_checks": [
+        "Import v0.4.7 through ZipRunner; 88 Python tests including all registry and public-export tests pass under Windows Python 3.13.",
+        "Confirm no ModuleNotFoundError: sqlalchemy and no assertion failure comparing /fake-test-venv vs \\fake-test-venv.",
+        "Confirm npm tests and web build finish, and stable latest advances after a successful build."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Fixed host-OS-native Path expectations in the two isolated dependency test mocks; added a regression that compares the path exactly as stringified by the host. The prior 0.4.6 SQLAlchemy setup works on target; this is only a test fix."
+    },
+    {
+      "id": "ATR-104-CI",
+      "title": "Repair pinned DAPI and Windows CI build prerequisites",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-17T22:29:14",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Push this source through the approved Git workflow and rerun both GitHub Actions jobs; verify Windows test_link_hash_is_current passes and all tests finish.",
+        "Verify pinned DAPI CSS builds from npm ci/node 24 and disposable DAPI smoke starts and completes; verify official ZipRunner package validator and v0.4.8 artifact publish step run.",
+        "Confirm ZipRunner v0.4.8 source overlay/build success, and no _upstream, secrets, dist, or runtime files enter source ZIP."
+      ],
+      "operator_checks": [
+        "Push this source through the approved Git workflow and rerun both GitHub Actions jobs; verify Windows test_link_hash_is_current passes and all tests finish.",
+        "Verify pinned DAPI CSS builds from npm ci/node 24 and disposable DAPI smoke starts and completes; verify official ZipRunner package validator and v0.4.8 artifact publish step run.",
+        "Confirm ZipRunner v0.4.8 source overlay/build success, and no _upstream, secrets, dist, or runtime files enter source ZIP."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Add Git LF checkout policy for raw-byte-hashed Looprd YAML and include it in source ZIP; build pinned DAPI panel.css with Node 24 and its lockfile before DAPI import. Test source CI ordering and package identity. This does not claim GitHub CI rerun passed."
+    },
+    {
+      "id": "ATR-104-CI-TODO-CONTRACT-060",
+      "title": "Repair ZipRunner manifest todo schema accepted by upstream validator",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T10:33:51",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Verify source ZIP official pinned ZipRunner validation passes for v0.5.10.",
+        "Verify ATR-108-LOOPRD-DISCOVERY stays planned; all existing IDs and criteria persist.",
+        "Verify Linux DAPI/ZipRunner and Windows workflows pass on an exact pushed commit before approval.",
+        "Verify source ZIP official pinned ZipRunner validation passes for v0.5.11."
+      ],
+      "operator_checks": [
+        "Verify source ZIP official pinned ZipRunner validation passes for v0.5.11.",
+        "Verify ATR-108-LOOPRD-DISCOVERY stays planned; all existing IDs and criteria persist.",
+        "Verify Linux DAPI/ZipRunner and Windows workflows pass on an exact pushed commit before approval."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Exact SHA b97e6de CI failed in upstream package validation: todo_work[0] lacked status and next_action and contained unsupported summary. v0.5.11 supplies valid planned/next_action, preserves ATR-108-LOOPRD-DISCOVERY as unimplemented, adds regression tests."
+    },
+    {
+      "id": "ATR-104-PAGING",
+      "title": "Paginate authenticated reviewed-only catalog",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-17T21:27:31",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Request catalog with apps:read, page limit 1, follow next until hasMore false; malformed after and limit return 422."
+      ],
+      "operator_checks": [
+        "Request catalog with apps:read, page limit 1, follow next until hasMore false; malformed after and limit return 422."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Validated after/limit cursor contracts prevent unbounded client pages and preserve reviewed-only projections."
+    },
+    {
+      "id": "ATR-104-PUBLIC",
+      "title": "Generate reviewed public app catalog snapshot",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-17T21:27:31",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "From a disposable database approve a game, supply its reviewed hash-named HTML and export to a public static test origin; no API credentials in browser.",
+        "Corrupt asset, tamper release and confirm no new snapshot replaces the last valid bytes; verify a disabled publisher disappears after next export."
+      ],
+      "operator_checks": [
+        "From a disposable database approve a game, supply its reviewed hash-named HTML and export to a public static test origin; no API credentials in browser.",
+        "Corrupt asset, tamper release and confirm no new snapshot replaces the last valid bytes; verify a disabled publisher disappears after next export."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Read-only SQLite snapshot exporter requires approved immutable releases and matching local HTML asset hashes; fail-closed atomic output; anonymous static portal consumes validated JSON."
+    },
+    {
+      "id": "ATR-105-REPLAY",
+      "title": "Runtime-tested durable replay and public catalog cache synchronization",
+      "summary": "Validate DAPI events, browser refresh/reconnect and forced revocation under a real hosted runtime.",
+      "priority": "medium",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-106",
+      "title": "First-party and non-game production entries",
+      "summary": "Publish Checkers and one non-game app after actual asset review and host publication.",
+      "priority": "medium",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW",
+      "title": "Publish a reviewed first-party playable Checkers preview via manual Pages approval",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T17:31:18",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "After exact-commit CI and source review, manually dispatch Publish reviewed Atrium Pages with publish_checkers_demo=true and catalog_url empty; confirm Checkers Play card appears over HTTPS and the downloaded HTML digest matches its catalog entry.",
+        "Play a full local session and test mandatory captures, multi-jumps, kings, Staff opponent, touch layout and New game; verify isolated iframe does not receive Social or DAPI credentials.",
+        "Manually rerun Pages with publish_checkers_demo=false to remove the preview; confirm no database publisher/app approval was bypassed and configured live catalog gateway refuses mixed preview.",
+        "Check installed ZIP by SHA in ZipRunner, operator acceptance and that Life remains visibly unavailable until reviewed Looprd discovery is implemented."
+      ],
+      "operator_checks": [
+        "After exact-commit CI and source review, manually dispatch Publish reviewed Atrium Pages with publish_checkers_demo=true and catalog_url empty; confirm Checkers Play card appears over HTTPS and the downloaded HTML digest matches its catalog entry.",
+        "Play a full local session and test mandatory captures, multi-jumps, kings, Staff opponent, touch layout and New game; verify isolated iframe does not receive Social or DAPI credentials.",
+        "Manually rerun Pages with publish_checkers_demo=false to remove the preview; confirm no database publisher/app approval was bypassed and configured live catalog gateway refuses mixed preview.",
+        "Check installed ZIP by SHA in ZipRunner, operator acceptance and that Life remains visibly unavailable until reviewed Looprd discovery is implemented."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Builds a self-contained first-party Checkers hotseat/Staff preview and improved storefront; opt-in-only manual Pages staging with immutable SHA asset and no registry or identity shortcuts."
+    },
+    {
+      "id": "ATR-107-ARCH",
+      "title": "Document unified Social sign-in and platform-aware Atrium distribution",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-17T23:23:12",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Confirm DESIGN.adoc, docs/ARCHITECTURE.adoc and docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc establish Atrium as launcher/registry, Tavi as chat only, and the Social repository as sole user registration authority.",
+        "Review that no new auth database, installer, backend deployment or runtime API functionality is falsely claimed; implementation stays in future roadmap work."
+      ],
+      "operator_checks": [
+        "Confirm DESIGN.adoc, docs/ARCHITECTURE.adoc and docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc establish Atrium as launcher/registry, Tavi as chat only, and the Social repository as sole user registration authority.",
+        "Review that no new auth database, installer, backend deployment or runtime API functionality is falsely claimed; implementation stays in future roadmap work."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Source-controlled approved architecture and regression: GitHub Pages static Atrium portal, Looprd API, Social web login, optional Tavi launch, platform filtering and offline/web/native separation. Design only; no working login or installer."
+    },
+    {
+      "id": "ATR-107-INSTALL",
+      "title": "Offline-capable web installation and optional independent desktop launcher lifecycle",
+      "summary": "Approved design in docs/PLATFORM_ACCESS_AND_INSTALLATION.adoc; not implemented in v0.4.9.",
+      "priority": "medium",
+      "status": "planned",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5"
+    },
+    {
+      "id": "ATR-107-PAGES",
+      "title": "Deploy approved Atrium static frontend through GitHub Pages with secure Looprd API access",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-17T23:23:12",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Review .github/workflows/pages.yml: no push-trigger, no privileged client secret, environment deployment only after explicit dispatch.",
+        "After source Git approval, enable Pages from GitHub Actions and manually dispatch Publish reviewed Atrium Pages. Verify the project subpath imports and empty catalog.",
+        "Confirm no Social account login or native game install is falsely offered; approved catalog is manually staged only."
+      ],
+      "operator_checks": [
+        "Review .github/workflows/pages.yml: no push-trigger, no privileged client secret, environment deployment only after explicit dispatch.",
+        "After source Git approval, enable Pages from GitHub Actions and manually dispatch Publish reviewed Atrium Pages. Verify the project subpath imports and empty catalog.",
+        "Confirm no Social account login or native game install is falsely offered; approved catalog is manually staged only."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Built relative-path-safe Atrium static storefront, reviewed-catalog reader, .nojekyll, and GitHub Actions workflow_dispatch Pages publication; operator must separately enable and verify live site."
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER",
+      "title": "Atrium receiver for authenticated DAPI discovery observations",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T22:41:34",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Back up Atrium DB and test schema v4 to v5 migration in disposable Looprd with pinned DAPI dc79897a; verify preexisting candidates, publishers, immutable releases and catalog remain unchanged.",
+        "Provision unique DAPI service key with only apps:discover, bind exact deployment/component/publisher/game/sourceIdentity/epoch and reviewed origins through apps:approve; reject ordinary client key, privileged key, wrong service, epoch, source and replay.",
+        "Deliver validated Life metadata as Git and content provenance with retries, changed metadata, confirmed withdrawal, outage and recovery; verify candidate queue only, per-deployment state and origin diagnostic, no new public game release.",
+        "Run pinned GitHub CI and installed SHA-specific ZipRunner post-update checks; independently coordinate DAPI sender contract and require explicit operator approval for activation."
+      ],
+      "operator_checks": [
+        "Back up Atrium DB and test schema v4 to v5 migration in disposable Looprd with pinned DAPI dc79897a; verify preexisting candidates, publishers, immutable releases and catalog remain unchanged.",
+        "Provision unique DAPI service key with only apps:discover, bind exact deployment/component/publisher/game/sourceIdentity/epoch and reviewed origins through apps:approve; reject ordinary client key, privileged key, wrong service, epoch, source and replay.",
+        "Deliver validated Life metadata as Git and content provenance with retries, changed metadata, confirmed withdrawal, outage and recovery; verify candidate queue only, per-deployment state and origin diagnostic, no new public game release.",
+        "Run pinned GitHub CI and installed SHA-specific ZipRunner post-update checks; independently coordinate DAPI sender contract and require explicit operator approval for activation."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Additive schema v5 trusted deployment bindings, scoped apps:discover service receiver, monotonically sequenced idempotent Git/content provenance, withdraw/unavailable reconciler, reviewed-only trusted origin diagnostics, full regression and pinned DAPI smoke. No DAPI sender, no catalog publication or real hosted game launch."
+    },
+    {
+      "id": "ATR-108-GAME-SPEC",
+      "title": "Specify independently hosted game registration and optional Atrium native host SDK",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T00:27:46",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Verify Life v2 example is explicitly NOT accepted by existing v1 registry and current installed Atrium still shows no unapproved Life entry.",
+        "Review real v1 registration/export procedures and proposed SDK security/standalone fallback before implementing v2.",
+        "Review docs/LOOPRD_GAME_DISCOVERY.adoc: loading looprd.yaml does not automatically register games in Atrium, no unknown Looprd root extension or untrusted token forwarding.",
+        "Run tools/validate_atriumd.py on the Life example. Verify the deployed Looprd runtime still does not automatically register games: source validation is not an activation hook."
+      ],
+      "operator_checks": [
+        "Verify Life v2 example is explicitly NOT accepted by existing v1 registry and current installed Atrium still shows no unapproved Life entry.",
+        "Review real v1 registration/export procedures and proposed SDK security/standalone fallback before implementing v2.",
+        "Review docs/LOOPRD_GAME_DISCOVERY.adoc: loading looprd.yaml does not automatically register games in Atrium, no unknown Looprd root extension or untrusted token forwarding.",
+        "Run tools/validate_atriumd.py on the Life example. Verify the deployed Looprd runtime still does not automatically register games: source validation is not an activation hook."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "v0.5.11 adds a source-side portable atriumd/v1 validator and example plus documented optional Looprd sidecar reconciliation; existing Atrium registry and game backend behavior unchanged."
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER",
+      "title": "Atrium automatic owner-trusted v2 game metadata registration and durable DAPI 0.2.0 acknowledgement",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-19T00:38:39",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Back up Atrium v5 database and rehearse additive v5→v6 migration; preserve old publisher, candidate and immutable release rows.",
+        "Configure one trusted deployment binding (service subject, publisher namespace, trusted API origin and originRef map); exercise real Looprd 0.2.0 GET capabilities and POST observations under apps:discover only.",
+        "Verify exact and delayed replay, source updates, withdraw/re-register, multiple components/deployments, game-ID changes, wrong credential, conflicting publisher, and no automatic public AppRelease.",
+        "Run exact installed ZIP post-update tests and both GitHub CI jobs before operator acceptance; verify DAPI sender remains disabled until the gates pass."
+      ],
+      "operator_checks": [
+        "Back up Atrium v5 database and rehearse additive v5→v6 migration; preserve old publisher, candidate and immutable release rows.",
+        "Configure one trusted deployment binding (service subject, publisher namespace, trusted API origin and originRef map); exercise real Looprd 0.2.0 GET capabilities and POST observations under apps:discover only.",
+        "Verify exact and delayed replay, source updates, withdraw/re-register, multiple components/deployments, game-ID changes, wrong credential, conflicting publisher, and no automatic public AppRelease.",
+        "Run exact installed ZIP post-update tests and both GitHub CI jobs before operator acceptance; verify DAPI sender remains disabled until the gates pass."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "v2 receiver is a source candidate; operator stages actual Looprd 0.2.0 sender with dedicated service credential and schema v6 migration. Does not publish an immutable game release or authorize player launch."
+    },
+    {
+      "id": "ATR-109-CANDIDATES",
+      "title": "Persist reviewed-only portable game discovery candidates",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T00:27:46",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Back up Atrium SQLite DB before v2→v3; verify schema migration on disposable deployment and test existing publisher history.",
+        "After external Looprd game activates, use deployer command with private apps:approve key; verify candidate appears only in operator GET queue and public Pages catalog stays unchanged."
+      ],
+      "operator_checks": [
+        "Back up Atrium SQLite DB before v2→v3; verify schema migration on disposable deployment and test existing publisher history.",
+        "After external Looprd game activates, use deployer command with private apps:approve key; verify candidate appears only in operator GET queue and public Pages catalog stays unchanged."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Operator-key protected candidate POST/GET validates portable atriumd/v1, records immutable source revision/fingerprint per deployment/component, rejects publisher takeover and never publishes. Atrium DB schema v3 additive."
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW",
+      "title": "Atrium mockable Life multiplayer lobby and typed preview API",
+      "status": "review",
+      "updated_at": "2026-10-19T00:38:39",
+      "status_updated_at": "2026-10-18T18:35:48",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "acceptance_criteria": [
+        "Import the exact v0.5.15 ZIP and run fresh local and exact pushed-commit Python/Node/Pages build tests; verify all prior Work board IDs and acceptance criteria persist.",
+        "On a manually approved Pages deployment, open the Multiplayer Lab even with empty catalog; use Alice/Bob to Create, Invite, Join, Continue and simulate 60-hour/unlimited turn UI and refresh reset on desktop/mobile.",
+        "Confirm the sandbox makes zero outbound game/identity network requests, stores no client token, never marks Life playable/published or OpenClaw certified, and has no real Life API, match writes or Tavi event delivery.",
+        "Confirm current Life internal-only capability response is rejected as production /play and that operator must separately approve actual discovery, authentication and hosted launch before replacing mock transport."
+      ],
+      "operator_checks": [
+        "Import the exact v0.5.15 ZIP and run fresh local and exact pushed-commit Python/Node/Pages build tests; verify all prior Work board IDs and acceptance criteria persist.",
+        "On a manually approved Pages deployment, open the Multiplayer Lab even with empty catalog; use Alice/Bob to Create, Invite, Join, Continue and simulate 60-hour/unlimited turn UI and refresh reset on desktop/mobile.",
+        "Confirm the sandbox makes zero outbound game/identity network requests, stores no client token, never marks Life playable/published or OpenClaw certified, and has no real Life API, match writes or Tavi event delivery.",
+        "Confirm current Life internal-only capability response is rejected as production /play and that operator must separately approve actual discovery, authentication and hosted launch before replacing mock transport."
+      ],
+      "candidate_version": "0.5.17",
+      "candidate_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-19T00:38:39",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Atrium-only static UI and transport-injected Life API mock for Create/Invite/Join/Continue and simulated turns; source-level schema/type parity and explicit internal-Life incompatibility guard. No real authorized match/gameplay or automatic publication."
+    },
+    {
+      "id": "ATR-P0-001",
+      "title": "Reconcile unified Atrium baseline into one source tree",
+      "status": "review",
+      "updated_at": "2026-10-17T17:25:01",
+      "status_updated_at": "2026-10-17T17:25:01",
+      "acceptance_criteria": [
+        "Verify the package is offered only to ZipRunner project atrium and review the overlay against the README-only GitHub main before any push."
+      ],
+      "operator_checks": [
+        "Verify the package is offered only to ZipRunner project atrium and review the overlay against the README-only GitHub main before any push."
+      ],
+      "candidate_version": "0.3.0",
+      "candidate_sha256": "40cb946f9e1406f79e4fd6c26f6d2049c525098b7fa69f05290eb01dd8fb3587",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-17T17:25:01",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Unified v0.2 prototype preserved in one v0.3 package; remote Git import not yet performed."
+    },
+    {
+      "id": "ATR-P0-002",
+      "title": "Pin DAPI and ZipRunner validation tooling",
+      "status": "review",
+      "updated_at": "2026-10-17T17:25:01",
+      "status_updated_at": "2026-10-17T17:25:01",
+      "acceptance_criteria": [
+        "Run GitHub Actions after importing source and confirm pinned DAPI CLI, smoke test and official ZipRunner validator complete successfully."
+      ],
+      "operator_checks": [
+        "Run GitHub Actions after importing source and confirm pinned DAPI CLI, smoke test and official ZipRunner validator complete successfully."
+      ],
+      "candidate_version": "0.3.0",
+      "candidate_sha256": "40cb946f9e1406f79e4fd6c26f6d2049c525098b7fa69f05290eb01dd8fb3587",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-17T17:25:01",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Locked upstream SHAs and added GitHub workflow for DAPI semantic validation and official ZIP format checks; workflow not yet executed."
+    },
+    {
+      "id": "ATR-P0-003",
+      "title": "Add reproducible build and source safety regressions",
+      "status": "review",
+      "updated_at": "2026-10-17T17:25:01",
+      "status_updated_at": "2026-10-17T17:25:01",
+      "acceptance_criteria": [
+        "Run Python and Node tests under trusted ZipRunner recipe, reproduce the artifact SHA-256 locally and review generated files."
+      ],
+      "operator_checks": [
+        "Run Python and Node tests under trusted ZipRunner recipe, reproduce the artifact SHA-256 locally and review generated files."
+      ],
+      "candidate_version": "0.3.0",
+      "candidate_sha256": "40cb946f9e1406f79e4fd6c26f6d2049c525098b7fa69f05290eb01dd8fb3587",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-17T17:25:01",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Added duplicate-key/import-limit negative tests, clean web build verification and deterministic source ZIP packaging."
+    },
+    {
+      "id": "ATR-P0-005",
+      "title": "Preserve architecture, roadmap and task identity",
+      "status": "review",
+      "updated_at": "2026-10-17T17:25:01",
+      "status_updated_at": "2026-10-17T17:25:01",
+      "acceptance_criteria": [
+        "Review historic 0.2 task IDs and P0 new IDs in ZipRunner; ensure no completed/approved tasks are overwritten."
+      ],
+      "operator_checks": [
+        "Review historic 0.2 task IDs and P0 new IDs in ZipRunner; ensure no completed/approved tasks are overwritten."
+      ],
+      "candidate_version": "0.3.0",
+      "candidate_sha256": "40cb946f9e1406f79e4fd6c26f6d2049c525098b7fa69f05290eb01dd8fb3587",
+      "candidate_build_status": "passed",
+      "candidate_recorded_at": "2026-10-17T17:25:01",
+      "review_reason": "build_passed_operator_unverified",
+      "implementation_summary": "Included original research catalog, implementation roadmap, updated AsciiDoc and an explicit task ID collision-resolution note."
+    },
+    {
+      "id": "engineering-review-atriumd_contract-9ab7f9b5",
+      "title": "Characterize and plan decomposition of src/atriumd_contract.py",
+      "summary": "Review the 91-line source file, map its responsibilities and dependencies, add characterization coverage, and define small extraction seams before changing production behavior.",
+      "priority": "medium",
+      "status": "deferred",
+      "created_at": "2026-10-18T01:32:15",
+      "updated_at": "2026-10-18T01:52:14",
+      "status_updated_at": "2026-10-18T01:52:14",
+      "acceptance_criteria": [
+        "No production behavior is changed in this review pass.",
+        "Major responsibilities, public entry points, state boundaries, and dependencies are documented.",
+        "Characterization tests cover the highest-risk current behavior and failure paths.",
+        "DESIGN.adoc records bounded extraction seams, ordering, rollback, and validation requirements.",
+        "The proposed implementation passes are independently reviewable and avoid a broad rewrite."
+      ],
+      "notes": [
+        {
+          "at": "2026-10-18T01:43:14",
+          "note": "ZipRunner parked this generated pass because the global engineering Suggested window is limited to 3 item(s) and 1 item(s) per project. The durable improvement plan is unchanged."
+        },
+        {
+          "at": "2026-10-18T01:52:14",
+          "note": "ZipRunner reopened this pass because a slot became available in the global engineering Suggested window."
+        }
+      ],
+      "ziprunner_status_override": true
+    },
+    {
+      "id": "engineering-review-discovery_delivery-2dee18ff",
+      "title": "Characterize and plan decomposition of src/discovery_delivery.py",
+      "summary": "Review the 329-line source file, map its responsibilities and dependencies, add characterization coverage, and define small extraction seams before changing production behavior.",
+      "priority": "medium",
+      "status": "deferred",
+      "created_at": "2026-10-18T22:41:35",
+      "updated_at": "2026-10-19T00:38:40",
+      "status_updated_at": "2026-10-19T00:38:40",
+      "acceptance_criteria": [
+        "No production behavior is changed in this review pass.",
+        "Major responsibilities, public entry points, state boundaries, and dependencies are documented.",
+        "Characterization tests cover the highest-risk current behavior and failure paths.",
+        "DESIGN.adoc records bounded extraction seams, ordering, rollback, and validation requirements.",
+        "The proposed implementation passes are independently reviewable and avoid a broad rewrite."
+      ],
+      "notes": [
+        {
+          "at": "2026-10-18T23:30:17",
+          "note": "ZipRunner parked this generated pass because the global engineering Suggested window is limited to 3 item(s) and 1 item(s) per project. The durable improvement plan is unchanged."
+        },
+        {
+          "at": "2026-10-19T00:38:40",
+          "note": "ZipRunner reopened this pass because a slot became available in the global engineering Suggested window."
+        }
+      ],
+      "ziprunner_status_override": true
+    },
+    {
+      "id": "engineering-review-discovery_runtime-b2810bb9",
+      "title": "Characterize and plan decomposition of src/discovery_runtime.py",
+      "summary": "Review the 83-line source file, map its responsibilities and dependencies, add characterization coverage, and define small extraction seams before changing production behavior.",
+      "priority": "medium",
+      "status": "deferred",
+      "created_at": "2026-10-18T09:36:20",
+      "updated_at": "2026-10-18T10:12:12",
+      "status_updated_at": "2026-10-18T10:12:12",
+      "acceptance_criteria": [
+        "No production behavior is changed in this review pass.",
+        "Major responsibilities, public entry points, state boundaries, and dependencies are documented.",
+        "Characterization tests cover the highest-risk current behavior and failure paths.",
+        "DESIGN.adoc records bounded extraction seams, ordering, rollback, and validation requirements.",
+        "The proposed implementation passes are independently reviewable and avoid a broad rewrite."
+      ],
+      "notes": [
+        {
+          "at": "2026-10-18T09:53:56",
+          "note": "ZipRunner parked this generated pass because the global engineering Suggested window is limited to 3 item(s) and 1 item(s) per project. The durable improvement plan is unchanged."
+        },
+        {
+          "at": "2026-10-18T10:12:12",
+          "note": "ZipRunner reopened this pass because a slot became available in the global engineering Suggested window."
+        }
+      ],
+      "ziprunner_status_override": true
+    },
+    {
+      "id": "engineering-review-export_catalog-24f37919",
+      "title": "Characterize and plan decomposition of tools/export_catalog.py",
+      "summary": "Review the 104-line source file, map its responsibilities and dependencies, add characterization coverage, and define small extraction seams before changing production behavior.",
+      "priority": "medium",
+      "status": "deferred",
+      "created_at": "2026-10-17T21:27:32",
+      "updated_at": "2026-10-17T22:29:15",
+      "status_updated_at": "2026-10-17T22:29:15",
+      "acceptance_criteria": [
+        "No production behavior is changed in this review pass.",
+        "Major responsibilities, public entry points, state boundaries, and dependencies are documented.",
+        "Characterization tests cover the highest-risk current behavior and failure paths.",
+        "DESIGN.adoc records bounded extraction seams, ordering, rollback, and validation requirements.",
+        "The proposed implementation passes are independently reviewable and avoid a broad rewrite."
+      ],
+      "notes": [
+        {
+          "at": "2026-10-17T22:25:49",
+          "note": "ZipRunner parked this generated pass because the global engineering Suggested window is limited to 3 item(s) and 1 item(s) per project. The durable improvement plan is unchanged."
+        },
+        {
+          "at": "2026-10-17T22:29:15",
+          "note": "ZipRunner reopened this pass because a slot became available in the global engineering Suggested window."
+        }
+      ],
+      "ziprunner_status_override": true
+    },
+    {
+      "id": "engineering-review-live_catalog-b8428a50",
+      "title": "Characterize and plan decomposition of tools/live_catalog.py",
+      "summary": "Review the 119-line source file, map its responsibilities and dependencies, add characterization coverage, and define small extraction seams before changing production behavior.",
+      "priority": "medium",
+      "status": "deferred",
+      "created_at": "2026-10-18T14:46:29",
+      "updated_at": "2026-10-18T17:31:19",
+      "status_updated_at": "2026-10-18T17:31:19",
+      "acceptance_criteria": [
+        "No production behavior is changed in this review pass.",
+        "Major responsibilities, public entry points, state boundaries, and dependencies are documented.",
+        "Characterization tests cover the highest-risk current behavior and failure paths.",
+        "DESIGN.adoc records bounded extraction seams, ordering, rollback, and validation requirements.",
+        "The proposed implementation passes are independently reviewable and avoid a broad rewrite."
+      ],
+      "notes": [
+        {
+          "at": "2026-10-18T14:47:06",
+          "note": "ZipRunner parked this generated pass because the global engineering Suggested window is limited to 3 item(s) and 1 item(s) per project. The durable improvement plan is unchanged."
+        },
+        {
+          "at": "2026-10-18T17:31:19",
+          "note": "ZipRunner reopened this pass because a slot became available in the global engineering Suggested window."
+        }
+      ],
+      "ziprunner_status_override": true
+    },
+    {
+      "id": "engineering-review-smoke_dapi-7c9499bc",
+      "title": "Characterize and plan decomposition of tools/smoke_dapi.py",
+      "summary": "Review the 78-line source file, map its responsibilities and dependencies, add characterization coverage, and define small extraction seams before changing production behavior.",
+      "priority": "medium",
+      "status": "deferred",
+      "created_at": "2026-10-17T23:23:13",
+      "updated_at": "2026-10-18T00:27:47",
+      "status_updated_at": "2026-10-18T00:27:47",
+      "acceptance_criteria": [
+        "No production behavior is changed in this review pass.",
+        "Major responsibilities, public entry points, state boundaries, and dependencies are documented.",
+        "Characterization tests cover the highest-risk current behavior and failure paths.",
+        "DESIGN.adoc records bounded extraction seams, ordering, rollback, and validation requirements.",
+        "The proposed implementation passes are independently reviewable and avoid a broad rewrite."
+      ],
+      "notes": [
+        {
+          "at": "2026-10-17T23:34:53",
+          "note": "ZipRunner parked this generated pass because the global engineering Suggested window is limited to 3 item(s) and 1 item(s) per project. The durable improvement plan is unchanged."
+        },
+        {
+          "at": "2026-10-18T00:27:47",
+          "note": "ZipRunner reopened this pass because a slot became available in the global engineering Suggested window."
+        }
+      ],
+      "ziprunner_status_override": true
+    },
+    {
+      "id": "engineering-review-test_release_pipeline-3f410184",
+      "title": "Characterize and plan decomposition of tests/test_release_pipeline.py",
+      "summary": "Review the 107-line source file, map its responsibilities and dependencies, add characterization coverage, and define small extraction seams before changing production behavior.",
+      "priority": "medium",
+      "status": "deferred",
+      "created_at": "2026-10-18T11:08:09",
+      "updated_at": "2026-10-18T11:41:44",
+      "status_updated_at": "2026-10-18T11:41:44",
+      "acceptance_criteria": [
+        "No production behavior is changed in this review pass.",
+        "Major responsibilities, public entry points, state boundaries, and dependencies are documented.",
+        "Characterization tests cover the highest-risk current behavior and failure paths.",
+        "DESIGN.adoc records bounded extraction seams, ordering, rollback, and validation requirements.",
+        "The proposed implementation passes are independently reviewable and avoid a broad rewrite."
+      ],
+      "notes": [
+        {
+          "at": "2026-10-18T11:38:12",
+          "note": "ZipRunner parked this generated pass because the global engineering Suggested window is limited to 3 item(s) and 1 item(s) per project. The durable improvement plan is unchanged."
+        },
+        {
+          "at": "2026-10-18T11:41:44",
+          "note": "ZipRunner reopened this pass because a slot became available in the global engineering Suggested window."
+        }
+      ],
+      "ziprunner_status_override": true
+    }
+  ],
+  "recent_passes": [
+    {
+      "id": "zip:40cb946f9e1406f79e4fd6c2",
+      "version": "0.3.0",
+      "date": "2026-10-17T17:25:01",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "40cb946f9e1406f79e4fd6c26f6d2049c525098b7fa69f05290eb01dd8fb3587",
+      "implemented": [
+        "ATR-P0-001",
+        "ATR-P0-002",
+        "ATR-P0-003",
+        "ATR-P0-005"
+      ],
+      "remaining": [
+        "ATR-P0-004"
+      ]
+    },
+    {
+      "id": "zip:e83924fc6318969826e37732",
+      "version": "0.4.7",
+      "date": "2026-10-17T21:27:31",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "e83924fc6318969826e377329d56df341df621cf15c78195c32eae94201e30ff",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106"
+      ]
+    },
+    {
+      "id": "zip:05889c94dde9efe719e1ece2",
+      "version": "0.4.8",
+      "date": "2026-10-17T22:29:14",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "05889c94dde9efe719e1ece2c24df4ce1f6ed14a08856224ef2111a92ae1717b",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106"
+      ]
+    },
+    {
+      "id": "zip:3193bff6a6d95390115fff5f",
+      "version": "0.5.0",
+      "date": "2026-10-17T23:23:12",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "3193bff6a6d95390115fff5f2d879fde6e780b0dd2baffb4afb995920d3bc861",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE"
+      ]
+    },
+    {
+      "id": "zip:aabf616ef35a9bc3e4878efe",
+      "version": "0.5.5",
+      "date": "2026-10-18T00:27:46",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "aabf616ef35a9bc3e4878efe454d1765531d70e1d6bf0098b9cd8b76f194db53",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY"
+      ]
+    },
+    {
+      "id": "zip:61e598c72b5509be8ecd11f7",
+      "version": "0.5.6",
+      "date": "2026-10-18T01:32:14",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "61e598c72b5509be8ecd11f7c366ebff4efea87afeb4451a952e45a7b643d037",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY"
+      ]
+    },
+    {
+      "id": "zip:6adcdfd2e297c1618a1e7412",
+      "version": "0.5.7",
+      "date": "2026-10-18T01:52:13",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "6adcdfd2e297c1618a1e7412fd622fcfdafbc45cba4d4cf82274acbe5d6a113e",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY"
+      ]
+    },
+    {
+      "id": "zip:478d59667014ae723025333e",
+      "version": "0.5.8",
+      "date": "2026-10-18T09:36:18",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "478d59667014ae723025333e9a2b1decb46a2fc6943ed39d061751b73ec9e888",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY"
+      ]
+    },
+    {
+      "id": "zip:e37f7ac5da106725c138053f",
+      "version": "0.5.9",
+      "date": "2026-10-18T10:12:11",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "e37f7ac5da106725c138053f294a0d4ef802e514187b8d83273d3b3ba1194863",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:dec236af374685b16b58dd88",
+      "version": "0.5.10",
+      "date": "2026-10-18T10:33:51",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "dec236af374685b16b58dd8880db54c31e4a962cf7e7ccc2f0cfffd5e8390718",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:ceb61e5633fa1b28c3443256",
+      "version": "0.5.11",
+      "date": "2026-10-18T11:08:08",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "ceb61e5633fa1b28c3443256dbe0f83c2c6085ba8eb019f328d424a92190435a",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:54026b697835c27936bbeb39",
+      "version": "0.5.12",
+      "date": "2026-10-18T13:09:39",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "54026b697835c27936bbeb39591fe58c59f940bb47e14a84c2f35d54910ea912",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060",
+        "ATR-103-EXTERNAL"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-104-LIVE",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:6a9357514ec9b4720a08dca0",
+      "version": "0.5.13",
+      "date": "2026-10-18T14:46:27",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "6a9357514ec9b4720a08dca059b5cfca10f06ec4f47417b88f5fb605b38764a6",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:a9546ddd19366cd9285a07df",
+      "version": "0.5.14",
+      "date": "2026-10-18T17:31:18",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "a9546ddd19366cd9285a07dfb9e82568cc1bd877257479c79d874c0eb96032bf",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-106-CHECKERS-PREVIEW"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:41d84844c5fe077eb4f4fdcb",
+      "version": "0.5.15",
+      "date": "2026-10-18T18:35:48",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "41d84844c5fe077eb4f4fdcbac27c09f5871237ba1ab53f21879e16340e9aa48",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-106-CHECKERS-PREVIEW",
+        "ATR-110-LOBBY-PREVIEW"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:310247d761317ce4b8f1e359",
+      "version": "0.5.16",
+      "date": "2026-10-18T22:41:34",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "310247d761317ce4b8f1e359014ac97736e5f4a0cf7197a454b2eb22cacd0d29",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-106-CHECKERS-PREVIEW",
+        "ATR-110-LOBBY-PREVIEW",
+        "ATR-108-DAPI-RECEIVER"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    },
+    {
+      "id": "zip:b0292d588bc7a8eeb08d0761",
+      "version": "0.5.17",
+      "date": "2026-10-19T00:38:39",
+      "status": "build_passed_operator_unverified",
+      "artifact_sha256": "b0292d588bc7a8eeb08d0761820faa59095c6f467de5529c424defbd47150337",
+      "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+      "implemented": [
+        "ATR-104-PUBLIC",
+        "ATR-103-REVOCATION",
+        "ATR-104-PAGING",
+        "ATR-104-BUILD",
+        "ATR-104-CI",
+        "ATR-107-ARCH",
+        "ATR-107-PAGES",
+        "ATR-108-GAME-SPEC",
+        "ATR-109-CANDIDATES",
+        "ATR-104-CI-TODO-CONTRACT-060",
+        "ATR-103-EXTERNAL",
+        "ATR-104-LIVE",
+        "ATR-106-CHECKERS-PREVIEW",
+        "ATR-110-LOBBY-PREVIEW",
+        "ATR-108-DAPI-RECEIVER",
+        "ATR-108-TRUSTED-V2-RECEIVER"
+      ],
+      "remaining": [
+        "ATR-P0-004",
+        "ATR-105-REPLAY",
+        "ATR-106",
+        "ATR-107-AUTH",
+        "ATR-107-PLATFORMS",
+        "ATR-107-INSTALL",
+        "ATR-107-PAGES-LIVE",
+        "ATR-108-LOOPRD-DISCOVERY",
+        "ATR-104-CI-VERIFY-059"
+      ]
+    }
+  ]
+}

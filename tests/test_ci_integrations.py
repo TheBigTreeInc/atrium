@@ -41,8 +41,23 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn('python -m pip install -e _upstream/dapi', workflow)
         self.assertIn('ref: dc79897a54f69141ce300bbdadd3bdd6bd996d14', workflow)
 
+    def test_disposable_dapi_smoke_phases_respect_runtime_rate_limit(self):
+        """Regression for exact push 3df644cd: 429 obscured the required 403."""
+        smoke = (ROOT / 'tools/smoke_dapi.py').read_text(encoding='utf-8')
+        spec = (ROOT / 'looprd.yaml').read_text(encoding='utf-8')
+        self.assertEqual(smoke.count('with TestClient(create_app(settings=settings)) as client:'), 3)
+        self.assertLess(smoke.index("'state':'withdrawn'"), smoke.index('# Isolate v1 and v2 runtime phases'))
+        self.assertLess(smoke.index('# Isolate v1 and v2 runtime phases'),
+                        smoke.index("'/registry/discovery/v2/manage'"))
+        self.assertIn("TemporaryDirectory(prefix='atrium-registry-smoke-')", smoke)
+        self.assertIn("data=temp/'data'", smoke)
+        self.assertIn('burstPerSecond: 10', spec)
+        self.assertIn('requestsPerMinute: 120', spec)
+        self.assertIn('assert response.status_code==403, response.text', smoke)
+        self.assertIn('A further fresh server must read committed DB state', smoke)
+
     def test_ci_artifacts_use_current_source_version(self):
-        self.assertIn('atrium-0.5.17-ziprunner.zip', self.workflow)
+        self.assertIn('atrium-0.5.18-ziprunner.zip', self.workflow)
         self.assertNotIn('atrium-0.4.7-ziprunner.zip', self.workflow)
         self.assertIn('python tools/run_python_checks.py', self.workflow)
 

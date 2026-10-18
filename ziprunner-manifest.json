@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.17",
-    "base_version": "0.5.16",
-    "source_revision": "d82dd285cf4bd6d9e5d5e16064929bf610922779"
+    "version": "0.5.18",
+    "base_version": "0.5.17",
+    "source_revision": "3df644cd06c5c7b400174446277297bc8aa8b2a2"
   },
   "update": {
-    "id": "ATR-P1-20261019-027",
+    "id": "ATR-P1-20261019-028",
     "kind": "source_update",
     "created_at": "2026-10-19T00:00:00+02:00",
-    "summary": "v0.5.17 implements Looprd 0.2.0 atrium.discovery-observation/v2 trusted-owner receiver and automatic metadata-only registration with a deployment-scoped service principal, durable acknowledgement/replay and source kinds; v1 remains. No automatic app release, client authorization, server activation or production deployment."
+    "summary": "v0.5.18 QA-only repair: isolate legacy-v1 and trusted-v2 disposable DAPI smoke into distinct runtime sessions sharing the same durable database, preventing 10/s rate limiter from hiding authorization assertions. No production runtime policy or game registry behavior changes; retain 37-ticket local workboard and operator approval gates."
   },
   "planned_work": [
     {
@@ -114,6 +114,12 @@
       "id": "ATR-108-TRUSTED-V2-RECEIVER",
       "title": "Atrium automatic owner-trusted v2 game metadata registration and durable DAPI 0.2.0 acknowledgement",
       "acceptance_criteria": "Against a bound deployment-scoped apps:discover service identity, v2 capabilities and canonical observation/acknowledgement match Looprd 0.2.0. Durable sequence and idempotent retries survive restarts and withdrawal; source kind git/local/https, game-ID changes, multiple instances and launch origin lookup work without per-game admission. v1 remains unchanged; immutable releases, public Pages and game grants are not auto-created. Operator validates real sender, schema v5-to-v6 backup/migration, and both exact SHA source CI workflows before approval.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-111-CI-SMOKE-LIMIT",
+      "title": "Repair DAPI disposable smoke rate-limit interference",
+      "acceptance_criteria": "Reproduce exact-run 39173201839 429 masking expected 403; isolate v1/v2 tests across fresh runtime sessions sharing durable SQLite; preserve 10/s burst policy and verify both CI jobs plus official package validation before operator acceptance.",
       "priority": "high"
     }
   ],
@@ -523,6 +529,27 @@
           "description": "Contract/rollout and no auto-release boundary"
         }
       ]
+    },
+    {
+      "id": "ATR-111-CI-SMOKE-LIMIT",
+      "summary": "Source-only integration smoke repair isolates v1/v2 runtime rate buckets by restarting disposable TestClient against the SAME database; no DAPI runtime/product handler, auth scope, or rate-limit config changes. Await exact pushed CI and operator acceptance.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/smoke_dapi.py",
+          "description": "Isolated TestClient phases share durable temp DB and credentials"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_ci_integrations.py",
+          "description": "Explicit invariants for rate-limited smoke phase split and unmodified limits"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_068_CI_SMOKE_ISOLATION.adoc",
+          "description": "Reproduction, repair boundary, validation and next operator gates"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -651,6 +678,21 @@
         "description": "Pinned DAPI/ZipRunner validator and Windows/Linux GitHub workflows for exact 0.5.16 commit",
         "status": "not_run",
         "reason": "Requires operator-approved source push and GitHub Actions."
+      },
+      {
+        "id": "ATR-P1-068-LOCAL",
+        "description": "Full source Python and JavaScript regressions, unchanged generated DAPI handlers and reproducible source ZIP",
+        "status": "passed",
+        "reason": "228 Python tests and 23 JS tests, source-generated handler/spec checks, static build/verify and ZIP integrity passed; pinned DAPI/official interchange and installed checks remain pending.",
+        "evidence_ref": "evidence/P1_068_LOCAL_CHECKS.txt",
+        "environment": "Container Linux Python 3.13.5 with installed dev dependencies, Node 22.16.0",
+        "command": "python tools/build_registry_spec.py --check && python tools/build_spec.py --check && python tools/check_specs.py && python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop && python -m unittest discover -s tests -q && npm test && npm run build && npm run verify && python tools/package_zip.py"
+      },
+      {
+        "id": "ATR-P1-068-EXACT-CI",
+        "description": "Pinned DAPI smoke and ZipRunner official v2.3 package validator under exact pushed source commit",
+        "status": "not_run",
+        "reason": "Requires operator source push and observed GitHub Actions; do not infer from local tests."
       }
     ]
   },

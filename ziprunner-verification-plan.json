@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.17",
+  "version": "0.5.18",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -378,6 +378,27 @@
           "mode": "manual",
           "checks": [
             "ATR-108-TRUSTED-V2-RECEIVER-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-111-CI-SMOKE-LIMIT",
+      "criteria": [
+        {
+          "id": "ATR-111-CI-SMOKE-LIMIT-AC-SOURCE",
+          "description": "The disposable smoke test isolates burst-limiter counters between v1 and v2 tests while sharing committed database and verifying service-scoped denials; production limits remain unchanged.",
+          "mode": "automated",
+          "checks": [
+            "ATR-111-CI-SMOKE-LIMIT-T1"
+          ]
+        },
+        {
+          "id": "ATR-111-CI-SMOKE-LIMIT-AC-OPERATOR",
+          "description": "Official exact-commit CI and SHA-specific installed-ZIP operator verification, keeping 37-ticket board decisions unchanged.",
+          "mode": "manual",
+          "checks": [
+            "ATR-111-CI-SMOKE-LIMIT-M1"
           ]
         }
       ]
@@ -802,6 +823,26 @@
       "stage": "acceptance",
       "description": "Looprd 0.2.0 real sender and Atrium receiver operator acceptance",
       "instructions": "Back up Atrium, migrate disposable v5→v6; create per-deployment apps:discover service credential (not apps:approve); verify exact Looprd 0.2.0 v2 capabilities, upsert, retry, withdrawal, app-ID change, multi-instance recovery, no per-game review, and catalog separation. No credentials from logs. Review exact CI and installed ZIP. Keep delivery disabled until acceptance."
+    },
+    {
+      "id": "ATR-111-CI-SMOKE-LIMIT-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Check isolated disposable v1/v2 DAPI test-client runtimes and unchanged rate limits",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_ci_integrations.py",
+      "assertions": [
+        "Smoke explicitly starts separate DAPI TestClient runtime sessions for v1 and v2 on same temporary SQLite path",
+        "Production Looprd limits stay requestsPerMinute 120, burstPerSecond 10",
+        "No request-scoping/middleware/auth bypass; CI runs pinned upstream DAPI smoke"
+      ]
+    },
+    {
+      "id": "ATR-111-CI-SMOKE-LIMIT-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Exact-commit GitHub CI, official ZipRunner package and target SHA acceptance",
+      "instructions": "Verify run 39173201839 failure reproduction then inspect new exact-commit GitHub CI; Linux pinned DAPI smoke expects 403 not 429 and official ZIP validation passes; Windows job passes. Re-run installed SHA-specific post-update acceptance before changing status."
     }
   ]
 }

@@ -31,7 +31,7 @@ def main():
             assert client.get('/_looprd/health').status_code == 200
             assert 'atrium' in runtime.active, runtime.errors
             spec = runtime.active['atrium'].spec
-            assert spec.release == '0.5.17' and spec.database.schemaVersion == 6
+            assert spec.release == '0.5.18' and spec.database.schemaVersion == 6
             endpoint = '/looprd/atrium/v1'
             assert client.get(endpoint+'/registry/catalog').status_code == 401
             admin = {'Authorization': 'Bearer ' + admin_token}
@@ -119,6 +119,12 @@ def main():
             withdrawn={**observation,'sequence':3,'state':'withdrawn','sidecar':None}
             response=client.post(endpoint+'/registry/discovery/observations',headers=machine,json=withdrawn)
             assert response.status_code==200 and response.json()['candidateStatus']=='withdrawn'
+        # Isolate v1 and v2 runtime phases without weakening the production
+        # per-principal burst limiter (10/s). A single TestClient issued too many
+        # rapid authenticated requests and masked a 403 assertion with 429.
+        # Reopening uses the SAME durable temporary database/credentials,
+        # additionally exercising restart-safe binding and registration state.
+        with TestClient(create_app(settings=settings)) as client:
             # Looprd 0.2.0 sender protocol is a DIFFERENT, concurrent v2 namespace.
             # No per-game binding, source-identity bind or epoch is provisioned.
             deployment={'operation':'register','payload':{
@@ -165,7 +171,7 @@ def main():
             assert client.post(endpoint+'/registry/discovery/v2/observations',
                                headers=machine,json=v2).json()==first.json()
             assert client.get(endpoint+'/registry/discovery/v2/catalog',headers=read).json()['games']==[]
-        # The second fresh server must read committed DB state without having live keys in source.
+        # A further fresh server must read committed DB state without having live keys in source.
         with TestClient(create_app(settings=settings)) as client:
             read_resp = client.get('/looprd/atrium/v1/registry/catalog', headers=read)
             assert read_resp.status_code == 200 and read_resp.json()['apps'] == []

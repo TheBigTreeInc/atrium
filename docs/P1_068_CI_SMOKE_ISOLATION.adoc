@@ -1,0 +1,25 @@
+= Atrium v0.5.18 — Disposable DAPI rate-limit test isolation
+:revdate: 2026-10-19
+:toc:
+
+== Observed failure and diagnosis
+
+Exact pushed Atrium v0.5.17 commit `3df644cd06c5c7b400174446277297bc8aa8b2a2` triggered GitHub Actions run `39173201839`. Windows ZipRunner build recipe succeeded; Linux source Python tests (227) and JS tests (23), generated-handler hash and DAPI specification validation succeeded. The Linux disposable DAPI smoke then failed at `tools/smoke_dapi.py:149`: expected HTTP 403 from a wrong-scope v2 observation, received a 429 `request rate limit exceeded`. The pinned upstream DAPI applies `burstPerSecond: 10` per principal, and v1 then v2 integrations exercised one TestClient too rapidly for that limit. Source evidence cannot prove what the authorization handler would have returned absent the rate limit.
+
+== Bounded correction
+
+The existing runtime smoke now uses **three fresh disposable DAPI runtime sessions** against the **same temporary durable SQLite database**. Session one validates v1 registry, scoped publishing and discovery; session two validates v2 capabilities, wrong-scope denial, trusted upsert/replay, withdrawal and late replay; session three confirms persisted withdrawn state and service deployment binding survive another restart. This isolates ephemeral per-principal burst counters without increasing or bypassing production rate limits, changing permissions or manipulating system clocks. The 10/s burst policy and 120/minute request policy remain unchanged.
+
+No production Atrium handlers, publisher review, v1/v2 API schema, database migration or Looprd runtime code changed. No game was published, no Pi connection or production secret was accessed, and DAPI v2 observation delivery should remain disabled until staging acceptance.
+
+== Test and operator acceptance
+
+* Source unit regression: exact phase isolation, shared SQLite settings, preserved runtime limits and explicit 403 test.
+* Full Python and Node source tests; generated DAPI handler verification; static Pages build/verify.
+* With pinned DAPI `dc79897a54f69141ce300bbdadd3bdd6bd996d14`: semantic validate and `python tools/smoke_dapi.py`, observing true 403 and all subsequent persisted replay assertions.
+* Official ZipRunner v2.3 package/link validators and both Linux and Windows GitHub Actions jobs must pass for a new exact pushed commit.
+* Import the exact v0.5.18 ZIP and run fresh post-update checks; operator reviews and approves work separately.
+
+== Work board continuity
+
+The most recent 37-ticket local snapshot from ZipRunner is preserved in `docs/ZIPRUNNER_LOCAL_WORKBOARD_37_20261019.json`, with its original statuses, criteria and operator decisions. This pass adds source candidate `ATR-111-CI-SMOKE-LIMIT` to the ZipRunner change manifest and verification plan; it does not mark any local Work board item Done. Existing `ATR-108-LOOPRD-DISCOVERY` remains planned for real deployment-level acceptance. The ZipRunner model snapshot is historical input, not an authorization to mutate the operator's durable board.

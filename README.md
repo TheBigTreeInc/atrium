@@ -1,4 +1,8 @@
-= Atrium v0.5.17 — Looprd 0.2.0 trusted discovery v2 receiver
+= Atrium v0.5.18 — DAPI smoke CI test isolation
+
+A source-only CI repair for run 39173201839 isolates disposable v1/v2 DAPI smoke phases into separate rate-limit sessions sharing one persisted DB; production limits remain unchanged. The latest 37-ticket local operator snapshot is preserved as `docs/ZIPRUNNER_LOCAL_WORKBOARD_37_20261019.json`. See `docs/P1_068_CI_SMOKE_ISOLATION.adoc`. No automatic Git push, deployment, game publication, DAPI sender activation or operator acceptance.
+
+= Atrium v0.5.18 — Looprd 0.2.0 trusted discovery v2 receiver
 
 Source candidate for `atrium.discovery-observation/v2`: one operator-bound Looprd deployment identity and one `apps:discover` service key may automatically register **reviewed game metadata** from its trusted `atriumd/v1` sources. New games do not need per-game registration; Git/local/HTTPS source updates, replay, delayed acknowledgements, confirmed removal and multiple deployments are handled durably by additive schema v6. Legacy per-game review (v1) remains separately available. No immutable AppRelease, public browser executable, Social game grant, DAPI sender deployment, Git push or Pages publication is created by metadata discovery. See `docs/P1_067_TRUSTED_DISCOVERY_V2.adoc` and the preserved upstream trust contract.
 

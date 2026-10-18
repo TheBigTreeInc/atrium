@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.17",
-  "summary": "v0.5.17 Atrium receiver compatibility for Looprd 0.2.0 trusted-owner/v1: v2 automatic metadata registration only, deployment-scoped machine identity, committed replay receipts, no per-game source binding or epoch, preserved v1 pending-review routes and immutable AppRelease policy. No live activation, delivery or client-game authority claimed; durable local operator Work board stays authoritative.",
+  "version": "0.5.18",
+  "summary": "v0.5.18 source-only QA repair for exact-commit CI 3df644cd: DAPI disposable smoke v1/v2 rate limiter isolation and persisted DB restart verification. No production behavior change, no new game release or automatic DAPI delivery. Latest 37-ticket local Work board snapshot preserved separately; operator approval remains outstanding.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -167,6 +167,16 @@
         "Configure one trusted deployment binding (service subject, publisher namespace, trusted API origin and originRef map); exercise real Looprd 0.2.0 GET capabilities and POST observations under apps:discover only.",
         "Verify exact and delayed replay, source updates, withdraw/re-register, multiple components/deployments, game-ID changes, wrong credential, conflicting publisher, and no automatic public AppRelease.",
         "Run exact installed ZIP post-update tests and both GitHub CI jobs before operator acceptance; verify DAPI sender remains disabled until the gates pass."
+      ]
+    },
+    {
+      "id": "ATR-111-CI-SMOKE-LIMIT",
+      "title": "Repair DAPI discovery smoke test rate-limit interference",
+      "summary": "CI run 39173201839 failed at tools/smoke_dapi.py line 149 because DAPI returned 429 rate-limited before expected 403. Split v1/v2 test phases across fresh disposable runtimes on one persisted database without modifying production rate limits, service scopes or source handler behavior.",
+      "operator_checks": [
+        "On exact pushed commit, verify both Linux and Windows GitHub Actions jobs pass and official ZipRunner v2.3 validation completes.",
+        "Run disposable DAPI smoke with pinned runtime, ensure real 403 authorization denial is observed and replay/withdraw/restart assertions pass.",
+        "Verify installed ZIP SHA-specific post-update tests and that local 37-ticket operator Work board statuses and criteria remain intact."
       ]
     }
   ],
