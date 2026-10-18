@@ -1,0 +1,20 @@
+= Atrium v0.5.8 — Game-Owned Lobby Read Adapter
+:revdate: 2026-10-18
+:toc:
+
+== Implemented
+
+`src/game_lobby_client.py` provides a read-only, transport-injected client for the *proposed* `looprd.game-play/v1` game-owned API. It discovers capabilities and requests `list_matches` through `POST /play`. It validates and projects a bounded match list, retaining only match ID, revision, status, turn flag and UTC deadline. Game-supplied URLs, private state and unknown fields never enter the lobby projection.
+
+== Explicit limitations
+
+This is a source-level integration adapter, not a deployed API or an Atrium browser lobby. No real Life endpoint was called. The response envelope and match status names are provisional because the planning contract specifies operation semantics but does not freeze `list_matches` JSON response fields. The existing game-info validator uses Atrium's proposed fixture (`protocol`, `engine.version/digest`, `capabilities`) rather than the upstream illustrative `schema`, `engine.id/rulesRevision`, `agentPlaySupported` fields; compatibility must be resolved *against the original documents* before production integration. Do not silently change the game protocol or implement REC-01..REC-04.
+
+The injected transport MUST be trusted deployment code that resolves an approved game origin, authenticates the current actor with a game-scoped grant, enforces TLS, no redirects, response limits and timeouts. The adapter does not obtain credentials or grant authority. Match IDs are opaque and never embedded in a game-supplied URL.
+
+== Next implementation
+
+. Freeze the original `GET /play/info` and `POST /play` JSON shapes with Life/Looprd owners, without altering the requested architecture.
+. Implement authenticated Looprd transport with approved deployment binding.
+. Wire read-only lobby into Atrium's authenticated view, then create/join/resume once Life's API and grants exist.
+. Execute the upstream ATR/API tests against a disposable live environment.
