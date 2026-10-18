@@ -31,7 +31,7 @@ def main():
             assert client.get('/_looprd/health').status_code == 200
             assert 'atrium' in runtime.active, runtime.errors
             spec = runtime.active['atrium'].spec
-            assert spec.release == '0.5.16' and spec.database.schemaVersion == 5
+            assert spec.release == '0.5.17' and spec.database.schemaVersion == 6
             endpoint = '/looprd/atrium/v1'
             assert client.get(endpoint+'/registry/catalog').status_code == 401
             admin = {'Authorization': 'Bearer ' + admin_token}
@@ -119,13 +119,63 @@ def main():
             withdrawn={**observation,'sequence':3,'state':'withdrawn','sidecar':None}
             response=client.post(endpoint+'/registry/discovery/observations',headers=machine,json=withdrawn)
             assert response.status_code==200 and response.json()['candidateStatus']=='withdrawn'
+            # Looprd 0.2.0 sender protocol is a DIFFERENT, concurrent v2 namespace.
+            # No per-game binding, source-identity bind or epoch is provisioned.
+            deployment={'operation':'register','payload':{
+                'deploymentId':'pi-one','callerSubject':'life-prod-sender',
+                'publisherId':'thebigtreeinc', 'apiOrigin':'https://api.example.org',
+                'launchOrigins':{'game-web':'https://life.example.org'}}}
+            response=client.post(endpoint+'/registry/discovery/v2/manage',headers=write,json=deployment)
+            assert response.status_code==200, response.text
+            assert client.get(endpoint+'/registry/discovery/v2/capabilities',headers=read).status_code==403
+            response=client.get(endpoint+'/registry/discovery/v2/capabilities',headers=machine)
+            assert response.status_code==200, response.text
+            assert response.json()=={'schema':'atrium.discovery-capabilities/v2',
+                'deploymentId':'pi-one','operations':['upsert','withdraw'],
+                'provenanceKinds':['git','local','https']}
+            import json as json_module
+            v2={'schema':'atrium.discovery-observation/v2','deploymentId':'pi-one',
+                'component':'the-life-loop','operation':'upsert',
+                'source':{'kind':'git','identity':source_identity,
+                          'specificationDigest':'b'*64,'revision':'a'*40},
+                'runtime':{'apiBaseUrl':'https://api.example.org/looprd/the-life-loop/v1'},
+                'sidecar':life,'reason':None,'operationId':'1'*32,'sequence':1}
+            def v2_fingerprint(doc):
+                core={k:v for k,v in doc.items() if k not in ('fingerprint','operationId','sequence')}
+                return sha256(json_module.dumps(core,sort_keys=True,ensure_ascii=False,
+                               separators=(',',':')).encode('utf-8')).hexdigest()
+            v2['fingerprint']=v2_fingerprint(v2)
+            response=client.post(endpoint+'/registry/discovery/v2/observations',headers=write,json=v2)
+            assert response.status_code==403, response.text
+            first=client.post(endpoint+'/registry/discovery/v2/observations',headers=machine,json=v2)
+            assert first.status_code==200 and first.json()['status']=='reviewed',first.text
+            assert first.json()==client.post(endpoint+'/registry/discovery/v2/observations',
+                                              headers=machine,json=v2).json()
+            assert client.get(endpoint+'/registry/catalog',headers=read).json()['apps']==[]
+            trusted=client.get(endpoint+'/registry/discovery/v2/catalog',headers=read)
+            assert trusted.status_code==200,trusted.text
+            assert trusted.json()['games'][0]['instances'][0]['launchUrl']=='https://life.example.org/index.html'
+            v2_withdraw={**v2,'operation':'withdraw','runtime':None,'sidecar':None,
+                         'reason':'sidecar_removed','operationId':'2'*32,'sequence':2}
+            v2_withdraw['fingerprint']=v2_fingerprint(v2_withdraw)
+            response=client.post(endpoint+'/registry/discovery/v2/observations',headers=machine,json=v2_withdraw)
+            assert response.status_code==200 and response.json()['status']=='withdrawn',response.text
+            assert client.get(endpoint+'/registry/discovery/v2/catalog',headers=read).json()['games']==[]
+            # A late replay gets its original durable receipt, but cannot resurrect the game.
+            assert client.post(endpoint+'/registry/discovery/v2/observations',
+                               headers=machine,json=v2).json()==first.json()
+            assert client.get(endpoint+'/registry/discovery/v2/catalog',headers=read).json()['games']==[]
         # The second fresh server must read committed DB state without having live keys in source.
         with TestClient(create_app(settings=settings)) as client:
             read_resp = client.get('/looprd/atrium/v1/registry/catalog', headers=read)
             assert read_resp.status_code == 200 and read_resp.json()['apps'] == []
             machine_rows = client.get('/looprd/atrium/v1/registry/discovery/candidates',headers=write)
             assert machine_rows.status_code==200 and machine_rows.json()['candidates'][0]['status']=='withdrawn'
-    print('DAPI disposable registry smoke passed (one component, schema v5, scoped discovery and publishing)')
+            assert client.get('/looprd/atrium/v1/registry/discovery/v2/catalog',
+                              headers=read).json()['games']==[]
+            assert client.get('/looprd/atrium/v1/registry/discovery/v2/capabilities',
+                              headers=machine).json()['deploymentId']=='pi-one'
+    print('DAPI disposable registry smoke passed (one component, schema v6, scoped v1/v2 discovery and publishing)')
 
 
 if __name__ == '__main__':

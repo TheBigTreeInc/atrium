@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.16",
+  "version": "0.5.17",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -356,6 +356,28 @@
           "mode": "manual",
           "checks": [
             "ATR-108-DAPI-RECEIVER-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER",
+      "criteria": [
+        {
+          "id": "ATR-108-TRUSTED-V2-RECEIVER-AC-CONTRACT",
+          "description": "v2 exact wire shapes, authenticated deployment binding, provenance, validated API binding, idempotent durable receipts and multi-game registration; v1 unchanged.",
+          "mode": "automated",
+          "checks": [
+            "ATR-108-TRUSTED-V2-RECEIVER-T1",
+            "ATR-108-TRUSTED-V2-RECEIVER-T2"
+          ]
+        },
+        {
+          "id": "ATR-108-TRUSTED-V2-RECEIVER-AC-OPERATOR",
+          "description": "Operator reviews v6 migration, Looprd 0.2.0 real sender and installed ZipRunner exact SHA integration. No release or deployment approval implied.",
+          "mode": "manual",
+          "checks": [
+            "ATR-108-TRUSTED-V2-RECEIVER-M1"
           ]
         }
       ]
@@ -746,6 +768,40 @@
       "stage": "acceptance",
       "description": "Operator reviews installed DAPI capability and real auto sender integration separately",
       "instructions": "Install exact ZIP with backup; pin and verify DAPI dc79897a+ and official ZipRunner v2.3; test real service key issuance, independent deployment/source binding, Git/content, replay, malicious caller, confirmed withdrawal, unavailable; verify no AppRelease and no public launch. DAPI sender still requires upstream implementation and operator approval. Existing Work board tickets must not be altered."
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Generated v2 SQL contract and adversarial regression tests",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_discovery_v2.py",
+      "assertions": [
+        "Correct capabilities and exact v2 wire contract",
+        "Durable high-water and original ack replay after newer events",
+        "Multiple components and withdrawals without per-game registration",
+        "No public catalog or immutable AppRelease from discovery"
+      ]
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER-T2",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Pin-compatible DAPI disposable HTTP and schema v6 smoke",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tools/smoke_dapi.py",
+      "assertions": [
+        "DAPI v2 route scoped and service authenticated",
+        "v1 routes backward compatible, v6 models validated",
+        "Backend catalog remains immutable-release-only"
+      ]
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Looprd 0.2.0 real sender and Atrium receiver operator acceptance",
+      "instructions": "Back up Atrium, migrate disposable v5→v6; create per-deployment apps:discover service credential (not apps:approve); verify exact Looprd 0.2.0 v2 capabilities, upsert, retry, withdrawal, app-ID change, multi-instance recovery, no per-game review, and catalog separation. No credentials from logs. Review exact CI and installed ZIP. Keep delivery disabled until acceptance."
     }
   ]
 }

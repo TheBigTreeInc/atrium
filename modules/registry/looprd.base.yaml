@@ -304,6 +304,122 @@ models:
     unique:
     - - deploymentId
       - component
+  AtriumTrustedDeployment:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      deploymentId:
+        type: string
+        required: true
+        maxLength: 96
+        unique: true
+      callerSubject:
+        type: string
+        required: true
+        maxLength: 48
+        unique: true
+      publisherId:
+        type: string
+        required: true
+        maxLength: 64
+      apiOrigin:
+        type: string
+        required: true
+        maxLength: 255
+      launchOrigins:
+        type: json
+        required: true
+      status:
+        type: string
+        required: true
+        maxLength: 16
+      createdAt:
+        type: string
+        required: true
+        maxLength: 40
+  AtriumTrustedInstance:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      deploymentId:
+        type: string
+        required: true
+        maxLength: 96
+      component:
+        type: string
+        required: true
+        maxLength: 48
+      gameId:
+        type: string
+        maxLength: 120
+      publisherId:
+        type: string
+        required: true
+        maxLength: 64
+      state:
+        type: string
+        required: true
+        maxLength: 16
+      sidecar:
+        type: json
+      sourceProvenance:
+        type: json
+      fingerprint:
+        type: string
+        required: true
+        maxLength: 64
+      apiBaseUrl:
+        type: string
+        maxLength: 512
+      lastSequence:
+        type: integer
+        required: true
+      updatedAt:
+        type: string
+        required: true
+        maxLength: 40
+    unique:
+    - - deploymentId
+      - component
+  AtriumTrustedReceipt:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      deploymentId:
+        type: string
+        required: true
+        maxLength: 96
+      component:
+        type: string
+        required: true
+        maxLength: 48
+      operationId:
+        type: string
+        required: true
+        maxLength: 32
+      sequence:
+        type: integer
+        required: true
+      fingerprint:
+        type: string
+        required: true
+        maxLength: 64
+      ack:
+        type: json
+        required: true
+    unique:
+    - - deploymentId
+      - component
+      - operationId
+    - - deploymentId
+      - component
+      - sequence
 resources:
   apps:
     model: App

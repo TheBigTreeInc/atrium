@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.16",
-    "base_version": "0.5.15",
-    "source_revision": "264a109681e3c8a24039c3356d9f7fb556197fed"
+    "version": "0.5.17",
+    "base_version": "0.5.16",
+    "source_revision": "d82dd285cf4bd6d9e5d5e16064929bf610922779"
   },
   "update": {
-    "id": "ATR-P1-20261018-026",
+    "id": "ATR-P1-20261019-027",
     "kind": "source_update",
-    "created_at": "2026-10-18T22:01:00+02:00",
-    "summary": "v0.5.16 integrates DAPI deployment-bound observation receiver, operator-reviewed trusted binding/launch origin config, replay-safe machine registration with Git/content provenance and safe absent/withdrawn/unavailable transitions. The current DAPI observe-only release does not send: automatic sender and public launch remain pending. All earlier operator workboard decisions are preserved."
+    "created_at": "2026-10-19T00:00:00+02:00",
+    "summary": "v0.5.17 implements Looprd 0.2.0 atrium.discovery-observation/v2 trusted-owner receiver and automatic metadata-only registration with a deployment-scoped service principal, durable acknowledgement/replay and source kinds; v1 remains. No automatic app release, client authorization, server activation or production deployment."
   },
   "planned_work": [
     {
@@ -109,6 +109,12 @@
       "title": "Implement Atrium deployment-bound DAPI discovery receiver",
       "priority": "high",
       "acceptance_criteria": "Operator-provisioned service subject + exact deployment/source identity; Git/content provenance; monotonic replay-safe receipt; safe withdrawal/outage; trusted operator-only launch resolution; source tests; pinned DAPI/ZipRunner acceptance. Discovery never publishes a game or grants launch rights."
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER",
+      "title": "Atrium automatic owner-trusted v2 game metadata registration and durable DAPI 0.2.0 acknowledgement",
+      "acceptance_criteria": "Against a bound deployment-scoped apps:discover service identity, v2 capabilities and canonical observation/acknowledgement match Looprd 0.2.0. Durable sequence and idempotent retries survive restarts and withdrawal; source kind git/local/https, game-ID changes, multiple instances and launch origin lookup work without per-game admission. v1 remains unchanged; immutable releases, public Pages and game grants are not auto-created. Operator validates real sender, schema v5-to-v6 backup/migration, and both exact SHA source CI workflows before approval.",
+      "priority": "high"
     }
   ],
   "done_work": [
@@ -486,13 +492,44 @@
           "description": "DAPI sender envelope and operator acceptance"
         }
       ]
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER",
+      "summary": "Source candidate adds v2 authenticated deployment-level intake, durable receipts, reviewed metadata-only game listing and operator-configured API/launch origins. DAPI 0.2.0 live sender staging and approval pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/discovery_v2.py",
+          "description": "Strict v2 capabilities/observation/ack JSON, owner binding, SQL replay/high-water and withdrawal"
+        },
+        {
+          "kind": "source",
+          "ref": "looprd.yaml",
+          "description": "Additive schema v6 and additional checked-in generated handlers"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_discovery_v2.py",
+          "description": "Source-generated SQL runtime tests for v2 sender envelope and adversarial state transitions"
+        },
+        {
+          "kind": "test",
+          "ref": "tools/smoke_dapi.py",
+          "description": "Disposable HTTP sender receiver smoke targeting pinned DAPI compatibility baseline"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_067_TRUSTED_DISCOVERY_V2.adoc",
+          "description": "Contract/rollout and no auto-release boundary"
+        }
+      ]
     }
   ],
   "todo_work": [
     {
       "id": "ATR-108-LOOPRD-DISCOVERY",
       "status": "planned",
-      "next_action": "After CI validation, implement trusted Looprd game-sidecar activation and reviewed registration reconciliation, retaining operator review."
+      "next_action": "Perform real Looprd 0.2.0 v2 sender-to-Atrium receiver acceptance and reviewed deployment activation with scoped credentials; test automatic metadata registration, no per-game review under trusted-owner/v1, no automatic immutable app release or game session. Preserve prior operator decision until acceptance."
     }
   ],
   "validation": {

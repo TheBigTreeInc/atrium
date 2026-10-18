@@ -67,3 +67,7 @@ Canonical design: `docs/ATRIUMD_SIDECAR.adoc`. Looprd source reconciliation must
 
 == v0.5.11 Atrium reviewed discovery candidate implementation
 The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.
+
+== v0.5.17 trusted Looprd 0.2.0 metadata registration
+
+Versioned v2 deployment-level receiver supports automatic reviewed metadata registration from one trusted Looprd deployment and preserves existing per-game v1 manual policy. No automatic immutable app release, player identity, runtime sender installation or public launch is claimed. See `docs/P1_067_TRUSTED_DISCOVERY_V2.adoc`; operator migration and sender integration are pending.

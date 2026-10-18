@@ -21,6 +21,10 @@ ENDPOINTS=[
  ('/registry/discovery/candidates','GET','apps:approve','list_discoveries'),
  ('/registry/discovery/manage','POST','apps:approve','manage_discovery'),
  ('/registry/discovery/observations','POST','apps:discover','receive_discovery_observation'),
+ ('/registry/discovery/v2/capabilities','GET','apps:discover','trusted_discovery_capabilities'),
+ ('/registry/discovery/v2/observations','POST','apps:discover','trusted_discovery_observation'),
+ ('/registry/discovery/v2/manage','POST','apps:approve','manage_trusted_deployments'),
+ ('/registry/discovery/v2/catalog','GET','apps:read','trusted_discovery_catalog'),
 ]
 
 class Literal(str): pass
@@ -28,8 +32,9 @@ class Literal(str): pass
 def render():
     spec=yaml.safe_load(BASE.read_text(encoding='utf-8'))
     library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/catalog.py','src/atriumd_contract.py','src/registry_runtime.py','src/discovery_runtime.py','src/discovery_delivery.py','src/publisher_proof.py'))
+    v2_library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/atriumd_contract.py','src/discovery_v2.py'))
     for path,method,scope,fn in ENDPOINTS:
-        source=library+f'\n\nasync def handle(ctx):\n    return await {fn}(ctx)\n'
+        source=(v2_library if '/discovery/v2/' in path else library)+f'\n\nasync def handle(ctx):\n    return await {fn}(ctx)\n'
         spec['handlers'].append({'path':path,'method':method,'kind':'python','scopes':[scope], 'source':Literal(source)})
     dumper_class=type('LiteralDumper',(yaml.SafeDumper,),{})
     dumper_class.add_representer(Literal,lambda dumper,data:dumper.represent_scalar('tag:yaml.org,2002:str',str(data),style='|'))

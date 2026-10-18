@@ -1,0 +1,38 @@
+Atrium 0.5.17 — trusted-owner/v1 Looprd 0.2.0 v2 receiver
+Source candidate only; not a deployment, production sender check, or operator acceptance.
+
+Source: complete v0.5.16 ZIP extracted as baseline, enhanced with additive v2 receiver
+and v6 schema; no changes to another repository, no remote push.
+
+Verified in local container:
+  python tools/build_registry_spec.py --check            PASS
+  python tools/build_spec.py --check                     PASS
+  python tools/check_specs.py                            PASS
+  python -m unittest -q tests.[group A files]            PASS 34 tests
+  python -m unittest -q tests.[group B files]            PASS 70 tests
+  python -m unittest -q tests.[group C files]            PASS 41 tests
+  python -m unittest -q tests.[group D files]            PASS 47 tests
+  python -m unittest -q tests.[group E files]            PASS 35 tests
+  Python total across complete 25 existing test modules: 227 PASSED, 0 failed.
+  npm test                                               PASS 23 tests
+  npm run build                                          PASS
+  npm run verify                                         PASS
+  python tools/package_zip.py                            PASS
+  Zip archive testzip()                                  PASS
+  Reproducible ZIP repeat hash                           see final packaging verification
+
+An initial single-process unittest discover attempt hit this environment's command
+execution timeout. Splitting the same 25 modules into five groups completed every
+module and returned success in each group. The inherited stale v5 source
+assertions were corrected and the final grouped run was fully green.
+
+Explicitly UNVERIFIED / REQUIRED before enabling delivery:
+  - Official pac-labs/ziprunner-spec v2.3 package validator in CI.
+  - Pinned DAPI cli validate and tools/smoke_dapi.py HTTP acceptance in CI.
+  - Actual deployed Looprd 0.2.0 sender ↔ Atrium 0.5.17 receiver,
+    secret provisioning, live capabilities handshake, retries and outage recovery.
+  - Pi live Atrium v5→v6 migration (backup/disposable rehearsal, operator approval).
+  - SHA-specific ZipRunner Windows post-update acceptance, live Pages catalogue.
+
+No production credentials were fetched or logged. Looprd delivery must remain off
+until the approved live sender/receiver integration checks succeed.

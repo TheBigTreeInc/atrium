@@ -1,0 +1,83 @@
+= Atrium 0.5.17 — Looprd 0.2.0 trusted-owner/v1 automatic discovery intake
+:revnumber: 0.5.17
+:revdate: 2026-10-19
+:toc:
+:sectnums:
+
+== Product and trust boundary
+
+This Atrium-only source candidate implements the sender wire protocol `atrium.discovery-observation/v2` under `trusted-owner/v1` policy supplied in `docs/upstream-LOOPRD_ATRIUM_TRUSTED_DISCOVERY_CONTRACT.adoc`. Its source-authorized configuration is *one Looprd deployment*, one Atrium `apps:discover` machine credential and one publisher namespace. It does NOT require separate operator registrations of every game, source hash or delivery epoch. Valid sibling `atriumd/v1` metadata for any admitted game from that deployment is automatically registered as `reviewed` metadata. Looprd remains authority for component activation; Atrium remains game directory authority. Neither system consumes deployment URLs in the game YAML.
+
+The earlier `atrium.discovery-observation/v1` receiver, pending candidate intake and its per-component bindings remain supported for legacy installations. **Do not send a v2 body to a v1 route**: v2 capabilities must be checked explicitly and no downgrade to admin authorization is permitted.
+
+An automatically registered title is NOT a browser-executable immutable `atrium.app/v1` release. It is discoverable through a separate, authenticated trusted-game metadata projection. No App, AppRelease, Publisher, AppSubmission, player seat, Social credential or game state is created by discovery. The existing public reviewed-release gateway stays unchanged. An externally hosted game may advertise as metadata before asset integrity and player launch are independently certified.
+
+== Runtime and endpoint map
+
+Root source remains a single `component: atrium`, with included, reviewed generated handler code. It now declares schema version 6 with additive tables (no table rename/drop or automatic deletion) and four additional routes:
+
+[cols="2,1,1,2",options="header"]
+|===
+|Path relative to `/looprd/atrium/v1` |Verb |Required scope |Purpose
+|`/registry/discovery/v2/capabilities` |GET |`apps:discover` with a DAPI machine principal |Verify receiver supports v2, return the credential's actual bound deployment
+|`/registry/discovery/v2/observations` |POST |`apps:discover` machine principal |Commit upsert/withdraw and durable acknowledgement
+|`/registry/discovery/v2/manage` |POST |`apps:approve` |Operator configures ONE trusted deployment/publisher/API origin + optional hosting originRefs; no per-game binding
+|`/registry/discovery/v2/catalog` |GET |`apps:read` |Read bounded auto-reviewed game metadata and per-instance availability; independent from immutable public `AppRelease` catalog
+|===
+
+Only the first two endpoints form the sender receiver base. An example configured base is `https://<atrium-host>/looprd/atrium/v1/registry/discovery/v2`. **Replace the example host with the operator's real approved host.** No URL or token is checked into this repository.
+
+== Configure once per trusted Looprd deployment
+
+The operator obtains an Atrium component key scoped *only* `apps:discover`, issued with a stable service subject (e.g. `dapi-node-test`, valid `component-services` realm). Its credentials live only in protected runtime secrets, not the source tree, terminal transcripts or log retrieval. The `apps:approve` key is separate and used only to configure the deployment:
+
+[source,json]
+----
+{
+  "operation":"register",
+  "payload":{
+    "deploymentId":"node-test",
+    "callerSubject":"dapi-node-test",
+    "publisherId":"thebigtreeinc",
+    "apiOrigin":"https://api.example.org",
+    "launchOrigins":{"game-web":"https://life.example.org"}
+  }
+}
+----
+
+This is a **synthetic fixture**. `apiOrigin` is a reviewed exact HTTPS public origin and is distinct from `launchOrigins`. The latter may be an empty mapping; when a game requests an unconfigured `originRef`, its metadata remains registered but the game instance reports `launchAvailable=false` with `reason=launch_origin_unconfigured`. The operator may add origins once per deployment via `set_origins`, or disable/re-enable delivery via `set_status`. Neither action registers a game or overrides source authorization.
+
+The v2 upsert's `runtime.apiBaseUrl` must be the trusted configured `apiOrigin` with `/looprd/<activated-component>/vN` route prefix. It does not use request Host or forwarded headers. Browser launch URLs are formed *only* from deployment-configured HTTPS `originRef` plus the sidecar's validated relative entrypoint. No incoming game metadata may supply a hostname or credential.
+
+== Wire protocol, source evidence and durable ordering
+
+Source fixtures are under `examples/discovery/life-v2-*.json`. The contract is strict:
+
+* Upsert carries `schema=atrium.discovery-observation/v2`, bound `deploymentId`, activated `component`, `operation=upsert`, `source`, `runtime`, validated `sidecar`, `reason=null`, positive 64-bit `sequence`, random lowercase 32-hex `operationId`, and lowercase SHA-256 `fingerprint`.
+* Withdraw carries `operation=withdraw`, no `runtime` or `sidecar`, and one of `sidecar_removed`, `component_removed`, `component_disabled`. Unreachable source, invalid sidecar and temporary API outage MUST NOT be translated into withdrawal.
+* Provenance kinds: `git` has an actual 40-hex commit SHA. `local` and `https` have `revision=null`. `source.identity` is an opaque 64-hex DAPI source identity; `specificationDigest` is the hash of the activated flattened Looprd component spec, **not** raw game YAML.
+* Canonical fingerprint is SHA-256 over sorted-key compact UTF-8 JSON after removing `operationId`, `sequence`, `fingerprint`; preserve non-ASCII and explicit nulls. The receiver rejects fingerprints that do not match.
+* Observation is at most 128 KiB and validated sidecar at most 64 KiB. Invalid fields, unknown versions and machine/namespace collisions fail closed.
+
+The receiver writes `AtriumTrustedInstance` and an immutable `AtriumTrustedReceipt` in one SQL transaction. `sequence` high-water survives restart and withdrawal; exact retries return the *original stored acknowledgement*, even after a newer observation or withdrawal. Reused operation IDs with altered content or unknown old operations return HTTP 409 without mutation. A later valid upsert reactivates an instance while older pending packets cannot resurrect it. No Redis, WebSocket, ntfy, ephemeral memory or timestamp is used as the authoritative delivery journal.
+
+The v2 acknowledgement contains exactly: `schema`, `deploymentId`, `component`, `operationId`, `sequence`, `fingerprint`, `status` (reviewed or withdrawn) and `change` (created, updated, unchanged, withdrawn). Full fixtures include a source-verified Life sidecar and both Git and non-Git evidence. The sender must persist intent and retry the same identity/sequence/fingerprint on timeout or a lost response.
+
+== Game association and catalog behavior
+
+* Identity is `(owner publisher, game.id)`; a particular runtime instance is `(deploymentId, component)`. One trusted deployment can register multiple game components automatically. Two deployments can advertise the same game as separate instances. Withdraw one without withdrawing the other.
+* A component changing `game.id` reassigns its one instance in the same transaction; the previous game's availability naturally disappears when no instance remains. Source-identity changes alone are provenance updates, not re-registration or a new review gate.
+* Conflicts between publishers/namespaces and with existing AppRelease ownership are rejected. Do not overwrite another owner's catalog record.
+* The authenticated v2 discovery catalog groups reviewed metadata by publisher and game and returns each instance's trusted API base and optional configured browser launch URL. It is *not* a separate publisher-wide privileged game execution API, nor is it the existing anonymous static / live `AppRelease` catalog.
+* Disabling a deployment suppresses instance availability but does not erase its metadata or receipts; confirmed withdrawal keeps tombstones and historical state. Rotating credentials alone never resets the durable sequence.
+
+== Compatibility, local evidence and staging checklist
+
+* Required **sender**: deployed Looprd **0.2.0**, specifically its v2 durable discovery sender and `atrium.discovery-capabilities/v2` handshake. The pinned `dc79897a54f69141ce300bbdadd3bdd6bd996d14` source used in this repository's CI supplies the older generic Looprd receiver capabilities but **does not itself prove the new sender exists**. Run sender-facing acceptance against the actual Looprd 0.2.0 deployment separately; do not infer success from source-only unit tests.
+* Required **receiver**: Atrium **0.5.17** source candidate; operator-reviewed import and activation of additive database schema 6. Existing v5 candidate tables, v1 publisher proofs, approved immutable releases and v1 legacy endpoints are retained. Back up SQLite and rehearse v5→v6 on disposable DAPI before activating the upgraded component.
+* Verify a dedicated service key and deployment configuration; GET capabilities returns bound `deploymentId`, `operations=[upsert,withdraw]` and `provenanceKinds=[git,local,https]`. Client/API keys and administrator keys must not become discovery senders.
+* Exercise Life Git, local and HTTPS fixtures; verified Unicode fingerprint, bad source revisions, duplicate/reordered/changed operations, reconnect and process restart, two deployments, game-ID updates and confirmed withdrawal. Check that network errors keep the last accepted metadata rather than sending a tombstone.
+* Check the new metadata catalog, existing immutable release catalog and review controls. No new automatic `AppRelease` may be created by discovery. If a launch hosting origin is unset, show machine-readable unavailability instead of guessing a URL.
+* Confirm old v1 sender and operator candidate-review flows remain functional. Confirm both exact pushed-commit CI jobs, official pinned ZipRunner package validation and installed-artifact SHA-specific post-update tests before operator approval.
+
+No Pi deployment, secret provisioning, DAPI sender configuration, migration, approval, Git push or Pages release is performed by this ZIP. Keep Looprd production discovery delivery disabled until the end-to-end v2 staging tests pass.

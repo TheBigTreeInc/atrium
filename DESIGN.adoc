@@ -93,3 +93,7 @@ See `docs/ATRIUMD_SIDECAR.adoc`: opt-in game `atriumd.yaml` alongside portable `
 
 == v0.5.11 Atrium reviewed discovery candidate implementation
 The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.
+
+== v0.5.17 Looprd 0.2.0 v2 trusted-owner discovery decision
+
+One operator-trusted Looprd deployment with `apps:discover` service credential may register metadata for every valid game sidecar from that deployment automatically; no mandatory individual source, game or epoch binding. Atrium v2 SQL keeps per-component durable ordering and receipts; withdrawals do not erase history. The v1 candidate-review protocol remains distinct. Metadata registration, source attestation, publisher ownership, immutable reviewed binary release, browser hosting, and game-session authorization have different authorities; a sidecar MUST NOT create an AppRelease or game ticket. Implementation/acceptance detail: `docs/P1_067_TRUSTED_DISCOVERY_V2.adoc`.

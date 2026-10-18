@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.16",
-  "summary": "v0.5.16 integrates DAPI deployment-bound observation receiver, operator-reviewed trusted binding/launch origin config, replay-safe machine registration with Git/content provenance and safe absent/withdrawn/unavailable transitions. The current DAPI observe-only release does not send: automatic sender and public launch remain pending. All earlier operator workboard decisions are preserved.",
+  "version": "0.5.17",
+  "summary": "v0.5.17 Atrium receiver compatibility for Looprd 0.2.0 trusted-owner/v1: v2 automatic metadata registration only, deployment-scoped machine identity, committed replay receipts, no per-game source binding or epoch, preserved v1 pending-review routes and immutable AppRelease policy. No live activation, delivery or client-game authority claimed; durable local operator Work board stays authoritative.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -156,6 +156,17 @@
         "Provision unique DAPI service key with only apps:discover, bind exact deployment/component/publisher/game/sourceIdentity/epoch and reviewed origins through apps:approve; reject ordinary client key, privileged key, wrong service, epoch, source and replay.",
         "Deliver validated Life metadata as Git and content provenance with retries, changed metadata, confirmed withdrawal, outage and recovery; verify candidate queue only, per-deployment state and origin diagnostic, no new public game release.",
         "Run pinned GitHub CI and installed SHA-specific ZipRunner post-update checks; independently coordinate DAPI sender contract and require explicit operator approval for activation."
+      ]
+    },
+    {
+      "id": "ATR-108-TRUSTED-V2-RECEIVER",
+      "title": "Atrium automatic owner-trusted v2 game metadata registration and durable DAPI 0.2.0 acknowledgement",
+      "summary": "v2 receiver is a source candidate; operator stages actual Looprd 0.2.0 sender with dedicated service credential and schema v6 migration. Does not publish an immutable game release or authorize player launch.",
+      "operator_checks": [
+        "Back up Atrium v5 database and rehearse additive v5→v6 migration; preserve old publisher, candidate and immutable release rows.",
+        "Configure one trusted deployment binding (service subject, publisher namespace, trusted API origin and originRef map); exercise real Looprd 0.2.0 GET capabilities and POST observations under apps:discover only.",
+        "Verify exact and delayed replay, source updates, withdraw/re-register, multiple components/deployments, game-ID changes, wrong credential, conflicting publisher, and no automatic public AppRelease.",
+        "Run exact installed ZIP post-update tests and both GitHub CI jobs before operator acceptance; verify DAPI sender remains disabled until the gates pass."
       ]
     }
   ],

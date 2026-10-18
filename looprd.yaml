@@ -1,6 +1,6 @@
 apiVersion: looprd/v1
 component: atrium
-release: 0.5.16
+release: 0.5.17
 api:
   version: v1
 auth:
@@ -18,7 +18,7 @@ auth:
   - apps:discover
 database:
   backend: sqlite
-  schemaVersion: 5
+  schemaVersion: 6
   migrations:
   - version: 2
     statements:
@@ -39,21 +39,44 @@ database:
     - CREATE TABLE "AtriumDiscoveryCandidate" ("id" INTEGER PRIMARY KEY, "deploymentId"
       VARCHAR(96) NOT NULL, "component" VARCHAR(48) NOT NULL, "gameId" VARCHAR(120)
       NOT NULL, "publisherId" VARCHAR(120) NOT NULL, "sourceRevision" VARCHAR(40)
-      NOT NULL, "fingerprint" VARCHAR(64) NOT NULL, "sidecar" JSON NOT NULL,
-      "status" VARCHAR(32) NOT NULL, "updatedAt" VARCHAR(40) NOT NULL,
-      UNIQUE("deploymentId", "component"))
+      NOT NULL, "fingerprint" VARCHAR(64) NOT NULL, "sidecar" JSON NOT NULL, "status"
+      VARCHAR(32) NOT NULL, "updatedAt" VARCHAR(40) NOT NULL, UNIQUE("deploymentId",
+      "component"))
   - version: 4
     statements:
     - CREATE TABLE "PublisherOriginProof" ("id" INTEGER PRIMARY KEY, "publisherId"
-      VARCHAR(120) NOT NULL, "origin" VARCHAR(255) NOT NULL, "challengeId"
-      VARCHAR(32) NOT NULL, "tokenDigest" VARCHAR(64) NOT NULL, "status"
-      VARCHAR(16) NOT NULL, "issuedAt" VARCHAR(40) NOT NULL, "expiresAt"
-      VARCHAR(40) NOT NULL, "verifiedAt" VARCHAR(40), UNIQUE("publisherId", "origin"), UNIQUE("origin"))
+      VARCHAR(120) NOT NULL, "origin" VARCHAR(255) NOT NULL, "challengeId" VARCHAR(32)
+      NOT NULL, "tokenDigest" VARCHAR(64) NOT NULL, "status" VARCHAR(16) NOT NULL,
+      "issuedAt" VARCHAR(40) NOT NULL, "expiresAt" VARCHAR(40) NOT NULL, "verifiedAt"
+      VARCHAR(40), UNIQUE("publisherId", "origin"), UNIQUE("origin"))
   - version: 5
     statements:
     - ALTER TABLE "AtriumDiscoveryCandidate" ADD COLUMN "availability" VARCHAR(24)
     - ALTER TABLE "AtriumDiscoveryCandidate" ADD COLUMN "sourceProvenance" JSON
-    - CREATE TABLE "AtriumDiscoveryBinding" ("id" INTEGER PRIMARY KEY, "deploymentId" VARCHAR(96) NOT NULL, "component" VARCHAR(48) NOT NULL, "gameId" VARCHAR(120) NOT NULL, "publisherId" VARCHAR(120) NOT NULL, "callerSubject" VARCHAR(48) NOT NULL UNIQUE, "sourceIdentity" VARCHAR(64) NOT NULL, "deliveryEpoch" VARCHAR(32) NOT NULL, "launchOrigins" JSON NOT NULL, "status" VARCHAR(16) NOT NULL, "lastSequence" INTEGER NOT NULL, "lastDigest" VARCHAR(64), "createdAt" VARCHAR(40) NOT NULL, UNIQUE ("deploymentId", "component"))
+    - CREATE TABLE "AtriumDiscoveryBinding" ("id" INTEGER PRIMARY KEY, "deploymentId"
+      VARCHAR(96) NOT NULL, "component" VARCHAR(48) NOT NULL, "gameId" VARCHAR(120)
+      NOT NULL, "publisherId" VARCHAR(120) NOT NULL, "callerSubject" VARCHAR(48) NOT
+      NULL UNIQUE, "sourceIdentity" VARCHAR(64) NOT NULL, "deliveryEpoch" VARCHAR(32)
+      NOT NULL, "launchOrigins" JSON NOT NULL, "status" VARCHAR(16) NOT NULL, "lastSequence"
+      INTEGER NOT NULL, "lastDigest" VARCHAR(64), "createdAt" VARCHAR(40) NOT NULL,
+      UNIQUE ("deploymentId", "component"))
+  - version: 6
+    statements:
+    - CREATE TABLE "AtriumTrustedDeployment" ("id" INTEGER PRIMARY KEY, "deploymentId"
+      VARCHAR(96) NOT NULL UNIQUE, "callerSubject" VARCHAR(48) NOT NULL UNIQUE, "publisherId"
+      VARCHAR(64) NOT NULL, "apiOrigin" VARCHAR(255) NOT NULL, "launchOrigins" JSON
+      NOT NULL, "status" VARCHAR(16) NOT NULL, "createdAt" VARCHAR(40) NOT NULL)
+    - CREATE TABLE "AtriumTrustedInstance" ("id" INTEGER PRIMARY KEY, "deploymentId"
+      VARCHAR(96) NOT NULL, "component" VARCHAR(48) NOT NULL, "gameId" VARCHAR(120),
+      "publisherId" VARCHAR(64) NOT NULL, "state" VARCHAR(16) NOT NULL, "sidecar"
+      JSON, "sourceProvenance" JSON, "fingerprint" VARCHAR(64) NOT NULL, "apiBaseUrl"
+      VARCHAR(512), "lastSequence" BIGINT NOT NULL, "updatedAt" VARCHAR(40) NOT NULL,
+      UNIQUE("deploymentId", "component"))
+    - CREATE TABLE "AtriumTrustedReceipt" ("id" INTEGER PRIMARY KEY, "deploymentId"
+      VARCHAR(96) NOT NULL, "component" VARCHAR(48) NOT NULL, "operationId" VARCHAR(32)
+      NOT NULL, "sequence" BIGINT NOT NULL, "fingerprint" VARCHAR(64) NOT NULL, "ack"
+      JSON NOT NULL, UNIQUE("deploymentId", "component", "operationId"), UNIQUE("deploymentId",
+      "component", "sequence"))
 requires:
 - spec.includes
 - events.transactional

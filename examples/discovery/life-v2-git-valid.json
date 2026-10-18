@@ -1,0 +1,58 @@
+{
+  "schema": "atrium.discovery-observation/v2",
+  "deploymentId": "node-test",
+  "component": "the-life-loop",
+  "operation": "upsert",
+  "source": {
+    "kind": "git",
+    "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "specificationDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "revision": "cccccccccccccccccccccccccccccccccccccccc"
+  },
+  "runtime": {
+    "apiBaseUrl": "https://api.example.org/looprd/the-life-loop/v1"
+  },
+  "sidecar": {
+    "schema": "atriumd/v1",
+    "component": "the-life-loop",
+    "game": {
+      "id": "life.loop",
+      "publisher": "thebigtreeinc",
+      "title": "The Life Loop",
+      "summary": "A classic-inspired life simulation",
+      "kind": "game",
+      "platforms": [
+        {
+          "runtime": "web",
+          "formFactors": [
+            "desktop",
+            "tablet",
+            "phone"
+          ],
+          "installMode": "none"
+        }
+      ],
+      "launch": {
+        "mode": "hosted-web",
+        "originRef": "game-web",
+        "entrypoint": "index.html"
+      },
+      "services": [
+        {
+          "component": "the-life-loop",
+          "role": "multiplayer"
+        }
+      ],
+      "integration": {
+        "atriumOptional": true,
+        "sessions": "game-owned",
+        "state": "game-owned",
+        "identity": "game-owned"
+      }
+    }
+  },
+  "reason": null,
+  "operationId": "11111111111111111111111111111111",
+  "sequence": 1,
+  "fingerprint": "196cb9727ad58c6a0483af7366875ac39c983ed7699fc6f5d0ef687bc1987445"
+}

@@ -1,3 +1,20 @@
+= Atrium v0.5.17 — Looprd 0.2.0 trusted discovery v2 receiver
+
+Source candidate for `atrium.discovery-observation/v2`: one operator-bound Looprd deployment identity and one `apps:discover` service key may automatically register **reviewed game metadata** from its trusted `atriumd/v1` sources. New games do not need per-game registration; Git/local/HTTPS source updates, replay, delayed acknowledgements, confirmed removal and multiple deployments are handled durably by additive schema v6. Legacy per-game review (v1) remains separately available. No immutable AppRelease, public browser executable, Social game grant, DAPI sender deployment, Git push or Pages publication is created by metadata discovery. See `docs/P1_067_TRUSTED_DISCOVERY_V2.adoc` and the preserved upstream trust contract.
+
+Looprd 0.2.0 sender is required for actual automatic delivery; older pinned DAPI `dc79897a...` remains the source CI baseline but does not certify an online 0.2.0 sender. Back up and rehearse the Atrium database v5→v6 migration. Before enabling production delivery, perform authenticated real-sender acceptance and exact installed ZIP/CI checks. The 36-ticket local operator Work board snapshot is preserved under `docs/ZIPRUNNER_LOCAL_WORKBOARD_36_20261018.json`; source candidate work is not operator-verified Done.
+
+== Local verification
+
+[source,shell]
+----
+python tools/run_python_checks.py
+npm test
+npm run build
+npm run verify
+python tools/package_zip.py
+----
+
 = Atrium v0.5.16 — Authenticated DAPI discovery registration receiver
 
 Atrium now accepts operator-bound DAPI `atriumd/v1` observations using a dedicated `apps:discover` service key with exact deployment/component/source identity; v5 additive SQL, strict Git/content provenance, ordered idempotent receipts, withdrawn/outage preservation, metadata-only operator review and trusted operator-only launch origin diagnostics. **Nothing discovered becomes automatically published.** DAPI pinned revision `dc79897a54f69141ce300bbdadd3bdd6bd996d14` provides **observe-only** discovery, not a sender. Real auto delivery requires an additional DAPI-side implementation and acceptance. No game or Social credential lives in the web frontend or sidecar. See `docs/P1_066_DAPI_DISCOVERY_RECEIVER.adoc` and fixtures `examples/discovery/`.

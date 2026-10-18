@@ -1,0 +1,18 @@
+{
+  "schema": "atrium.discovery-observation/v2",
+  "deploymentId": "node-test",
+  "component": "the-life-loop",
+  "operation": "withdraw",
+  "source": {
+    "kind": "git",
+    "identity": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "specificationDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "revision": "cccccccccccccccccccccccccccccccccccccccc"
+  },
+  "runtime": null,
+  "sidecar": null,
+  "reason": "sidecar_removed",
+  "operationId": "44444444444444444444444444444444",
+  "sequence": 4,
+  "fingerprint": "a48339545fdc874507b092bfbb53fc10d494593f7270214150ea6474e4cd3c54"
+}

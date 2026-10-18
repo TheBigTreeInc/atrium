@@ -1,0 +1,12 @@
+{
+  "operation": "register",
+  "payload": {
+    "deploymentId": "node-test",
+    "callerSubject": "dapi-node-test",
+    "publisherId": "thebigtreeinc",
+    "apiOrigin": "https://api.example.org",
+    "launchOrigins": {
+      "game-web": "https://life.example.org"
+    }
+  }
+}
