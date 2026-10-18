@@ -1,0 +1,23 @@
+= Atrium v0.5.9 — Exact-commit CI repair
+:revdate: 2026-10-18
+
+== Verified failure on v0.5.8
+
+Commit `039f9b9539505221f368177c3f53dc9c031e0631` produced GitHub Actions run `39108335918`, with both jobs failed. Linux passed pinned DAPI validation, then failed ZipRunner package manifest validation: `done_work[8]` lacked evidence and used unsupported `title`; `ATR-108-LOOPRD-DISCOVERY` was planned but not listed in done or todo. Windows passed isolated venv source checks, then its separate system-Python command failed due to missing PyYAML.
+
+== Implemented
+
+* Windows CI now invokes the same isolated `tools/run_python_checks.py` recipe used by ZipRunner rather than assuming global Python packages.
+* Manifest now gives `ATR-109-CANDIDATES` evidence in the validator-supported format and explicitly lists `ATR-108-LOOPRD-DISCOVERY` as todo. Existing workboard IDs and acceptance criteria remain intact.
+* The versioned ZIP is generated deterministically.
+
+== Not claimed
+
+No remote Git push, CI rerun, release approval, or live deployment was performed. Do not close workboard items solely because local tests pass.
+
+== Next operator checks
+
+. Import the source ZIP into ZipRunner and run its fresh post-update tests.
+. Push through the approved source-control workflow.
+. Verify both GitHub Actions jobs on the *new exact commit SHA*.
+. Approve/close work only after operator review.
