@@ -1,0 +1,41 @@
+= Atrium v0.5.19 — Life hosted integration boundary and mock-to-live migration
+:revdate: 2026-10-19
+:toc:
+
+== Scope and truth table
+
+This is a source-only launch integration candidate. Atrium does not own game rules, match creation after a Tavi challenge, authenticated player seats or the Social identity provider. The latest reviewed Life repository v0.5.92 explicitly reports its public `/play/info` and `/play` endpoints disabled. Tavi v0.3.48 can challenge an OpenClaw contact and open a reviewed Atrium URL, but challenge acknowledgement does not confer a Life seat. The Looprd 0.2.0 sender is a required deployment/acceptance dependency and the Atrium v2 receiver alone does not publish a public GameRelease.
+
+== Added here
+
+* `src/hosted_life.mjs` checks the exact operator-approved catalog record against active Looprd/DAPI discovery, including publisher, deployment, Life component, approved API route and separately configured HTTPS launch origin. No absolute origin is read from `atriumd.yaml`.
+* `publicLifeTransport` invokes only Life `/play/info` and `/play`, with a caller-provided Life-audience game-scoped authorization capability. Caller MUST exchange Social identity in an approved trusted flow without passing a Social bearer to Atrium/iframe. There is no built-in token issuer or bridge.
+* `authorizedLifeLobby` validates the actual advertised versioned Life interface before allowing live calls. The current Life internal capability handoff fails closed. `GameLobbyClient` still owns no game rules or seat grants. Its `create/invite/join/list_matches/resume` calls must be authorized by Life.
+* `launchLife` returns a reviewed standalone HTTPS game URL containing an opaque match ID only. `taviLaunchHandoff` passes the reviewed launch target and opaque match context only; target must authenticate the user's Life seat on launch. Default is separate browser, not iframe. No challenge-accept hook creates a match.
+* Contract tests reject other publishers/deployments, missing publication, wrong routing, internal Life facade, unsafe URL, non-Life scoped credentials and malicious match IDs.
+
+== Integration and migration plan
+
+. Keep `src/mock_life_api.mjs` exclusively for sandbox and regression tests. Do not silently switch the demo to an unapproved backend. The old public Multiplayer Lab remains explicitly labelled simulation until a complete trusted identity provider and live receiver are installed.
+. Deploy and validate Looprd 0.2.0 discovery sender with `atriumd.yaml` from the same verified source revision as the activated `looprd.yaml` component. Never insert an Atrium deployment URL into portable metadata. Bind receiver's dedicated `apps:discover` principal and configured originRefs to a particular trusted deployment.
+. Rehearse schema-v6 registry migration; verify signed/source-attested observations, replay, publisher collisions, withdrawals and destination ownership. A `reviewed` v2 metadata record is NOT publication approval.
+. Obtain explicit operator approval for the immutable public Life release, resolved API and browser origin, launch path and expiry/revocation behavior. Only then bind it to `approvedLifeTarget` with the authenticated discovery instance. The existing public catalog schema `atrium.catalog-snapshot/v1` carries immutable HTML entries; a separately reviewed hosted-game projection/endpoint must be implemented and deployed before public Life cards can be promoted. Never insert synthetic Life entries into `web/catalog.json`.
+. Life deploys public `/play/info` and `/play` with versioned contract, a game-audience credential verifier, authoritative seat ownership, durable per-match snapshots, one-use invitations, idempotent commands and `/play` authorization tests. Existing internal-only Life source must not be presumed production-ready.
+. Social/Tavi implements a game-scoped proof exchange and a return link to Atrium without exposing original Social bearer tokens. A Tavi challenge response is a negotiation signal only; Life alone creates/adopts the resulting match once, using a unique challenge correlation/idempotency ID.
+. Wire approved trusted runtime adapters into the Atrium UI only after above contracts are verified. Validate a real match launched, closed, resumed in a new browser tab, and rejected from a different player's credentials; test fallback when Content-Security-Policy/X-Frame-Options denies framing.
+
+== Shared contract requests for other sessions
+
+Life: supply actual deployed public `/play/info` schema, `/play` verb/request/response shape, game-scoped login/issuer exchange, create/resume/idempotency/seat responses, and hosted URL match-context parsing (do not infer contract from internal v0.5.92). Life must reject unauthorized `resume` regardless of opaque match ID.
+
+Tavi/Social: agree on a one-time, game-audience authorization exchange and approved game launch handoff `atrium.tavi-launch/v1` with `{gameId,target,matchContext:{matchId}}`; challenge IDs are correlation inputs handled by Life, never a second Atrium-created game. No bearer is delivered in an iframe/postMessage/query string.
+
+Looprd/DAPI: confirm the deployed sender's v2 durable acknowledgement, same-revision source sidecar detection, registered API route, immutable `originRef` configuration, withdrawal semantics and exact machine principal; no hard-coded Atrium target in source YAML.
+
+== Acceptance gates (pending)
+
+* Same durable Life match ID visible after close/reopen and backend restart; no accidental duplicate from Tavi challenge acceptance.
+* Opponent cannot `resume`, `act`, `join` or obtain a Life authorization credential for another seat; stale commands fail.
+* Approved public catalog shows Life only after signed review of the exact hosted assets/route; disable/withdraw revokes launch.
+* Game can open externally when frame policy blocks embedding; no Social bearer or operator credential in browser URL, iframe, postMessage or static bundle.
+* GitHub exact-commit Linux/Windows CI, official ZipRunner package validator, local import SHA-specific post-update tests and operator approval remain pending. No push or deployment by this source candidate.

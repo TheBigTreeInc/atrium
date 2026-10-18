@@ -5,7 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dist=path.join(root,'dist');
-for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','.nojekyll']) {
+for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','src/hosted_life.mjs','.nojekyll']) {
  const file=path.join(dist,name);
  const info=await stat(file);
  assert(info.isFile() && (info.size>0 || name==='.nojekyll'),`missing build asset: ${name}`);

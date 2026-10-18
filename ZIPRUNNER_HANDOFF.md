@@ -1,3 +1,7 @@
+= Atrium 0.5.20 — corrected ZipRunner source candidate
+
+0.5.19 failed Windows Python CI integration test because `.github/workflows/verify.yml` named the 0.5.18 artifact. Fixed workflow validation and upload references to 0.5.20, bumped source version declarations and added regression assertions. No change to Life game authority, Tavi or DAPI. See `docs/P1_070_WORKFLOW_VERSION_REPAIR.adoc`. Operator should apply this ZIP without deleting local state and check exact installed bytes; no push or deployment authorized.
+
 = Atrium v0.5.18 CI smoke repair handoff
 
 A source-only CI repair for run 39173201839 isolates disposable v1/v2 DAPI smoke phases into separate rate-limit sessions sharing one persisted DB; production limits remain unchanged. The latest 37-ticket local operator snapshot is preserved as `docs/ZIPRUNNER_LOCAL_WORKBOARD_37_20261019.json`. See `docs/P1_068_CI_SMOKE_ISOLATION.adoc`. No automatic Git push, deployment, game publication, DAPI sender activation or operator acceptance.

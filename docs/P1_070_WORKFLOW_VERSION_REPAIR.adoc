@@ -1,0 +1,17 @@
+= Atrium v0.5.20 — ZipRunner CI artifact version repair
+:revdate: 2026-10-19
+
+== Failure reproduction
+
+Windows ZipRunner 0.5.19 build failed at tests/test_ci_integrations.py::test_ci_artifacts_use_current_source_version because `.github/workflows/verify.yml` still validated and uploaded `atrium-0.5.18-ziprunner.zip`. Its package builder had already advanced to 0.5.19. The test correctly prevented an inconsistent release.
+
+== Fix
+
+The workflow validation ZIP argument, uploaded artifact name and uploaded path now use `atrium-0.5.20-ziprunner` consistently. All current release/versioned package declarations and related version guard assertions advance to 0.5.20. Added explicit assertions for the upload name and path to catch this regression. No Life API transport semantics, database schema, Social identity or game authorization behavior changes. Existing historical references to 0.5.18/0.5.19 remain as history.
+
+== Operator check
+
+. Import exact `atrium-0.5.20-ziprunner.zip` into `atrium` project.
+. Verify installed project detected 0.5.20, then run `python tools/run_python_checks.py` and `npm test && npm run build && npm run verify`.
+. After operator-reviewed Git push, run exact-commit Linux and Windows GitHub CI and require official ZipRunner package validation.
+. Preserve existing source, runtime config, `.env`, local data and operator workboard; no automatic push/deploy or live Life activation.

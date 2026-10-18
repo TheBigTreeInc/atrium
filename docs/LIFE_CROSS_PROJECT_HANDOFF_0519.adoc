@@ -1,0 +1,11 @@
+= Atrium v0.5.19 — contracts to coordinate across Life, Tavi, Looprd
+
+Status: proposed, not independently agreed or deployed in other repositories.
+
+Life contract owner: Life session. Need public `looprd.game-play/v1` `/play/info` + `/play` routing, engine digest, authenticated game-scoped seat proof, and match authorization. Its current v0.5.92 only has internal adapters. Do not activate Atrium live lobby before exact contract verification.
+
+Tavi contract owner: Social/Tavi session. Existing v0.3.48 accepts challenge and advertises Atrium URL only. Request Tavi launch handoff `atrium.tavi-launch/v1` carrying reviewed target plus opaque matchId; it must not forward Social bearer or create seats. Life consumes challenge correlation idempotently.
+
+Looprd contract owner: DAPI session. Need real active durable sender for `atrium.discovery-observation/v2` from same-source `atriumd.yaml`, with service-scoped `apps:discover`, distinct trusted apiOrigin/launchOrigins and automatic reconciliation. Existing Atrium schema v6 receiver is metadata registration, not a public release.
+
+Atrium own boundary: approve immutable hosted release and expose a reviewed hosted-game projection; only then mount authenticated Life lobby. Explicitly no game rules, NPC decision logic or account/seat ownership in Atrium.
