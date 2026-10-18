@@ -1,3 +1,22 @@
+= Atrium v0.5.15 — Life multiplayer lobby sandbox (Atrium-only)
+
+The public static storefront now includes a clearly labelled *Multiplayer Lab* panel even with an empty catalog. Explore simulated Life private matches: create with 60-hour or unlimited turn deadline, invite, join, continue and swap Alice/Bob turns in a memory-only mock. No production Life server, Social identity, game rules or notifications are connected. The existing Checkers publication and verified catalog gateway remain operator-controlled.
+
+Implemented: transport-injected `src/multiplayer_lobby.mjs`, mock `src/mock_life_api.mjs`, UI `src/multiplayer_preview_ui.mjs`, parity Python lobby facade, negative contract tests and Pages-safe build. See `docs/P1_065_MULTIPLAYER_LOBBY_PREVIEW.adoc` for the explicit Life internal-to-public contract mismatch, security boundary and acceptance plan.
+
+**No source push, hosted Pages change, database migration, Looprd component activation or player account was performed by this package.** Use your existing ZipRunner review/push flow, then run fresh exact-commit GitHub Actions and operator Pages checks.
+
+== Local validation
+
+[source,shell]
+----
+python tools/run_python_checks.py
+npm test
+npm run build
+npm run verify
+python tools/package_zip.py
+----
+
 = Atrium v0.5.14 — First playable Checkers preview and clearer storefront
 
 Operator-gated Pages staging only. See docs/P1_064_FIRST_PLAYABLE_GAME.adoc.

@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.14",
-    "base_version": "0.5.13",
-    "source_revision": "75a302672b904789490296890349a29bd4551302"
+    "version": "0.5.15",
+    "base_version": "0.5.14",
+    "source_revision": "4b9e0791628ab7b17bb2637640489b9e915488b0"
   },
   "update": {
-    "id": "ATR-P1-20261018-024",
+    "id": "ATR-P1-20261018-025",
     "kind": "source_update",
-    "created_at": "2026-10-18T14:21:43+02:00",
-    "summary": "v0.5.14 candidate: improved Atrium storefront and opt-in first-party Checkers local-play preview, integrity-verified and manually published through reviewed Pages workflow only. Life remains not yet integrated; no auto-registration/push/deployment."
+    "created_at": "2026-10-18T18:01:00+02:00",
+    "summary": "v0.5.15 Atrium-only Life multiplayer lobby preview and mockable proposed /play adapter. Client mock has no real Social account, persistent game state, network calls, automatic Pages publication or game registry approval."
   },
   "planned_work": [
     {
@@ -97,6 +97,12 @@
       "title": "Publish a reviewed first-party playable Checkers preview via manual Pages approval",
       "priority": "high",
       "acceptance_criteria": "Reviewed, self-contained Checkers game is playable as an explicit first-party manual Pages preview; catalog and assets SHA-256 aligned; American capture/king/Staff rules tested; default remains empty; production live gateway not bypassed; operator verifies real browser and rollback."
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW",
+      "title": "Atrium mockable Life multiplayer lobby and typed preview API",
+      "priority": "high",
+      "acceptance_criteria": "Present sandbox-only create/invite/join/list/resume and simulated end turn with 60-hour/unlimited deadline; mockable injected transport and typed Life/Atrium protocol tests; no actual Social token, Looprd route, production match, publication or OpenClaw grant. Operator verifies Pages and install separately."
     }
   ],
   "done_work": [
@@ -402,6 +408,47 @@
           "description": "Operator-controlled first game publication and rollback procedure"
         }
       ]
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW",
+      "summary": "Delivered an explicitly labelled Life mock lobby on the existing static portal; injected, side-effect-free browser transport and Python parity adapter with negative tests and a separate unverified Life protocol alignment gate. Source candidate only.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/multiplayer_lobby.mjs",
+          "description": "Pure transport-injected typed game lobby operations and strict capability/projection validation"
+        },
+        {
+          "kind": "source",
+          "ref": "src/mock_life_api.mjs",
+          "description": "Memory-only Life preview API with 60h/unlimited deadlines, seat isolation, invitations and revision checks"
+        },
+        {
+          "kind": "source",
+          "ref": "src/multiplayer_preview_ui.mjs",
+          "description": "Explicitly labelled interactive sandbox lobby UI without live game transport"
+        },
+        {
+          "kind": "source",
+          "ref": "src/game_lobby_client.py",
+          "description": "Python transport-injected facade for proposed create, invite, join and resume contract"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/multiplayer_lobby.test.mjs",
+          "description": "Mock lifecycle, contract-negative and no-network JavaScript tests"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_multiplayer_adapter.py",
+          "description": "Python parity and unsafe-field contract tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_065_MULTIPLAYER_LOBBY_PREVIEW.adoc",
+          "description": "Trust boundary, Life internal/proposed mismatch, manual preview test and remaining owner gates"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -516,21 +563,37 @@
         "description": "Real public TLS reverse proxy, disabled caching and live operator-reviewed Pages test",
         "status": "not_run",
         "reason": "Requires operator-controlled public DNS/TLS and manual Pages workflow dispatch."
+      },
+      {
+        "id": "ATR-P1-065-LOCAL",
+        "description": "195 Python tests, 23 JS tests, generated DAPI spec checks, Pages-safe static build and Chromium desktop/mobile mock interaction smoke",
+        "status": "passed",
+        "evidence_ref": "evidence/P1_065_LOCAL_CHECKS.txt",
+        "environment": "Linux/Python 3.13 with host-installed dependencies; Node 22; headless Chromium source DOM smoke (network navigation blocked)",
+        "command": "python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop && python tools/build_registry_spec.py --check && python tools/build_spec.py --check && python tools/check_specs.py && python -m unittest discover -s tests -v && npm test && npm run build && npm run verify && python tools/package_zip.py"
+      },
+      {
+        "id": "ATR-P1-065-GITHUB",
+        "description": "Pinned DAPI/ZipRunner validator and Windows/Linux GitHub workflows for exact 0.5.15 commit",
+        "status": "not_run",
+        "reason": "Requires operator-approved source push and GitHub Actions."
       }
     ]
   },
   "handover": {
-    "next_pass": "Run exact-commit v0.5.14 CI; operator manually publishes Checkers with workflow_dispatch opt-in, browser-smoke-tests Play/revocation/rollback, then continues Life Looprd discovery without bypassing review.",
+    "next_pass": "After v0.5.15 exact-commit CI and installed-ZIP verification, operator optionally publishes the updated Pages frontend and tests sandbox lobby/mobile. Keep real Life launch blocked until Life publishes authenticated /play and Social trusted grants; then implement reviewed hosted Life game registration and production lobby client.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
       "A broken reverse proxy or intermediary ignoring no-store can serve stale data; verify no-store and TLS at public edge.",
       "An already-running/background browser is not instantaneously revoked; current foreground interval is 60 seconds. Game authorization must remain authoritative server-side.",
       "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
-      "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified."
+      "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified.",
+      "Mock Life matches are deliberately tab-memory only; an unlocked static UI does not prove Social auth, persistent 60-hour games, Life engine fairness, OpenClaw game actions or deployed API compatibility."
     ],
     "blockers": [
-      "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation."
+      "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",
+      "Life internal AtriumLifeLaunch currently does not expose the proposed public /play/info envelope or authenticated /play routes; API contract alignment, trust and endpoint deployment remain independent owner gates."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
@@ -538,7 +601,8 @@
       "Game public catalog is deliberately empty until reviewed bytes and snapshot are published.",
       "v0.5.1 adds an explicit Life/hosted-game registration design and sample only; current v1 cannot register current multi-MiB Life build.",
       "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field.",
-      "v0.5.14 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy."
+      "v0.5.14 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy.",
+      "v0.5.15 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled."
     ]
   },
   "operator_actions": [
@@ -610,6 +674,11 @@
     {
       "id": "ATR-P1-OP-063",
       "description": "Review/import v0.5.14 source ZIP, rerun installed per-hash post-update tests and exact SHA CI. On disposable schema-v4 Atrium DB deploy read-only localhost gateway behind TLS proxy, manually dispatch Pages with public catalog URL, test publish/revoke/asset failure and no secrets. Approve live deployment separately.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-065",
+      "description": "Review/import v0.5.15, verify exact installed ZIP/commit CI, inspect browser mock lobby on real desktop/mobile Pages after manual workflow_dispatch; confirm no live Life or Social calls and reject any implied game certification. Approve separately.",
       "status": "required"
     }
   ],

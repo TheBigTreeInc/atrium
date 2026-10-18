@@ -5,7 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dist=path.join(root,'dist');
-for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','src/apphost.mjs','src/catalog_client.mjs','.nojekyll']) {
+for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','.nojekyll']) {
  const file=path.join(dist,name);
  const info=await stat(file);
  assert(info.isFile() && (info.size>0 || name==='.nojekyll'),`missing build asset: ${name}`);
@@ -14,6 +14,10 @@ const main=await readFile(path.join(dist,'main.mjs'),'utf8');
 assert(main.includes("'./src/apphost.mjs'"),'built entrypoint must use relative module import');
 assert(!main.includes("'../src/apphost.mjs'"),'built entrypoint escapes dist');
 assert(main.includes("'./src/catalog_client.mjs'"),'catalog module path must be build-local');
+assert(main.includes("'./src/multiplayer_preview_ui.mjs'"),'multiplayer mock entry must be build-local');
+assert(!main.includes("'../src/multiplayer_preview_ui.mjs'"),'multiplayer entry escapes dist');
+const mockSource=await readFile(path.join(dist,'src','mock_life_api.mjs'),'utf8');
+assert(!/\bfetch\s*\(/.test(mockSource),'mock must not make live network requests');
 const catalog=JSON.parse(await readFile(path.join(dist,'catalog.json'),'utf8'));
 const {parsePublicCatalog}=await import('../src/catalog_client.mjs');
 parsePublicCatalog(catalog);
@@ -30,6 +34,8 @@ if (catalog.apps.length) {
 
 const index=await readFile(path.join(dist,'index.html'),'utf8');
 assert(index.includes('src="./main.mjs"'),'Pages must use subpath-safe relative JS');
+assert(index.includes('id="multiplayerLab"'),'UI preview must remain reachable with an empty catalog');
+assert(index.includes('No live game sessions'),'sandbox cannot masquerade as real multiplayer');
 assert(!index.includes('src="/main.mjs"'),'Pages must not use origin-root assets');
 const config=JSON.parse(await readFile(path.join(dist,'catalog-config.json'),'utf8'));
 const {parseCatalogSource}=await import('../src/catalog_client.mjs');

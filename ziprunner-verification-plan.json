@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.14",
+  "version": "0.5.15",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -296,6 +296,36 @@
           "mode": "manual",
           "checks": [
             "ATR-106-CHECKERS-PREVIEW-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW",
+      "criteria": [
+        {
+          "id": "ATR-110-LOBBY-PREVIEW-AC-CONTRACT",
+          "description": "Strict proposed Life play info and match projections plus injected invite/join/resume operations are covered by tests; internal-only Life response does not pass as public.",
+          "mode": "automated",
+          "checks": [
+            "ATR-110-LOBBY-PREVIEW-T1",
+            "ATR-110-LOBBY-PREVIEW-T2"
+          ]
+        },
+        {
+          "id": "ATR-110-LOBBY-PREVIEW-AC-BROWSER",
+          "description": "Atrium static source has a clearly marked no-network mock multiplayer UI even with empty catalog, and the browser build is Pages-safe.",
+          "mode": "automated",
+          "checks": [
+            "ATR-110-LOBBY-PREVIEW-T3"
+          ]
+        },
+        {
+          "id": "ATR-110-LOBBY-PREVIEW-AC-OPERATOR",
+          "description": "Operator validates exact target ZIP/CI, manual Pages publication and real browser/mobile interaction without pretending a game is deployed.",
+          "mode": "manual",
+          "checks": [
+            "ATR-110-LOBBY-PREVIEW-M1"
           ]
         }
       ]
@@ -594,6 +624,52 @@
       "stage": "acceptance",
       "description": "Reviewed manual Pages publication, browser play and rollback",
       "instructions": "After v0.5.14 CI and operator source review, dispatch Publish reviewed Atrium Pages with publish_checkers_demo=true and catalog_url empty. Verify a real browser Play action, forced captures, New game, two-person and Staff mode, mobile display and no privileged tokens. Roll back with publish_checkers_demo=false and verify the game disappears. Do not mark Done without operator approval and installed-ZIP post-update acceptance."
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "JavaScript mock transport and protocol identity, seat, revision, invitation and no-network tests",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/multiplayer_lobby.test.mjs",
+      "assertions": [
+        "Proposed info accepted; Life internal-only info rejected",
+        "No network, session, URL or private game state escaped",
+        "Simulated Alice/Bob join and 60h/unlimited turn policy are reversible memory only"
+      ]
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW-T2",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Python parity adapter rejects wrong URL/identity and projects only safe fields",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_multiplayer_adapter.py",
+      "assertions": [
+        "Exact proposed envelope for create/invite/join/resume",
+        "No game-supplied URLs or raw secret fields in list projections",
+        "Internal Life handoff cannot be silently used as public /play/info"
+      ]
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW-T3",
+      "kind": "automated",
+      "stage": "build",
+      "description": "Static Pages build/verify includes labelled mock UI modules even with an empty catalog",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/multiplayer_lobby.test.mjs",
+      "assertions": [
+        "Only relative client module imports and no embedded credentials",
+        "Multiplayer Lab is visibly sandbox-labelled in source",
+        "Mock has no outbound fetch or browser storage"
+      ]
+    },
+    {
+      "id": "ATR-110-LOBBY-PREVIEW-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Installed-ZIP and real-browser lobby operator verification",
+      "instructions": "Install exact v0.5.15 ZipRunner ZIP and verify fresh post-update and exact pushed-commit CI. Optionally manually dispatch Pages after approval. With zero public games, exercise Alice/Bob Create, Invite, Join, Continue, simulated end turn, 60-hour/unlimited policy and refresh on desktop/mobile. Confirm no Life/Social network request, issuer grant, published game or real match exists. Preserve Work board statuses until operator acceptance."
     }
   ]
 }

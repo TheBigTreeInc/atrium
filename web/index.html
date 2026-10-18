@@ -29,11 +29,34 @@ main{max-width:1130px;margin:29px auto;padding:0 20px 50px}.sectionTitle{display
 #stage{margin-top:28px;min-height:0}#stage iframe{width:100%;height:min(820px,86vh);min-height:560px;border:1px solid #547079;border-radius:12px;background:#10212a}
 #stage:empty{display:none}.footnote{margin-top:30px;border-top:1px solid #344c55;padding:18px 0;color:#9fb8c0}
 @media(max-width:600px){header .inner{padding:25px 17px}main{padding:0 15px}.grid{grid-template-columns:1fr}#stage iframe{height:85vh;min-height:650px}}
+
+/* Isolated, clearly non-production Life multiplayer sandbox. */
+.multiplayerCard{background:linear-gradient(135deg,#18333b,#17252f);border:1px solid #42686d;border-radius:16px;padding:22px;margin-top:20px}
+.lobbyTop{display:flex;gap:16px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.lobbyTop h3{font-size:22px;margin:7px 0 0}.lobbyFlag{font-size:11px;letter-spacing:.1em;color:#f2d59e;font-weight:800}
+.lobbyDescription{margin:12px 0 0;color:#afc7cd;line-height:1.55;max-width:760px}
+.lobbyControls{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:22px 0 14px}
+.lobbyLabel{display:flex;flex-direction:column;gap:7px;color:#bfd6d9;font-size:13px;font-weight:650}
+.lobbyControls button{min-height:41px}
+.lobbyMatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,265px),1fr));gap:12px;margin:18px 0}
+.lobbyMatch{border:1px solid #3a6267;border-radius:11px;background:#102832;padding:16px;min-width:0}
+.lobbyMatch strong{display:block;overflow-wrap:anywhere}.matchState{display:inline-block;color:#c4ecdc;font-size:13px;margin-top:8px;font-weight:700}
+.lobbyActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.lobbyActions button{font-size:13px;padding:8px 11px}
+.lobbyJoin{border-top:1px solid #42616b;padding-top:14px;margin-top:14px}.lobbyJoin h4,.lobbySelected h4{margin:2px 0 11px}
+.lobbyJoin input{margin-right:10px;max-width:100%;width:240px}.lobbyEmpty{color:#b3ccd1}
+.lobbyJoin input,.lobbyLabel select{background:#0c1d25;color:#eff7f6;border:1px solid #648990;border-radius:7px;padding:10px;font:inherit}
+.lobbySelected{border-left:3px solid #88b9b2;padding:13px 15px;background:#203940;border-radius:6px;margin-top:18px}
+.lobbyMessage{color:#e5cfaa;font-size:14px}
+@media(max-width:600px){.multiplayerCard{padding:16px}.lobbyJoin input{width:100%;margin:0 0 10px}}
 </style></head><body>
 <header><div class="inner"><div class="brand"><h1>Atrium</h1><span class="mini">Games &amp; apps · Web preview</span></div><div class="hero"><span class="mini">A growing place to play</span><h2>Find your next little adventure.</h2><p>Discover reviewed games, try playable previews and pick up where you left off as the platform grows. Social login and cross-device multiplayer are still under development.</p></div></div></header>
 <main><div class="sectionTitle"><h2>Games &amp; applications</h2><span class="muted smallprint" id="catalogStatus">Checking approved catalog…</span></div>
 <section aria-label="Published apps"><div class="grid" id="apps"><article class="tile"><div class="body"><h3>Loading catalog…</h3></div></article></div></section>
 <section id="stage" aria-live="polite" aria-label="Game viewport"></section>
+<section aria-label="Multiplayer integration preview" style="margin-top:36px">
+<div class="sectionTitle"><h2>Multiplayer lab</h2><span class="muted smallprint">Interactive UI preview · No live game sessions</span></div>
+<div id="multiplayerLab" class="multiplayerCard"><p>Preparing offline mock lobby…</p></div>
+</section>
 <section aria-label="Coming next" style="margin-top:34px"><div class="sectionTitle"><h2>On the horizon</h2><span class="muted smallprint">Not yet playable here</span></div><div class="grid">
 <article class="tile preview" id="checkers-coming-soon"><div class="art"><div class="boardIcon" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="body"><span class="pill waiting">Awaiting publication</span><h3>Checkers</h3><p>Play locally against a friend or the baseline Staff opponent when this first-party preview is approved.</p><button disabled>Not published yet</button></div></article>
 <article class="tile preview"><div class="art" aria-hidden="true" style="font-size:56px">⌂</div><div class="body"><span class="pill waiting">Integration planned</span><h3>Life</h3><p>Life already has its own game logic. Atrium discovery and reviewed launch still need integration with Looprd.</p><button disabled>Coming later</button></div></article>

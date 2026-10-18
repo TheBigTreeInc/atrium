@@ -6,6 +6,7 @@ const out=path.join(root,'dist');await rm(out,{recursive:true,force:true});await
 for(const file of ['index.html','main.mjs','catalog.json','catalog-config.json','.nojekyll'])await copyFile(path.join(root,'web',file),path.join(out,file));
 await copyFile(path.join(root,'src','apphost.mjs'),path.join(out,'src','apphost.mjs'));
 await copyFile(path.join(root,'src','catalog_client.mjs'),path.join(out,'src','catalog_client.mjs'));
+for(const name of ['multiplayer_lobby.mjs','mock_life_api.mjs','multiplayer_preview_ui.mjs'])await copyFile(path.join(root,'src',name),path.join(out,'src',name));
 const entry = await readFile(path.join(out,'main.mjs'),'utf8');
-await (await import('node:fs/promises')).writeFile(path.join(out,'main.mjs'),entry.replace("from '../src/apphost.mjs'","from './src/apphost.mjs'").replace("from '../src/catalog_client.mjs'","from './src/catalog_client.mjs'"));
+await (await import('node:fs/promises')).writeFile(path.join(out,'main.mjs'),entry.replace("from '../src/apphost.mjs'","from './src/apphost.mjs'").replace("from '../src/catalog_client.mjs'","from './src/catalog_client.mjs'").replace("from '../src/multiplayer_preview_ui.mjs'","from './src/multiplayer_preview_ui.mjs'"));
 console.log('static web output at dist/ (not deployed)');

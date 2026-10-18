@@ -1,0 +1,28 @@
+Atrium v0.5.15 — local source verification (NOT GitHub CI, operator acceptance or live Life deployment)
+
+Task candidate: ATR-110-LOBBY-PREVIEW
+Base source: Atrium v0.5.14 / 4b9e0791628ab7b17bb2637640489b9e915488b0
+Scope: mockable Life multiplayer lobby UI and proposed contract adapter, Atrium repository only.
+
+PASS: 195 Python unittest cases (`python -m unittest discover -s tests -v`), /mnt/data/atrium-065-full-background.log
+PASS: portable atriumd/v1 validation (no activation)
+PASS: generated registry YAML check, generated Checkers YAML check, one-component spec/source lint
+PASS: 23 JavaScript Node tests (`npm test`)
+PASS: `npm run build` and `npm run verify` — Pages-relative and sandbox asset tests
+PASS: Chromium desktop 1280px and mobile 390px simulated interface lifecycle (create/invite/join/resume/turn)
+      No JavaScript page errors. Browser navigation to localhost or preview domain was blocked by environment policy;
+      DOM smoke loaded the source UI modules as inline script, not the actual network-served Pages bundle.
+PASS: public static `web/catalog.json` remains empty and `web/catalog-config.json` remains unchanged.
+PASS: JavaScript mock transport makes no HTTP/WebSocket requests and retains no Social credentials.
+PASS: proposed contract rejects Life internal-only capability envelope as deployed /play/info.
+PASS: ZIP package integrity, deterministic byte digest and operator-workboard/verification-plan mapping (after final packaging).
+
+Environment limitation: Source `python tools/run_python_checks.py` failed only because this sandbox's .venv lacked PyYAML
+and cannot install approved dependencies from the package index. The full same Python unit suite and explicit spec
+validators ran successfully using host Python 3.13 with installed SQLAlchemy/PyYAML/httpx dependencies. Official CI
+and Windows ZipRunner remain the authoritative environment-level verification gates.
+
+NOT RUN: pinned DAPI executable semantic validator and pinned official ZipRunner package validator from their upstream
+GitHub checkouts. These run on GitHub Actions after an explicit operator-approved push.
+NOT RUN: actual public Atrium Pages manual publication, installed ZipRunner post-update tests or real authenticated
+Life/Social match API. Work board candidates remain unapproved; no release or source push was performed.

@@ -9,7 +9,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.14-ziprunner.zip'
+NAME = 'atrium-0.5.15-ziprunner.zip'
 SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
@@ -36,7 +36,7 @@ def source_files():
 
 def main():
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text())
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.14'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.15'
     link = json.loads((ROOT/'ziprunner.looprd.json').read_text())
     assert link['project'] == 'atrium' and link['component'] == 'atrium'
     actual_hash = hashlib.sha256((ROOT/link['specification']).read_bytes()).hexdigest()

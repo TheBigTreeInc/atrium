@@ -6,7 +6,7 @@ class GameContractError(ValueError): pass
 _ID = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
 _COMPONENT = re.compile(r"^[a-z][a-z0-9-]{0,47}$")
 _SHA = re.compile(r"^[0-9a-f]{64}$")
-_OPERATIONS = frozenset({"create", "join", "list_matches", "get", "legal_actions", "act", "end_turn", "history", "resume"})
+_OPERATIONS = frozenset({"create", "invite", "join", "list_matches", "get", "legal_actions", "act", "end_turn", "history", "resume"})
 
 def validate_game_info(info, *, expected_game_id=None, expected_component=None):
     if type(info) is not dict or set(info) != {"protocol", "gameId", "component", "engine", "operations", "capabilities"}:

@@ -42,7 +42,7 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn('ref: 1d4d177e0ea8091fcc9f343e187b18dda03d90d6', workflow)
 
     def test_ci_artifacts_use_current_source_version(self):
-        self.assertIn('atrium-0.5.14-ziprunner.zip', self.workflow)
+        self.assertIn('atrium-0.5.15-ziprunner.zip', self.workflow)
         self.assertNotIn('atrium-0.4.7-ziprunner.zip', self.workflow)
         self.assertIn('python tools/run_python_checks.py', self.workflow)
 

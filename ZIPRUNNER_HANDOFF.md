@@ -1,3 +1,15 @@
+# Atrium 0.5.15 — ZipRunner handoff
+
+Project key: `atrium` · Base: `0.5.14` · Source update only, no auto-push/deploy.
+
+New bounded Work board source candidate `ATR-110-LOBBY-PREVIEW`: Atrium multiplayer lobby UI and transport-injected mock Life API, typed create/invite/join/list/resume, simulated 60h or unlimited turn policy, adapter/protocol negative tests and Pages-safe static build. The default public catalog remains empty, but the explicitly labelled Multiplayer Lab is visible. No user identity, persisted match state, public Life `/play` activation, Social event or DAPI migration is claimed. Python adapter was extended to the same proposed envelope, and Life's **internal-only** capability shape remains rejected as a public service.
+
+The prior Checkers and publisher/gateway review candidates, operator acceptance criteria, deferred work and the remaining Life/Looprd discovery priorities are preserved. All source `done_work` records denote delivered candidate code, **not** accepted operator Done. The latest local operator Work board remains authoritative.
+
+Source check evidence is `evidence/P1_065_LOCAL_CHECKS.txt`; documentation is `docs/P1_065_MULTIPLAYER_LOBBY_PREVIEW.adoc`. Rebuild and validate the exact `atrium-0.5.15-ziprunner.zip` with pinned upstream CI after an explicitly authorized push. The operator independently verifies installed-ZIP SHA, browser UI on real Pages, manual publication controls, and whether the work is accepted. No release is requested.
+
+---
+
 # Atrium 0.5.14 — ZipRunner handoff
 
 Project key: `atrium` · Base: `0.5.13` · Source update (no automatic deployment).

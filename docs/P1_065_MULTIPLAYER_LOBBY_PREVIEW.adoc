@@ -1,0 +1,83 @@
+= Atrium v0.5.15 — Mockable Life Multiplayer Lobby and Contract Alignment
+:toc:
+:sectnums:
+
+== Goal and precise delivery status
+
+This bounded pass delivers an *Atrium-only* browser lobby preview with a transport-injected game-play client, memory-only deterministic mock Life API, Python parity adapter, and automated contract/browser tests. It does not modify Life, Looprd/DAPI, Social/Tavi, Assets or the ZipRunner specification. Neither Life's actual production `/play/info` nor authenticated `/play` has been deployed as a result. In this pass, the demo matches *do not leave the browser tab*, do not record a game action, do not carry game authorization and do not notify Tavi. The already published Atrium page does not change merely because this source ZIP was built.
+
+Version `0.5.14`'s reviewed Checkers preview and manual Pages publication remain unchanged; `web/catalog.json` remains empty until an independent operator publication. The Multiplayer Lab section is visible even with an empty public catalog, distinctly marked `SANDBOX - NOT A REAL MATCH` and `No live game sessions`.
+
+== Architecture boundaries
+
+[cols="1,3,3",options="header"]
+|===
+|System |Authority |This pass
+|Atrium |Reviewed game discovery, launch, lobby presentation and safe client contracts |Owns UI, mock wiring, projections and proposed transport interface; no account or match database
+|Life |Real match seats, rules, engine/rules digests, legal actions, journals, turn deadlines, replay and authoritative transitions |Untouched; its current internal-only lifecycle remains explicitly non-public
+|Looprd/DAPI |Component activation, durable SQL/event infrastructure, authenticated runtime routes |Untouched; no new API routes, schema changes or machine credentials
+|Social/Tavi |Issuer, account grants, private notifications and inbox |Untouched; no Social token handed to game browser
+|OpenClaw |Ordinary separately authenticated game participant through tested game APIs |Not enabled by mock; `agentPlaySupported=false`
+|===
+
+== Delivered implementation
+
+* `src/multiplayer_lobby.mjs` is a pure game-protocol validator/client with an injected `(method, path, payload)` asynchronous transport. It never chooses a URL, fetches remote data, persists a token or grants identity. Operations: `discover`, `listMatches`, `create`, `invite`, `join`, `resume`, and `simulateEndTurn`. The last operation is reserved for this mock preview; no actual Life turn processing is claimed.
+* `src/mock_life_api.mjs` is the deliberately bounded in-memory test transport for exactly the same `GET /play/info` and `POST /play` request envelopes. There is no HTTP or SQL. It seeds an active demonstration match and supports a 60-hour UTC deadline or an unlimited deadline. The mock switches Alice/Bob accounts only inside its simulation. It prevents unauthorised seat reads, wrong-turn mutations, stale revisions and reused invitation codes; it is *not* a server security mechanism.
+* `src/multiplayer_preview_ui.mjs` is a responsive game lobby preview with simulated account selector, private match creation, invite, join, list and resume, current player state and simulated end turn. Every action says `mock`, `preview` or `simulated` to avoid offering pretend live multiplayer. The UI never constructs a game launch URL, sends a private Social session, guesses a DAPI origin or advertises OpenClaw game readiness.
+* `src/game_lobby_client.py` extends the previously read-only transport-injected Python adapter with typed create/invite/join/resume operations, strict opaque match identifiers and projection-only output. `src/game_play_contract.py` admits the optional `invite` operation in the *proposed* vocabulary; this does not activate any server handler.
+* Static build (`tools/build.mjs`) copies all three browser modules inside the Pages artifact and rewrites relative module imports. Static verifier asserts present assets, subpath-safe import, sandbox label and that the mock code never performs a network fetch. Existing Checkers staging, live public catalog revocation and manual Pages workflow do not change.
+
+== Protocol decision gate: proposed contract versus current Life source
+
+Atrium's currently *proposed* `looprd.game-play/v1` `GET /play/info` response (see `examples/life.game-play-info.proposed.json`) requires exactly:
+
+[source,json]
+----
+{
+  "protocol": "looprd.game-play/v1",
+  "gameId": "life.loop",
+  "component": "the-life-loop",
+  "engine": {"version": "PINNED_ENGINE_VERSION", "digest": "64 lowercase SHA256 hex characters"},
+  "operations": ["create", "invite", "join", "list_matches", "get", "legal_actions", "act", "end_turn", "history", "resume"],
+  "capabilities": {"asyncTurns": true, "agentPlaySupported": false}
+}
+----
+
+This is **illustrative syntax, not a deployed API response or approved engine digest**. The mock uses a fake engine digest and declares only its implemented subset. `agentPlaySupported` remains false and `asyncTurns` false in the mock (it does not execute real game actions).
+
+Life currently exposes *internal* `AtriumLifeLaunch.capabilities()` with `schema`, `gameId`, `component`, `operations`, `modes`, `actionExecution`, `agentPlaySupported`, `publicPlayApiAvailable:false`, and `identityRequired`. It does not carry Atrium's required `engine` lock and its match listings also have differing projection fields. The new `inspectInternalLifeCapabilities()` explicitly reports `liveAvailable:false`; the public validator still rejects this internal shape as a deployed endpoint. **Life and Atrium must agree on one machine-readable public protocol fixture before the adapter can be connected to an actual Looprd route.** Do not silently transform incomplete internal metadata into certified public capabilities.
+
+Proposed `POST /play` body uses `{"schema":"looprd.game-play/v1","op":"list_matches"}` or `create`, `invite`, `join`, `resume`, `end_turn` plus operation-specific bounded fields. A successful result has `ok:true`; listings contain a bounded `matches` array (maximum 100). Each projected match has `matchId`, nonnegative integer `revision`, `status` (`waiting`, `active`, `overdue`, `complete`), `yourTurn` (boolean), and UTC `deadline` or `null`. Arbitrary game-supplied URLs or hidden fields are discarded. IDs are opaque, bounded and never treated as URLs, and invitations are never inserted into query/hash parameters.
+
+== Local development and testing
+
+[source,shell]
+----
+python tools/run_python_checks.py
+npm test
+npm run build
+npm run verify
+python tools/package_zip.py
+----
+
+Open the generated static `dist/index.html` *through a local static server* to preview the portal. The Multiplayer Lab is present even when the approved `catalog.json` is empty. In the sandbox, open the demo, Continue `demo-100`, advance Alice's turn, switch the mock selector to Bob, Continue and advance Bob. Create another private match as Alice, generate a mock invitation, switch to Bob and join. Try 60-hour and unlimited deadlines; reloading resets all sandbox matches. No production Looprd game is started. Source tests include negative cases for stale revision, forged match URL, private fields and reuse of an invitation.
+
+An isolated Chromium DOM smoke was run with source modules inlined because the sandbox blocked all local/network origin navigation. It verified visible buttons and mock actions with zero page errors, but is not a real hosted-URL acceptance test. A screenshot is supporting local review evidence, not part of the ZipRunner package's privileged runtime validation.
+
+== Operator acceptance: this source candidate
+
+. Install the exact v0.5.15 ZipRunner ZIP and run *fresh* per-artifact post-update checks. Record its full SHA-256; compare GitHub Actions evidence against the subsequently pushed commit, not against an older artifact.
+. Review `npm test`, `npm run build`, `npm run verify` and Python suite on Windows and CI. Confirm all source-implemented task IDs appear in the verification plan and the previous 32-ticket operator snapshot is not overwritten.
+. With a reviewed operator-triggered Pages deployment, verify the lobby opens *with an empty catalog* on desktop and phone; switch Alice/Bob, Create/Invite/Join/Continue, simulate a turn, refresh and see demo state disappear. Ensure no actual server request goes to Life or Social and no credentials appear in built HTML/JS.
+. Verify previous Checkers publication and revocation still work after an explicitly approved Pages deploy. No automatic Pages publish on `push` and no self-approved Life game entry.
+. Operator reviews/approves the preview separately. Do not mark `ATR-110-LOBBY-PREVIEW` or any previous candidate Done solely on build or CI success.
+
+== Next bounded work after preview acceptance
+
+. The **Life project** finalizes and deploys a real signed Social-account-aware `/play/info` plus `POST /play` service, server-evaluated rules, persistent match/seat ownership and 60-hour policy. This is outside Atrium.
+. The **Social/Looprd owners** provide a reviewed audience-scoped identity exchange and trusted deployment URL binding. DAPI's local discovery-observation is not a sender and `ctx.call` cannot call across servers without a verified bridge.
+. **Atrium** replaces the mock transport only after an approved game registration/deployment binding and a server-authenticated, short-lived per-game authorization flow; separately implements hosted-web Life launch and actual private lobby state (Work board `ATR-108-LOOPRD-DISCOVERY`, `ATR-107-AUTH`, `ATR-107-PLATFORMS`). This must be a separate source pass with real cross-product tests.
+. The **OpenClaw** client receives agent-capability certification only after legal-action API turns and offline restart tests. No special privileged automation endpoint is added to Atrium.
+
+This package neither sends nor approves source, deploys Pages, modifies the Social/Life repositories, starts DAPI, creates a match in a real database, nor grants release permission.

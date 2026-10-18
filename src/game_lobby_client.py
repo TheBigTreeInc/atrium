@@ -4,6 +4,7 @@ No network credentials or transport are owned here. Callers inject an authentica
 transport, whose base URL and actor identity were verified by their deployment.
 """
 from collections.abc import Mapping
+import re
 from .game_play_contract import validate_game_info, GameContractError
 
 class LobbyProtocolError(ValueError):
@@ -14,7 +15,7 @@ def _match(item):
     if not isinstance(item, Mapping):
         raise LobbyProtocolError("match must be an object")
     match_id = item.get("matchId")
-    if not isinstance(match_id, str) or not 1 <= len(match_id) <= 200 or any(ord(c) < 33 for c in match_id):
+    if not isinstance(match_id, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", match_id):
         raise LobbyProtocolError("invalid opaque match reference")
     revision = item.get("revision")
     if type(revision) is not int or revision < 0:
@@ -69,12 +70,20 @@ class GameLobbyClient:
             raise LobbyProtocolError("game does not support listing matches")
         return self.info
 
-    def list_matches(self):
+    def _call(self, operation, **fields):
         if self.info is None:
             raise LobbyProtocolError("discover must succeed first")
-        response = self.transport("POST", "/play", {"schema": "looprd.game-play/v1", "op": "list_matches"})
+        if operation not in self.info["operations"]:
+            raise LobbyProtocolError("game does not advertise operation")
+        if set(fields) & {"schema", "op", "token", "url", "authorization"}:
+            raise LobbyProtocolError("unsafe game operation fields")
+        response = self.transport("POST", "/play", {"schema": "looprd.game-play/v1", "op": operation, **fields})
         if not isinstance(response, Mapping) or response.get("ok") is not True:
-            raise LobbyProtocolError("game did not return successful match listing")
+            raise LobbyProtocolError("game did not return successful response")
+        return response
+
+    def list_matches(self):
+        response = self._call("list_matches")
         matches = response.get("matches")
         if not isinstance(matches, list) or len(matches) > 100:
             raise LobbyProtocolError("invalid or unbounded match list")
@@ -82,3 +91,29 @@ class GameLobbyClient:
         if len({m["matchId"] for m in result}) != len(result):
             raise LobbyProtocolError("duplicate match reference")
         return result
+
+    def create(self, *, deadline_hours=60):
+        if deadline_hours not in (None, 60):
+            raise LobbyProtocolError("unsupported preview deadline")
+        return _match(self._call("create", settings={"mode": "private-async", "deadlineHours": deadline_hours}).get("match"))
+
+    def invite(self, match_id):
+        _match_id(match_id)
+        code = self._call("invite", matchId=match_id).get("invitation")
+        if not isinstance(code, str) or not re.fullmatch(r"[A-Za-z0-9_-]{8,128}", code):
+            raise LobbyProtocolError("invalid invitation")
+        return code  # Caller must not persist or log this invitation.
+
+    def join(self, invitation):
+        if not isinstance(invitation, str) or not re.fullmatch(r"[A-Za-z0-9_-]{8,128}", invitation):
+            raise LobbyProtocolError("invalid invitation")
+        return _match(self._call("join", invitation=invitation).get("match"))
+
+    def resume(self, match_id):
+        _match_id(match_id)
+        return _match(self._call("resume", matchId=match_id).get("match"))
+
+
+def _match_id(value):
+    if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,127}", value):
+        raise LobbyProtocolError("invalid match identifier")

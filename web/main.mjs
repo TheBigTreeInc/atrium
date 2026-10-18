@@ -1,3 +1,4 @@
+import {mountMultiplayerPreview} from '../src/multiplayer_preview_ui.mjs';
 import {loadIsolatedApp} from '../src/apphost.mjs';
 import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
 const area = document.querySelector('#apps');
@@ -82,6 +83,7 @@ async function refreshCatalog() {
     refreshInFlight = false;
   }
 }
+mountMultiplayerPreview(document.querySelector('#multiplayerLab'));
 await refreshCatalog();
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) void refreshCatalog();
