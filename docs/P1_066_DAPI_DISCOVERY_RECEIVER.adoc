@@ -1,0 +1,72 @@
+= Atrium v0.5.16 — DAPI deployment-bound game discovery receiver
+:toc:
+:sectnums:
+
+== Scope and actual release boundaries
+
+This pass implements Atrium's machine-authenticated, idempotent DAPI observation *receiver*, trusted deployment binding registry, review-gated candidate transitions, and operator-only launch-origin diagnostics. It does not modify or deploy DAPI, Life or Social. It does not implement the DAPI *sender*. It does not automatically approve game publishers, immutable app releases, credentials, hosted-web launch or match membership. The old operator-only `POST/GET /registry/discovery/candidates` API remains available for manually announced candidates without machine bindings.
+
+The current `pac-labs/dapi` release at `dc79897a54f69141ce300bbdadd3bdd6bd996d14` implements `LOOPRD_DISCOVERY_ENABLED=true` *observe-only* sidecar reads and management-only `/_looprd/discovery/{component}`; its `delivery` is explicitly `disabled`. This receiver is **compatible with DAPI's observable sidecar identity and source metadata**, but DAPI will need a separate authenticated durable sender implementation and review before hands-free registration happens. The old pinned `1d4d177e0ea8091fcc9f343e187b18dda03d90d6` predates sidecar observation and is no longer the verification baseline. ZipRunner 2.3 remains pinned at `341005206094862853435ad68801be7ff28c4490`.
+
+== Ownership and authentication
+
+* DAPI knows the active deployment, component, successful source revision, sourceIdentity and sidecar presence. Game repositories describe only portable `atriumd/v1` metadata. No deployment URL is accepted from the sidecar.
+* An Atrium operator with `apps:approve` registers a binding for `(deploymentId, component)` and a distinct DAPI **service principal subject**. A binding also binds the expected game ID, publisher ID, 64-character sourceIdentity hash, delivery epoch, and reviewed HTTPS origin map keyed by `launch.originRef`. The publisher must already be operator-attested and active, and every bound origin must already be in its approved publisher origins. Multiple deployments of one `(publisherId, gameId)` are allowed with different service identities.
+* The receiver `POST /looprd/atrium/v1/registry/discovery/observations` requires an Atrium-component API key issued as DAPI `kind=service`, `realm=component-services`, scope **only `apps:discover`** and the exact bound subject. It rejects ordinary component API keys and any principal carrying `apps:approve`, so no publisher administration key can be repurposed for observation. Deployment secret keys, service references, identities and the delivery epoch are configured out-of-repository. `serviceOnly` is enforced in the handler as well as the DAPI scope check.
+* The operator route `POST /looprd/atrium/v1/registry/discovery/manage` requires `apps:approve`. It has operation values `register_binding`, `set_binding_status`, `list_bindings`, `review_candidate`, and `resolve_launch`. The receiver cannot access these operations with an `apps:discover` key.
+* An operator may disable a binding without deleting the candidate, release or match. Reconfiguring a binding's identity, epoch or source origin requires explicit operator rollout; there is no silent replacement or automatic key rotation.
+
+== DAPI sender contract proposal (to coordinate upstream)
+
+Source reference: `pac-labs/dapi/docs/discovery-observation.adoc`, `looprd/discovery_store.py` and `looprd/discovery_source.py`. DAPI currently stores state `valid | absent | invalid | unavailable | withdrawn | inactive`, `lastValid.sidecar`, `lastValid.sourceIdentity`, `lastValid.revision`, `lastValid.generation`, and a source-bound fingerprint. The proposed sender MUST be implemented in DAPI outside this Atrium ZIP. It will produce only the following normalized envelope after successful observation:
+
+[source,json]
+----
+{
+  "schema": "atrium.discovery-observation/v1",
+  "deploymentId": "life-production",
+  "component": "the-life-loop",
+  "deliveryEpoch": "22222222222222222222222222222222",
+  "sequence": 1,
+  "state": "valid",
+  "source": {
+    "kind": "git",
+    "sourceIdentity": "1111111111111111111111111111111111111111111111111111111111111111",
+    "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "contentHash": null
+  },
+  "sidecar": { "schema": "atriumd/v1", "component": "the-life-loop", "game": {} }
+}
+----
+
+The last `game` is explanatory only; real deliveries use the fully validated sidecar, e.g. `examples/life.atriumd.yaml`. Full test-safe JSON examples live under `examples/discovery/`.
+
+* `sequence` is a durable, strictly increasing integer scoped to the binding + delivery epoch. DAPI must persist an outgoing queue/sequence and retry the **same JSON bytes** after crashes or HTTP uncertainty. Do not derive it from wall-clock time or volatile generation IDs. A previous sequence with the same hash is acknowledged `unchanged`; same sequence with different bytes, or an earlier sequence, is rejected HTTP 409. The binding row uses SQL compare-and-swap, so concurrent requests cannot overwrite newer observations.
+* `source.kind=git`: `revision` must be the resolved 40-character Git commit SHA; `contentHash` must be null. `source.kind=content`: `revision` must be null and `contentHash` must be the trusted 64-character SHA-256 digest computed by DAPI for an ordinary HTTPS/local source. Do not pretend the string `content` or a source identity hash is a Git revision. `sourceIdentity` is DAPI's already-stored hashed identity of the root source, **not** its URL. Changing the original source path/identity requires operator re-binding.
+* `state=valid` must carry the exact validated `atriumd/v1` sidecar (at most 64 KiB). For `withdrawn`, `unavailable`, `invalid`, `inactive`, or `absent` sidecar must be `null`. DAPI should send `withdrawn` only after **confirmed** absence (its observer verifies GitHub directory listing and preserves lastValid on outages). Invalid/unavailable observations must NEVER be translated into withdrawal. A first absent observation records a delivery sequence but creates no candidate.
+* Neither the game nor the outgoing JSON supplies a deployment URL, player credential, Social token, public launch eligibility or publisher approval. The sender uses explicitly configured service credentials and an approved Atrium HTTPS endpoint, disables redirects, limits retries and logs only safe receipt metadata. Redis or ntfy are not authoritative for delivery.
+* Receipt: `schema=atrium.discovery-receipt/v1`, `change=created|updated|unchanged|withdrawn|unavailable|invalid|inactive|observed`, `sequence`, `gameId`, `candidateStatus`, `availability`, `fingerprint`. It is an acknowledgement, not publication permission. The sender treats HTTP 409 as an ordering/configuration error and must not simply increase its sequence until the missing/reconciled state is understood.
+
+== Schema and lifecycle
+
+Atrium SQL schema advances **additively from v4 to v5**. `AtriumDiscoveryCandidate` preserves its current deployment/component unique identity, sidecar and status, and gains nullable `availability` and `sourceProvenance`. New `AtriumDiscoveryBinding` records operator-reviewed deployment/component/caller/publisher/game/source/origin/epoch association and persistent latest delivery sequence/digest. Prior candidate rows and immutable `AppRelease`/`AppSubmission`/`Publisher` tables are not deleted or reinterpreted; manual legacy rows stay intact. The existing catalog projectors still return only approved immutable app releases from active publishers.
+
+A new valid observation creates `status=pending`. Updates of sidecar or provenance set `pending` again. Duplicate content and an unchanged valid observation preserve `reviewed` status. `unavailable` and `inactive` record current availability while preserving previous candidate metadata and review. Confirmed `withdrawn` marks the candidate withdrawn without deleting the previously reviewed immutable app release or mutating the catalog. Reappearance after withdrawal always goes back to pending review. Operator `review_candidate` records only metadata review and returns `published=false`; there is no automatic App/Release publishing route in this delivery.
+
+The operator-only `resolve_launch` checks: active exact binding; currently valid and metadata-reviewed sidecar; exact `(publisher,game)` identity; a configured `originRef` map; publisher still active and origin still operator-approved; then combines that **trusted binding origin** with validated relative entrypoint. It always returns `publicLaunchApproved=false`, because the existing `atrium.app/v1` immutable HTML publication model does not authorize hosted-web Life launch. Real public launch needs a separately reviewed hosted-web release/asset binding and Social game grant exchange, not merely this resolved diagnostic URL.
+
+== Compatibility and staged deployment
+
+. Review and back up the existing Atrium database; rehearse DAPI v4 -> v5 migrations in disposable SQLite and verify both old approved releases and discovery candidate metadata survive. PostgreSQL production migration behavior remains unverified; examine table-generated integer keys/index creation on that dialect before adopting it.
+. Upgrade the actual DAPI runtime to *at least the pinned `dc79897a54f69141ce300bbdadd3bdd6bd996d14` capabilities* and independently verify activation/reconciliation for Atrium `release=0.5.16` and `database.schemaVersion=5`. Verify machine-bound key creation with `service` subject and `apps:discover` only. The source pin alone is not proof of a running deployment. Keep DAPI observation disabled by default until explicitly approved.
+. In Atrium's operator API, register publisher `thebigtreeinc` and approve intended HTTPS origins separately. Register a trusted deployment binding with `register_binding`; use an out-of-repo randomly generated 32-hex `deliveryEpoch`, DAPI-observed 64-hex `sourceIdentity`, and an authorized per-deployment service subject. The fixtures contain fake example values and are not runtime credentials or approved identities.
+. DAPI owner implements and tests the sender using the frozen envelope above. Bind it to the deployment through *DAPI host config*, not `atriumd.yaml`; it must use machine-scoped credentials and not call `apps:approve` or piggyback operator management authentication.
+. Verify sequence replay/conflicts, wrong machine/service/epoch, another publisher/game, Git versus content source, confirmed withdrawal, network outage, candidate review resetting and independent multi-deployment behavior. Run `python tools/smoke_dapi.py` against the pinned DAPI on disposable storage; do not expose production credentials.
+. Ensure no discovered candidate enters public `catalog.json` or `/registry/catalog` until separate trusted publisher/asset release approval. The existing operator manual intake remains functional for unbound deployments. Approval, push, migration, release and Pages deployment are separate human gates.
+
+== Limitations / explicit follow-up
+
+* DAPI `dc798...` has a *read-only observer*, not the sender. Therefore an unchanged DAPI deployment does not send automatic discovery to Atrium after this ZIP alone. A DAPI-side durable sender with the matching envelope is required; no cross-repository push occurred.
+* Operator-approved binding is a trusted configuration, not a cryptographic guarantee that an unknown source has been uploaded. DAPI is the source authority and must attest revision and confirm disappearance. Do not accept user-entered metadata as a trusted observation.
+* This pass does not implement DAPI endpoint registry sync, automatic public launch, public user lobby operations, game-grant exchange, OpenClaw API certification or Life server changes. The Atrium live storefront and Checkers opt-in publication remain independently controlled.
+* Real upstream pinned DAPI + ZipRunner validators and fresh post-install operator checks are mandatory before promoting this source candidate to Done.

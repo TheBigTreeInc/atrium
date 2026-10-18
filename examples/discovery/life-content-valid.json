@@ -1,0 +1,53 @@
+{
+  "schema": "atrium.discovery-observation/v1",
+  "deploymentId": "life-production",
+  "component": "the-life-loop",
+  "deliveryEpoch": "22222222222222222222222222222222",
+  "sequence": 1,
+  "state": "valid",
+  "source": {
+    "kind": "content",
+    "sourceIdentity": "1111111111111111111111111111111111111111111111111111111111111111",
+    "revision": null,
+    "contentHash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "sidecar": {
+    "schema": "atriumd/v1",
+    "component": "the-life-loop",
+    "game": {
+      "id": "life.loop",
+      "publisher": "thebigtreeinc",
+      "title": "The Life Loop",
+      "summary": "A classic-inspired life simulation",
+      "kind": "game",
+      "platforms": [
+        {
+          "runtime": "web",
+          "formFactors": [
+            "desktop",
+            "tablet",
+            "phone"
+          ],
+          "installMode": "none"
+        }
+      ],
+      "launch": {
+        "mode": "hosted-web",
+        "originRef": "game-web",
+        "entrypoint": "index.html"
+      },
+      "services": [
+        {
+          "component": "the-life-loop",
+          "role": "multiplayer"
+        }
+      ],
+      "integration": {
+        "atriumOptional": true,
+        "sessions": "game-owned",
+        "state": "game-owned",
+        "identity": "game-owned"
+      }
+    }
+  }
+}

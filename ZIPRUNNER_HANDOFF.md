@@ -1,3 +1,9 @@
+# Atrium 0.5.16 — DAPI discovery receiver ZipRunner handoff
+
+Atrium now accepts operator-bound DAPI `atriumd/v1` observations using a dedicated `apps:discover` service key with exact deployment/component/source identity; v5 additive SQL, strict Git/content provenance, ordered idempotent receipts, withdrawn/outage preservation, metadata-only operator review and trusted operator-only launch origin diagnostics. **Nothing discovered becomes automatically published.** DAPI pinned revision `dc79897a54f69141ce300bbdadd3bdd6bd996d14` provides **observe-only** discovery, not a sender. Real auto delivery requires an additional DAPI-side implementation and acceptance. No game or Social credential lives in the web frontend or sidecar. See `docs/P1_066_DAPI_DISCOVERY_RECEIVER.adoc` and fixtures `examples/discovery/`.
+
+No Git push, release or production migrations/deployments are performed by this ZIP.
+
 # Atrium 0.5.15 — ZipRunner handoff
 
 Project key: `atrium` · Base: `0.5.14` · Source update only, no auto-push/deploy.
@@ -6,7 +12,7 @@ New bounded Work board source candidate `ATR-110-LOBBY-PREVIEW`: Atrium multipla
 
 The prior Checkers and publisher/gateway review candidates, operator acceptance criteria, deferred work and the remaining Life/Looprd discovery priorities are preserved. All source `done_work` records denote delivered candidate code, **not** accepted operator Done. The latest local operator Work board remains authoritative.
 
-Source check evidence is `evidence/P1_065_LOCAL_CHECKS.txt`; documentation is `docs/P1_065_MULTIPLAYER_LOBBY_PREVIEW.adoc`. Rebuild and validate the exact `atrium-0.5.15-ziprunner.zip` with pinned upstream CI after an explicitly authorized push. The operator independently verifies installed-ZIP SHA, browser UI on real Pages, manual publication controls, and whether the work is accepted. No release is requested.
+Source check evidence is `evidence/P1_065_LOCAL_CHECKS.txt`; documentation is `docs/P1_065_MULTIPLAYER_LOBBY_PREVIEW.adoc`. Rebuild and validate the exact `atrium-0.5.16-ziprunner.zip` with pinned upstream CI after an explicitly authorized push. The operator independently verifies installed-ZIP SHA, browser UI on real Pages, manual publication controls, and whether the work is accepted. No release is requested.
 
 ---
 

@@ -1,0 +1,30 @@
+Atrium v0.5.16 — locally executed source verification (2026-10-18)
+
+Implemented: scoped, bound DAPI sidecar observation receiver and operator-only
+binding/review/launch diagnostics, additive SQL schema version 5 and sender
+handoff contract. No deployment, Git push, or DAPI sender implementation.
+
+Local commands/results:
+* python tools/run_python_checks.py : PASS, 216 unittest cases.
+  The local .venv used PYTHONPATH for already-installed Python dependencies
+  because this container has no usable package-index connectivity; isolated
+  dependency bootstrap on a clean runner remains GitHub/ZipRunner CI evidence.
+* npm test : PASS, 23 JavaScript tests.
+* npm run build && npm run verify : PASS, Pages-safe static files.
+* python tools/build_registry_spec.py --check : PASS, generated inline code.
+* python tools/build_spec.py --check : PASS, unchanged Checkers code generation.
+* python tools/check_specs.py : PASS, one Looprd component; schema v5, 19 handlers.
+* tests/test_dapi_discovery_delivery.py : PASS, validated Life sidecar, service
+  spoofing, binding, Git vs content provenance, sequence replay/CAS,
+  withdrawal/unavailability, independently deployed games and trusted origin.
+
+NOT YET VERIFIED:
+* Official pinned DAPI semantic CLI and DAPI TestClient smoke for the new v5
+  runtime. DAPI checkout is not present in this offline container.
+* Official pinned ZipRunner 2.3 package validation on the produced ZIP (requires
+  the upstream checkout). Local structural and manifest/verification-plan tests
+  have run; v0.5.15's previously failing stage enum is now repaired.
+* Any post-install ZipRunner operator test, database migration on real DAPI,
+  real HTTPS sender delivery, actual automatic game discovery or publication.
+
+These are local source observations, not operator acceptance or release permission.

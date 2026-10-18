@@ -33,6 +33,13 @@ async def record_discovery(ctx):
         _discovery_fail('invalid activated component ID')
     if type(revision) is not str or not REVISION_ID.fullmatch(revision):
         _discovery_fail('source revision must be immutable Git commit SHA')
+    # Operator-only legacy intake may not mutate DAPI machine-owned candidates.
+    with ctx.session_factory() as session:
+        machine = session.execute(text('SELECT "id" FROM "AtriumDiscoveryBinding" '
+                                       'WHERE "deploymentId"=:dep AND "component"=:cmp'),
+                                  {'dep':deployment,'cmp':component}).first()
+        if machine:
+            _discovery_fail('machine-owned deployment; use authenticated observations',409)
     sidecar = payload['sidecar']
     if len(_discovery_canonical(sidecar)) > 65_536:
         _discovery_fail('sidecar too large', 413)

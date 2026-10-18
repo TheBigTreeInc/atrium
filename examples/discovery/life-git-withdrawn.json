@@ -1,0 +1,15 @@
+{
+  "schema": "atrium.discovery-observation/v1",
+  "deploymentId": "life-production",
+  "component": "the-life-loop",
+  "deliveryEpoch": "22222222222222222222222222222222",
+  "sequence": 2,
+  "state": "withdrawn",
+  "source": {
+    "kind": "git",
+    "sourceIdentity": "1111111111111111111111111111111111111111111111111111111111111111",
+    "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "contentHash": null
+  },
+  "sidecar": null
+}

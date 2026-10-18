@@ -19,13 +19,15 @@ ENDPOINTS=[
  ('/registry/submissions','GET','apps:approve','submissions'),
  ('/registry/discovery/candidates','POST','apps:approve','record_discovery'),
  ('/registry/discovery/candidates','GET','apps:approve','list_discoveries'),
+ ('/registry/discovery/manage','POST','apps:approve','manage_discovery'),
+ ('/registry/discovery/observations','POST','apps:discover','receive_discovery_observation'),
 ]
 
 class Literal(str): pass
 
 def render():
     spec=yaml.safe_load(BASE.read_text(encoding='utf-8'))
-    library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/catalog.py','src/atriumd_contract.py','src/registry_runtime.py','src/discovery_runtime.py','src/publisher_proof.py'))
+    library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/catalog.py','src/atriumd_contract.py','src/registry_runtime.py','src/discovery_runtime.py','src/discovery_delivery.py','src/publisher_proof.py'))
     for path,method,scope,fn in ENDPOINTS:
         source=library+f'\n\nasync def handle(ctx):\n    return await {fn}(ctx)\n'
         spec['handlers'].append({'path':path,'method':method,'kind':'python','scopes':[scope], 'source':Literal(source)})

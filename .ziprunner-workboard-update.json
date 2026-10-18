@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.15",
-  "summary": "v0.5.15 candidate adds a clearly marked in-memory Life multiplayer lobby UI and transport-injected, mockable API with typed contract checks; no public Life endpoint, Social login, network calls, persistent matches, DAPI migration, game approval or automatic Pages publish. Prior 0.5.14 features and all outstanding Work board work are preserved.",
+  "version": "0.5.16",
+  "summary": "v0.5.16 integrates DAPI deployment-bound observation receiver, operator-reviewed trusted binding/launch origin config, replay-safe machine registration with Git/content provenance and safe absent/withdrawn/unavailable transitions. The current DAPI observe-only release does not send: automatic sender and public launch remain pending. All earlier operator workboard decisions are preserved.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -145,6 +145,17 @@
         "On a manually approved Pages deployment, open the Multiplayer Lab even with empty catalog; use Alice/Bob to Create, Invite, Join, Continue and simulate 60-hour/unlimited turn UI and refresh reset on desktop/mobile.",
         "Confirm the sandbox makes zero outbound game/identity network requests, stores no client token, never marks Life playable/published or OpenClaw certified, and has no real Life API, match writes or Tavi event delivery.",
         "Confirm current Life internal-only capability response is rejected as production /play and that operator must separately approve actual discovery, authentication and hosted launch before replacing mock transport."
+      ]
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER",
+      "title": "Atrium receiver for authenticated DAPI discovery observations",
+      "summary": "Additive schema v5 trusted deployment bindings, scoped apps:discover service receiver, monotonically sequenced idempotent Git/content provenance, withdraw/unavailable reconciler, reviewed-only trusted origin diagnostics, full regression and pinned DAPI smoke. No DAPI sender, no catalog publication or real hosted game launch.",
+      "operator_checks": [
+        "Back up Atrium DB and test schema v4 to v5 migration in disposable Looprd with pinned DAPI dc79897a; verify preexisting candidates, publishers, immutable releases and catalog remain unchanged.",
+        "Provision unique DAPI service key with only apps:discover, bind exact deployment/component/publisher/game/sourceIdentity/epoch and reviewed origins through apps:approve; reject ordinary client key, privileged key, wrong service, epoch, source and replay.",
+        "Deliver validated Life metadata as Git and content provenance with retries, changed metadata, confirmed withdrawal, outage and recovery; verify candidate queue only, per-deployment state and origin diagnostic, no new public game release.",
+        "Run pinned GitHub CI and installed SHA-specific ZipRunner post-update checks; independently coordinate DAPI sender contract and require explicit operator approval for activation."
       ]
     }
   ],

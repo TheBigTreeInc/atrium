@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.15",
-    "base_version": "0.5.14",
-    "source_revision": "4b9e0791628ab7b17bb2637640489b9e915488b0"
+    "version": "0.5.16",
+    "base_version": "0.5.15",
+    "source_revision": "264a109681e3c8a24039c3356d9f7fb556197fed"
   },
   "update": {
-    "id": "ATR-P1-20261018-025",
+    "id": "ATR-P1-20261018-026",
     "kind": "source_update",
-    "created_at": "2026-10-18T18:01:00+02:00",
-    "summary": "v0.5.15 Atrium-only Life multiplayer lobby preview and mockable proposed /play adapter. Client mock has no real Social account, persistent game state, network calls, automatic Pages publication or game registry approval."
+    "created_at": "2026-10-18T22:01:00+02:00",
+    "summary": "v0.5.16 integrates DAPI deployment-bound observation receiver, operator-reviewed trusted binding/launch origin config, replay-safe machine registration with Git/content provenance and safe absent/withdrawn/unavailable transitions. The current DAPI observe-only release does not send: automatic sender and public launch remain pending. All earlier operator workboard decisions are preserved."
   },
   "planned_work": [
     {
@@ -103,6 +103,12 @@
       "title": "Atrium mockable Life multiplayer lobby and typed preview API",
       "priority": "high",
       "acceptance_criteria": "Present sandbox-only create/invite/join/list/resume and simulated end turn with 60-hour/unlimited deadline; mockable injected transport and typed Life/Atrium protocol tests; no actual Social token, Looprd route, production match, publication or OpenClaw grant. Operator verifies Pages and install separately."
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER",
+      "title": "Implement Atrium deployment-bound DAPI discovery receiver",
+      "priority": "high",
+      "acceptance_criteria": "Operator-provisioned service subject + exact deployment/source identity; Git/content provenance; monotonic replay-safe receipt; safe withdrawal/outage; trusted operator-only launch resolution; source tests; pinned DAPI/ZipRunner acceptance. Discovery never publishes a game or grants launch rights."
     }
   ],
   "done_work": [
@@ -449,6 +455,37 @@
           "description": "Trust boundary, Life internal/proposed mismatch, manual preview test and remaining owner gates"
         }
       ]
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER",
+      "summary": "Delivered Atrium-side machine receiver and review-gated persistence as a source candidate; no DAPI-side sender/deployed automation.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/discovery_delivery.py",
+          "description": "Machine service-only durable reception, binding management and launch diagnostic"
+        },
+        {
+          "kind": "source",
+          "ref": "modules/registry/looprd.base.yaml",
+          "description": "Additive DAPI schema v5 model changes"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_dapi_discovery_delivery.py",
+          "description": "SQL-backed Life observation/identity/provenance/replay/withdrawal tests"
+        },
+        {
+          "kind": "test",
+          "ref": "tools/smoke_dapi.py",
+          "description": "Disposable DAPI HTTP scoped publisher/receiver regression smoke (CI required)"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_066_DAPI_DISCOVERY_RECEIVER.adoc",
+          "description": "DAPI sender envelope and operator acceptance"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -574,14 +611,14 @@
       },
       {
         "id": "ATR-P1-065-GITHUB",
-        "description": "Pinned DAPI/ZipRunner validator and Windows/Linux GitHub workflows for exact 0.5.15 commit",
+        "description": "Pinned DAPI/ZipRunner validator and Windows/Linux GitHub workflows for exact 0.5.16 commit",
         "status": "not_run",
         "reason": "Requires operator-approved source push and GitHub Actions."
       }
     ]
   },
   "handover": {
-    "next_pass": "After v0.5.15 exact-commit CI and installed-ZIP verification, operator optionally publishes the updated Pages frontend and tests sandbox lobby/mobile. Keep real Life launch blocked until Life publishes authenticated /play and Social trusted grants; then implement reviewed hosted Life game registration and production lobby client.",
+    "next_pass": "Coordinate DAPI durable discovery sender using docs/P1_066_DAPI_DISCOVERY_RECEIVER.adoc; rehearse Atrium schema v4->v5 on a disposable DAPI, and obtain actual operator acceptance before live registration. Life hosted launch and Social game exchange remain outside this pass.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -602,7 +639,7 @@
       "v0.5.1 adds an explicit Life/hosted-game registration design and sample only; current v1 cannot register current multi-MiB Life build.",
       "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field.",
       "v0.5.14 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy.",
-      "v0.5.15 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled."
+      "v0.5.16 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled."
     ]
   },
   "operator_actions": [
@@ -678,7 +715,7 @@
     },
     {
       "id": "ATR-P1-OP-065",
-      "description": "Review/import v0.5.15, verify exact installed ZIP/commit CI, inspect browser mock lobby on real desktop/mobile Pages after manual workflow_dispatch; confirm no live Life or Social calls and reject any implied game certification. Approve separately.",
+      "description": "Review/import v0.5.16, verify exact installed ZIP/commit CI, inspect browser mock lobby on real desktop/mobile Pages after manual workflow_dispatch; confirm no live Life or Social calls and reject any implied game certification. Approve separately.",
       "status": "required"
     }
   ],

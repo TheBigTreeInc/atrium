@@ -200,6 +200,11 @@ models:
         type: string
         maxLength: 40
         required: true
+      availability:
+        type: string
+        maxLength: 24
+      sourceProvenance:
+        type: json
     unique:
     - - deploymentId
       - component
@@ -244,6 +249,61 @@ models:
     - - publisherId
       - origin
     - - origin
+  AtriumDiscoveryBinding:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      deploymentId:
+        type: string
+        maxLength: 96
+        required: true
+      component:
+        type: string
+        maxLength: 48
+        required: true
+      gameId:
+        type: string
+        maxLength: 120
+        required: true
+      publisherId:
+        type: string
+        maxLength: 120
+        required: true
+      callerSubject:
+        type: string
+        maxLength: 48
+        required: true
+        unique: true
+      sourceIdentity:
+        type: string
+        maxLength: 64
+        required: true
+      deliveryEpoch:
+        type: string
+        maxLength: 32
+        required: true
+      launchOrigins:
+        type: json
+        required: true
+      status:
+        type: string
+        maxLength: 16
+        required: true
+      lastSequence:
+        type: integer
+        required: true
+      lastDigest:
+        type: string
+        maxLength: 64
+      createdAt:
+        type: string
+        maxLength: 40
+        required: true
+    unique:
+    - - deploymentId
+      - component
 resources:
   apps:
     model: App

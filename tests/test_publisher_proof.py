@@ -188,7 +188,7 @@ class PublisherOriginProofTests(unittest.TestCase):
         routes = [x for x in spec['handlers'] if x['path'].startswith('/registry/publishers/proofs')]
         self.assertEqual(len(routes),3)
         self.assertTrue(all(x['scopes']==['apps:approve'] for x in routes))
-        self.assertEqual(spec['database']['schemaVersion'],4)
+        self.assertEqual(spec['database']['schemaVersion'],5)
 
     def test_second_registered_publisher_cannot_claim_same_origin(self):
         self.invoke(ns['register_publisher'], {'id': 'studio-y', 'name': 'Other studio',

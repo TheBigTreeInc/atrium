@@ -1,3 +1,9 @@
+= Atrium v0.5.16 — Authenticated DAPI discovery registration receiver
+
+Atrium now accepts operator-bound DAPI `atriumd/v1` observations using a dedicated `apps:discover` service key with exact deployment/component/source identity; v5 additive SQL, strict Git/content provenance, ordered idempotent receipts, withdrawn/outage preservation, metadata-only operator review and trusted operator-only launch origin diagnostics. **Nothing discovered becomes automatically published.** DAPI pinned revision `dc79897a54f69141ce300bbdadd3bdd6bd996d14` provides **observe-only** discovery, not a sender. Real auto delivery requires an additional DAPI-side implementation and acceptance. No game or Social credential lives in the web frontend or sidecar. See `docs/P1_066_DAPI_DISCOVERY_RECEIVER.adoc` and fixtures `examples/discovery/`.
+
+No Git push, release or production migrations/deployments are performed by this ZIP.
+
 = Atrium v0.5.15 — Life multiplayer lobby sandbox (Atrium-only)
 
 The public static storefront now includes a clearly labelled *Multiplayer Lab* panel even with an empty catalog. Explore simulated Life private matches: create with 60-hour or unlimited turn deadline, invite, join, continue and swap Alice/Bob turns in a memory-only mock. No production Life server, Social identity, game rules or notifications are connected. The existing Checkers publication and verified catalog gateway remain operator-controlled.

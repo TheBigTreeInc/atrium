@@ -37,7 +37,7 @@ class PagesDeploymentTests(unittest.TestCase):
     def test_pages_does_not_embed_backend_keys(self):
         import yaml
         looprd=yaml.safe_load((ROOT/'looprd.yaml').read_text(encoding='utf-8'))
-        self.assertEqual(looprd['database']['schemaVersion'], 4)
+        self.assertEqual(looprd['database']['schemaVersion'], 5)
         self.assertEqual(looprd['auth']['mode'],'database')
         self.assertIn('operator', (ROOT/'docs/P1_050_PAGES.adoc').read_text(encoding='utf-8').lower())
         self.assertIn('not implemented', (ROOT/'docs/P1_050_PAGES.adoc').read_text(encoding='utf-8').lower())

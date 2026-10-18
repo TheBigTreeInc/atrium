@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.15",
+  "version": "0.5.16",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -326,6 +326,36 @@
           "mode": "manual",
           "checks": [
             "ATR-110-LOBBY-PREVIEW-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER",
+      "criteria": [
+        {
+          "id": "ATR-108-DAPI-RECEIVER-AC-RECEIVER",
+          "description": "Actual generated DAPI handlers require exact bound machine service identity, durable sequence/replay ordering and validated Git/content metadata; candidates only.",
+          "mode": "automated",
+          "checks": [
+            "ATR-108-DAPI-RECEIVER-T1",
+            "ATR-108-DAPI-RECEIVER-T2"
+          ]
+        },
+        {
+          "id": "ATR-108-DAPI-RECEIVER-AC-SCHEMA",
+          "description": "Additive schema v5 and official DAPI replay/withdrawal operator smoke, without catalog mutation or sideloaded origin.",
+          "mode": "automated",
+          "checks": [
+            "ATR-108-DAPI-RECEIVER-T3"
+          ]
+        },
+        {
+          "id": "ATR-108-DAPI-RECEIVER-AC-OPERATOR",
+          "description": "Exact installed source ZIP with pinned DAPI >= dc798 observation capabilities, DAPI sender owner coordination, real service principal provisioning, disposable migration, no publication and operator acceptance.",
+          "mode": "manual",
+          "checks": [
+            "ATR-108-DAPI-RECEIVER-M1"
           ]
         }
       ]
@@ -654,7 +684,7 @@
     {
       "id": "ATR-110-LOBBY-PREVIEW-T3",
       "kind": "automated",
-      "stage": "build",
+      "stage": "integration",
       "description": "Static Pages build/verify includes labelled mock UI modules even with an empty catalog",
       "runner_ref": "atrium-node-tests",
       "test_ref": "tests/multiplayer_lobby.test.mjs",
@@ -670,6 +700,52 @@
       "stage": "acceptance",
       "description": "Installed-ZIP and real-browser lobby operator verification",
       "instructions": "Install exact v0.5.15 ZipRunner ZIP and verify fresh post-update and exact pushed-commit CI. Optionally manually dispatch Pages after approval. With zero public games, exercise Alice/Bob Create, Invite, Join, Continue, simulated end turn, 60-hour/unlimited policy and refresh on desktop/mobile. Confirm no Life/Social network request, issuer grant, published game or real match exists. Preserve Work board statuses until operator acceptance."
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "SQL-backed generated DAPI receiver tests with Life sidecar and positive/negative cases",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_dapi_discovery_delivery.py",
+      "assertions": [
+        "Dedicated machine service scope/subject/epoch and operator origin binding",
+        "Idempotent sequence CAS/retry, stale/conflicting hash rejection",
+        "Git commit and content SHA-256 provenance, publisher/game uniqueness"
+      ]
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER-T2",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "DAPI sender-compatible observations and operator launch resolution",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_dapi_discovery_delivery.py",
+      "assertions": [
+        "Withdrawn/unavailable retains immutable releases and existing metadata",
+        "Operator review resets on source changes; origin resolution never auto-publishes",
+        "Multiple deployment bindings enforce separate machine callers"
+      ]
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER-T3",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Actual pinned DAPI disposable HTTP smoke includes v5 migration/service identities and no catalog exposure",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tools/smoke_dapi.py",
+      "assertions": [
+        "Scoped service key can deliver while operator/browser key cannot",
+        "Validated Life observation and restart survive disposable SQLite",
+        "No public game in registry/catalog due to discovery"
+      ]
+    },
+    {
+      "id": "ATR-108-DAPI-RECEIVER-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator reviews installed DAPI capability and real auto sender integration separately",
+      "instructions": "Install exact ZIP with backup; pin and verify DAPI dc79897a+ and official ZipRunner v2.3; test real service key issuance, independent deployment/source binding, Git/content, replay, malicious caller, confirmed withdrawal, unavailable; verify no AppRelease and no public launch. DAPI sender still requires upstream implementation and operator approval. Existing Work board tickets must not be altered."
     }
   ]
 }
