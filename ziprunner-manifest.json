@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.9",
-    "base_version": "0.5.6",
+    "version": "0.5.10",
+    "base_version": "0.5.9",
     "source_revision": "b65b0a2f40e377cf57c66f5e784bdfe57839ed10"
   },
   "update": {
-    "id": "ATR-P1-20261018-018",
+    "id": "ATR-P1-20261018-020",
     "kind": "source_update",
-    "created_at": "2026-10-17T22:19:00+02:00",
-    "summary": "v0.5.9 source-vs-target-vs-proposal architecture classification"
+    "created_at": "2026-10-18T10:21:00+02:00",
+    "summary": "v0.5.10 fixes upstream ZipRunner todo_work schema validation after v0.5.9 exact-commit CI; no gameplay changes"
   },
   "planned_work": [
     {
@@ -73,6 +73,12 @@
       "title": "Operator-scoped sidecar candidate intake and additive schema v3",
       "priority": "high",
       "acceptance_criteria": "Candidate ingestion idempotent and review-only, rejects invalid source, unauthorized caller, publisher takeover and absolute URLs; no public catalog changes."
+    },
+    {
+      "id": "ATR-104-CI-TODO-CONTRACT-060",
+      "title": "Repair ZipRunner manifest todo schema accepted by upstream validator",
+      "acceptance_criteria": "CI reproduces upstream todo_work schema error for v0.5.9 and passes pinned validator with schema-correct v0.5.10; existing ATR-108-LOOPRD-DISCOVERY planned status intact.",
+      "priority": "high"
     }
   ],
   "done_work": [
@@ -274,12 +280,34 @@
           "description": "Candidate ingestion validation and authorization regression tests"
         }
       ]
+    },
+    {
+      "id": "ATR-104-CI-TODO-CONTRACT-060",
+      "summary": "Schema-correct unfinished Looprd discovery entry and self-check regression; pending GitHub CI and operator review.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "ziprunner-manifest.json",
+          "description": "todo_work[0] status and next_action match pinned schema"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Regression guards required/forbidden todo fields and preserved task identity"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_060_CI_MANIFEST_REPAIR.adoc",
+          "description": "Exact GitHub run failure and operator acceptance gates"
+        }
+      ]
     }
   ],
   "todo_work": [
     {
       "id": "ATR-108-LOOPRD-DISCOVERY",
-      "summary": "Planned external Looprd reconciliation; not implemented in Atrium package."
+      "status": "planned",
+      "next_action": "After CI validation, implement trusted Looprd game-sidecar activation and reviewed registration reconciliation, retaining operator review."
     }
   ],
   "validation": {

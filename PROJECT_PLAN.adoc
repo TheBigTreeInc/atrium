@@ -58,12 +58,12 @@ The first part of `ATR-107-PAGES` is implemented: relative-path-safe static outp
 The approved direction for independently hosted games, Life/Jones as first candidate, platform-aware registration and a future optional `atrium.host/v1` integration adapter is documented in `docs/GAME_REGISTRATION_AND_HOST_SDK.adoc`. Current `atrium.app/v1` still requires an operator-approved <=1 MiB immutable HTML entry; Life's current offline HTML is too large and its multi-asset Pages site needs a separately reviewed hosted-site launch mode. `examples/life.atrium-game-v2.example.json` is a design fixture, not importable current registry data. This v0.5.1 pass **only documents and regression-tests the contract**. No v2 service, real Life publication, Social login, SQL migration, SDK or installer is claimed.
 
 
-== Looprd-native discovery: activation is not Atrium registration (v0.5.9)
+== Looprd-native discovery: activation is not Atrium registration (v0.5.10)
 
-The game-owned Looprd `looprd.yaml` can expose a normal read-only discovery handler, but the root Looprd descriptor cannot add an unrecognized `atrium:` field. Atrium learns the game endpoint through a scoped deployment-side announcement (for an admitted local component) or a reviewed external publisher registration; the deployment reconciler and Atrium discovery API are proposed and **not implemented** in v0.5.9. A discovery hit becomes a pending reviewed registry candidate, never automatic publication or backend activation. The game's Looprd database, session tokens and verified Social account principal remain game-owned. The existing Life service has public room-token auth; shared verified Social principal adoption is separate work. Full source: `docs/LOOPRD_GAME_DISCOVERY.adoc`.
+The game-owned Looprd `looprd.yaml` can expose a normal read-only discovery handler, but the root Looprd descriptor cannot add an unrecognized `atrium:` field. Atrium learns the game endpoint through a scoped deployment-side announcement (for an admitted local component) or a reviewed external publisher registration; the deployment reconciler and Atrium discovery API are proposed and **not implemented** in v0.5.10. A discovery hit becomes a pending reviewed registry candidate, never automatic publication or backend activation. The game's Looprd database, session tokens and verified Social account principal remain game-owned. The existing Life service has public room-token auth; shared verified Social principal adoption is separate work. Full source: `docs/LOOPRD_GAME_DISCOVERY.adoc`.
 
-== v0.5.9 source-independent game discovery
+== v0.5.10 source-independent game discovery
 Canonical design: `docs/ATRIUMD_SIDECAR.adoc`. Looprd source reconciliation must check an optional sibling at the same resolved revision without affecting game activation. Implementation in Looprd and Atrium remains pending.
 
-== v0.5.9 Atrium reviewed discovery candidate implementation
+== v0.5.10 Atrium reviewed discovery candidate implementation
 The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.

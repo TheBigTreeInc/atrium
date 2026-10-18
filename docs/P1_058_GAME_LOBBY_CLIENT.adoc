@@ -1,4 +1,4 @@
-= Atrium v0.5.9 — Game-Owned Lobby Read Adapter
+= Atrium v0.5.10 — Game-Owned Lobby Read Adapter
 :revdate: 2026-10-18
 :toc:
 

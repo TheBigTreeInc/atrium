@@ -1,8 +1,8 @@
-## Atrium v0.5.9 — Windows ZipRunner build repair
+## Atrium v0.5.10 — Windows ZipRunner build repair
 
 This patch fixes the missing httpx import during test discovery and CP1252 decoding failures in AsciiDoc source tests. No gameplay or registry behavior changed.
 
-## Atrium v0.5.9 — Reviewed discovery candidate intake (first runtime pass)
+## Atrium v0.5.10 — Reviewed discovery candidate intake (first runtime pass)
 
 A new operator-scoped `POST/GET /registry/discovery/candidates` stores validated
 `atriumd/v1` metadata as a **pending candidate**, never as a published game.
@@ -16,13 +16,13 @@ Atrium's SQLite schema advances additively from v2 to v3; back up the current
 Atrium DB before live activation. Existing approved releases remain intact.
 See `docs/P1_054_DISCOVERY_INTAKE.adoc`.
 
-## Atrium 0.5.9 — portable `atriumd.yaml` discovery sidecar
+## Atrium 0.5.10 — portable `atriumd.yaml` discovery sidecar
 
 This pass ships a strict parser and example for an optional `atriumd.yaml` sibling to portable `looprd.yaml`. Looprd source-loader integration and actual automatic Atrium registration require separate backend implementation and are not active yet. See `docs/ATRIUMD_SIDECAR.adoc`.
 
 # Atrium — Games, apps and shared game services
 
-> **P1 / v0.5.9 source candidate.** Looprd is a specification; DAPI is the runtime.
+> **P1 / v0.5.10 source candidate.** Looprd is a specification; DAPI is the runtime.
 > Tavi remains a separate client of the Social/Atrium services.
 
 **Git repository:** https://github.com/TheBigTreeInc/atrium (the v0.3.0 foundation was imported to main before this pass). **ZipRunner project:** `atrium`.
@@ -60,7 +60,7 @@ source changes. This must be reviewed and committed as a normal source change.
 python tools/package_zip.py
 ```
 
-This builds a deterministic `dist/atrium-0.5.9-ziprunner.zip` including mandatory
+This builds a deterministic `dist/atrium-0.5.10-ziprunner.zip` including mandatory
 `.ziprunner-workboard-update.json`, producer manifest, verified-plan format and
 optional hashed `ziprunner.looprd.json`. ZipRunner is the authority that actually
 imports the ZIP and records observed build/test status.
@@ -205,10 +205,14 @@ Run `npm test && npm run build && npm run verify`. The new GitHub Actions **Publ
 
 `docs/GAME_REGISTRATION_AND_HOST_SDK.adoc` defines what v0.5.0 can currently register, how its reviewed catalog reaches GitHub Pages, and the proposed v2 hosted-game/SDK/identity integration with The Life Loop. `examples/life.atrium-game-v2.example.json` is an unimplemented design fixture. Current registry, DAPI schema v2, Pages publication and gameplay code are unchanged.
 
-## v0.5.9 — Looprd-native game discovery specification
+## v0.5.10 — Looprd-native game discovery specification
 
 `docs/LOOPRD_GAME_DISCOVERY.adoc` describes the game-owned `looprd.yaml` handler, trusted registration announcement, review gate, and optional direct verified Social identity. No game auto-discovery, submission endpoint, data migration, or live Life publication is implemented by this documentation-only pass.
 
-## Multiplayer architecture v0.5.9
+## Multiplayer architecture v0.5.10
 
 See `docs/CRITICAL_ARCHITECTURE_DIFFERENCES_MULTIPLAYER.adoc` for prioritized gaps and `src/game_play_contract.py` for the first strict game-info contract validator. The supplied cross-project architecture and acceptance documents are preserved under `docs/upstream-*`. No gameplay or agent endpoint is advertised as deployed.
+
+## v0.5.10 validation gate
+
+Only the ZipRunner interchange manifest todo-work schema has been repaired after the v0.5.9 exact-commit GitHub Actions failure. The Windows job passed; Linux ZIP contract validation did not. See `docs/P1_060_CI_MANIFEST_REPAIR.adoc`. Source-build success is not operator acceptance.

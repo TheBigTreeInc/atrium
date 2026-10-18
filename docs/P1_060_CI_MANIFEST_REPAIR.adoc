@@ -1,0 +1,27 @@
+= Atrium v0.5.10 — ZipRunner manifest CI schema repair
+:toc:
+
+== Scope and evidence
+
+Exact pushed v0.5.9 commit: `b97e6de4150d6eec65edeaabea863e958309ab9c`.
+GitHub Actions: https://github.com/TheBigTreeInc/atrium/actions/runs/39110734249[Verify Atrium source #7].
+
+* Windows ZipRunner build recipe smoke: passed in the exact-commit run.
+* Linux source, pinned DAPI and ZipRunner contracts: failed at the official ZipRunner package validator; preceding tests and disposable DAPI smoke passed.
+* Pinned validator identified five issues with `ziprunner-manifest.json`'s `todo_work[0]`: missing `status`, missing `next_action`, unsupported `summary`, invalid status, missing next action.
+
+== Implemented remediation
+
+* Keep `ATR-108-LOOPRD-DISCOVERY` as a pending task; no Looprd discovery runtime code changed.
+* Replace unsupported `todo_work[0].summary` with the required `status: planned` and nonempty `next_action`.
+* Add a regression guard for unfinished work item schema, disjoint done/todo work and complete planned ID accounting.
+* Carry forward existing Work board status and approvals. The new high-priority `ATR-104-CI-TODO-CONTRACT-060` is a review candidate, not an operator-approved Done task.
+
+== Remaining acceptance gates
+
+. Import this v0.5.10 source ZIP through ZipRunner and run fresh post-update tests against its exact bytes.
+. Review changes locally; do not auto-push, tag, release or publish.
+. After operator-approved push, check both GitHub jobs for the new *exact* commit, including official pinned ZipRunner validation and artifact upload.
+. Verify operator review separately; CI success does not close Work board tasks.
+
+No multiplayer gameplay, Social authentication, Looprd watcher, Atrium lobby runtime, or Tavi notification behavior is claimed in this pass.

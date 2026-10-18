@@ -1,5 +1,5 @@
-= Atrium 0.5.9 — Review-pending Looprd sidecar ingestion
-:revnumber: 0.5.9
+= Atrium 0.5.10 — Review-pending Looprd sidecar ingestion
+:revnumber: 0.5.10
 :revdate: 2026-10-18
 :toc: left
 

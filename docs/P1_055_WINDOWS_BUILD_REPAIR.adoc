@@ -1,5 +1,5 @@
-= Atrium 0.5.9 — Windows build repair
+= Atrium 0.5.10 — Windows build repair
 
 The 0.5.4 ZipRunner job on Python 3.13 failed because `tools/announce_atriumd.py` imported optional HTTP client `httpx` during test collection, and `tests/test_game_registration_contract.py` decoded Unicode AsciiDoc with the Windows CP1252 default.
 
-In 0.5.9 the CLI defers HTTP client import until an actual submission and `requirements-dev.txt` installs it into the project-local virtualenv. Test file reads specify UTF-8. Dry runs and mocked transport tests remain executable without `httpx` on system Python. The game registry and schema v3 are unchanged.
+In 0.5.10 the CLI defers HTTP client import until an actual submission and `requirements-dev.txt` installs it into the project-local virtualenv. Test file reads specify UTF-8. Dry runs and mocked transport tests remain executable without `httpx` on system Python. The game registry and schema v3 are unchanged.

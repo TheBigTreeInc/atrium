@@ -8,7 +8,7 @@ from tools.package_zip import NAME, source_files, ROOT
 
 class P0ReleaseTests(unittest.TestCase):
     def test_package_identity_and_required_files(self):
-        self.assertEqual(NAME, 'atrium-0.5.9-ziprunner.zip')
+        self.assertEqual(NAME, 'atrium-0.5.10-ziprunner.zip')
         paths={path.relative_to(ROOT).as_posix() for path in source_files()}
         self.assertTrue({'.ziprunner-workboard-update.json','project.zr',
                          'ziprunner.looprd.json','ziprunner-verification-plan.json',
@@ -37,7 +37,24 @@ class P0ReleaseTests(unittest.TestCase):
         self.assertTrue(all(x.startswith(('ATR-P0-', 'ATR-10')) for x in ids))
         self.assertIn('ATR-P0-004',ids)
         self.assertEqual(update['project'],'atrium')
-        self.assertEqual(update['version'],'0.5.9')
+        self.assertEqual(update['version'],'0.5.10')
+
+    def test_official_ziprunner_manifest_todo_contract(self):
+        manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+        planned={t['id'] for t in manifest['planned_work']}
+        done={t['id'] for t in manifest['done_work']}
+        todo={t['id'] for t in manifest['todo_work']}
+        self.assertEqual(planned,done | todo)
+        self.assertFalse(done & todo)
+        self.assertEqual(len(planned),len(manifest['planned_work']))
+        self.assertIn('ATR-108-LOOPRD-DISCOVERY',todo)
+        for item in manifest['todo_work']:
+            self.assertEqual(set(item)-{'id','status','next_action','blockers'},set())
+            self.assertIn(item['status'],('planned','in_progress','review','blocked','deferred'))
+            self.assertTrue(isinstance(item['next_action'],str) and item['next_action'].strip())
+            if item['status']=='blocked':
+                self.assertTrue(item.get('blockers'))
+        self.assertEqual(manifest['project']['version'],'0.5.10')
 
     def test_commercial_secrets_are_not_packaged(self):
         names=[x.name for x in source_files()]
