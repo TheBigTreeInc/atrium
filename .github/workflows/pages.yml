@@ -2,6 +2,11 @@ name: Publish reviewed Atrium Pages
 on:
   workflow_dispatch:
     inputs:
+      publish_checkers_demo:
+        description: Explicitly publish first-party Checkers local preview (requires empty catalog_url)
+        required: false
+        type: boolean
+        default: false
       catalog_url:
         description: Public HTTPS catalog gateway URL (empty keeps staged preview)
         required: false
@@ -40,6 +45,13 @@ jobs:
           ATRIUM_PUBLIC_CATALOG_URL: ${{ inputs.catalog_url }}
         run: |
           node tools/configure_catalog.mjs
+          npm run verify
+      - name: Stage operator-approved Checkers local preview (optional)
+        if: ${{ inputs.publish_checkers_demo }}
+        env:
+          ATRIUM_PUBLISH_CHECKERS_DEMO: 'true'
+        run: |
+          node tools/stage_checkers.mjs
           npm run verify
       - name: Configure repository Pages
         uses: actions/configure-pages@v5

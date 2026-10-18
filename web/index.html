@@ -1,26 +1,42 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Atrium — reviewed browser games and applications">
+<meta name="description" content="Atrium — operator-reviewed web games and apps">
 <title>Atrium · Games</title>
 <style>
-:root{color-scheme:dark;font-family:system-ui,"Segoe UI",sans-serif}
-body{background:#111a20;color:#ebf1f3;margin:0}
-header{padding:26px max(20px,calc((100vw - 1080px)/2));background:#15262e;border-bottom:1px solid #344f58}
-h1{margin:0;font-size:30px;font-weight:700}small,.muted{color:#a9c0c7}
-main{max-width:1080px;margin:25px auto;padding:0 20px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:15px}
-.tile{background:#1c3038;border:1px solid #385560;border-radius:12px;padding:20px}
-.tile h2{margin-top:0}button{background:#347a7b;color:#fff;border:1px solid #5db2ad;padding:10px 16px;border-radius:8px;cursor:pointer;font-weight:600}
-button:hover{background:#42918e}button:focus-visible{outline:3px solid #afebde;outline-offset:2px}
-#stage{margin-top:25px;min-height:80px}iframe{width:100%;height:520px;border:1px solid #547079;border-radius:9px}
-.subtitle{font-size:14px;margin-top:7px}.smallprint{font-size:13px;line-height:1.6}
+:root{color-scheme:dark;font-family:system-ui,"Segoe UI",sans-serif;font-size:16px}
+*{box-sizing:border-box}body{background:#101b23;color:#eff7f6;margin:0}a{color:#a9e6e0}
+header{background:linear-gradient(125deg,#152a32,#1b3e44);border-bottom:1px solid #355761}
+header .inner{max-width:1130px;margin:auto;padding:33px 20px 39px}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:30px;letter-spacing:-.04em}.mini{font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:#8ed5cf;font-weight:800}
+.hero{margin-top:29px;max-width:760px}.hero h2{font-size:clamp(27px,4vw,43px);letter-spacing:-.04em;line-height:1.15;margin:8px 0 14px}.hero p{color:#bbd2d4;line-height:1.6;margin:0}
+main{max-width:1130px;margin:29px auto;padding:0 20px 50px}.sectionTitle{display:flex;align-items:end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:16px}.sectionTitle h2{margin:0;font-size:22px}
+.muted{color:#abc4cb}.subtle{color:#98b6bb}.smallprint{font-size:13px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:18px}
+.tile{background:#192e38;border:1px solid #355763;border-radius:14px;overflow:hidden;min-width:0}
+.tile .art{height:135px;display:grid;place-items:center;background:radial-gradient(circle at 30% 10%,#40776e,#224b56 57%,#15272f)}
+.boardIcon{display:grid;grid-template-columns:repeat(4,18px);grid-template-rows:repeat(4,18px);transform:rotate(-8deg);box-shadow:0 10px 30px #0007;border:3px solid #e3c48d}
+.boardIcon span:nth-child(8n+1),.boardIcon span:nth-child(8n+3),.boardIcon span:nth-child(8n+6),.boardIcon span:nth-child(8n+8){background:#e7d9b9}
+.boardIcon span{background:#437168}
+.boardIcon span:nth-child(6):after,.boardIcon span:nth-child(11):after{content:'';display:block;width:12px;height:12px;margin:3px;border-radius:50%;background:#b45147;box-shadow:0 1px 2px #0008}
+.tile .body{padding:18px}.tile h3{font-size:21px;margin:0 0 6px}.tile p{line-height:1.5;font-size:14px;margin:8px 0 17px;color:#bbd0d6}
+.pill{display:inline-block;border-radius:20px;border:1px solid #6c9d9b;color:#c2e6dc;padding:4px 10px;font-size:11px;font-weight:800;letter-spacing:.03em}
+.pill.waiting{border-color:#6d7484;color:#abb6c1}button{border:1px solid #75b9b6;border-radius:8px;background:#2f7c78;color:#fff;padding:10px 17px;font-weight:750;cursor:pointer}button:hover{background:#3f948c}button:focus-visible{outline:3px solid #f0d18d;outline-offset:3px}button:disabled{background:#273740;color:#889fa7;border-color:#536c71;cursor:not-allowed}
+.emptyState{background:#182b34;border:1px dashed #4b7375;border-radius:14px;padding:22px;margin:0 0 18px}
+.emptyState h3{margin:0 0 8px}.emptyState p{margin:0;color:#b4cbd1;line-height:1.6}
+.preview{opacity:.84}.preview .art{background:radial-gradient(circle at 30% 10%,#4b6276,#223944 65%,#14232b)}
+#stage{margin-top:28px;min-height:0}#stage iframe{width:100%;height:min(820px,86vh);min-height:560px;border:1px solid #547079;border-radius:12px;background:#10212a}
+#stage:empty{display:none}.footnote{margin-top:30px;border-top:1px solid #344c55;padding:18px 0;color:#9fb8c0}
+@media(max-width:600px){header .inner{padding:25px 17px}main{padding:0 15px}.grid{grid-template-columns:1fr}#stage iframe{height:85vh;min-height:650px}}
 </style></head><body>
-<header><h1>Atrium</h1><div class="subtitle muted">Games and applications · web preview</div></header>
-<main>
-<p class="muted">Browse operator-reviewed web games. Atrium works independently of Tavi; shared Social sign-in and game installation are being developed, and are not active in this version.</p>
-<section aria-label="Published apps"><h2>Available games and applications</h2>
-<div class="grid" id="apps"><article class="tile"><h2>Loading catalog…</h2></article></div></section>
+<header><div class="inner"><div class="brand"><h1>Atrium</h1><span class="mini">Games &amp; apps · Web preview</span></div><div class="hero"><span class="mini">A growing place to play</span><h2>Find your next little adventure.</h2><p>Discover reviewed games, try playable previews and pick up where you left off as the platform grows. Social login and cross-device multiplayer are still under development.</p></div></div></header>
+<main><div class="sectionTitle"><h2>Games &amp; applications</h2><span class="muted smallprint" id="catalogStatus">Checking approved catalog…</span></div>
+<section aria-label="Published apps"><div class="grid" id="apps"><article class="tile"><div class="body"><h3>Loading catalog…</h3></div></article></div></section>
 <section id="stage" aria-live="polite" aria-label="Game viewport"></section>
-<p class="smallprint muted">The public catalog contains only approved releases. Games load inside an isolated browser frame. No Social credentials or operator keys are shared with them.</p>
+<section aria-label="Coming next" style="margin-top:34px"><div class="sectionTitle"><h2>On the horizon</h2><span class="muted smallprint">Not yet playable here</span></div><div class="grid">
+<article class="tile preview" id="checkers-coming-soon"><div class="art"><div class="boardIcon" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="body"><span class="pill waiting">Awaiting publication</span><h3>Checkers</h3><p>Play locally against a friend or the baseline Staff opponent when this first-party preview is approved.</p><button disabled>Not published yet</button></div></article>
+<article class="tile preview"><div class="art" aria-hidden="true" style="font-size:56px">⌂</div><div class="body"><span class="pill waiting">Integration planned</span><h3>Life</h3><p>Life already has its own game logic. Atrium discovery and reviewed launch still need integration with Looprd.</p><button disabled>Coming later</button></div></article>
+</div></section>
+<p class="smallprint footnote">Only operator-approved catalog entries can be launched. Browser games run in isolated frames; no Social credentials or operator API keys are supplied to them. Checkers preview (when enabled) is local play, not an online Looprd match.</p>
 </main><script type="module" src="./main.mjs"></script></body></html>

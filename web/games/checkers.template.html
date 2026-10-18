@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkers · Atrium Preview</title><style>
+:root{color-scheme:dark;font:16px system-ui,"Segoe UI",sans-serif}*{box-sizing:border-box}
+body{margin:0;background:#0d1b23;color:#e7f2f2;padding:clamp(12px,3vw,28px)}
+main{margin:auto;max-width:1050px}header{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(22px,4vw,32px)}p{line-height:1.55}.muted{color:#a5c0c7}.layout{display:grid;grid-template-columns:minmax(270px,560px) minmax(180px,1fr);gap:clamp(16px,3vw,35px);align-items:start}
+.board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;overflow:hidden;border:7px solid #557a7d;border-radius:12px;box-shadow:0 22px 40px #0006}
+.cell{appearance:none;border:0;border-radius:0;margin:0;padding:0;display:grid;place-items:center;position:relative;cursor:pointer;min-width:0;background:#e6dec6}
+.cell.dark{background:#36645d}.cell.choice:after{content:'';position:absolute;width:23%;aspect-ratio:1;border-radius:50%;background:#e4cd65b8;box-shadow:0 0 0 4px #e4cd6530}
+.cell.selected{outline:4px solid #edd17a;outline-offset:-4px}.cell:focus-visible{z-index:1;outline:3px solid #fff;outline-offset:-3px}
+.piece{z-index:1;border-radius:50%;width:73%;aspect-ratio:1;display:grid;place-items:center;box-shadow:0 3px 6px #0008,inset 0 2px 3px #fff4;border:3px solid #c1a998}
+.piece.red{background:radial-gradient(circle at 32% 25%,#e88573,#a53c35 73%);border-color:#e6afa5}.piece.black{background:radial-gradient(circle at 30% 25%,#777f90,#202935 72%);border-color:#b9c4cf}
+.piece.king:before{content:'♛';font-size:clamp(16px,3vw,35px);color:#f6d889;text-shadow:0 2px 4px #222}
+.panel{border:1px solid #38626a;border-radius:12px;padding:20px;background:#172d34}.status{font-weight:700;font-size:1.2em;min-height:3em}
+.controls{display:flex;flex-wrap:wrap;gap:8px}button.action{background:#317c77;color:white;border:1px solid #79bcb6;border-radius:8px;font-weight:700;padding:11px 13px;cursor:pointer}button.action:hover{background:#399a91}button.action:focus-visible{outline:3px solid #ffe29a;outline-offset:2px}
+#moveLog{padding-left:22px;max-height:160px;overflow:auto;font-size:13px;color:#b4ced1}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.panel{padding:14px}.board{max-width:560px}}
+</style></head><body>
+<main><header><div><h1>Checkers</h1><p class="muted">First-party playable preview · American rules</p></div><div class="muted">Local game only · No account needed</div></header>
+<div class="layout"><div id="board" class="board" role="group" aria-label="Checkers board"></div>
+<aside class="panel"><div id="status" class="status" aria-live="polite"></div><p id="hint" class="muted"></p>
+<div class="controls"><button id="restart" class="action">New game</button><button id="mode" class="action">Play vs Staff</button></div>
+<p class="muted">Select a piece, then a highlighted destination. Captures are mandatory. Complete every jump in a chain; kings are marked with a crown.</p>
+<h3>Recent moves</h3><ol id="moveLog"></ol><p class="muted">This demo runs in your browser. Online matches, accounts, achievements and Looprd notifications are not connected yet.</p></aside></div></main>
+<script>
+/*__ATRIUM_CHECKERS_ENGINE__*/
+/*__ATRIUM_CHECKERS_UI__*/
+</script></body></html>

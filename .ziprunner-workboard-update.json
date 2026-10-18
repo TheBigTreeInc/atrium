@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.13",
-  "summary": "v0.5.13 candidate implements an anonymous live reviewed catalog gateway and operator-configured Pages client (ATR-104-LIVE). Every request rechecks SQLite approvals and SHA assets; fail closed on corruption/revocation, no-store/CORS and iframe invalidation. Real proxy/Pages/installed artifact acceptance remains outstanding; no auto-publication or user identity change.",
+  "version": "0.5.14",
+  "summary": "v0.5.14 candidate adds an explicitly operator-staged, hash-verified playable first-party Checkers local preview and improves the static storefront. The default catalog remains empty; existing registry, Live gateway, Social, Life, and Looprd discovery statuses are unchanged. Pages publication, real browser play and operator approval remain pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -121,6 +121,18 @@
         "Disable publisher/withdraw app, verify next GET has no revoked app and currently displayed iframe closes on foreground/next poll; test frontend cannot launch a revoked release.",
         "Corrupt/remove reviewed asset or disable database; expect 503/no-store and browser clears listings/iframe, never stale fallback. Check strict CORS and no admin credentials anywhere in published assets.",
         "Verify external HTTPS/TLS/proxy cache headers, CI and installed ZipRunner artifact; only operator approval may mark Done."
+      ]
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW",
+      "title": "Publish a reviewed first-party playable Checkers preview via manual Pages approval",
+      "priority": "high",
+      "summary": "Builds a self-contained first-party Checkers hotseat/Staff preview and improved storefront; opt-in-only manual Pages staging with immutable SHA asset and no registry or identity shortcuts.",
+      "operator_checks": [
+        "After exact-commit CI and source review, manually dispatch Publish reviewed Atrium Pages with publish_checkers_demo=true and catalog_url empty; confirm Checkers Play card appears over HTTPS and the downloaded HTML digest matches its catalog entry.",
+        "Play a full local session and test mandatory captures, multi-jumps, kings, Staff opponent, touch layout and New game; verify isolated iframe does not receive Social or DAPI credentials.",
+        "Manually rerun Pages with publish_checkers_demo=false to remove the preview; confirm no database publisher/app approval was bypassed and configured live catalog gateway refuses mixed preview.",
+        "Check installed ZIP by SHA in ZipRunner, operator acceptance and that Life remains visibly unavailable until reviewed Looprd discovery is implemented."
       ]
     }
   ],

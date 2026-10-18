@@ -1,11 +1,12 @@
 {
   "name": "atrium",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
     "build": "node tools/build.mjs",
+    "stage:checkers": "node tools/stage_checkers.mjs",
     "verify": "node tools/verify_web.mjs",
     "check": "npm test && npm run build && npm run verify"
   }

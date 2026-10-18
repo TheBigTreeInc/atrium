@@ -1,0 +1,48 @@
+= Atrium v0.5.14 — First playable game, operator-gated Checkers preview
+:toc:
+
+== Goal and real status
+
+The observed GitHub Pages site currently displays the correct empty-catalog UI, because `web/catalog.json` contains zero approved entries and `web/catalog-config.json` has no live gateway. This pass makes the next manual Pages deployment useful by introducing a playable first-party Checkers *preview* that can be explicitly staged and published after operator review.
+
+`ATR-106-CHECKERS-PREVIEW` is a bounded preview milestone, not completion of `ATR-106` (which additionally requires a non-game app). It does not finish `ATR-108-LOOPRD-DISCOVERY`, `ATR-107-AUTH`, the schema-v4 publisher proof operator checks, live HTTPS gateway acceptance, persistent multiplayer, or the Life integration.
+
+== User experience
+
+* The storefront has a welcome area, reviewed-game cards with a Play action, and a purposeful empty-state message. It visibly distinguishes the Checkers preview (local play), Life (not yet integrated), and a genuine approved release. No buttons pretend that Life is playable yet.
+* The Checkers preview is a self-contained HTML game loaded by the existing integrity-checking `src/apphost.mjs` iframe. It is a real playable two-person local board or a human versus the deterministic baseline Staff opponent.
+* American checkers: red starts downward, black upward, only dark squares, mandatory captures, complete multi-jump paths, kings may travel in both directions, and crowning during a capture ends that piece's turn. The JavaScript preview engine follows the existing `src/checkers.py` rules; no account or server authority is claimed.
+* Touch and mouse controls select a piece and next highlighted destination. A New game button resets the game. The game displays the current turn, recent moves and compulsory-capture hints. It does not save/restore play after closing the iframe.
+
+== Explicit publish flow: one preview game on real Pages
+
+**Never use a source push as publication approval.** The default `web/catalog.json` remains an empty snapshot. Building via `npm run build` likewise produces no published games.
+
+After the operator reviews the v0.5.14 source, checks its exact-commit CI and installs/tests the matching ZipRunner artifact:
+
+. Go to `https://github.com/TheBigTreeInc/atrium/actions/workflows/pages.yml`.
+. Click *Run workflow* for *Publish reviewed Atrium Pages*.
+. Set `publish_checkers_demo` to `true` (this is the explicit first-party preview publication decision) and leave `catalog_url` empty. Review the `github-pages` environment approval when required.
+. In the run, `npm test`, `npm run build` and `npm run verify` execute before `tools/stage_checkers.mjs`. The staging command is called only with the explicit `ATRIUM_PUBLISH_CHECKERS_DEMO=true` environment flag; it refuses a configured live gateway. A second verification runs after staging, then the action publishes the static files.
+. Reload `https://thebigtreeinc.github.io/atrium/`. The Checkers card should appear; clicking *Play game* fetches the exact static HTML, verifies SHA-256 and opens the isolated iframe. Play a move in both local two-player and Staff modes; test an enforced capture and restart.
+. To unpublish the preview, manually dispatch the same Pages workflow with `publish_checkers_demo` false and `catalog_url` empty. That returns to the reviewed empty snapshot. No automatic deletion of database releases occurs because this preview is not registered in the database.
+
+The staging process generates `dist/games/checkers/<sha256>/index.html` from the version-controlled first-party HTML template and two JS sources. Its manifest advertises the immutable URL using the same SHA-256 and the approved GitHub Pages origin. No admin credentials, privileged API calls, dynamic script imports, persistence, or parent-iframe message bridge are embedded. The `1 MiB` source-asset cap and `sandbox="allow-scripts"` policy continue to apply.
+
+== Hard trust boundary: preview versus production
+
+A manually staged Checkers preview exists only in the operator-triggered *static Pages preview catalog*. It is **not** an Atrium registry-approved publisher app and **must not** be merged silently into the live database-driven gateway catalog.
+
+If `catalog_url` is set to a production HTTPS gateway, `publish_checkers_demo=true` deliberately fails during staging, instead of silently overriding that production approval source. To publish Checkers through the live gateway, register and approve its immutable HTML using the established publisher/submission/review pipeline, copy the hash-verified asset to the reviewed-assets directory, then verify publisher revocation. Do not shortcut operator approval.
+
+== Life and Looprd boundary
+
+Life remains independently hosted. Its existing Looprd registration does not currently activate the `atriumd.yaml` sidecar in the DAPI runtime or approve a game in Atrium. The Life card is explicitly a non-playable coming-soon item. The next Life milestone should implement `ATR-108-LOOPRD-DISCOVERY` with same-revision sidecar verification, reviewed candidate intake, API/frontend origin mapping and operator publication. Life state stays at Life/Looprd (and may be played asynchronously without keeping the client open); Social owns identity and Tavi owns messaging; no Life game logic or tokens move into Atrium.
+
+For OpenClaw/agent testing, game interactions should ultimately remain accessible through the Looprd game API. This standalone Checkers preview is a browser smoke test only, not that authoritative agent contract.
+
+== Verification and acceptance
+
+Source checks include JavaScript board/rules tests (initial 7 moves, mandatory complete captures, king promotion and Staff determinism), cross-component asset hashing, immutable entry validation, unprivileged UI content and the refusal to stage into a configured live gateway. Python/CI checks maintain previous DAPI/ZipRunner contracts.
+
+Operator acceptance remains required for: the exact v0.5.14 CI run, real Pages workflow opt-in, a browser-played match, mobile operation, opt-out publication rollback and ZipRunner post-update checks against the installed ZIP hash. No source/test success sets a Work board item to Done or authorizes Git release.

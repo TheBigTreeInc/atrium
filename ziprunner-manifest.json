@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.13",
-    "base_version": "0.5.12",
-    "source_revision": "435872423213c2f01d02ffff4d54dc5243673d55"
+    "version": "0.5.14",
+    "base_version": "0.5.13",
+    "source_revision": "75a302672b904789490296890349a29bd4551302"
   },
   "update": {
-    "id": "ATR-P1-20261018-023",
+    "id": "ATR-P1-20261018-024",
     "kind": "source_update",
     "created_at": "2026-10-18T14:21:43+02:00",
-    "summary": "v0.5.13 source candidate: read-only operator-hosted anonymous live catalog gateway, Pages public URL configuration and revocation-safe clients; no automatic Pages publishing, identity, or game approval."
+    "summary": "v0.5.14 candidate: improved Atrium storefront and opt-in first-party Checkers local-play preview, integrity-verified and manually published through reviewed Pages workflow only. Life remains not yet integrated; no auto-registration/push/deployment."
   },
   "planned_work": [
     {
@@ -91,6 +91,12 @@
       "title": "Automatic public catalog gateway and cache revocation",
       "priority": "high",
       "acceptance_criteria": "Operator-hosted anonymous HTTPS gateway reads only reviewed, active publisher releases and matching hash-verified local assets; fails closed on revocation, DB/error/tamper, sets no-store and strict CORS, delivers automatic client refresh without Pages pushes, and clears revoked running apps. No private DAPI credentials, automatic release or operator approval; real HTTPS/Pages acceptance required."
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW",
+      "title": "Publish a reviewed first-party playable Checkers preview via manual Pages approval",
+      "priority": "high",
+      "acceptance_criteria": "Reviewed, self-contained Checkers game is playable as an explicit first-party manual Pages preview; catalog and assets SHA-256 aligned; American capture/king/Staff rules tested; default remains empty; production live gateway not bypassed; operator verifies real browser and rollback."
     }
   ],
   "done_work": [
@@ -365,6 +371,37 @@
           "description": "Deployment, operational checks and remaining limitations"
         }
       ]
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW",
+      "summary": "Source candidate delivers isolated first-party Checkers JS game and opt-in hash-named static Pages preview with a more informative storefront. Publication and operator acceptance not performed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/checkers_demo_engine.mjs",
+          "description": "American checkers game rules and Staff move in a local preview"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/stage_checkers.mjs",
+          "description": "Manual Pages preview staging, SHA-256 binding and gateway conflict rejection"
+        },
+        {
+          "kind": "source",
+          "ref": "web/games/checkers.template.html",
+          "description": "Self-contained sandboxed Checkers board UI template"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/checkers_demo.test.mjs",
+          "description": "Rule correctness and secure operator-staging tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_064_FIRST_PLAYABLE_GAME.adoc",
+          "description": "Operator-controlled first game publication and rollback procedure"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -462,7 +499,7 @@
       },
       {
         "id": "ATR-P1-062-LOCAL",
-        "description": "v0.5.13 publisher proof source and security regressions",
+        "description": "v0.5.14 publisher proof source and security regressions",
         "status": "passed",
         "evidence_ref": "evidence/P1_062_LOCAL_CHECKS.txt"
       },
@@ -483,10 +520,10 @@
     ]
   },
   "handover": {
-    "next_pass": "Import v0.5.13 into existing Atrium ZipRunner target after source review; verify installed artifact-specific test receipt and exact GitHub CI. On disposable schema-v4 SQLite start read-only loopback gateway behind real HTTPS proxy, configure public Pages via manual dispatch, and verify dynamic release/revocation/error behavior before operator acceptance. No auto-send, push or release.",
+    "next_pass": "Run exact-commit v0.5.14 CI; operator manually publishes Checkers with workflow_dispatch opt-in, browser-smoke-tests Play/revocation/rollback, then continues Life Looprd discovery without bypassing review.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
-      "v0.5.13 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
+      "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
       "A broken reverse proxy or intermediary ignoring no-store can serve stale data; verify no-store and TLS at public edge.",
       "An already-running/background browser is not instantaneously revoked; current foreground interval is 60 seconds. Game authorization must remain authoritative server-side.",
       "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
@@ -501,7 +538,7 @@
       "Game public catalog is deliberately empty until reviewed bytes and snapshot are published.",
       "v0.5.1 adds an explicit Life/hosted-game registration design and sample only; current v1 cannot register current multi-MiB Life build.",
       "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field.",
-      "v0.5.13 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy."
+      "v0.5.14 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy."
     ]
   },
   "operator_actions": [
@@ -567,12 +604,12 @@
     },
     {
       "id": "ATR-P1-OP-062",
-      "description": "Review and import v0.5.13; backup schema v3, exercise migration to v4 on disposable instance, test real HTTPS proof and ensure no publication or identity grant; approve any live rollout separately.",
+      "description": "Review and import v0.5.14; backup schema v3, exercise migration to v4 on disposable instance, test real HTTPS proof and ensure no publication or identity grant; approve any live rollout separately.",
       "status": "required"
     },
     {
       "id": "ATR-P1-OP-063",
-      "description": "Review/import v0.5.13 source ZIP, rerun installed per-hash post-update tests and exact SHA CI. On disposable schema-v4 Atrium DB deploy read-only localhost gateway behind TLS proxy, manually dispatch Pages with public catalog URL, test publish/revoke/asset failure and no secrets. Approve live deployment separately.",
+      "description": "Review/import v0.5.14 source ZIP, rerun installed per-hash post-update tests and exact SHA CI. On disposable schema-v4 Atrium DB deploy read-only localhost gateway behind TLS proxy, manually dispatch Pages with public catalog URL, test publish/revoke/asset failure and no secrets. Approve live deployment separately.",
       "status": "required"
     }
   ],

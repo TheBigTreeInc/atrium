@@ -1,4 +1,5 @@
 import {readFile, stat} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 import assert from 'node:assert/strict';
@@ -14,7 +15,19 @@ assert(main.includes("'./src/apphost.mjs'"),'built entrypoint must use relative 
 assert(!main.includes("'../src/apphost.mjs'"),'built entrypoint escapes dist');
 assert(main.includes("'./src/catalog_client.mjs'"),'catalog module path must be build-local');
 const catalog=JSON.parse(await readFile(path.join(dist,'catalog.json'),'utf8'));
-assert(catalog && (Array.isArray(catalog) || typeof catalog==='object'));
+const {parsePublicCatalog}=await import('../src/catalog_client.mjs');
+parsePublicCatalog(catalog);
+if (catalog.apps.length) {
+  // Static first-party preview is independently verified at build time. Production
+  // live catalogs are consumed at request time, never merged into static assets.
+  assert.equal(catalog.apps.length,1,'only explicit first-party preview may be staged');
+  const app=catalog.apps[0];
+  assert.equal(app.id,'atrium.checkers.preview');
+  assert.equal(app.entry,`https://thebigtreeinc.github.io/atrium/games/checkers/${app.sha256}/index.html`);
+  const asset=await readFile(path.join(dist,'games','checkers',app.sha256,'index.html'));
+  assert.equal(createHash('sha256').update(asset).digest('hex'),app.sha256,'staged HTML must match catalog digest');
+}
+
 const index=await readFile(path.join(dist,'index.html'),'utf8');
 assert(index.includes('src="./main.mjs"'),'Pages must use subpath-safe relative JS');
 assert(!index.includes('src="/main.mjs"'),'Pages must not use origin-root assets');

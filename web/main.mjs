@@ -2,6 +2,7 @@ import {loadIsolatedApp} from '../src/apphost.mjs';
 import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
 const area = document.querySelector('#apps');
 const stage = document.querySelector('#stage');
+const catalogStatus = document.querySelector('#catalogStatus');
 let refreshInFlight = false;
 let activeApp = null;
 let generation = 0;
@@ -30,16 +31,25 @@ async function refreshCatalog() {
     const catalog = await freshCatalog();
     if (activeApp && !isStillPublished(catalog, activeApp)) revokeOpenApp();
     area.replaceChildren();
+    catalogStatus.textContent = `${catalog.apps.length} approved ${catalog.apps.length === 1 ? 'entry' : 'entries'}`;
+    document.querySelector('#checkers-coming-soon').hidden = catalog.apps.some(app => app.id === 'atrium.checkers.preview');
     if (!catalog.apps.length) {
-      const empty = document.createElement('p');
-      empty.textContent = 'No approved applications are currently published.';
+      const empty = document.createElement('div');
+      empty.className = 'emptyState';
+      empty.innerHTML = '<h3>The first game is being prepared</h3><p>The storefront is online, but no playable releases have been approved for publication yet. Checkers will appear here once its reviewed preview is explicitly published.</p>';
       area.append(empty);
     }
     for (const app of catalog.apps) {
       const card = document.createElement('article'); card.className = 'tile';
-      const heading = document.createElement('h2'); heading.textContent = app.title;
-      const details = document.createElement('p'); details.textContent = app.id;
-      const button = document.createElement('button'); button.textContent = 'Open';
+      const art=document.createElement('div');art.className='art';
+      art.textContent=app.id==='atrium.checkers.preview'?'♟':'✧';art.style.fontSize='58px';
+      const body=document.createElement('div');body.className='body';
+      const tag=document.createElement('span');tag.className='pill';
+      tag.textContent=app.id==='atrium.checkers.preview'?'Local playable preview':'Reviewed release';
+      const heading = document.createElement('h3'); heading.textContent = app.title;
+      const details = document.createElement('p');
+      details.textContent=app.id==='atrium.checkers.preview'?'American checkers · 2 players or Staff opponent · No login needed':'Verified browser game';
+      const button = document.createElement('button'); button.textContent = 'Play game';
       button.addEventListener('click', async () => {
         const requestId = ++generation;
         stage.replaceChildren();
@@ -56,15 +66,17 @@ async function refreshCatalog() {
             }
           });
           activeApp = app;
+          stage.scrollIntoView({behavior:'smooth',block:'start'});
         } catch (error) {
           if (requestId === generation) revokeOpenApp('Cannot open game: ' + error.message);
         }
       });
-      card.append(heading, details, button); area.append(card);
+      body.append(tag,heading,details,button);card.append(art,body);area.append(card);
     }
   } catch (error) {
     // Never leave revoked games visible or running if the gateway is unavailable.
     area.replaceChildren();
+    catalogStatus.textContent='Catalog unavailable';
     revokeOpenApp('Public catalog unavailable; running game closed: ' + error.message);
   } finally {
     refreshInFlight = false;

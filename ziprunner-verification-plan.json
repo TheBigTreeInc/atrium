@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.13",
+  "version": "0.5.14",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -270,6 +270,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW",
+      "criteria": [
+        {
+          "id": "ATR-106-CHECKERS-PREVIEW-AC-GAME",
+          "description": "Rule parity and playable first-party local Checkers client are regression tested",
+          "mode": "automated",
+          "checks": [
+            "ATR-106-CHECKERS-PREVIEW-T1"
+          ]
+        },
+        {
+          "id": "ATR-106-CHECKERS-PREVIEW-AC-PAGES",
+          "description": "Operator Pages staging is explicitly opted in, hash-correct, safe and never bypasses live gateway review",
+          "mode": "automated",
+          "checks": [
+            "ATR-106-CHECKERS-PREVIEW-T2"
+          ]
+        },
+        {
+          "id": "ATR-106-CHECKERS-PREVIEW-AC-LIVE",
+          "description": "Operator reviews game and publishes/rolls back the tested first-party preview on real Pages",
+          "mode": "manual",
+          "checks": [
+            "ATR-106-CHECKERS-PREVIEW-M1"
+          ]
+        }
+      ]
     }
   ],
   "checks": [
@@ -532,6 +561,39 @@
       "stage": "acceptance",
       "description": "Real HTTPS gateway, Pages activation and revocation acceptance",
       "instructions": "Back up/replay schema-v4 SQLite on disposable DAPI; start read-only loopback gateway behind operator TLS proxy with cache disabled, manually dispatch Pages workflow with reviewed clean public catalog URL. Publish reviewed asset and verify anonymous Pages display. Disable publisher, ensure next gateway request omits game and client closes iframe by next foreground/60-second refresh; corrupt asset/stop DB and verify 503 with no cached fallback. Check no API secret/client auth, strict CORS and proxy behavior. Verify exact-commit CI and matching installed ZipRunner post-update checks; do not approve release or mark Done without operator approval."
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "American checkers moves, jumps, promotion, deterministic Staff and unprivileged UI",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/checkers_demo.test.mjs",
+      "assertions": [
+        "Initial seven moves and deterministic Staff baseline",
+        "Mandatory complete captures and crown terminates capture chain",
+        "No browser credential/network parent bridge in standalone demo"
+      ]
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW-T2",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Manual Pages staging yields SHA-256 immutable and valid browser catalog entry; refuses live-gateway mixing",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/checkers_demo.test.mjs",
+      "assertions": [
+        "Staged HTML digest equals catalog manifest sha256 and URL path",
+        "Static preview starts empty until opted into workflow_dispatch",
+        "Configured live gateway refuses a static demo override"
+      ]
+    },
+    {
+      "id": "ATR-106-CHECKERS-PREVIEW-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Reviewed manual Pages publication, browser play and rollback",
+      "instructions": "After v0.5.14 CI and operator source review, dispatch Publish reviewed Atrium Pages with publish_checkers_demo=true and catalog_url empty. Verify a real browser Play action, forced captures, New game, two-person and Staff mode, mobile display and no privileged tokens. Roll back with publish_checkers_demo=false and verify the game disappears. Do not mark Done without operator approval and installed-ZIP post-update acceptance."
     }
   ]
 }

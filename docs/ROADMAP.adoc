@@ -270,3 +270,8 @@ Replace the proposed extra game discovery handler with `atriumd.yaml` alongside 
 
 == v0.5.11 Atrium reviewed discovery candidate implementation
 The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.
+
+
+== Bounded v0.5.14 Checkers first playable preview
+
+`ATR-106-CHECKERS-PREVIEW` is implemented as an operator-gated manual GitHub Pages *static preview*, not completion of `ATR-106` or automatically approved DAPI registry content. The existing Checkers Python evaluator is unchanged. For scope, rules, live Pages acceptance and Life's remaining Looprd requirements, see link:P1_064_FIRST_PLAYABLE_GAME.adoc[the first-playable-game plan]. No Social identity, remote multiplayer or game publish automation is implied.

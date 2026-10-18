@@ -1,6 +1,15 @@
+= Atrium v0.5.14 — First playable Checkers preview and clearer storefront
+
+Operator-gated Pages staging only. See docs/P1_064_FIRST_PLAYABLE_GAME.adoc.
+
+After local review and exact-commit GitHub CI, manually run **Publish reviewed Atrium Pages** with `publish_checkers_demo=true` and leave `catalog_url` blank to publish a standalone Checkers local-play preview. The default catalog remains empty. To roll back, dispatch with `publish_checkers_demo=false`. A configured live gateway cannot be overridden by this preview.
+
+Quick local browser smoke: `npm test && npm run build && npm run verify`, then `ATRIUM_PUBLISH_CHECKERS_DEMO=true npm run stage:checkers && npm run verify`. Open the generated `dist/games/checkers/<SHA256>/index.html` to play; this does not publish to GitHub or the Atrium registry. This standalone game does not have Looprd multiplayer or Social login.
+
+
 = Atrium v0.5.13 — Anonymous live reviewed catalog delivery
 
-This source package adds operator-scoped verified HTTPS domain proof (see docs/P1_062_PUBLISHER_OWNERSHIP.adoc). The current local ZipRunner artifact remains v0.5.11 until an operator imports the new ZIP. No publisher self-service, developer identity, public release, Looprd discovery hook, or automatic game publication is enabled.
+Previous passes added operator-scoped publisher HTTPS domain proof (v0.5.12) and an operator-hosted anonymous live catalog gateway (v0.5.13). Both still require separate real HTTPS/operator acceptance. No publisher self-service, developer identity, automatic Looprd game registration or automatic game approval is enabled.
 
 ## Atrium v0.5.11 — Windows ZipRunner build repair
 

@@ -1,0 +1,16 @@
+Atrium v0.5.14 — local evidence (not a GitHub/ZipRunner/operator approval)
+
+Observed:
+- node --test tests/*.test.mjs: 18 passing.
+- npm run build + npm run verify: passed with empty default reviewed catalog.
+- ATRIUM_PUBLISH_CHECKERS_DEMO=true npm run stage:checkers + npm run verify: passed.
+- Generated standalone immutable asset SHA256 10bdfe239baf1e5e068ac7f8778a4c7210dbb789ea4501865afda949077a4545, 10,596 bytes; catalog entry points to the matching Pages route; no credentials.
+- PYTHONPATH=/opt/pyvenv/lib/python3.13/site-packages python tools/run_python_checks.py: 192 unittest tests passed and source/spec checks passed. The local container's pip index was inaccessible; this is an offline system-package compatibility check, NOT validation of clean isolated venv setup.
+- Focused Python ZIP/manifest/CI regression tests passed.
+
+Limitations:
+- Headless Chromium launch timed out in this container. No actual GUI browser acceptance is claimed.
+- Pinned external DAPI and official ZipRunner validator against v0.5.14 not run in this environment; GitHub Actions must validate exact pushed commit later.
+- Pages deployment and explicit operator publication not performed.
+- Installed ZipRunner SHA-specific post-update checks and operator approvals remain pending.
+- Life discovery, public HTTPS gateway and Social identity integrations remain separate tasks.
