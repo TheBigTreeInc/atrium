@@ -1,57 +1,66 @@
-= Atrium v0.5.6 — Critical Differences from the Shared Multiplayer Architecture
+= Atrium v0.5.7 — Multiplayer Architecture: Requirements, Current State and Proposals
 :revdate: 2026-10-18
 :toc: left
 :sectnums:
 
-== Source documents and scope
+== Reading guide
 
-This gap analysis is based on `ADJUSTMENT_ASYNC_GAMES_LOBBIES_AGENT_API.adoc`, `LOOPRD_GAME_PLAY_CONTRACT.adoc` and `END_TO_END_TEST_PLAN.adoc` provided for Life, LoopRD/DAPI, Social, Tavi, Atrium and OpenClaw. The uploaded documents describe a *planning candidate*, not deployed APIs. This pass starts the Atrium-side implementation by adding a strict, offline `looprd.game-play/v1` info validator and proposed Life fixture. It does NOT assert that Life exposes `/play/info`, that OpenClaw can play, or that Atrium can host Life.
+This document deliberately distinguishes *what the user requested*, *what the inspected Atrium source implements*, *what is missing*, and *what the assistant proposes*. A proposal is not an approved requirement. The three upstream AsciiDoc documents bundled under `docs/upstream-*` are the planning baseline. Claims about other repositories are integration assumptions unless separately verified on their deployed versions.
 
-== P0 — Game API is not implemented
+== 1. Requested architecture (source-derived requirements)
 
-* Requested: game-owned create, join, list_matches, get, legal_actions, act, end_turn, history and resume operations, with pinned deterministic engine and revision-aware idempotency.
-* Current: Atrium v0.5.5 only has a pending sidecar registration candidate API; no game-play backend and no live game API certification.
-* This pass: `src/game_play_contract.py` validates a proposed game-info response, its engine digest, declared operations and capability dependencies. `examples/life.game-play-info.proposed.json` is a non-deployed fixture with a dummy digest and `agentPlaySupported: false`.
-* Remaining: Life owns implementation and tests API-01 through API-15. Do not move match state or action evaluation into Atrium.
+* A multiplayer game owns match state, seats, rules, turns, deterministic evaluation, history and resume.
+* Looprd/DAPI hosts the game API; the human host does not have to remain online between turns.
+* A turn may remain pending for about 60 hours; notifications must survive process restarts and temporary delivery failures.
+* Social/Tavi supply verified identity, messaging, recipient inbox and notification presentation, without owning game rules.
+* Atrium supplies discovery, review, launch, lobby presentation and continue-game routing, not gameplay authority.
+* OpenClaw plays via authorized game APIs, not a special privileged browser automation path.
+* `looprd.yaml` remains portable; an optional `atriumd.yaml` sidecar describes game metadata without deployment-specific URLs.
+* Preserve the upstream test IDs (API, AGENT, TIME, NOTIFY, ATR) and require deployed evidence before claiming cross-component acceptance.
 
-== P0 — Authentication and multi-instance identity
+== 2. Observed Atrium implementation (verified from packaged source)
 
-* Requested: verified `(issuer, subject)` binding, game-scoped short-lived grants and separately authorized agent seat.
-* Current: Atrium does not provide a Social grant exchange or authenticated match launch. LoopRD's local `ctx.call` does not cross remote runtimes.
-* Remaining: Social/LoopRD define trust and grant verification, Life authorizes seats; Atrium consumes approved grants only. No user UUID is accepted as authentication by itself. Cross-runtime transport requires an explicit separately authenticated design.
+[cols="1,3,2",options="header"]
+|===
+| Area | Current Atrium v0.5.7 source | Evidence / limitation
+| Sidecar parsing | Portable `atriumd.yaml` example and source validator | `src/atriumd.py`; no automatic Looprd sidecar watcher
+| Discovery intake | Operator-scoped pending candidate API and deployer CLI | `src/registry_runtime.py`, `tools/announce_atriumd.py`; candidates are not published games
+| Gameplay protocol | Offline `looprd.game-play/v1` info validator and proposed fixture | `src/game_play_contract.py`; not a game API client or deployed certification
+| Published launcher | Existing reviewed static v1 app catalog and sandbox loader | No verified multi-asset hosted Life launch
+| Game lobbies | No live generic Life match-lobby integration in this package | Must consume game-owned API
+| Authentication | No implemented cross-runtime Social game grant exchange in Atrium | Matching account IDs do not prove identity
+|===
 
-== P0 — Durable asynchronous turn lifecycle
+== 3. Missing implementation relative to the requested design
 
-* Requested: SQL-persisted match, 60-hour or no-timeout policy, durable transactional outbox, recipient-bound Social inbox and Tavi push/recovery.
-* Current: no implemented end-to-end turn delivery or background-host-independent Life match has been demonstrated in this Atrium package.
-* Remaining: Life implements authoritative on-demand transitions and atomic outbox; Social handles deduplication/inbox; Tavi renders notifications. Redis cannot be the sole durable store. Verify TIME and NOTIFY tests from the supplied plan.
+[cols="1,1,3,2",options="header"]
+|===
+| Priority | Owner | Required implementation | Acceptance
+| P0 | Life | Persisted game-owned match state, authoritative legal actions, revision/idempotency, restart-safe resume | API-01..API-15 and TIME
+| P0 | Social + Life + Looprd | Verified issuer/subject and scoped seat grants; explicit trust between remote runtimes | Wrong-seat and expired/revoked grant tests
+| P0 | Life + Social + Tavi | Transactional turn-event outbox, durable inbox, retry/dedup and deep link | NOTIFY and outage/restart tests
+| P1 | Looprd/DAPI | Read optional `atriumd.yaml` at the same resolved revision on activation/reconcile | Sidecar changes detected; absent/bad sidecar never stops game
+| P1 | Atrium | Reviewed hosted-web launch, instance binding, lobby and continue-game UI | ATR tests, real Life launch
+| P1 | OpenClaw + Life | Legal-action API and independent authorized agent seat | AGENT-01..AGENT-06
+|===
 
-== P1 — Portable registration and deployment binding
+== 4. Assistant recommendations — NOT approved requirements
 
-* Requested: optional URL-free `atriumd.yaml` read at the same immutable revision as `looprd.yaml`, automatic announcement after activation, and reviewed Atrium deployment binding.
-* Current: Atrium supports sidecar validation and operator-only pending candidate intake, but LoopRD does not yet automatically detect/announce sidecars.
-* Remaining: LoopRD `SourceReader`/reconciler reads sibling sidecar after successful activation; optional failure must not disable the game. Atrium validates publisher, game origin, and logical `game-web` origin separately. Never embed server URL in either template.
+[cols="1,3,3",options="header"]
+|===
+| ID | Proposed adjustment | Decision required
+| REC-01 | Split universal multiplayer operations from turn-based extension capabilities, so non-turn-based games do not implement `end_turn`. | Agree on protocol compatibility/versioning
+| REC-02 | Prefer server-evaluated actions with deterministic client prediction, rather than trusting client-generated receipts. | Select authoritative action model
+| REC-03 | Standardize typed schemas for grant exchange, action errors, notification envelopes and launch handoff. | Ratify machine-readable contracts
+| REC-04 | Certify advertised agent support only after deployed headless gameplay tests. | Decide certification policy and evidence store
+|===
 
-== P1 — Hosted game launch and lobby presentation
+== 5. Work order and non-goals
 
-* Requested: reviewed multi-asset hosted-web launch, generic create/join/continue, invitation handoff, current turn/deadline.
-* Current: v1 sandboxed <=1 MiB HTML loader cannot host Life's multi-asset Pages build; no game-backed generic lobby or Social login.
-* Remaining: reviewed external-first launch, no bearer tokens in URLs, game-authoritative lobby state and secure handoff. Static Pages must not contain operator credentials.
+. Freeze the requested shared API semantics; explicitly decide REC-01..REC-04 before treating them as normative.
+. Implement Life's authoritative game-owned API and test restart/replay.
+. Implement Social/Tavi grant, outbox/inbox and notification delivery.
+. Add Looprd sidecar reconciliation and Atrium reviewed launch/lobby integration.
+. Certify OpenClaw with real authorized turns and cross-game reuse.
 
-== P1 — Agent API certification
-
-* Requested: OpenClaw uses the same game API with its own Social account and seat, no DOM requirement; support badge only after headless acceptance.
-* This pass: validator rejects an agent-capable info response without required headless operations; it cannot certify deployment, credentials or gameplay. Fixture deliberately says false.
-* Remaining: AGENT-02 through AGENT-04 and wrong-seat/retry tests must pass on a deployed game before Atrium publishes `agentPlaySupported: true`. AGENT-06 is the future cross-game reuse gate.
-
-== P1 — Acceptance evidence
-
-The supplied test plan separates API-01..API-15, AGENT-01..AGENT-06, TIME, NOTIFY and ATR test families. Keep those identifiers unchanged in implementation reports. Local tests prove only source-level validator behavior. Do not report runtime, Windows ZipRunner, deployed Social/Tavi, Redis outage or 60-hour clock simulation as passed without execution logs.
-
-== Build order
-
-. Agree on typed game-play schemas and Social grant trust, preserving existing LoopRD capabilities.
-. Implement and verify Life game-owned durable match/action API and deterministic replay.
-. Implement Social outbox/inbox delivery and Tavi turn deep links.
-. Implement LoopRD optional sidecar reconciliation and Atrium reviewed hosted-web/lobby launch.
-. Certify OpenClaw headless play and cross-runtime restart/outage acceptance.
+No change in this Atrium pass implies that other components are deployed or that the proposed APIs are already live. The existing game engine, Social credentials and Looprd data are not migrated.

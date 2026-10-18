@@ -174,5 +174,5 @@ The game-owned Looprd `looprd.yaml` can expose a normal read-only discovery hand
 == v0.5.3 sidecar preferred over a game discovery endpoint
 The preferred `atriumd.yaml` sidecar contract and actual reconciliation hook requirements supersede the earlier draft handler-based mechanism; see `docs/ATRIUMD_SIDECAR.adoc`. No URL in portable game source.
 
-== v0.5.6 Atrium reviewed discovery candidate implementation
+== v0.5.7 Atrium reviewed discovery candidate implementation
 The operator-scoped candidate API and additive Atrium schema v3 are implemented; see `docs/P1_054_DISCOVERY_INTAKE.adoc`. `atriumd.yaml` remains source-portable. The automatic DAPI source reconciler hook, per-deployment machine trust, asset publication and game identity bridge remain explicitly pending.
