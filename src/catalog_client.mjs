@@ -1,4 +1,4 @@
-/** Browser-only snapshot reader: never authenticates to the DAPI operator registry. */
+/** Anonymous, fail-closed public catalog transport: no DAPI operator credentials. */
 export function parsePublicCatalog(data) {
   if (!data || data.schema !== 'atrium.catalog-snapshot/v1' ||
       !Array.isArray(data.apps) || !Array.isArray(data.allowedOrigins) ||
@@ -23,6 +23,39 @@ export function parsePublicCatalog(data) {
     ids.add(app.id);
   }
   return data;
+}
+
+/** The deployed Pages config is public and does not carry credentials. */
+export function parseCatalogSource(config) {
+  if (!config || config.schema !== 'atrium.catalog-source/v1' ||
+      Object.keys(config).some(key => !['schema','gatewayUrl'].includes(key)) ||
+      typeof config.gatewayUrl !== 'string') throw Error('invalid catalog source configuration');
+  if (!config.gatewayUrl) return './catalog.json'; // Explicit no-gateway preview mode.
+  const raw = config.gatewayUrl;
+  const url = new URL(raw);
+  if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash ||
+      url.pathname !== '/catalog.json' || url.port || url.origin === 'null' ||
+      url.hostname === 'localhost' || url.hostname.endsWith('.localhost') ||
+      url.hostname.endsWith('.local') || url.hostname.endsWith('.internal') ||
+      /^[0-9.]+$/.test(url.hostname) || url.hostname.startsWith('[') ||
+      !url.hostname.includes('.') || raw !== url.href) throw Error('invalid HTTPS catalog gateway URL');
+  return raw;
+}
+
+export async function loadCatalogEndpoint(fetcher = fetch, configUrl = './catalog-config.json') {
+  const response = await fetcher(configUrl, {cache:'no-store', credentials:'omit', redirect:'error'});
+  if (!response.ok) throw Error('catalog source configuration unavailable');
+  return parseCatalogSource(await response.json());
+}
+
+export function samePublishedRelease(app, candidate) {
+  return !!app && !!candidate && app.id === candidate.id && app.status === 'published' &&
+    candidate.status === 'published' && app.entry === candidate.entry &&
+    app.sha256 === candidate.sha256 && app.version === candidate.version;
+}
+
+export function isStillPublished(catalog, app) {
+  return catalog.apps.some(candidate => samePublishedRelease(app, candidate));
 }
 
 export async function fetchPublicCatalog(fetcher = fetch, url = './catalog.json') {

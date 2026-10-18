@@ -28,7 +28,7 @@ class PagesDeploymentTests(unittest.TestCase):
         files={p.relative_to(ROOT).as_posix() for p in source_files()}
         self.assertIn('web/.nojekyll', files)
         self.assertIn('.github/workflows/pages.yml', files)
-        for file in ('web/index.html','web/main.mjs','web/catalog.json'):
+        for file in ('web/index.html','web/main.mjs','web/catalog.json','web/catalog-config.json'):
             contents=(ROOT/file).read_text(encoding='utf-8')
             self.assertNotIn('Bearer ',contents)
             self.assertNotIn('apiKey',contents)

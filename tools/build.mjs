@@ -3,7 +3,7 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const out=path.join(root,'dist');await rm(out,{recursive:true,force:true});await mkdir(path.join(out,'src'),{recursive:true});
-for(const file of ['index.html','main.mjs','catalog.json','.nojekyll'])await copyFile(path.join(root,'web',file),path.join(out,file));
+for(const file of ['index.html','main.mjs','catalog.json','catalog-config.json','.nojekyll'])await copyFile(path.join(root,'web',file),path.join(out,file));
 await copyFile(path.join(root,'src','apphost.mjs'),path.join(out,'src','apphost.mjs'));
 await copyFile(path.join(root,'src','catalog_client.mjs'),path.join(out,'src','catalog_client.mjs'));
 const entry = await readFile(path.join(out,'main.mjs'),'utf8');

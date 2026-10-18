@@ -1,0 +1,19 @@
+Atrium v0.5.13 — LOCAL SOURCE VALIDATION ONLY
+Date: 2026-10-18 (Europe/Amsterdam)
+Scope: ATR-104-LIVE read-only live catalog gateway and revocation-safe public Pages client.
+
+Observed local checks:
+- python -m unittest discover -s tests -q: PASS, 192 Python tests, including live HTTP gateway revocation/CORS/tampering/DB outage (prior to last browser-only config refresh adjustment).
+- python -m unittest tests.test_release_pipeline tests.test_pages_deployment tests.test_live_catalog -q: PASS, 35 targeted Python tests.
+- npm test: PASS, 12 Node tests including public gateway source config, release identity, and iframe before-mount revocation guard.
+- npm run build / npm run verify: PASS, Pages static build and relative-path/no-secret assertions.
+- node tools/configure_catalog.mjs with approved HTTPS URL and with empty preview URL: PASS, both builds verify and no credentials are embedded.
+- python tools/check_specs.py: PASS, composition 1 component/6 resources/11 models/17 handlers, schema 4.
+- Source ZIP deterministic generation, archive integrity and identity: checked separately in packaging pass.
+
+This evidence does not establish live HTTPS reverse-proxy behavior, GitHub Pages deployment,
+Windows ZipRunner import, producer ZIP verification against the pinned official ZipRunner
+CLI, real assets in production, operator acceptance, release approval or completed social login.
+Prior v0.5.12 exact-commit GitHub CI passed: 435872423213c2f01d02ffff4d54dc5243673d55;
+https://github.com/TheBigTreeInc/atrium/actions/runs/39122178257
+Installed v0.5.12 package remained operator-unverified in the latest supplied QA report.

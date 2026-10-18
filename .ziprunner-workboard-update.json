@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.12",
-  "summary": "v0.5.12 implements operator-scoped publisher HTTPS origin ownership proof with schema v4 and deny-by-default SSRF controls. CI and installed artifact operator acceptance remain outstanding; no automatic publisher identity, self-service or publication.",
+  "version": "0.5.13",
+  "summary": "v0.5.13 candidate implements an anonymous live reviewed catalog gateway and operator-configured Pages client (ATR-104-LIVE). Every request rechecks SQLite approvals and SHA assets; fail closed on corruption/revocation, no-store/CORS and iframe invalidation. Real proxy/Pages/installed artifact acceptance remains outstanding; no auto-publication or user identity change.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -111,6 +111,17 @@
         "Confirm private DNS, DNS rebinding, redirect, TLS failure, expired/replayed/reissued proof, wrong origin and second-publisher attempts fail closed.",
         "Ensure public catalog and publisher approval remain unchanged; verification does not identify a Social user or approve publication."
       ]
+    },
+    {
+      "id": "ATR-104-LIVE",
+      "title": "Automatic public catalog gateway and cache revocation",
+      "summary": "Operator-run loopback gateway reads reviewed SQLite catalog and verifies asset hashes on every anonymous request; bounded fail-closed JSON/CORS/no-store response, Pages human-approved HTTPS gateway URL, foreground polling and iframe revocation guards. No automatic Pages release or publisher approval.",
+      "operator_checks": [
+        "On disposable schema-v4 registry approve one reviewed app with matching verified immutable HTML. Start loopback gateway behind operator HTTPS proxy, manually configure approved GitHub Pages URL; verify anonymous browser sees app within 60 seconds without new Git commit.",
+        "Disable publisher/withdraw app, verify next GET has no revoked app and currently displayed iframe closes on foreground/next poll; test frontend cannot launch a revoked release.",
+        "Corrupt/remove reviewed asset or disable database; expect 503/no-store and browser clears listings/iframe, never stale fallback. Check strict CORS and no admin credentials anywhere in published assets.",
+        "Verify external HTTPS/TLS/proxy cache headers, CI and installed ZipRunner artifact; only operator approval may mark Done."
+      ]
     }
   ],
   "remaining": [
@@ -118,12 +129,6 @@
       "id": "ATR-P0-004",
       "title": "Official pinned DAPI and ZipRunner live validation",
       "summary": "Target GitHub Actions/ZipRunner installed run and schema v2 activation remain operator gated and unobserved.",
-      "priority": "high"
-    },
-    {
-      "id": "ATR-104-LIVE",
-      "title": "Automatic public catalog gateway and cache revocation",
-      "summary": "Snapshots require explicit operator publication; add an approved automated guest-read gateway or content delivery pipeline, without exposing scoped DAPI credentials.",
       "priority": "high"
     },
     {

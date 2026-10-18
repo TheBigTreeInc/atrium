@@ -1,0 +1,46 @@
+= Atrium v0.5.13 — Anonymous live public catalog gateway
+:toc:
+
+== Scope and boundary
+
+This is the source implementation candidate for `ATR-104-LIVE` (automatic public catalog gateway and cache revocation). v0.5.12's exact GitHub push `435872423213c2f01d02ffff4d54dc5243673d55` passed the Linux pinned DAPI/ZipRunner and Windows CI jobs: https://github.com/TheBigTreeInc/atrium/actions/runs/39122178257[Verify Atrium source]. The *installed* v0.5.12 ZIP (`54026b697835c27936bbeb39591fe58c59f940bb47e14a84c2f35d54910ea912`) still requires its own fresh ZipRunner post-update checks and operator acceptance.
+
+The public host remains static GitHub Pages with *operator-triggered deployment only*. To avoid continuously republishing Pages, the portal can now read an *anonymous live gateway URL* deployed under an operator-owned HTTPS reverse proxy. The gateway reads the existing reviewed Atrium SQLite registry directly (read-only) and checks local hash-named approved asset files; it does not require an API key, a second authentication database, or any Social/Tavi integration. The Looprd/DAPI registry remains the sole authority for publisher status and game approval. No automatic approval, release, push or application registration is added.
+
+== Components
+
+* `tools/live_catalog.py` — explicitly operator-started, loopback-only, read-only HTTP gateway; exposes solely `GET /catalog.json` and same-route `OPTIONS` for an exact configured HTTPS Pages origin. It calls `build_catalog()` for *every* request rather than trusting a last-known snapshot. Invalid DB, unavailable DB, corrupted assets or invalid reviewed data returns `503` with a generic body, never stale successful bytes.
+* `tools/export_catalog.py` — unchanged static/manual exporter remains available for preview and rollback. Its last-valid snapshot is *not* used by the live gateway.
+* `web/catalog-config.json` — public no-secret deployment configuration; empty `gatewayUrl` selects the existing reviewed static snapshot preview behavior. Configured URLs must be clean absolute HTTPS URLs ending in `/catalog.json` with no credentials, parameters, fragment or nonstandard port.
+* `.github/workflows/pages.yml` — retains operator-only `workflow_dispatch`, accepts `catalog_url` as an optional human-reviewed input, validates/embeds it in `dist/catalog-config.json` at build time and deploys no private credentials. It must be dispatched *once* by the operator when selecting/changing a gateway. Subsequent game approvals/revocations require no Pages rebuild.
+* `web/main.mjs` — reads gateway configuration and fetches catalog anonymously with `cache: no-store` when visible, on foreground return and before each launch; it checks the approved release again just before mounting. On revocation, changed releases, failed catalog fetch or invalid catalog, it clears the rendered listings and closes any currently displayed iframe. The refresh interval is 60 seconds only while the tab is foregrounded.
+
+== Operator-only deployment procedure
+
+. Back up the existing Atrium SQLite registry and test its schema v4 on a disposable Looprd/DAPI deployment. Ensure reviewed asset copies exist in a controlled read-only directory, named `<sha256>.html`, and match the registered reviewed bytes.
+. On the *gateway host*, start the loopback server as an unprivileged account with read-only access to the Atrium DB and reviewed assets:
++
+[source,shell]
+----
+python tools/live_catalog.py --database /srv/atrium/private/atrium.sqlite --assets-dir /srv/atrium/reviewed-assets --allow-origin https://thebigtreeinc.github.io --listen 127.0.0.1 --port 8893
+----
++
+The paths and hostnames are examples: use the actual operator-reviewed deployment paths and Pages origin. `tools/live_catalog.py` rejects non-loopback binding; do not expose raw HTTP publicly. Run it under an operator-maintained supervisor/service with a least-privileged account. There is no automatic installation of such a service in this ZIP.
+. Configure a public HTTPS reverse proxy on a *controlled domain*, forwarding *only* `/catalog.json` (GET/OPTIONS) to loopback port 8893. Install valid TLS, set `Cache-Control: no-store` end-to-end, disable CDN/proxy caching for this endpoint and remove forwarded client cookies/credentials. Do not proxy other DAPI/registry paths. No admin API key or database files may be accessible through the public host.
+. In the Atrium GitHub repository enable Pages via Actions if not already done. After reviewing the URL, manually dispatch `Publish reviewed Atrium Pages` with `catalog_url=https://catalog.example.org/catalog.json` (replace with your real HTTPS gateway). This is configuration, not a game approval; no private secrets enter the web artifact. No deploy runs automatically on `push`.
+. From a separate browser session verify the public Pages `catalog-config.json` and `catalog.json` gateway endpoint. Publish one verified app on a disposable DAPI instance; it should appear after foreground refresh/within the next 60-second foreground poll. Disable its publisher or unpublish the app; it must disappear from the *next gateway request*, and the displayed iframe should close on the next refresh. Restore a publisher only after operator review.
+. Corrupt an approved asset copy and take the backing SQLite file offline. Confirm the gateway produces `503` with `no-store`, and the browser closes the iframe/clears listings rather than displaying a remembered catalog. Verify incorrect CORS origins receive no `Access-Control-Allow-Origin` header and that no response includes a DAPI token or private registry metadata. Run exact-commit GitHub CI and actual ZipRunner post-update verification before approval.
+
+== Revocation timing and limitations
+
+The gateway never serves a cached snapshot: it re-reads SQLite review state and rechecks SHA-256 asset bytes for every request, which is simple and fail-closed but places bounded read/CPU load on the host (up to 10,000 approved records, 1 MiB per asset, 16 MiB JSON output cap). A production optimization may later use transaction-bound revision events/Redis *without weakening fail-closed freshness*. This pass deliberately does not assume Redis is present.
+
+Revocations become visible to the *gateway* on the next request after the backing SQLite transaction commits, not instantly inside an already-open client. The client checks automatically every 60 seconds while foregrounded and on visibility changes; a suspended/backgrounded browser may retain its iframe until it resumes. Caches and reverse proxies must honor no-store; an incorrectly configured intermediary can defeat the freshness guarantee. A browser session is not the authoritative gameplay or Social authentication layer; backend game permissions and token revocation must still be enforced server-side.
+
+`loadIsolatedApp` revalidates the catalog just before mounting, but an approval can still change at an arbitrary later instant; this is reduced by the 60-second poll and on-demand checks, not claimed as an atomic server-enforced guarantee. A native client or game API must check its own server-side permissions. The static `web/catalog.json` preview remains empty unless separately staged; it is *not* an automatic fallback after a failed configured live gateway.
+
+== Acceptance and remaining work
+
+Local automated checks include live HTTP GET/revoke/restore, invalid/missing backing data, MIME/cache headers, exact CORS, unauthorized route denial, browser config validation, release-identity matching, package mappings and frontend checks. These are source-level proof, *not* live HTTPS, reverse proxy, GitHub Pages, Windows ZipRunner, production security audit or operator verification. `ATR-104-LIVE` is delivered as a candidate for Review but cannot be marked Done without an operator's actual end-to-end acceptance.
+
+Existing Work board tasks remain independent: `ATR-103-EXTERNAL` still awaits operator real-HTTPS ownership acceptance; `ATR-107-PAGES-LIVE` requires a real Pages deployment and real public catalog; `ATR-105-REPLAY` requires durable event and reconnect acceptance; `ATR-107-AUTH`, `ATR-107-PLATFORMS`, `ATR-108-LOOPRD-DISCOVERY`, `ATR-P0-004` and all others retain their operator statuses. No OAuth, Social principal, Looprd game-sidecar activation, OpenClaw controller, offline client or runtime installer is claimed in this pass.

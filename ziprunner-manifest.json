@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.12",
-    "base_version": "0.5.11",
-    "source_revision": "3ee8940f8dec4f14551d7a9ba301c6bbe2435f5e"
+    "version": "0.5.13",
+    "base_version": "0.5.12",
+    "source_revision": "435872423213c2f01d02ffff4d54dc5243673d55"
   },
   "update": {
-    "id": "ATR-P1-20261018-022",
+    "id": "ATR-P1-20261018-023",
     "kind": "source_update",
-    "created_at": "2026-10-18T12:52:00+02:00",
-    "summary": "v0.5.12 source candidate: operator-only publisher HTTPS origin ownership proof and additive v4 migration; CI and operator acceptance pending."
+    "created_at": "2026-10-18T14:21:43+02:00",
+    "summary": "v0.5.13 source candidate: read-only operator-hosted anonymous live catalog gateway, Pages public URL configuration and revocation-safe clients; no automatic Pages publishing, identity, or game approval."
   },
   "planned_work": [
     {
@@ -85,6 +85,12 @@
       "title": "Independent publisher challenge and remote asset ownership proof",
       "priority": "high",
       "acceptance_criteria": "The operator can create a single-use 15-minute HTTPS ownership challenge bound to the exact registered publisher and origin; a live verifier must require the exact response bytes over verified TLS, reject redirects, all private/non-global DNS addresses, DNS rebinding, large responses, replaced/expired/replayed challenges and cross-publisher origin conflicts. The public catalog and approved publisher state must not be changed by proof creation or verification, and a separate operator review is required."
+    },
+    {
+      "id": "ATR-104-LIVE",
+      "title": "Automatic public catalog gateway and cache revocation",
+      "priority": "high",
+      "acceptance_criteria": "Operator-hosted anonymous HTTPS gateway reads only reviewed, active publisher releases and matching hash-verified local assets; fails closed on revocation, DB/error/tamper, sets no-store and strict CORS, delivers automatic client refresh without Pages pushes, and clears revoked running apps. No private DAPI credentials, automatic release or operator approval; real HTTPS/Pages acceptance required."
     }
   ],
   "done_work": [
@@ -328,6 +334,37 @@
           "description": "Operator verification and DAPI migration procedure"
         }
       ]
+    },
+    {
+      "id": "ATR-104-LIVE",
+      "summary": "Operator-run loopback gateway reads reviewed SQLite catalog and verifies asset hashes on every anonymous request; bounded fail-closed JSON/CORS/no-store response, Pages human-approved HTTPS gateway URL, foreground polling and iframe revocation guards. No automatic Pages release or publisher approval.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/live_catalog.py",
+          "description": "Operator-run read-only loopback gateway with on-request review and asset validation, bounded fail-closed HTTP no-store/CORS"
+        },
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "Pages client refresh, revocation and secure pre-mount checks"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_live_catalog.py",
+          "description": "End-to-end local HTTP integration for publication, revocation, private CORS and tampering failure"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/catalog_client.test.mjs",
+          "description": "Anonymous public source configuration and release identity checks"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_063_LIVE_CATALOG.adoc",
+          "description": "Deployment, operational checks and remaining limitations"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -425,30 +462,46 @@
       },
       {
         "id": "ATR-P1-062-LOCAL",
-        "description": "v0.5.12 publisher proof source and security regressions",
+        "description": "v0.5.13 publisher proof source and security regressions",
         "status": "passed",
         "evidence_ref": "evidence/P1_062_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "ATR-P1-063-LOCAL",
+        "description": "Local 192 Python tests, 12 JS tests, live HTTP CORS/revocation/tampering, Pages build/verify, configured HTTPS source checks, and source ZIP checks",
+        "status": "passed",
+        "evidence_ref": "evidence/P1_063_LOCAL_CHECKS.txt",
+        "environment": "Local Linux Python 3.13, Node 22; source tests and HTTP loopback only",
+        "command": "python -m unittest discover -s tests -q && npm test && npm run build && npm run verify && python tools/package_zip.py"
+      },
+      {
+        "id": "ATR-P1-063-PROXY",
+        "description": "Real public TLS reverse proxy, disabled caching and live operator-reviewed Pages test",
+        "status": "not_run",
+        "reason": "Requires operator-controlled public DNS/TLS and manual Pages workflow dispatch."
       }
     ]
   },
   "handover": {
-    "next_pass": "Import v0.5.12 under operator approval, back up DB and verify schema v4 and publisher proof against an independently hosted real HTTPS domain on disposable DAPI. Keep ATR-108-LOOPRD-DISCOVERY planned and no self-service publication.",
+    "next_pass": "Import v0.5.13 into existing Atrium ZipRunner target after source review; verify installed artifact-specific test receipt and exact GitHub CI. On disposable schema-v4 SQLite start read-only loopback gateway behind real HTTPS proxy, configure public Pages via manual dispatch, and verify dynamic release/revocation/error behavior before operator acceptance. No auto-send, push or release.",
     "risks": [
-      "Linux pinned DAPI runtime smoke may reveal a subsequent integration issue after panel CSS is built; awaiting actual CI.",
-      "Windows runner Git checkout LF behavior needs observed GitHub Actions confirmation.",
-      "No live DAPI schema v2 activation or remote app publication performed.",
-      "v0.5.10 CI failed due to verification-plan task mismatch; this corrects mapping, but official new-commit acceptance remains pending.",
-      "DAPI runtime activation of new schema v4 and actual public HTTPS challenge fetch require operator-run disposable validation; source mocks do not prove live external ownership."
+      "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
+      "v0.5.13 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
+      "A broken reverse proxy or intermediary ignoring no-store can serve stale data; verify no-store and TLS at public edge.",
+      "An already-running/background browser is not instantaneously revoked; current foreground interval is 60 seconds. Game authorization must remain authoritative server-side.",
+      "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
+      "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified."
     ],
     "blockers": [
-      "Live GitHub Pages settings/production publication, CI and ZipRunner Windows import require separate operator execution."
+      "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
       "Shared Social sign-in and game installation remain unimplemented; do not expose a database API key in Pages.",
       "Game public catalog is deliberately empty until reviewed bytes and snapshot are published.",
       "v0.5.1 adds an explicit Life/hosted-game registration design and sample only; current v1 cannot register current multi-MiB Life build.",
-      "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field."
+      "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field.",
+      "v0.5.13 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy."
     ]
   },
   "operator_actions": [
@@ -514,13 +567,18 @@
     },
     {
       "id": "ATR-P1-OP-062",
-      "description": "Review and import v0.5.12; backup schema v3, exercise migration to v4 on disposable instance, test real HTTPS proof and ensure no publication or identity grant; approve any live rollout separately.",
+      "description": "Review and import v0.5.13; backup schema v3, exercise migration to v4 on disposable instance, test real HTTPS proof and ensure no publication or identity grant; approve any live rollout separately.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-063",
+      "description": "Review/import v0.5.13 source ZIP, rerun installed per-hash post-update tests and exact SHA CI. On disposable schema-v4 Atrium DB deploy read-only localhost gateway behind TLS proxy, manually dispatch Pages with public catalog URL, test publish/revoke/asset failure and no secrets. Approve live deployment separately.",
       "status": "required"
     }
   ],
   "release": {
     "requested": false,
     "requires_operator_approval": true,
-    "notes": "Operator review required; additive schema v4, no automatic publisher approval, self-service or game publication."
+    "notes": "Operator release approval required; gateway and Pages TLS must be configured by operator, no automatic publication or credential export."
   }
 }

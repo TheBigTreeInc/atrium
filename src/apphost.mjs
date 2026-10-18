@@ -7,7 +7,7 @@ export function validateEntry(manifest, allowedOrigins, allowLocal = false) {
   if (!allowedOrigins.includes(u.origin)) throw Error('unapproved origin');
   return u;
 }
-export async function loadIsolatedApp(manifest, parent, approvedOrigins, fetcher = fetch, cryptoAPI = crypto) {
+export async function loadIsolatedApp(manifest, parent, approvedOrigins, fetcher = fetch, cryptoAPI = crypto, beforeMount = async () => {}) {
   const url = validateEntry(manifest, approvedOrigins);
   const response = await fetcher(url.href, {mode:'cors', credentials:'omit', redirect:'error', cache:'no-store'});
   if (!response.ok) throw Error('asset unavailable');
@@ -23,6 +23,7 @@ export async function loadIsolatedApp(manifest, parent, approvedOrigins, fetcher
   // No allow-same-origin / top-navigation / popups; no privileged parent message bridge.
   const html = new TextDecoder().decode(buffer);
   frame.srcdoc = html;
+  await beforeMount();
   parent.replaceChildren(frame);
   return frame;
 }

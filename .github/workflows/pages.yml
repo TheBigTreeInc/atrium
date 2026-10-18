@@ -1,6 +1,12 @@
 name: Publish reviewed Atrium Pages
 on:
   workflow_dispatch:
+    inputs:
+      catalog_url:
+        description: Public HTTPS catalog gateway URL (empty keeps staged preview)
+        required: false
+        type: string
+        default: ''
 permissions:
   contents: read
   pages: write
@@ -28,6 +34,12 @@ jobs:
         run: |
           npm test
           npm run build
+          npm run verify
+      - name: Set operator-approved public catalog gateway (no secrets)
+        env:
+          ATRIUM_PUBLIC_CATALOG_URL: ${{ inputs.catalog_url }}
+        run: |
+          node tools/configure_catalog.mjs
           npm run verify
       - name: Configure repository Pages
         uses: actions/configure-pages@v5

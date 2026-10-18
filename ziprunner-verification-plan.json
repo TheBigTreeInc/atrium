@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.12",
+  "version": "0.5.13",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -241,6 +241,35 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ATR-104-LIVE",
+      "criteria": [
+        {
+          "id": "ATR-104-LIVE-AC-GATEWAY",
+          "description": "Live loopback HTTP gateway returns reviewed-only/no-store responses and denies stale/tampered/revoked public data",
+          "mode": "automated",
+          "checks": [
+            "ATR-104-LIVE-T1"
+          ]
+        },
+        {
+          "id": "ATR-104-LIVE-AC-CLIENT",
+          "description": "Pages public gateway config, polling, pre-mount freshness and revocation guards are source-tested",
+          "mode": "automated",
+          "checks": [
+            "ATR-104-LIVE-T2"
+          ]
+        },
+        {
+          "id": "ATR-104-LIVE-AC-LIVE",
+          "description": "Operator verifies actual HTTPS proxy, Pages integration, revocation response and installed ZipRunner acceptance",
+          "mode": "manual",
+          "checks": [
+            "ATR-104-LIVE-M1"
+          ]
+        }
+      ]
     }
   ],
   "checks": [
@@ -469,6 +498,40 @@
       "stage": "acceptance",
       "description": "Live operator acceptance of independent publisher HTTPS domain proof",
       "instructions": "Backup production DB; test v3→v4 migration on disposable instance. Register a controlled public DNS hostname, issue via apps:approve, host returned proofContent as UTF-8 at proofUrl, verify, then attempt reuse, redirect, bad TLS, private DNS, disabled publisher and wrong origin. Ensure immutable releases/catalog unchanged. Do not mark Done or release without operator review."
+    },
+    {
+      "id": "ATR-104-LIVE-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Live HTTP gateway no stale data, revocation, CORS and 503 regression suite",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_live_catalog.py",
+      "assertions": [
+        "GET always revalidates approved SQLite and asset data",
+        "Publisher disable removes app next request without redeploy",
+        "Missing DB and hash tampering fail closed with 503/no-store",
+        "Only operator-configured browser origin receives CORS headers; no admin keys"
+      ]
+    },
+    {
+      "id": "ATR-104-LIVE-T2",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Public Pages HTTPS catalog configuration and revoked release enforcement tests",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/catalog_client.test.mjs",
+      "assertions": [
+        "Public config rejects credentialed/unsafe URLs",
+        "No-store anonymous fetch, release identity matching, fallback only when explicitly unconfigured",
+        "Frontend rechecks before mounting and removes revoked iframe"
+      ]
+    },
+    {
+      "id": "ATR-104-LIVE-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Real HTTPS gateway, Pages activation and revocation acceptance",
+      "instructions": "Back up/replay schema-v4 SQLite on disposable DAPI; start read-only loopback gateway behind operator TLS proxy with cache disabled, manually dispatch Pages workflow with reviewed clean public catalog URL. Publish reviewed asset and verify anonymous Pages display. Disable publisher, ensure next gateway request omits game and client closes iframe by next foreground/60-second refresh; corrupt asset/stop DB and verify 503 with no cached fallback. Check no API secret/client auth, strict CORS and proxy behavior. Verify exact-commit CI and matching installed ZipRunner post-update checks; do not approve release or mark Done without operator approval."
     }
   ]
 }

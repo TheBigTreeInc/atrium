@@ -1,14 +1,34 @@
 import {loadIsolatedApp} from '../src/apphost.mjs';
-import {fetchPublicCatalog} from '../src/catalog_client.mjs';
+import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
 const area = document.querySelector('#apps');
 const stage = document.querySelector('#stage');
 let refreshInFlight = false;
+let activeApp = null;
+let generation = 0;
+let endpoint = null;
+
+function revokeOpenApp(reason = 'This game is no longer available in the approved catalog.') {
+  generation++;
+  activeApp = null;
+  stage.replaceChildren();
+  stage.textContent = reason;
+}
+
+async function freshCatalog() {
+  const configured = await loadCatalogEndpoint();
+  if (endpoint !== null && configured !== endpoint) {
+    revokeOpenApp('Public catalog gateway changed; existing game closed.');
+  }
+  endpoint = configured;
+  return fetchPublicCatalog(fetch, endpoint);
+}
 
 async function refreshCatalog() {
   if (refreshInFlight) return;
   refreshInFlight = true;
   try {
-    const catalog = await fetchPublicCatalog();
+    const catalog = await freshCatalog();
+    if (activeApp && !isStillPublished(catalog, activeApp)) revokeOpenApp();
     area.replaceChildren();
     if (!catalog.apps.length) {
       const empty = document.createElement('p');
@@ -21,14 +41,31 @@ async function refreshCatalog() {
       const details = document.createElement('p'); details.textContent = app.id;
       const button = document.createElement('button'); button.textContent = 'Open';
       button.addEventListener('click', async () => {
-        stage.textContent = 'Opening verified app…';
-        try { await loadIsolatedApp(app, stage, catalog.allowedOrigins); }
-        catch (error) { stage.textContent = 'Cannot open app: ' + error.message; }
+        const requestId = ++generation;
+        stage.replaceChildren();
+        stage.textContent = 'Checking current publication…';
+        try {
+          const latest = await freshCatalog();
+          if (!isStillPublished(latest, app)) throw Error('game was removed or changed');
+          // A second freshness check immediately before the iframe is mounted
+          // catches a revocation that occurred during the asset fetch/hash.
+          await loadIsolatedApp(app, stage, latest.allowedOrigins, fetch, crypto, async () => {
+            const atMount = await freshCatalog();
+            if (requestId !== generation || !isStillPublished(atMount, app)) {
+              throw Error('game approval changed while opening');
+            }
+          });
+          activeApp = app;
+        } catch (error) {
+          if (requestId === generation) revokeOpenApp('Cannot open game: ' + error.message);
+        }
       });
       card.append(heading, details, button); area.append(card);
     }
   } catch (error) {
-    stage.textContent = 'Catalog unavailable: ' + error.message;
+    // Never leave revoked games visible or running if the gateway is unavailable.
+    area.replaceChildren();
+    revokeOpenApp('Public catalog unavailable; running game closed: ' + error.message);
   } finally {
     refreshInFlight = false;
   }
@@ -37,5 +74,4 @@ await refreshCatalog();
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) void refreshCatalog();
 });
-// Poll only while foregrounded; public snapshots are published separately.
 setInterval(() => { if (!document.hidden) void refreshCatalog(); }, 60000);

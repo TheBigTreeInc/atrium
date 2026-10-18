@@ -1,4 +1,4 @@
-= Atrium v0.5.12 — Publisher origin ownership proof candidate
+= Atrium v0.5.13 — Anonymous live reviewed catalog delivery
 
 This source package adds operator-scoped verified HTTPS domain proof (see docs/P1_062_PUBLISHER_OWNERSHIP.adoc). The current local ZipRunner artifact remains v0.5.11 until an operator imports the new ZIP. No publisher self-service, developer identity, public release, Looprd discovery hook, or automatic game publication is enabled.
 
@@ -224,3 +224,8 @@ Only the ZipRunner interchange manifest todo-work schema has been repaired after
 == Atrium v0.5.11 — CI verification-plan alignment
 
 Adds missing verification criteria/checks for existing ATR-104-CI-TODO-CONTRACT-060 ticket and a task-mapping regression. The v0.5.10 push passed Windows and failed upstream verification-plan mapping. Operator acceptance and exact-commit v0.5.11 CI remain pending. Details in docs/P1_061_VERIFICATION_PLAN_ALIGNMENT.adoc.
+
+
+== v0.5.13 automatic public catalog gateway (source candidate)
+
+An operator-started loopback-only read-only gateway serves only the live, hash-verified, reviewed SQLite catalog through a separate controlled HTTPS reverse proxy. A manually configured GitHub Pages endpoint then refreshes public data without repository pushes. No privileged DAPI tokens or Social sign-in are exposed to browsers. Revoked applications are removed on refresh; failed catalog reads close open iframes. The gateway requires a real controlled host/proxy and operator acceptance; it does not autonomously deploy. See `docs/P1_063_LIVE_CATALOG.adoc`.

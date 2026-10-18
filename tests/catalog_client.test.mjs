@@ -29,3 +29,42 @@ test('fetch only sends anonymous no-store request', async () => {
   });
   assert.equal(result.apps[0].id, manifest.id);
 });
+
+import {parseCatalogSource, loadCatalogEndpoint, samePublishedRelease, isStillPublished} from '../src/catalog_client.mjs';
+test('configured live HTTPS catalog source is public and fail closed', () => {
+  const schema = 'atrium.catalog-source/v1';
+  assert.equal(parseCatalogSource({schema, gatewayUrl:''}), './catalog.json');
+  assert.equal(parseCatalogSource({schema, gatewayUrl:'https://catalog.example.org/catalog.json'}), 'https://catalog.example.org/catalog.json');
+  for (const bad of [
+    'http://catalog.example.org/catalog.json',
+    'https://secret@catalog.example.org/catalog.json',
+    'https://catalog.example.org/catalog.json?apikey=x',
+    'https://catalog.example.org/catalog.json#x',
+    'https://localhost/catalog.json',
+    'https://127.0.0.1/catalog.json',
+    'https://catalog.internal/catalog.json',
+    'https://catalog.example.org/registry/catalog',
+    'https://catalog.example.org:8443/catalog.json',
+  ]) assert.throws(() => parseCatalogSource({schema, gatewayUrl:bad}));
+  assert.throws(() => parseCatalogSource({schema, gatewayUrl:'', apiKey:'no'}));
+});
+test('source config fetched anonymously and an unavailable config never silently falls back', async () => {
+  assert.equal(await loadCatalogEndpoint(async (_, options) => {
+    assert.equal(options.credentials,'omit');
+    assert.equal(options.redirect,'error');
+    assert.equal(options.cache,'no-store');
+    return {ok:true,json:async()=>({schema:'atrium.catalog-source/v1',gatewayUrl:'https://catalog.example.org/catalog.json'})};
+  }), 'https://catalog.example.org/catalog.json');
+  await assert.rejects(() => loadCatalogEndpoint(async () => ({ok:false})), /unavailable/);
+});
+test('revocation detects missing or replaced release identities', () => {
+  const installed = {...manifest, version:'1.0.0'};
+  assert.equal(isStillPublished({...base,apps:[installed]}, installed), true);
+  for (const changed of [
+    {...installed,sha256:'b'.repeat(64)},
+    {...installed,entry:'https://assets.example.org/assets/'+ 'b'.repeat(64) + '/index.html'},
+    {...installed,version:'2.0.0'},
+    {...installed,status:'disabled'}
+  ]) assert.equal(samePublishedRelease(installed,changed),false);
+  assert.equal(isStillPublished({...base,apps:[]},installed),false);
+});
