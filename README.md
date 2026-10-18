@@ -1,3 +1,7 @@
+= Atrium v0.5.12 — Publisher origin ownership proof candidate
+
+This source package adds operator-scoped verified HTTPS domain proof (see docs/P1_062_PUBLISHER_OWNERSHIP.adoc). The current local ZipRunner artifact remains v0.5.11 until an operator imports the new ZIP. No publisher self-service, developer identity, public release, Looprd discovery hook, or automatic game publication is enabled.
+
 ## Atrium v0.5.11 — Windows ZipRunner build repair
 
 This patch fixes the missing httpx import during test discovery and CP1252 decoding failures in AsciiDoc source tests. No gameplay or registry behavior changed.

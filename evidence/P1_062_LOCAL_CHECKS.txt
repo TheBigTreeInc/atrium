@@ -1,0 +1,13 @@
+Atrium v0.5.12 — LOCAL SOURCE VALIDATION ONLY
+Date: 2026-10-18
+Python: python -m unittest discover -s tests -q — PASS: 167 tests
+JavaScript: npm test — PASS: 8 tests
+Static frontend: npm run build — PASS
+Static frontend verification: npm run verify — PASS
+Generated Looprd registry fragment check — PASS (run within Python source tests)
+Looprd YAML source hash matched linked SHA-256 — PASS
+Workboard/verification-plan exact task alignment — PASS (run within source tests)
+Pinned live DAPI semantic validator: NOT RUN locally, requires pinned GitHub CI.
+Publisher HTTPS proof against real independent public domain: NOT RUN, requires operator-controlled domain.
+SQLite schema v4 actual hosted DAPI migration: NOT RUN, requires disposable target.
+Local source tests do not approve a release, authorize publication, or close Work board tickets.

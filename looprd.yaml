@@ -1,6 +1,6 @@
 apiVersion: looprd/v1
 component: atrium
-release: 0.5.11
+release: 0.5.12
 api:
   version: v1
 auth:
@@ -17,7 +17,7 @@ auth:
   - apps:approve
 database:
   backend: sqlite
-  schemaVersion: 3
+  schemaVersion: 4
   migrations:
   - version: 2
     statements:
@@ -41,6 +41,13 @@ database:
       NOT NULL, "fingerprint" VARCHAR(64) NOT NULL, "sidecar" JSON NOT NULL,
       "status" VARCHAR(32) NOT NULL, "updatedAt" VARCHAR(40) NOT NULL,
       UNIQUE("deploymentId", "component"))
+  - version: 4
+    statements:
+    - CREATE TABLE "PublisherOriginProof" ("id" INTEGER PRIMARY KEY, "publisherId"
+      VARCHAR(120) NOT NULL, "origin" VARCHAR(255) NOT NULL, "challengeId"
+      VARCHAR(32) NOT NULL, "tokenDigest" VARCHAR(64) NOT NULL, "status"
+      VARCHAR(16) NOT NULL, "issuedAt" VARCHAR(40) NOT NULL, "expiresAt"
+      VARCHAR(40) NOT NULL, "verifiedAt" VARCHAR(40), UNIQUE("publisherId", "origin"), UNIQUE("origin"))
 requires:
 - spec.includes
 - events.transactional

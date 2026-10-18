@@ -31,7 +31,7 @@ def main():
             assert client.get('/_looprd/health').status_code == 200
             assert 'atrium' in runtime.active, runtime.errors
             spec = runtime.active['atrium'].spec
-            assert spec.release == '0.5.11' and spec.database.schemaVersion == 3
+            assert spec.release == '0.5.12' and spec.database.schemaVersion == 4
             endpoint = '/looprd/atrium/v1'
             assert client.get(endpoint+'/registry/catalog').status_code == 401
             admin = {'Authorization': 'Bearer ' + admin_token}
@@ -71,7 +71,7 @@ def main():
         with TestClient(create_app(settings=settings)) as client:
             read_resp = client.get('/looprd/atrium/v1/registry/catalog', headers=read)
             assert read_resp.status_code == 200 and read_resp.json()['apps'] == []
-    print('DAPI disposable registry smoke passed (one component, schema v3, scoped publishing)')
+    print('DAPI disposable registry smoke passed (one component, schema v4, scoped publishing)')
 
 
 if __name__ == '__main__':

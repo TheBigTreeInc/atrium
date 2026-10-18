@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -220,6 +220,27 @@
           ]
         }
       ]
+    },
+    {
+      "id": "ATR-103-EXTERNAL",
+      "criteria": [
+        {
+          "id": "ATR-103-EXTERNAL-AC-AUTOMATED",
+          "description": "Bounded source checks cover proof issuance, strict network transport and non-publishing durable state.",
+          "mode": "automated",
+          "checks": [
+            "ATR-103-EXTERNAL-T1"
+          ]
+        },
+        {
+          "id": "ATR-103-EXTERNAL-AC-OPERATOR",
+          "description": "Independently hosted HTTPS ownership, SQLite schema v3→v4 migration and review are operator verified.",
+          "mode": "manual",
+          "checks": [
+            "ATR-103-EXTERNAL-M1"
+          ]
+        }
+      ]
     }
   ],
   "checks": [
@@ -428,6 +449,26 @@
       "stage": "acceptance",
       "description": "Operator review of exact GitHub CI and installed ZIP",
       "instructions": "Review v0.5.11 exact pushed commit; confirm both GitHub jobs and official pinned ZipRunner 2.3 validator pass. Run fresh post-update tests against installed ZIP bytes, and keep tickets in review until operator acceptance."
+    },
+    {
+      "id": "ATR-103-EXTERNAL-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Publisher proof source failure-path and positive test suite",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_publisher_proof.py",
+      "assertions": [
+        "Origin challenge is single-use, time-limited and bound to publisher and registered HTTPS origin.",
+        "All DNS answers must be globally routable; TLS connection pins validated IP, refuses redirects and oversized content.",
+        "Proof alone never changes active publisher approval, public catalog or Social identity."
+      ]
+    },
+    {
+      "id": "ATR-103-EXTERNAL-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Live operator acceptance of independent publisher HTTPS domain proof",
+      "instructions": "Backup production DB; test v3→v4 migration on disposable instance. Register a controlled public DNS hostname, issue via apps:approve, host returned proofContent as UTF-8 at proofUrl, verify, then attempt reuse, redirect, bad TLS, private DNS, disabled publisher and wrong origin. Ensure immutable releases/catalog unchanged. Do not mark Done or release without operator review."
     }
   ]
 }

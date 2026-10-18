@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.11",
-    "base_version": "0.5.10",
-    "source_revision": "204ea3824bad0271c8089a642497f2019572765f"
+    "version": "0.5.12",
+    "base_version": "0.5.11",
+    "source_revision": "3ee8940f8dec4f14551d7a9ba301c6bbe2435f5e"
   },
   "update": {
-    "id": "ATR-P1-20261018-021",
+    "id": "ATR-P1-20261018-022",
     "kind": "source_update",
-    "created_at": "2026-10-18T10:54:00+02:00",
-    "summary": "v0.5.11 aligns ZipRunner task verification-plan coverage with delivered workboard IDs; no gameplay change."
+    "created_at": "2026-10-18T12:52:00+02:00",
+    "summary": "v0.5.12 source candidate: operator-only publisher HTTPS origin ownership proof and additive v4 migration; CI and operator acceptance pending."
   },
   "planned_work": [
     {
@@ -79,6 +79,12 @@
       "title": "Repair ZipRunner manifest todo schema accepted by upstream validator",
       "acceptance_criteria": "CI reproduces upstream todo_work schema error for v0.5.9 and passes pinned validator with schema-correct v0.5.11; existing ATR-108-LOOPRD-DISCOVERY planned status intact.",
       "priority": "high"
+    },
+    {
+      "id": "ATR-103-EXTERNAL",
+      "title": "Independent publisher challenge and remote asset ownership proof",
+      "priority": "high",
+      "acceptance_criteria": "The operator can create a single-use 15-minute HTTPS ownership challenge bound to the exact registered publisher and origin; a live verifier must require the exact response bytes over verified TLS, reject redirects, all private/non-global DNS addresses, DNS rebinding, large responses, replaced/expired/replayed challenges and cross-publisher origin conflicts. The public catalog and approved publisher state must not be changed by proof creation or verification, and a separate operator review is required."
     }
   ],
   "done_work": [
@@ -301,6 +307,27 @@
           "description": "Exact GitHub run failure and operator acceptance gates"
         }
       ]
+    },
+    {
+      "id": "ATR-103-EXTERNAL",
+      "summary": "Operator-scoped ownership challenge endpoints, additive schema v4, TLS-verified pinned public DNS fetch, single-use TTL and negative regressions. Does not grant identity, permit self-service, or publish releases.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/publisher_proof.py",
+          "description": "Challenge issuance, verification and SSRF-safe public network fetch"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_publisher_proof.py",
+          "description": "Expiry, replay, DNS rebinding/private-network, ownership and no-auto-publication regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_062_PUBLISHER_OWNERSHIP.adoc",
+          "description": "Operator verification and DAPI migration procedure"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -395,16 +422,23 @@
         "description": "Official pinned ZIP validator and exact-commit GitHub CI",
         "status": "not_run",
         "reason": "Requires operator-approved source push and exact-commit GitHub Actions."
+      },
+      {
+        "id": "ATR-P1-062-LOCAL",
+        "description": "v0.5.12 publisher proof source and security regressions",
+        "status": "passed",
+        "evidence_ref": "evidence/P1_062_LOCAL_CHECKS.txt"
       }
     ]
   },
   "handover": {
-    "next_pass": "Implement DAPI SourceReader + runtime optional sidecar detection and authenticated delivery after successful component activation; keep game and social principals independent.",
+    "next_pass": "Import v0.5.12 under operator approval, back up DB and verify schema v4 and publisher proof against an independently hosted real HTTPS domain on disposable DAPI. Keep ATR-108-LOOPRD-DISCOVERY planned and no self-service publication.",
     "risks": [
       "Linux pinned DAPI runtime smoke may reveal a subsequent integration issue after panel CSS is built; awaiting actual CI.",
       "Windows runner Git checkout LF behavior needs observed GitHub Actions confirmation.",
       "No live DAPI schema v2 activation or remote app publication performed.",
-      "v0.5.10 CI failed due to verification-plan task mismatch; this corrects mapping, but official new-commit acceptance remains pending."
+      "v0.5.10 CI failed due to verification-plan task mismatch; this corrects mapping, but official new-commit acceptance remains pending.",
+      "DAPI runtime activation of new schema v4 and actual public HTTPS challenge fetch require operator-run disposable validation; source mocks do not prove live external ownership."
     ],
     "blockers": [
       "Live GitHub Pages settings/production publication, CI and ZipRunner Windows import require separate operator execution."
@@ -477,11 +511,16 @@
       "id": "ATR-P1-OP-061",
       "description": "Review/import v0.5.11, run fresh post-update checks and review GitHub CI; no auto release.",
       "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-062",
+      "description": "Review and import v0.5.12; backup schema v3, exercise migration to v4 on disposable instance, test real HTTPS proof and ensure no publication or identity grant; approve any live rollout separately.",
+      "status": "required"
     }
   ],
   "release": {
     "requested": false,
     "requires_operator_approval": true,
-    "notes": "No auto publishing or DAPI game discovery hook; operator-controlled schema v3 activation and private candidate receipt only."
+    "notes": "Operator review required; additive schema v4, no automatic publisher approval, self-service or game publication."
   }
 }

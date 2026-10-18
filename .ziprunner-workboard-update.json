@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.11",
-  "summary": "v0.5.11 repairs missing verification-plan coverage for existing ATR-104-CI-TODO-CONTRACT-060 after exact-commit v0.5.10 Linux CI failed. Windows CI passed. Operator acceptance remains pending.",
+  "version": "0.5.12",
+  "summary": "v0.5.12 implements operator-scoped publisher HTTPS origin ownership proof with schema v4 and deny-by-default SSRF controls. CI and installed artifact operator acceptance remain outstanding; no automatic publisher identity, self-service or publication.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -99,6 +99,18 @@
         "Verify ATR-108-LOOPRD-DISCOVERY stays planned; all existing IDs and criteria persist.",
         "Verify Linux DAPI/ZipRunner and Windows workflows pass on an exact pushed commit before approval."
       ]
+    },
+    {
+      "id": "ATR-103-EXTERNAL",
+      "title": "Independent publisher challenge and remote asset ownership proof",
+      "priority": "high",
+      "summary": "Source implements additive schema v4, scoped issue/verify/status endpoints and direct pinned public-IP HTTPS verification; proof never grants identity or publication.",
+      "operator_checks": [
+        "Backup SQLite and validate additive schema v3→v4 on a disposable DAPI deployment without changing existing releases.",
+        "Issue challenge for an existing operator-approved publisher/origin, host exactly the returned bytes at the HTTPS proof URL, then verify via apps:approve scope.",
+        "Confirm private DNS, DNS rebinding, redirect, TLS failure, expired/replayed/reissued proof, wrong origin and second-publisher attempts fail closed.",
+        "Ensure public catalog and publisher approval remain unchanged; verification does not identify a Social user or approve publication."
+      ]
     }
   ],
   "remaining": [
@@ -106,12 +118,6 @@
       "id": "ATR-P0-004",
       "title": "Official pinned DAPI and ZipRunner live validation",
       "summary": "Target GitHub Actions/ZipRunner installed run and schema v2 activation remain operator gated and unobserved.",
-      "priority": "high"
-    },
-    {
-      "id": "ATR-103-EXTERNAL",
-      "title": "Independent publisher challenge and remote asset ownership proof",
-      "summary": "Operator-attested domains and local hash-checked bytes do not establish HTTPS domain ownership or developer identity; implement challenge-based proof before self-service.",
       "priority": "high"
     },
     {

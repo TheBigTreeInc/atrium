@@ -1,0 +1,40 @@
+= Atrium v0.5.12 — Operator-scoped HTTPS publisher origin proof
+:toc:
+
+== Provenance and scope
+
+The previous v0.5.11 GitHub push `880a31de700beff3d5466ab1e203db6ee53e8db1` completed both GitHub Actions jobs successfully: https://github.com/TheBigTreeInc/atrium/actions/runs/39114392609[Verify Atrium source]. Local ZipRunner still reports v0.5.11 `build_passed_operator_unverified` and `waiting_for_verification` for its installed ZIP SHA-256 `ceb61e5633fa1b28c3443256dbe0f83c2c6085ba8eb019f328d424a92190435a`. GitHub generated a *different* source ZIP SHA. Neither proves operator acceptance of installed bytes.
+
+This pass implements the source-side subset of `ATR-103-EXTERNAL` for *ownership of an HTTPS origin* only. It does NOT verify a developer's legal identity, delegate Social user registration, enable public publisher self-service, grant publisher approval, promote reviewed catalog releases, or integrate with Life/Tavi/Looprd game identity.
+
+== New operator-scoped endpoints
+
+Each route requires `apps:approve`; none is anonymous and no credentials are accepted in request payloads.
+
+* `POST /registry/publishers/proofs` with `{"publisherId":"studio-x","origin":"https://studio.example.org"}` issues a new challenge only for an already active, operator-approved publisher and one of its registered exact HTTPS origins.
+* Response gives `challengeId`, `expiresAt`, `proofUrl` and `proofContent`. Serve exactly those UTF-8 bytes at `https://studio.example.org/.well-known/atrium-publisher-proof/<challenge-id>.txt`.
+* `POST /registry/publishers/proofs/verify` with `publisherId`, `origin`, `challengeId` fetches and validates ownership. Success records `status=verified` but does not approve a publisher or game.
+* `GET /registry/publishers/proofs?publisherId=studio-x` returns scoped status metadata and timestamps without the nonce or stored digest.
+
+Issuing another challenge for the same publisher+origin invalidates the previous one. Each challenge has a 15-minute issuance-to-verification window and is consumed at first successful verification. The SHA-256 of the exact proof bytes is stored, not the plaintext nonce. Origins are unique across publisher-proof claims to avoid two publishers being verified for a single domain. Historical verifiedAt is *not* perpetual ownership assurance; reissue/reverify before security-critical changes.
+
+== Network security boundaries
+
+The verifier accepts only a canonical DNS-based HTTPS origin on TCP 443. It resolves DNS once per attempt, rejects the whole result when any address is non-global (loopback, private, link-local, documentation or special-use), connects directly to an approved numeric IP (no system proxy or DNS lookup at connection time), and sends a TLS request with SNI and CA-verified hostname. It does not follow redirects. Response must be HTTP 200, uncompressed, and at most 1024 bytes. Connection and response timeouts are 3 seconds each. Rebinding DNS cannot move the validated socket to a private address.
+
+Failed DNS, TLS, HTTP or content checks never mark proof as verified. A successful outbound check must repeat the pending challenge and publisher status check in a database transaction before setting `verified`. A disabled publisher cannot obtain or complete a proof.
+
+Network proof does not establish the *asset* SHA-256, trademark ownership, rights to a game, or a Social identity. Those remain separate review criteria.
+
+== Migration and operator acceptance
+
+1. Back up the active Atrium SQLite registry; restore it to a disposable deployment. Verify the existing v2/v3 migration history and source-controlled v4 `PublisherOriginProof` additive migration; ensure existing Publisher/App/AppRelease/AppSubmission/AtriumDiscoveryCandidate data remains intact.
+2. Import this source as a candidate through ZipRunner and run fresh post-update tests bound to the actual ZIP hash.
+3. With a controlled publicly resolvable DNS name and a valid HTTPS certificate, register an operator-approved publisher, issue a proof, host the exact response body, and verify using an authorized `apps:approve` key.
+4. Test incorrect content, different publisher, unapproved origin, expired nonce, reissue then old nonce, replay after success, redirect, invalid TLS, private/mixed DNS results, DNS change, oversized response, and disabled publisher.
+5. Confirm public catalog/release approval and Social identity are unchanged. Run both GitHub Actions jobs against the exact new pushed commit and review the pinned validator result.
+6. Keep all operator Work board tickets in their existing operator-controlled status until manually reviewed; no ZIP ingestion, build, or CI result is a release or task-closure approval.
+
+== Future work
+
+`ATR-104-LIVE`, `ATR-107-AUTH`, `ATR-107-PAGES-LIVE`, `ATR-107-PLATFORMS`, `ATR-108-LOOPRD-DISCOVERY`, `ATR-P0-004` and other unreviewed work stay separately tracked. This pass does not implement public self-service enrollment, registered domain ownership transfers, asynchronous revocation/polling, automatic revalidation, or a new game runtime.

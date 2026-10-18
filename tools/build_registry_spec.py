@@ -9,6 +9,9 @@ OUTPUT=ROOT/'modules/registry/looprd.yaml'
 ENDPOINTS=[
  ('/registry/publishers','POST','apps:approve','register_publisher'),
  ('/registry/publishers/status','POST','apps:approve','change_publisher_status'),
+ ('/registry/publishers/proofs','POST','apps:approve','issue_publisher_proof'),
+ ('/registry/publishers/proofs/verify','POST','apps:approve','verify_publisher_proof'),
+ ('/registry/publishers/proofs','GET','apps:approve','list_publisher_proofs'),
  ('/registry/submissions','POST','apps:approve','submit'),
  ('/registry/reviews','POST','apps:approve','review'),
  ('/registry/disable','POST','apps:approve','disable'),
@@ -22,7 +25,7 @@ class Literal(str): pass
 
 def render():
     spec=yaml.safe_load(BASE.read_text(encoding='utf-8'))
-    library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/catalog.py','src/atriumd_contract.py','src/registry_runtime.py','src/discovery_runtime.py'))
+    library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/catalog.py','src/atriumd_contract.py','src/registry_runtime.py','src/discovery_runtime.py','src/publisher_proof.py'))
     for path,method,scope,fn in ENDPOINTS:
         source=library+f'\n\nasync def handle(ctx):\n    return await {fn}(ctx)\n'
         spec['handlers'].append({'path':path,'method':method,'kind':'python','scopes':[scope], 'source':Literal(source)})
