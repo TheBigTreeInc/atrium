@@ -35,6 +35,7 @@ jobs:
           npm test
           npm run build
           npm run verify
+          node tools/build_tavi_extension.mjs
       - name: Fetch pinned DAPI runtime
         uses: actions/checkout@v4
         with:
@@ -71,13 +72,19 @@ jobs:
       - name: Build and validate ZipRunner source ZIP
         run: |
           python tools/package_zip.py
-          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.21-ziprunner.zip --expected-project atrium --require-verification-plan
+          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.22-ziprunner.zip --expected-project atrium --require-verification-plan
           python _upstream/ziprunner-spec/tools/validate.py looprd ziprunner.looprd.json --root . --expected-project atrium
+      - name: Upload Tavi extension build from same source SHA (no auto-deploy)
+        uses: actions/upload-artifact@v4
+        with:
+          name: atrium-tavi-extension-1.0.0
+          path: dist-tavi/
+          if-no-files-found: error
       - name: Upload source ZIP for operator review (no auto-deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: atrium-0.5.21-ziprunner
-          path: dist/atrium-0.5.21-ziprunner.zip
+          name: atrium-0.5.22-ziprunner
+          path: dist/atrium-0.5.22-ziprunner.zip
           if-no-files-found: error
 
   windows-ziprunner-build:
@@ -103,5 +110,6 @@ jobs:
           npm test
           npm run build
           npm run verify
+          node tools/build_tavi_extension.mjs
       - name: Check protected artifact exclusions
         run: python tools/package_zip.py

@@ -1,4 +1,4 @@
-= Atrium 0.5.21 — Life 0.5.95 public gateway compatibility
+= Atrium 0.5.22 — Life 0.5.95 public gateway compatibility
 :toc:
 
 == Upstream producer contract

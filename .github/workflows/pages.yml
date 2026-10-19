@@ -7,6 +7,11 @@ on:
         required: false
         type: boolean
         default: false
+      extension_base_url:
+        description: Approved HTTPS URL ending in /atrium/tavi/ (empty disables extension publication)
+        required: false
+        type: string
+        default: ''
       catalog_url:
         description: Public HTTPS catalog gateway URL (empty keeps staged preview)
         required: false
@@ -53,6 +58,17 @@ jobs:
         run: |
           node tools/stage_checkers.mjs
           npm run verify
+      - name: Build optional Tavi extension from the same source revision
+        env:
+          ATRIUM_TAVI_BASE_URL: ${{ inputs.extension_base_url }}
+        run: |
+          if [ -n "$ATRIUM_TAVI_BASE_URL" ]; then
+            node tools/build_tavi_extension.mjs
+            node tools/build_tavi_repository.mjs "$ATRIUM_TAVI_BASE_URL"
+            mkdir -p dist/tavi
+            cp -r dist-tavi/ui dist/tavi/ui
+            cp dist-tavi/tavi.repository.json dist/tavi/tavi.repository.json
+          fi
       - name: Configure repository Pages
         uses: actions/configure-pages@v5
       - name: Upload verified static output

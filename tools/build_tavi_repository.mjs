@@ -1,0 +1,14 @@
+import {readFile,writeFile,mkdir,cp} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const base=process.argv[2];
+if(!base)throw Error('Usage: node tools/build_tavi_repository.mjs https://reviewed-pages.example/atrium/tavi/');
+const u=new URL(base);
+if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||!u.pathname.endsWith('/')||u.port||/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|.*\.local$)/i.test(u.hostname)) throw Error('Use an operator-approved public HTTPS extension base with trailing slash');
+const manifest=JSON.parse(await readFile(path.join(root,'dist-tavi','manifest.json'),'utf8'));
+const entry={manifest,entrypoint:new URL('ui/index.html',u).href,source:'https://github.com/TheBigTreeInc/atrium',license:'NOASSERTION'};
+const catalog={schema:'tavi.repository/v1',name:'Atrium by TheBigTreeInc',extensions:[entry]};
+const output=path.join(root,'dist-tavi','tavi.repository.json');
+await writeFile(output,JSON.stringify(catalog,null,2)+'\n');
+console.log('Repository index built from same Atrium commit:',output);

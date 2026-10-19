@@ -1,6 +1,6 @@
-= Atrium 0.5.21 — corrected ZipRunner source candidate
+= Atrium 0.5.22 — corrected ZipRunner source candidate
 
-0.5.19 failed Windows Python CI integration test because `.github/workflows/verify.yml` named the 0.5.18 artifact. Fixed workflow validation and upload references to 0.5.21, bumped source version declarations and added regression assertions. No change to Life game authority, Tavi or DAPI. See `docs/P1_070_WORKFLOW_VERSION_REPAIR.adoc`. Operator should apply this ZIP without deleting local state and check exact installed bytes; no push or deployment authorized.
+0.5.19 failed Windows Python CI integration test because `.github/workflows/verify.yml` named the 0.5.18 artifact. Fixed workflow validation and upload references to 0.5.22, bumped source version declarations and added regression assertions. No change to Life game authority, Tavi or DAPI. See `docs/P1_070_WORKFLOW_VERSION_REPAIR.adoc`. Operator should apply this ZIP without deleting local state and check exact installed bytes; no push or deployment authorized.
 
 = Atrium v0.5.18 CI smoke repair handoff
 

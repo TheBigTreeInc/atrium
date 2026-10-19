@@ -1,0 +1,30 @@
+= Atrium standalone and Tavi extension from one repository
+:revnumber: 0.5.22
+:toc:
+
+== Single source of truth
+
+`TheBigTreeInc/atrium` contains `src/` shared game discovery/client/lobby, `web/` standalone UI, and `extensions/tavi/` v1 manifest and navigation adapter. Tavi only hosts an isolated panel: no account secrets, contacts or chat privileges are passed to the iframe. Life owns match IDs and game seats. A Social challenge response is not a Life match.
+
+== Outputs
+
+* `npm run build` produces `dist/` standalone static Atrium.
+* `npm run build:tavi` produces `dist-tavi/` Tavi extension with the *same compiled Atrium UI* and a close-panel adapter. The extension manifest is source in `extensions/tavi/manifest.json`.
+* `npm run repository:tavi -- https://APPROVED-HOST/atrium/tavi/` writes a Tavi `tavi.repository/v1` index for `dist-tavi/ui/index.html`. The operator must supply actual, vetted HTTPS hosting (not infer it from a LoopRD component route).
+* `python tools/package_zip.py` produces the independent source ZIP for ZipRunner. `dist/` and `dist-tavi/`, credentials, private config and runtime state are excluded.
+
+== Controlled publication
+
+The existing GitHub Pages workflow remains explicitly `workflow_dispatch` with github-pages environment approval. `extension_base_url` opts into staging the Tavi extension and index under `/tavi/`; without it only the standalone site is published. This allows both static outputs to ship from the *same commit* but does NOT automatically authorize a publicly unreviewed game or Life browser origin. CI `verify.yml` builds both and packages source for review; it does not deploy.
+
+Tavi users subscribe to `https://APPROVED-HOST/atrium/tavi/tavi.repository.json`. HTTP fetch must be public with cross-origin access; the iframe host must permit sandboxed embedding. Installation is opt-in and controlled by the user. The v1 SDK exposes only `ui.panel`, `ui.toast`, `storage.private`; this manifest requests only `ui.panel`. Future game APIs require independently authorized Social-to-Life exchange, not v2 draft permissions or bearer forwarding.
+
+== Acceptance pending
+
+. Verify `npm test`, `npm run build`, `npm run verify`, `npm run build:tavi`, and source ZipRunner checks on the identical SHA.
+. Inspect `dist-tavi/ui/index.html` and confirm actual same shared JavaScript assets and a working Return to Tavi control on Windows, Android and browser.
+. Operator-configure Pages URL, dispatch approved GitHub Pages release, verify HTTPS CORS and sandboxed iframe on each platform.
+. Install from Tavi App Store and confirm conversation state is untouched. Test standalone Atrium independent of Tavi.
+. Use an approved Life browser origin, backed by authenticated Life `/play`, to test resuming the same persistent match and denying wrong seat.
+
+No production deploy or application registration is performed by this source candidate.
