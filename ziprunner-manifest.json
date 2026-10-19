@@ -3,7 +3,7 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.24",
+    "version": "0.5.25",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
@@ -11,7 +11,7 @@
     "id": "ATR-P1-20261019-029",
     "kind": "source_update",
     "created_at": "2026-10-19T00:00:00+02:00",
-    "summary": "0.5.24 version-only update of the corrected 0.5.23 Life hosted-game launch source; no gameplay activation."
+    "summary": "0.5.25 integrates Tavi 0.3.66 user-approved Life launch broker; live operator activation and authentication remain gated."
   },
   "planned_work": [
     {

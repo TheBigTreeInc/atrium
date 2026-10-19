@@ -1,0 +1,21 @@
+= Atrium 0.5.25 — Tavi 0.3.66 user-mediated Life launch
+:revdate: 2026-10-19
+:toc: left
+
+== Scope
+
+The Atrium Tavi extension obtains `host.info.features`, requires `atrium.tavi-launch/v1` support, and calls `ui.requestGameLaunch` only after a fresh approved hosted-games catalog read. The response `awaitingApproval` is pending human approval, *not* evidence that a game opened. Tavi owns its confirmation UI and the actual external-navigation click. The iframe sandbox stays unchanged.
+
+== Resume and credentials
+
+The current hosted game projection contains an approved Life Pages origin but no authenticated `list_matches`/match-selection UI. To avoid inventing Life authorization, the Tavi extension asks for an *existing opaque match ID* when resuming. This identifier is never a token and does not authenticate its owner. Life must enforce game identity and seat on navigation and subsequent `/play` calls. This candidate does not create matches, redeem Social proofs or implement an authentication exchange. The standalone Atrium browser launch remains independent.
+
+== Pending operator gates
+
+. Publish a reviewed immutable Life Pages revision and record exact `game-web` binding.
+. Serve live hosted-games projection; verify revocation and browser CORS.
+. Install and run Tavi 0.3.66, confirm `Open Life / Cancel`, return Home, and chat continuity on Windows/web/Android.
+. Implement Social-to-Life scoped session/proof exchange, real Life `/play` backend and persistence, match list/resume, third-account denial, and 60-hour timeout acceptance.
+. Never claim `awaitingApproval` means navigation or gameplay completed.
+
+No deployment, Git push, grant issuance or change to Tavi permissions is performed by this source package.
