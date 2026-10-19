@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.20",
-  "summary": "0.5.20 source-only correction of stale GitHub workflow ZIP validation/upload paths; 0.5.19 hosted Life integration remains review-only; operator workboard decisions preserved.",
+  "version": "0.5.21",
+  "summary": "0.5.21 live Life 0.5.95 gateway compatibility: stable requestId, public info GET, authenticated POST, failed-response normalization; existing 39 operator workboard decisions remain unchanged.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",

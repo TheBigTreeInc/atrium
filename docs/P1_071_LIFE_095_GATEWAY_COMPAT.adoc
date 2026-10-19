@@ -1,0 +1,25 @@
+= Atrium 0.5.21 — Life 0.5.95 public gateway compatibility
+:toc:
+
+== Upstream producer contract
+Life 0.5.95 declares `GET /looprd/the-life-loop/v1/play/info` as the public capability envelope and `POST /looprd/the-life-loop/v1/play` as a Life-authenticated game-scoped command endpoint. The backend is operator-provisioned, so source availability is not live deployment proof. The game engine and match seats remain exclusively Life-owned.
+
+== Consumer mapping
+* The reviewed and available Life discovery instance supplies the LoopRD component API base. `atriumd.yaml` does not supply an absolute game server URL.
+* Public `GET /play/info` does not require an actor game bearer. Subsequent `POST /play` operations require an independently verified `life.loop` bearer. No Social credential is passed to a game iframe, URL, or Tavi.
+* Live `create(settings, requestId)` now requires a stable request ID and `ruleset: classic` alongside `mode: private-async` and `deadlineHours: 60` or `null`. The caller MUST derive `requestId` deterministically from a trusted, stable challenge or match-creation intent; retry with the SAME ID. Never generate a fresh ID on retry.
+* Existing mock lobby behavior is maintained separately for sandbox tests; the live lobby is never silently replaced by a mock.
+* `invite`, `join`, `resume` and `list_matches` use Life's existing match projections. Atrium never creates a match when notified that a Tavi challenge was accepted; the authorized creator explicitly invokes Life `create` once. An invitation `join` must return that match ID.
+* LoopRD HTTPException `detail` and transport 401/403/404/409/422/503 failures are surfaced as errors, not successful game results. Actual production HTTP status handling depends on the injected request transport preserving status and detail.
+* Hosted launch defaults to the external browser. Opaque match IDs are only navigation context, never authorization. Life independently verifies the current viewer upon resume.
+
+== Operator gates
+. Back up and deploy the Life backend with real Social issuer/verifier and approved persistent database and gateway signing configuration.
+. Confirm live LoopRD GET info and signed POST on the approved instance. Verify actual 401, 403, 404, 409, 422 and 503 behavior.
+. Confirm trusted LoopRD sender observation of the same component revision and the reviewed Atrium catalog promotion, without automatically publishing any newly discovered candidate.
+. Perform browser/Tavi credential exchange with game-specific scope; never send reusable Social bearer to the game.
+. Create one match using a stable requestId, join second verified player, close/reopen Atrium and resume same Life match ID. Confirm third account and wrong seat are denied.
+. Run native OpenClaw game-play actions and a full restarted-backend match continuity test. Do not infer this from offline tests.
+. Perform full Windows ZipRunner exact-ZIP post-update checks and both exact-commit CI jobs before operator approval.
+
+All prior 39 workboard records and operator status decisions remain authoritative. No push, deployment, external credential or real Life match was performed by this source pass.

@@ -1,4 +1,4 @@
-= Atrium 0.5.20 — Windows ZipRunner CI artifact version repair
+= Atrium 0.5.21 — Windows ZipRunner CI artifact version repair
 
 This source-only pass repairs the hard-coded 0.5.18 CI artifact paths that caused the 0.5.19 Windows build regression; see `docs/P1_070_WORKFLOW_VERSION_REPAIR.adoc`. Hosted Life 0.5.19 adapter remains review-gated. No live Life match, publication or operator acceptance is claimed.
 

@@ -51,7 +51,7 @@ function invitation(value) {
 export class GameLobbyClient {
   constructor(transport,{gameId='life.loop',component='the-life-loop'}={}) {
     if (typeof transport !== 'function') fail('authenticated transport must be injected');
-    this.transport=transport;this.gameId=gameId;this.component=component;this.info=null;
+    this.transport=transport;this.gameId=gameId;this.component=component;this.info=null;this.requireCreateId=false;
   }
   async discover() {
     this.info=validateInfo(await this.transport('GET','/play/info',null),{gameId:this.gameId,component:this.component});
@@ -71,9 +71,13 @@ export class GameLobbyClient {
     if (new Set(matches.map(x=>x.matchId)).size !== matches.length) fail('duplicate match');
     return matches;
   }
-  async create(options={}) {
-    if (!plain(options) || !keys(options,['mode','deadlineHours']) || options.mode !== 'private-async' || ![null,60].includes(options.deadlineHours)) fail('unsupported preview settings');
-    return projectMatch((await this.call('create',{settings:options})).match);
+  async create(options={}, requestId) {
+    const live=this.requireCreateId===true;
+    if (!plain(options) || (live ? !keys(options,['mode','deadlineHours','ruleset']) : !keys(options,['mode','deadlineHours'])) || options.mode !== 'private-async' || ![null,60].includes(options.deadlineHours) || (live && options.ruleset!=='classic')) fail('unsupported preview settings');
+    if (live && (typeof requestId!=='string' || !/^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$/.test(requestId))) fail('stable requestId required for live Life creation');
+    const fields={settings:options};
+    if(live) fields.requestId=requestId;
+    return projectMatch((await this.call('create',fields)).match);
   }
   async invite(matchId) {
     return invitation((await this.call('invite',{matchId:matchRef(matchId)})).invitation);

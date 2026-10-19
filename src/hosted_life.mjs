@@ -28,15 +28,29 @@ export function publicLifeTransport(target, {request, identityProvider}) {
     requireThat((method==='GET' && path==='/play/info') || (method==='POST' && path==='/play'),'unknown Life operation');
     // A trusted caller supplies a *game-scoped* credential through its own client flow.
     // Atrium never receives a raw Social bearer, and never adds one to URL/iframe.
-    const identity=await identityProvider(target);
-    requireThat(identity?.audience==='life.loop' && typeof identity.authorization==='string' && identity.authorization.startsWith('Bearer ') && identity.authorization.length<4096,'no authorized Life game credential');
-    return request({url:target.apiBaseUrl+path,method,body,authorization:identity.authorization,credentials:'omit',redirect:'error'});
+    let authorization;
+    if(method==='POST') {
+      const identity=await identityProvider(target);
+      requireThat(identity?.audience==='life.loop' && typeof identity.authorization==='string' && identity.authorization.startsWith('Bearer ') && identity.authorization.length<4096,'no authorized Life game credential');
+      authorization=identity.authorization;
+    }
+    const response=await request({url:target.apiBaseUrl+path,method,body,authorization,credentials:'omit',redirect:'error'});
+    // LoopRD's Starlette HTTPException wraps a Life error under `detail`.
+    if(response?.ok===false || (Number.isInteger(response?.status) && response.status>=400)) {
+      const status=response.status;
+      const detail=response.detail ?? response.error ?? response.body?.detail;
+      const err=new Error('Life request rejected'+(Number.isInteger(status)?' ('+status+')':''));
+      err.status=status;err.gameError=detail;
+      throw err;
+    }
+    return response;
   };
 }
 export async function authorizedLifeLobby(target, options) {
   const client=new GameLobbyClient(publicLifeTransport(target,options));
-  const info=await client.discover(); // Fails closed against Life's currently INTERNAL-only contract.
-  requireThat(info.operations.includes('resume'),'Life resume not advertised');
+  const info=await client.discover(); // Only the actual deployed Life /play/info envelope unlocks live mode.
+  requireThat(['create','invite','join','list_matches','resume'].every(op=>info.operations.includes(op)),'Life public lobby operations not advertised');
+  client.requireCreateId=true;
   return client;
 }
 /** Opaque match id only; server verifies seat again on every GET/act/resume. */
