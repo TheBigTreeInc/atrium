@@ -1,0 +1,30 @@
+= Atrium 0.5.24 — Life Pages hosted-game launch gate
+:revdate: 2026-10-19
+:toc:
+
+== Purpose and proof status
+
+Atrium's own registry records trusted LoopRD deployment discovery, but discovery does not publish a game to the anonymous browser. This pass introduces a separate `atrium.hosted-games/v1` public projection for explicitly reviewed hosted remote games, rather than inserting an arbitrary remote URL into the immutable-asset `atrium.catalog-snapshot/v1` format. The checked-in projection is EMPTY. No unverified GitHub Pages URL, release SHA, or Social credential is asserted. The Life Pages project is built by `.github/workflows/pages.yml`; operator verification must bind its actual Pages deployment URL and exact published commit, independently of repo `main`.
+
+== Approval gates, ownership
+
+. Operator independently checks Life's actual GitHub Pages HTTPS site, its deployment workflow result and the exact commit SHA (40 lowercase hex); this SHA must match the reviewed Life source and hosted output, not just current main.
+. Operator binds a trusted `game-web` origin reference for the known LoopRD Life deployment (the discovery record's operator configuration). Neither a source YAML URL nor an unreviewed GET response may set the browser origin.
+. On a separate review/publication step, operator emits a `hosted-games.json` record containing gameId=`life.loop`, component=`the-life-loop`, exact publisherId/deploymentId, approved HTTPS launchUrl and versioned API route, deployed sourceRevision, status=`published`, approved=true, embedAllowed=false unless independently tested. Do not edit this source-tree preview file to bypass review; use the authorized publication pipeline or a clearly operator-reviewed static artifact.
+. Publish the reviewed hosted projection over the same trusted HTTPS origin as Atrium's static pages. `src/hosted_catalog.mjs` fails closed when absent/invalid, and the browser must refresh the review on each launch. This source candidate does not implement signed publication from the trusted registry database; operator must ensure published records cannot be tampered with and are revoked promptly. Preserve the separate immutable app catalog and review process.
+. The Tavi v1 extension embeds Atrium's same frontend. In the extension's opaque iframe Tavi does not allow popup or top-navigation, so the default Open Life action MUST use a Tavi host-approved external launch handoff not available in v1; until that API exists the Life button may fail in the extension. Do not weaken sandbox or forward credentials.
+
+== Safe identity and resume contract
+
+`src/hosted_life.mjs` already defines Life's `GET /play/info`, authenticated `POST /play`, stable create requestId and matching reviewed deployment. A URL `?match=<opaque ID>` can identify the requested match but is NEVER a bearer, invite secret, seat proof or authorization. Tavi's identity proof must be redeemed by a trusted backend or appropriate session exchange and issue a Life-scoped credential. Never put that proof in a URL query, hash, browser storage shared with games, iframe `postMessage`, or published static artifact.
+
+The v1 extension has no `games.sessions`/safe external-navigation privilege; v2 is a draft. A real Tavi challenge must not directly create a duplicate Life match. Life owns idempotent creation, seats, checkpoints, invitations, and action validation. Test authenticated `/play` POST, CORS for the actual Pages origin (including preflight and authorization header), `list_matches`, `resume`, `legal_actions`, `act`, persisted state after browser closure/backend restart and third-account denial before operator acceptance.
+
+== Pending acceptance checks
+
+* GitHub Pages URL and exact deployed Life revision verified against real deployment evidence.
+* `game-web` mapping approved on trusted deployed record; public hosted projection produced only from approved record.
+* Real Life card visible from standalone Atrium and from extension; no card when withdrawn, gateway down or source changed; ensure publish revocation reaches browser.
+* HTTPS game UI independently runs with actual LoopRD CORS and Social-to-Life game credential; same match reopens and unauthorized account is denied.
+* Tavi host either adds a safe external navigation capability or allows an approved embedded launcher with CSP/frame acceptance; current sandbox denies popups. Verify Home return and persistent messaging state.
+* Source exact-SHA CI, ZipRunner validation and Windows/Android/browser live acceptance. Operator signs off before marking tickets Done.

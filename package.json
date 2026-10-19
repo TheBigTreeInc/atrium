@@ -1,6 +1,6 @@
 {
   "name": "atrium",
-  "version": "0.5.22",
+  "version": "0.5.24",
   "private": true,
   "type": "module",
   "scripts": {

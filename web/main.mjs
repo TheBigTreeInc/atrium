@@ -1,3 +1,4 @@
+import {mountHostedLife} from '../src/hosted_cards.mjs';
 import {mountMultiplayerPreview} from '../src/multiplayer_preview_ui.mjs';
 import {loadIsolatedApp} from '../src/apphost.mjs';
 import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
@@ -40,6 +41,7 @@ async function refreshCatalog() {
       empty.innerHTML = '<h3>The first game is being prepared</h3><p>The storefront is online, but no playable releases have been approved for publication yet. Checkers will appear here once its reviewed preview is explicitly published.</p>';
       area.append(empty);
     }
+    try { await mountHostedLife({area}); } catch { /* fail closed */ }
     for (const app of catalog.apps) {
       const card = document.createElement('article'); card.className = 'tile';
       const art=document.createElement('div');art.className='art';

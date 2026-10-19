@@ -1,4 +1,4 @@
-= Atrium 0.5.22 — Windows ZipRunner CI artifact version repair
+= Atrium 0.5.21 — Windows ZipRunner CI artifact version repair
 
 This source-only pass repairs the hard-coded 0.5.18 CI artifact paths that caused the 0.5.19 Windows build regression; see `docs/P1_070_WORKFLOW_VERSION_REPAIR.adoc`. Hosted Life 0.5.19 adapter remains review-gated. No live Life match, publication or operator acceptance is claimed.
 
@@ -288,8 +288,3 @@ Adds missing verification criteria/checks for existing ATR-104-CI-TODO-CONTRACT-
 == v0.5.13 automatic public catalog gateway (source candidate)
 
 An operator-started loopback-only read-only gateway serves only the live, hash-verified, reviewed SQLite catalog through a separate controlled HTTPS reverse proxy. A manually configured GitHub Pages endpoint then refreshes public data without repository pushes. No privileged DAPI tokens or Social sign-in are exposed to browsers. Revoked applications are removed on refresh; failed catalog reads close open iframes. The gateway requires a real controlled host/proxy and operator acceptance; it does not autonomously deploy. See `docs/P1_063_LIVE_CATALOG.adoc`.
-
-
-== Unified Tavi extension target (0.5.22)
-
-See `docs/ATRIUM_TAVI_UNIFIED_RELEASE.adoc`. The Tavi adapter and source manifest now belong to this Atrium repository; no second source repository.

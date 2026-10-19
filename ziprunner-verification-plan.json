@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.22",
+  "version": "0.5.24",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -234,7 +234,7 @@
         },
         {
           "id": "ATR-103-EXTERNAL-AC-OPERATOR",
-          "description": "Independently hosted HTTPS ownership, SQLite schema v3→v4 migration and review are operator verified.",
+          "description": "Independently hosted HTTPS ownership, SQLite schema v3\u2192v4 migration and review are operator verified.",
           "mode": "manual",
           "checks": [
             "ATR-103-EXTERNAL-M1"
@@ -589,7 +589,7 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Live DAPI schema v3 migration and operator candidate intake",
-      "instructions": "Back up real Atrium DB. Validate schema v2→v3 on restored disposable environment. After Life activation, run deployer CLI with a private approved component key; verify candidate GET is operator-only, public catalog unchanged, and game sessions continue independently."
+      "instructions": "Back up real Atrium DB. Validate schema v2\u2192v3 on restored disposable environment. After Life activation, run deployer CLI with a private approved component key; verify candidate GET is operator-only, public catalog unchanged, and game sessions continue independently."
     },
     {
       "id": "ATR-104-CI-TODO-CONTRACT-060-T1",
@@ -629,7 +629,7 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Live operator acceptance of independent publisher HTTPS domain proof",
-      "instructions": "Backup production DB; test v3→v4 migration on disposable instance. Register a controlled public DNS hostname, issue via apps:approve, host returned proofContent as UTF-8 at proofUrl, verify, then attempt reuse, redirect, bad TLS, private DNS, disabled publisher and wrong origin. Ensure immutable releases/catalog unchanged. Do not mark Done or release without operator review."
+      "instructions": "Backup production DB; test v3\u2192v4 migration on disposable instance. Register a controlled public DNS hostname, issue via apps:approve, host returned proofContent as UTF-8 at proofUrl, verify, then attempt reuse, redirect, bad TLS, private DNS, disabled publisher and wrong origin. Ensure immutable releases/catalog unchanged. Do not mark Done or release without operator review."
     },
     {
       "id": "ATR-104-LIVE-T1",
@@ -822,7 +822,7 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Looprd 0.2.0 real sender and Atrium receiver operator acceptance",
-      "instructions": "Back up Atrium, migrate disposable v5→v6; create per-deployment apps:discover service credential (not apps:approve); verify exact Looprd 0.2.0 v2 capabilities, upsert, retry, withdrawal, app-ID change, multi-instance recovery, no per-game review, and catalog separation. No credentials from logs. Review exact CI and installed ZIP. Keep delivery disabled until acceptance."
+      "instructions": "Back up Atrium, migrate disposable v5\u2192v6; create per-deployment apps:discover service credential (not apps:approve); verify exact Looprd 0.2.0 v2 capabilities, upsert, retry, withdrawal, app-ID change, multi-instance recovery, no per-game review, and catalog separation. No credentials from logs. Review exact CI and installed ZIP. Keep delivery disabled until acceptance."
     },
     {
       "id": "ATR-111-CI-SMOKE-LIMIT-T1",

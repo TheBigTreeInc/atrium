@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.22",
-  "summary": "0.5.22 live Life 0.5.95 gateway compatibility: stable requestId, public info GET, authenticated POST, failed-response normalization; existing 39 operator workboard decisions remain unchanged.",
+  "version": "0.5.24",
+  "summary": "0.5.24 version-only update of corrected 0.5.23 hosted-game projection; maintain operator gates and existing workboard decisions.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -85,7 +85,7 @@
       "title": "Persist reviewed-only portable game discovery candidates",
       "summary": "Operator-key protected candidate POST/GET validates portable atriumd/v1, records immutable source revision/fingerprint per deployment/component, rejects publisher takeover and never publishes. Atrium DB schema v3 additive.",
       "operator_checks": [
-        "Back up Atrium SQLite DB before v2\u2192v3; verify schema migration on disposable deployment and test existing publisher history.",
+        "Back up Atrium SQLite DB before v2→v3; verify schema migration on disposable deployment and test existing publisher history.",
         "After external Looprd game activates, use deployer command with private apps:approve key; verify candidate appears only in operator GET queue and public Pages catalog stays unchanged."
       ]
     },
@@ -106,7 +106,7 @@
       "priority": "high",
       "summary": "Source implements additive schema v4, scoped issue/verify/status endpoints and direct pinned public-IP HTTPS verification; proof never grants identity or publication.",
       "operator_checks": [
-        "Backup SQLite and validate additive schema v3\u2192v4 on a disposable DAPI deployment without changing existing releases.",
+        "Backup SQLite and validate additive schema v3→v4 on a disposable DAPI deployment without changing existing releases.",
         "Issue challenge for an existing operator-approved publisher/origin, host exactly the returned bytes at the HTTPS proof URL, then verify via apps:approve scope.",
         "Confirm private DNS, DNS rebinding, redirect, TLS failure, expired/replayed/reissued proof, wrong origin and second-publisher attempts fail closed.",
         "Ensure public catalog and publisher approval remain unchanged; verification does not identify a Social user or approve publication."
@@ -163,7 +163,7 @@
       "title": "Atrium automatic owner-trusted v2 game metadata registration and durable DAPI 0.2.0 acknowledgement",
       "summary": "v2 receiver is a source candidate; operator stages actual Looprd 0.2.0 sender with dedicated service credential and schema v6 migration. Does not publish an immutable game release or authorize player launch.",
       "operator_checks": [
-        "Back up Atrium v5 database and rehearse additive v5\u2192v6 migration; preserve old publisher, candidate and immutable release rows.",
+        "Back up Atrium v5 database and rehearse additive v5→v6 migration; preserve old publisher, candidate and immutable release rows.",
         "Configure one trusted deployment binding (service subject, publisher namespace, trusted API origin and originRef map); exercise real Looprd 0.2.0 GET capabilities and POST observations under apps:discover only.",
         "Verify exact and delayed replay, source updates, withdraw/re-register, multiple components/deployments, game-ID changes, wrong credential, conflicting publisher, and no automatic public AppRelease.",
         "Run exact installed ZIP post-update tests and both GitHub CI jobs before operator acceptance; verify DAPI sender remains disabled until the gates pass."
