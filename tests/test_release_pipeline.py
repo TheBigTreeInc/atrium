@@ -15,7 +15,7 @@ class P0ReleaseTests(unittest.TestCase):
 
 
     def test_package_identity_and_required_files(self):
-        self.assertEqual(NAME, 'atrium-0.5.26-ziprunner.zip')
+        self.assertEqual(NAME, 'atrium-0.5.27-ziprunner.zip')
         paths={path.relative_to(ROOT).as_posix() for path in source_files()}
         self.assertTrue({'.ziprunner-workboard-update.json','project.zr',
                          'ziprunner.looprd.json','ziprunner-verification-plan.json',
@@ -44,7 +44,7 @@ class P0ReleaseTests(unittest.TestCase):
         self.assertTrue(all(x.startswith('ATR-') for x in ids))
         self.assertIn('ATR-P0-004',ids)
         self.assertEqual(update['project'],'atrium')
-        self.assertEqual(update['version'],'0.5.26')
+        self.assertEqual(update['version'],'0.5.27')
 
     def test_official_ziprunner_manifest_todo_contract(self):
         manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
@@ -61,7 +61,7 @@ class P0ReleaseTests(unittest.TestCase):
             self.assertTrue(isinstance(item['next_action'],str) and item['next_action'].strip())
             if item['status']=='blocked':
                 self.assertTrue(item.get('blockers'))
-        self.assertEqual(manifest['project']['version'],'0.5.26')
+        self.assertEqual(manifest['project']['version'],'0.5.27')
 
     def test_verification_plan_exact_implemented_coverage(self):
         """Pinned ZipRunner 2.3 verification-plan task and check linkage."""

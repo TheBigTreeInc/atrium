@@ -1,0 +1,6 @@
+= Atrium 0.5.27 — Tavi embedded navigation
+:revnumber: 0.5.27
+
+Integrates the Tavi 0.3.71+ host navigation handshake. When `host.info` returns `extensionId=inc.thebigtree.tavi.atrium`, `mode=embedded`, and `navigation=host`, the redundant Return to Tavi control is hidden. Older or failed host handshakes retain the control. No changes to Life, authorization, or catalog publication.
+
+The supplied patch test is included, but is a unit copy of the predicate; a real Tavi WebView check remains necessary.

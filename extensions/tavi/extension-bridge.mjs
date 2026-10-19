@@ -39,3 +39,14 @@ document.getElementById('returnTavi')?.addEventListener('click',async event=>{
  const button=event.currentTarget;button.disabled=true;
  try{await hostCall('ui.close');}catch{button.disabled=false;}
 });
+// The outer Tavi host owns Home and App Store navigation. Hide the
+// injected escape button ONLY when host.info verifies that this specific
+// extension is embedded with host-managed navigation. Preserve fallback for
+// older Tavi hosts (and when host handshake fails).
+export function hostOwnsNavigation(info) {
+ return info?.extensionId==='inc.thebigtree.tavi.atrium' &&
+        info?.mode==='embedded' && info?.navigation==='host';
+}
+void hostCall('host.info').then(info=>{
+ if(hostOwnsNavigation(info))document.getElementById('returnTavi')?.remove();
+}).catch(()=>{});

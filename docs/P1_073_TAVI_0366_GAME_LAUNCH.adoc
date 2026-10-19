@@ -1,4 +1,4 @@
-= Atrium 0.5.26 — Tavi 0.3.66 user-mediated Life launch
+= Atrium 0.5.27 — Tavi 0.3.66 user-mediated Life launch
 :revdate: 2026-10-19
 :toc: left
 
