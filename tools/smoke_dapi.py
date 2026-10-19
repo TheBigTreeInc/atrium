@@ -4,6 +4,7 @@ Run only with the upstream pinned DAPI package installed. The fixture tokens are
 random test-only values stored in a temporary directory, never source or logs.
 """
 from pathlib import Path
+import json
 from tempfile import TemporaryDirectory
 import secrets
 
@@ -31,7 +32,8 @@ def main():
             assert client.get('/_looprd/health').status_code == 200
             assert 'atrium' in runtime.active, runtime.errors
             spec = runtime.active['atrium'].spec
-            assert spec.release == '0.5.24' and spec.database.schemaVersion == 6
+            expected_release = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
+            assert spec.release == expected_release and spec.database.schemaVersion == 6
             endpoint = '/looprd/atrium/v1'
             assert client.get(endpoint+'/registry/catalog').status_code == 401
             admin = {'Authorization': 'Bearer ' + admin_token}

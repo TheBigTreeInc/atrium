@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.25",
-  "summary": "0.5.25 user-mediated official Tavi Life launch; preserve live review and identity gates.",
+  "version": "0.5.26",
+  "summary": "0.5.26 user-mediated official Tavi Life launch; preserve live review and identity gates.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
