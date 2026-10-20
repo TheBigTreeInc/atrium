@@ -1,0 +1,70 @@
+= Atrium 0.5.28 — Reviewed Life catalog and Tavi launch publication
+:revnumber: 0.5.28
+:revdate: 2026-10-20
+:toc: left
+
+== Observed problem
+
+Atrium 0.5.27 opens successfully as a Tavi extension, but its public immutable asset catalog `catalog.json` is empty and its separate hosted-game preview `hosted-games.json` is empty. The manually rendered Life card under "On the horizon" is not a registered/published game. The existing trusted `apps:discover` Life acknowledgment does not grant public publication, configure Pages launch URLs or establish Life player credentials.
+
+== Source fix
+
+. `src/discovery_v2.py` allows *operator-controlled* HTTPS launch *base paths* in `AtriumTrustedDeployment.launchOrigins`. GitHub Pages project sites need `game-web: https://thebigtreeinc.github.io/life/`, while the portable Life `atriumd.yaml` still declares `originRef: game-web` and `entrypoint: index.html` without absolute deployment URLs. `apiOrigin` remains an exact HTTPS origin with no path. Existing root-origin mappings still work.
+. `tools/live_hosted_games.py` is a read-only loopback gateway. It checks the current trusted v2 registry database AND a separately provided operator-reviewed Pages deployment approval on *every GET*. Discovery alone cannot expose Life. Disabled/withdrawn deployments, changed revisions, changed launch paths, missing origin bindings or mismatched API routes produce an empty published list. Invalid approval/database results in 503. No DAPI operator bearer or Social bearer is involved.
+. `web/hosted-config.json` is analogous to `catalog-config.json`: empty by default, or operator-configured to a public HTTPS `*/hosted-games.json` endpoint. Both standalone web and Tavi extension fetch the same approved live projection with no cookies or bearer. The visible UI distinguishes unavailable hosted catalog from zero reviewed games and removes the "Coming later" Life placeholder only when an approved Life card exists.
+. `extensions/tavi/manifest.json` is bumped to 1.0.1 so installed clients can recognize a new extension revision. Tavi 0.3.71+ host navigation remains authoritative; duplicated older controls are hidden after a successful host handshake.
+
+== Operator setup (NOT performed by source ZIP)
+
+=== Bind the trusted Pages base path
+
+Using a **separate** `apps:approve` principal, update the existing trusted deployment with `set_origins` (do not re-register or change its `apps:discover` sender):
+
+[source,json]
+----
+{"operation":"set_origins","payload":{"deploymentId":"<ACTUAL-TRUSTED-DEPLOYMENT-ID>","launchOrigins":{"game-web":"https://thebigtreeinc.github.io/life/"}}}
+----
+
+This command uses the *existing* Atrium `/looprd/atrium/v1/registry/discovery/v2/manage` privileged route. Replace the deployment ID after querying the actual trusted deployment list. Check the discovered Life `launchUrl` resolves to the exact GitHub Pages route and not the hostname root. Never copy the example as an authorization claim.
+
+=== Review the Life Pages deployment
+
+Independently verify the successful Life GitHub Pages deployment, its exact commit SHA, the actual player browser URL and whether the deployed source revision matches the trusted LoopRD active source revision. Check LoopRD's Life `/play/info` status separately; HTTP 503 means the authoritative backend is not yet available.
+
+Create an *operator-private* approval JSON based on `examples/life-hosted-approval.template.json` with the actual `deploymentId`, `publisherId`, `apiBaseUrl`, `sourceRevision`, reviewed `launchUrl`, successful GitHub Pages `pagesWorkflowRunId` and operator review information. A source repository commit or discovery acknowledgement is not Pages deployment evidence. The approval JSON file is not a bearer, but it is privileged authorization data: keep it outside ZIP, public GitHub Pages and generated HTML.
+
+=== Enable the read-only live projection
+
+Run the gateway on the machine with authorized access to the persisted Atrium schema-6 SQLite registry and the operator-private approval file. Use a read-only registry mount; the gateway itself opens SQLite `mode=ro`:
+
+[source,bash]
+----
+python tools/live_hosted_games.py \
+  --database /private/atrium-registry.sqlite \
+  --approval /private/reviews/life-pages-approval.json \
+  --listen 127.0.0.1 --port 8894
+----
+
+Use an operator-controlled HTTPS reverse proxy to expose *only* `/hosted-games.json` publicly. This endpoint carries **public reviewed metadata only**, uses `Cache-Control: no-store` and `Access-Control-Allow-Origin: *` (necessary for Tavi's opaque sandboxed iframe). Do not publicly expose database files, approval file or privileged DAPI routes. Confirm repeated GET and withdrawal/revision-change behavior against the live operator environment.
+
+=== Publish Atrium Pages and its Tavi extension
+
+Run `.github/workflows/pages.yml` after pushing the source and operator approval. Supply:
+
+* `extension_base_url`: `https://thebigtreeinc.github.io/atrium/tavi/` for the optional Tavi extension.
+* `hosted_catalog_url`: `https://<YOUR-APPROVED-PUBLIC-CATALOG-GATEWAY>/hosted-games.json` from the approved HTTPS proxy (never guess the hostname).
+* `catalog_url`: leave empty unless the separate immutable-asset public catalog gateway is approved.
+* `publish_checkers_demo`: false unless independently reviewed.
+
+This workflow still requires an operator trigger and `github-pages` environment approval. Rebuilding the source in ZipRunner does not deploy this endpoint, register an approval, configure the HTTPS proxy, or publish the Pages site.
+
+== Acceptance gates still open
+
+. Real deployed Pages release SHA and reviewed registry source SHA match; correct `game-web` mapped browser path.
+. Public read-only hosted-game gateway returns exactly the approved Life record; disabling the deployment/revoking approval removes it on the next GET.
+. Standalone Atrium and Tavi extension display Life under "Games & applications" and suppress its Coming Later placeholder; an empty registry never displays a fake Live Life card.
+. Tavi user requests Life launch with an *existing* opaque match ID through the user-mediated `ui.requestGameLaunch` broker. No user identity token is passed in any URL or iframe.
+. Life backend `/play/info`, authorized `/play`, CORS from actual Pages host, Social-to-Life game credential exchange, real create/invite/join/resume, restart and OpenClaw move are independently verified.
+. Tavi returns to Home without losing the messenger session; Windows and mobile acceptance is operator-observed.
+
+Do not mark deployment acceptance tickets Done from these local tests. No live database, operator approval or service keys are in this package.

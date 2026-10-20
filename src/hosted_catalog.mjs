@@ -1,4 +1,4 @@
-/** Separate, explicitly reviewed hosted-game launch projection; never a substitute for Life auth. */
+/** Reviewed hosted-game projection. Source discovery never grants publication. */
 const HTTPS = value => {
  if(typeof value!=='string'||value.length>2048)throw Error('Invalid URL');
  const u=new URL(value);
@@ -17,8 +17,25 @@ export function validateHostedCatalog(data){
  }
  return data;
 }
+/** Operator configures a public READ-ONLY reviewed-game endpoint. No bearer or API secret. */
+export function parseHostedCatalogSource(config){
+ if(!config||config.schema!=='atrium.hosted-source/v1'||Object.keys(config).some(k=>!['schema','gatewayUrl'].includes(k))||typeof config.gatewayUrl!=='string')throw Error('Invalid hosted catalog source configuration');
+ if(!config.gatewayUrl)return './hosted-games.json';
+ const url=config.gatewayUrl;
+ if(HTTPS(url)!==url||new URL(url).pathname!=='/hosted-games.json')throw Error('Unapproved hosted catalog gateway URL');
+ return url;
+}
+export async function loadHostedEndpoint(fetcher=fetch, configUrl='./hosted-config.json'){
+ const response=await fetcher(configUrl,{cache:'no-store',credentials:'omit',redirect:'error'});
+ if(!response.ok)throw Error('Hosted catalog source configuration unavailable');
+ return parseHostedCatalogSource(await response.json());
+}
 export async function fetchHostedCatalog(fetcher=fetch,url='./hosted-games.json'){
  const r=await fetcher(url,{credentials:'omit',cache:'no-store',redirect:'error'});
  if(!r.ok)throw Error('Hosted game approvals unavailable');
  return validateHostedCatalog(await r.json());
+}
+export async function fetchConfiguredHostedCatalog(fetcher=fetch){
+ const endpoint=await loadHostedEndpoint(fetcher);
+ return fetchHostedCatalog(fetcher,endpoint);
 }

@@ -5,7 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dist=path.join(root,'dist');
-for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','src/hosted_life.mjs','.nojekyll']) {
+for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','hosted-config.json','hosted-games.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','src/hosted_life.mjs','.nojekyll']) {
  const file=path.join(dist,name);
  const info=await stat(file);
  assert(info.isFile() && (info.size>0 || name==='.nojekyll'),`missing build asset: ${name}`);
@@ -40,6 +40,10 @@ assert(!index.includes('src="/main.mjs"'),'Pages must not use origin-root assets
 const config=JSON.parse(await readFile(path.join(dist,'catalog-config.json'),'utf8'));
 const {parseCatalogSource}=await import('../src/catalog_client.mjs');
 assert(typeof parseCatalogSource(config)==='string','validated public catalog source');
+const hostedConfig=JSON.parse(await readFile(path.join(dist,'hosted-config.json'),'utf8'));
+const {parseHostedCatalogSource,validateHostedCatalog}=await import('../src/hosted_catalog.mjs');
+assert(typeof parseHostedCatalogSource(hostedConfig)==='string','validated reviewed hosted source');
+validateHostedCatalog(JSON.parse(await readFile(path.join(dist,'hosted-games.json'),'utf8')));
 assert(!main.includes('Authorization') && !main.includes('apiKey'),'No operator credential in public client');
 assert(!index.includes('Tavi login') && !index.includes('Sign in to play'),'Do not simulate missing shared-auth system');
 console.log('Verified Pages-safe static portal assets (publication is operator-triggered)');

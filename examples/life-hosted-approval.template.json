@@ -1,0 +1,14 @@
+{
+  "schema": "atrium.hosted-life-approval/v1",
+  "gameId": "life.loop",
+  "publisherId": "thebigtreeinc",
+  "deploymentId": "REPLACE-WITH-ACTUAL-TRUSTED-DEPLOYMENT",
+  "component": "the-life-loop",
+  "sourceRevision": "REPLACE-WITH-EXACT-DEPLOYED-40-HEX-COMMIT",
+  "pagesWorkflowRunId": 0,
+  "launchUrl": "https://thebigtreeinc.github.io/life/index.html",
+  "apiBaseUrl": "https://REPLACE-WITH-APPROVED-API-ORIGIN/looprd/the-life-loop/v1",
+  "approvedBy": "REPLACE-WITH-REVIEWER",
+  "approvedAt": "REPLACE-WITH-UTC-TIMESTAMP",
+  "embedAllowed": false
+}

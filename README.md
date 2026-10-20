@@ -288,3 +288,7 @@ Adds missing verification criteria/checks for existing ATR-104-CI-TODO-CONTRACT-
 == v0.5.13 automatic public catalog gateway (source candidate)
 
 An operator-started loopback-only read-only gateway serves only the live, hash-verified, reviewed SQLite catalog through a separate controlled HTTPS reverse proxy. A manually configured GitHub Pages endpoint then refreshes public data without repository pushes. No privileged DAPI tokens or Social sign-in are exposed to browsers. Revoked applications are removed on refresh; failed catalog reads close open iframes. The gateway requires a real controlled host/proxy and operator acceptance; it does not autonomously deploy. See `docs/P1_063_LIVE_CATALOG.adoc`.
+
+### 0.5.29: Hosted Life catalog
+
+The read-only reviewed hosted-game gateway and Tavi extension use the shared UI; see `docs/P1_075_LIFE_REVIEWED_HOSTED_PUBLICATION.adoc` for configuration and outstanding operator gates. Discovery does not grant public publication or Life player credentials.

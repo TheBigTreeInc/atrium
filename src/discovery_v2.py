@@ -97,13 +97,35 @@ def _v2_origin(value):
     return value
 
 
+def _v2_launch_base(value):
+    """Operator-owned browser base path. GitHub Pages projects need /life/.
+
+    API origins remain strictly origin-only; portable sidecars remain URL-free.
+    """
+    _v2_require(type(value) is str and len(value) <= 255, 'invalid_launch_base')
+    try:
+        parts = _v2_urlsplit(value)
+        origin = parts.scheme + '://' + (parts.netloc or '')
+        _v2_origin(origin)
+    except (ValueError, TypeError):
+        _v2_require(False, 'invalid_launch_base')
+    path = parts.path
+    _v2_require(not (parts.query or parts.fragment or parts.username or parts.password)
+                and (not path or (path.startswith('/') and path.endswith('/')
+                    and '//' not in path and '%' not in path
+                    and all(_v2_re.fullmatch(r'[A-Za-z0-9._~-]+', segment)
+                            and segment not in ('.', '..') for segment in path[1:-1].split('/'))))
+                and value == origin + path, 'invalid_launch_base')
+    return value
+
+
 def _v2_configure_origins(value):
     _v2_require(type(value) is dict and len(value) <= 16, 'invalid_origin_mapping')
     clean = {}
     for name, origin in value.items():
         _v2_require(type(name) is str and _V2_PUBLISHER.fullmatch(name) is not None,
                     'invalid_origin_reference')
-        clean[name] = _v2_origin(origin)
+        clean[name] = _v2_launch_base(origin)
     return clean
 
 
@@ -321,6 +343,6 @@ async def trusted_discovery_catalog(ctx):
         # No arbitrary source URL; only operator-controlled hosting configuration.
         entry['instances'].append({'deploymentId':r['deploymentId'],'component':r['component'],
                                    'apiBaseUrl':r['apiBaseUrl'],'launchAvailable':bool(origin),
-                                   'launchUrl':origin+'/'+game['launch']['entrypoint'] if origin else None,
+                                   'launchUrl':origin.rstrip('/')+'/'+game['launch']['entrypoint'] if origin else None,
                                    'reason':None if origin else 'launch_origin_unconfigured'})
     return {'schema':'atrium.trusted-game-catalog/v1','games':list(result.values())[:100]}

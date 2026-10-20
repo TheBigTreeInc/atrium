@@ -39,3 +39,7 @@ Implemented source is **review candidate only**. Do not mark Done without operat
 Local checks: 192 Python tests under an offline system-package compatibility path; 18 Node tests; clean npm build and verification; opt-in Checkers asset created and SHA256 verified. Isolated `.venv` creation was blocked by unavailable pip index in this container; official Windows/Linux CI and target ZipRunner will run with their own dependency sources. Chromium headless smoke timed out in this container; real browser acceptance is pending. See `evidence/P1_064_LOCAL_CHECKS.txt`.
 
 Next: operator installs this ZIP, verifies exact-commit CI, manually dispatches Pages `publish_checkers_demo=true` after approval, tests actual Play and opt-out rollback. The eventual Life path is `ATR-108-LOOPRD-DISCOVERY`; `ATR-107-AUTH`, `ATR-104-LIVE` and prior publisher-proof operator checks remain separate.
+
+## 0.5.29 reviewed Life hosted catalog
+
+See `docs/P1_075_LIFE_REVIEWED_HOSTED_PUBLICATION.adoc`. The source now supports reviewed live Life catalog projection, operator-owned `/life/` Pages path binding, and Tavi extension 1.0.1. The live registry SQLite, Pages approval file, HTTPS proxy, and Social credential exchange are not packaged or deployed. Local test results do NOT approve or publish Life.

@@ -41,7 +41,19 @@ async function refreshCatalog() {
       empty.innerHTML = '<h3>The first game is being prepared</h3><p>The storefront is online, but no playable releases have been approved for publication yet. Checkers will appear here once its reviewed preview is explicitly published.</p>';
       area.append(empty);
     }
-    try { await mountHostedLife({area}); } catch { /* fail closed */ }
+    try {
+      const hostedCount = await mountHostedLife({area});
+      const lifePlaceholder = document.querySelector('#life-coming-soon');
+      if(lifePlaceholder) lifePlaceholder.hidden = hostedCount > 0;
+      if(hostedCount) area.querySelector('.emptyState')?.remove();
+      if(hostedCount) catalogStatus.textContent = `${catalog.apps.length + hostedCount} approved ${catalog.apps.length + hostedCount === 1 ? 'entry' : 'entries'}`;
+    } catch (error) {
+      // This is a publication/configuration fault, not an empty catalog.
+      const status = document.createElement('p');
+      status.className = 'lobbyMessage';
+      status.textContent = `Hosted-game catalog unavailable: ${error.message}`;
+      area.append(status);
+    }
     for (const app of catalog.apps) {
       const card = document.createElement('article'); card.className = 'tile';
       const art=document.createElement('div');art.className='art';

@@ -1,0 +1,18 @@
+= Atrium 0.5.29 — Windows hosted-catalog SQLite fixture cleanup
+:revnumber: 0.5.29
+:revdate: 2026-10-20
+
+== Observed ZipRunner failure
+
+In the Windows Python 3.13 ZipRunner run for 0.5.28, the full suite ran 234 tests; four tests under `test_live_hosted_games.HostedGatewayTests` errored when `TemporaryDirectory.cleanup()` attempted to remove `registry.db` with `[WinError 32]`. A Python `sqlite3.Connection` context manager commits/rolls back but does NOT call `close()`. The fixture `with sqlite3.connect(...) as db:` and `tools/live_hosted_games.py` read-only gateway used this pattern, which is tolerated by Linux unlink behavior but holds the SQLite file open on Windows.
+
+== Fix
+
+* `tests/test_live_hosted_games.py`: use `contextlib.closing` wrapped around every temporary fixture SQLite connection, and keep the transaction context (`with closing(sqlite3.connect(...)) as db, db:`).
+* `tools/live_hosted_games.py`: explicitly close the read-only database handle on all paths, including malformed data and exceptions. Do not alter query or approval logic.
+* New regression checks the read-only gateway connection is closed before returning by asserting reuse raises `sqlite3.ProgrammingError`.
+* Keep the actual registered Life discovery/hosted-game publication authority unchanged. No operator approval, user identity grant, Tavi launch, production state, or workboard decision is claimed.
+
+== Verification and operator acceptance
+
+Run `python tools/run_python_checks.py`, `npm test`, `npm run build`, `npm run verify`, `npm run build:tavi` on Windows through ZipRunner. All hosted catalog tests must pass, and the ephemeral SQLite databases must be deletable on Windows without retry hacks or disabling the tests. Recheck exact pushed-commit GitHub workflow only after ZipRunner's successful build and operator review. The prior 0.5.28 build never qualified for release despite Linux tests passing.

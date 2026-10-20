@@ -86,6 +86,21 @@ class V2Tests(unittest.TestCase):
                 self.invoke(capabilities,principal=principal)
             self.assertEqual(error.exception.status_code,403)
 
+    def test_github_pages_subpath_binding_remains_operator_owned(self):
+        self.operator('set_origins',{'deploymentId':'pi-one',
+                      'launchOrigins':{'game-web':'https://thebigtreeinc.github.io/life/'}})
+        self.send(observation())
+        self.assertEqual(self.read()[0]['instances'][0]['launchUrl'],
+                         'https://thebigtreeinc.github.io/life/index.html')
+        for invalid in ['https://thebigtreeinc.github.io/life/../',
+                        'https://thebigtreeinc.github.io/life//',
+                        'https://thebigtreeinc.github.io/life/?key=x',
+                        'http://thebigtreeinc.github.io/life/',
+                        'https://thebigtreeinc.github.io/life/%2e%2e/']:
+            with self.subTest(invalid=invalid),self.assertRaises(HTTPException):
+                self.operator('set_origins',{'deploymentId':'pi-one',
+                              'launchOrigins':{'game-web':invalid}})
+
     def test_life_and_catalog_metadata_without_public_release(self):
         result=self.send(observation())
         self.assertEqual(result['status'],'reviewed')

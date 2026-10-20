@@ -1,7 +1,7 @@
-import {fetchHostedCatalog} from './hosted_catalog.mjs';
+import {fetchConfiguredHostedCatalog} from './hosted_catalog.mjs';
 /** Safe public launcher: an opaque match reference is never proof of seat ownership. */
 export async function mountHostedLife({area,fetcher=fetch,openExternal=url=>window.open(url,'_blank','noopener,noreferrer')}){
- const catalog=await fetchHostedCatalog(fetcher);
+ const catalog=await fetchConfiguredHostedCatalog(fetcher);
  for(const game of catalog.games){
   if(game.gameId!=='life.loop')continue;
   const card=document.createElement('article');card.className='tile';
@@ -13,7 +13,7 @@ export async function mountHostedLife({area,fetcher=fetch,openExternal=url=>wind
   const button=document.createElement('button');button.textContent=typeof window.__atriumTaviLaunch==='function'?'Resume Life':'Open Life';
   button.addEventListener('click',async()=>{
    // Refresh review before launching; no remote URL from user input or Tavi message.
-   try{const current=(await fetchHostedCatalog(fetcher)).games.find(g=>g.gameId===game.gameId&&g.deploymentId===game.deploymentId);
+   try{const current=(await fetchConfiguredHostedCatalog(fetcher)).games.find(g=>g.gameId===game.gameId&&g.deploymentId===game.deploymentId);
     if(!current||JSON.stringify(current)!==JSON.stringify(game))throw Error('Life approval changed');
     const launchThroughTavi=window.__atriumTaviLaunch;
     if(typeof launchThroughTavi==='function'){

@@ -12,6 +12,11 @@ on:
         required: false
         type: string
         default: ''
+      hosted_catalog_url:
+        description: Public HTTPS read-only reviewed hosted games endpoint (empty keeps empty local preview)
+        required: false
+        type: string
+        default: ''
       catalog_url:
         description: Public HTTPS catalog gateway URL (empty keeps staged preview)
         required: false
@@ -50,6 +55,12 @@ jobs:
           ATRIUM_PUBLIC_CATALOG_URL: ${{ inputs.catalog_url }}
         run: |
           node tools/configure_catalog.mjs
+          npm run verify
+      - name: Configure operator-reviewed hosted-game catalog (no secrets)
+        env:
+          ATRIUM_PUBLIC_HOSTED_CATALOG_URL: ${{ inputs.hosted_catalog_url }}
+        run: |
+          node tools/configure_hosted_catalog.mjs
           npm run verify
       - name: Stage operator-approved Checkers local preview (optional)
         if: ${{ inputs.publish_checkers_demo }}
