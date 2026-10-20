@@ -15,7 +15,7 @@ class P0ReleaseTests(unittest.TestCase):
 
 
     def test_package_identity_and_required_files(self):
-        self.assertEqual(NAME, 'atrium-0.5.29-ziprunner.zip')
+        self.assertEqual(NAME, 'atrium-0.5.30-ziprunner.zip')
         paths={path.relative_to(ROOT).as_posix() for path in source_files()}
         self.assertTrue({'.ziprunner-workboard-update.json','project.zr',
                          'ziprunner.looprd.json','ziprunner-verification-plan.json',
@@ -44,7 +44,17 @@ class P0ReleaseTests(unittest.TestCase):
         self.assertTrue(all(x.startswith('ATR-') for x in ids))
         self.assertIn('ATR-P0-004',ids)
         self.assertEqual(update['project'],'atrium')
-        self.assertEqual(update['version'],'0.5.29')
+        self.assertEqual(update['version'],'0.5.30')
+
+    def test_ziprunner_manifest_project_has_only_pinned_supported_fields(self):
+        """CI 39388435728: official pinned validator rejects $.project.summary."""
+        manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+        self.assertEqual(set(manifest['project']), {'key','version','base_version','source_revision'})
+        self.assertEqual(manifest['project']['key'], 'atrium')
+        self.assertEqual(manifest['project']['version'],
+                         json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version'])
+        # An update summary belongs under `update`, not under `project`.
+        self.assertIn('summary', manifest['update'])
 
     def test_official_ziprunner_manifest_todo_contract(self):
         manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
@@ -61,7 +71,7 @@ class P0ReleaseTests(unittest.TestCase):
             self.assertTrue(isinstance(item['next_action'],str) and item['next_action'].strip())
             if item['status']=='blocked':
                 self.assertTrue(item.get('blockers'))
-        self.assertEqual(manifest['project']['version'],'0.5.29')
+        self.assertEqual(manifest['project']['version'],'0.5.30')
 
     def test_verification_plan_exact_implemented_coverage(self):
         """Pinned ZipRunner 2.3 verification-plan task and check linkage."""

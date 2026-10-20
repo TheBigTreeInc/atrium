@@ -1,0 +1,28 @@
+= Atrium 0.5.30 — CI interchange manifest repair
+:revdate: 2026-10-20
+:toc:
+
+== Evidence
+
+Exact GitHub source commit `3ec7c72340ecc1362a5128f790f03af41c84e208` ran GitHub Actions `Verify Atrium source` run `39388435728`.
+The Windows recipe smoke job passed. The Linux source/DAPI job completed its source checks, JS build, disposable DAPI smoke, and deterministic ZIP creation before failing at the pinned ZipRunner validator:
+
+----
+ERROR: $.project: unsupported field summary
+FAIL: 1 issue(s)
+----
+
+== Repair
+
+Remove only `project.summary` from `ziprunner-manifest.json`. The update-level `update.summary` and individual `done_work[].summary` are separate legal fields and remain unchanged, except that `update.summary` describes this pass.
+
+`tests/test_release_pipeline.py` asserts the pinned supported `project` keys and keeps `project.version` aligned to `package.json`, preventing recurrence before fetching upstream DAPI/ZipRunner checkouts.
+
+All source metadata, post-update stamps, workboard updates, CI artifact names, descriptor release, and descriptor SHA-256 use 0.5.30. No runtime/private files or live approval modifications are included.
+
+== Gates
+
+. Import exact 0.5.30 ZIP through local Windows ZipRunner and confirm build/post-update checks for these exact ZIP bytes.
+. Push only after operator review.
+. Confirm exact pushed commit passes both GitHub Actions jobs and the upstream pinned ZipRunner validator.
+. Reconfigure and manually publish Atrium Pages and reviewed hosted-game gateway only after their separate operator gates. This pass does not publish Life or enable its game auth backend.
