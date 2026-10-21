@@ -44,7 +44,7 @@ async function refreshCatalog() {
     try {
       const hostedCount = await mountHostedLife({area});
       const lifePlaceholder = document.querySelector('#life-coming-soon');
-      if(lifePlaceholder) lifePlaceholder.hidden = hostedCount > 0;
+      if(lifePlaceholder) lifePlaceholder.hidden = area.querySelector('[data-game-id="life.loop"]') !== null;
       if(hostedCount) area.querySelector('.emptyState')?.remove();
       if(hostedCount) catalogStatus.textContent = `${catalog.apps.length + hostedCount} approved ${catalog.apps.length + hostedCount === 1 ? 'entry' : 'entries'}`;
     } catch (error) {

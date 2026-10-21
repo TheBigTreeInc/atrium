@@ -1,0 +1,23 @@
+# Copy to the GAME repository at .github/workflows/atrium-register.yml
+# Example assumes its own Pages workflow is named exactly as below.
+name: Register released game with Atrium
+on:
+  workflow_run:
+    workflows: ['Deploy The Life Loop to GitHub Pages']
+    types: [completed]
+permissions:
+  contents: read
+jobs:
+  compatibility-and-registration:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      # Pin to a reviewed Atrium release SHA in production instead of @main.
+      - uses: TheBigTreeInc/atrium/.github/actions/register-game@main
+        with:
+          source-sha: ${{ github.event.workflow_run.head_sha }}
+          atrium-token: ${{ secrets.ATRIUM_REGISTRATION_TOKEN }}

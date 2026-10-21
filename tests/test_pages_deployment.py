@@ -7,9 +7,13 @@ from tools.package_zip import source_files, ROOT
 
 
 class PagesDeploymentTests(unittest.TestCase):
-    def test_pages_publication_is_operator_dispatched_only(self):
+    def test_pages_publication_is_operator_dispatched_or_trusted_ci_pass(self):
         source = (ROOT / '.github/workflows/pages.yml').read_text(encoding='utf-8')
         self.assertIn('workflow_dispatch:', source)
+        self.assertIn('workflow_run:', source)
+        self.assertIn("vars.ATRIUM_AUTO_PUBLISH_CATALOG == 'true'", source)
+        self.assertIn("vars.ATRIUM_TAVI_BASE_URL != ''", source)
+        self.assertIn("github.event.workflow_run.conclusion == 'success'", source)
         self.assertNotIn('push:', source)
         self.assertNotIn('pull_request:', source)
         self.assertIn('actions/deploy-pages@v4', source)

@@ -25,3 +25,10 @@ test('configured hosted catalogue loads public source and review without bearer'
  assert.deepEqual(urls.map(x=>x.url),['./hosted-config.json','https://atrium.example.org/hosted-games.json']);
  assert(urls.every(x=>x.opt.credentials==='omit'&&x.opt.redirect==='error'));
 });
+test('operator-approved second hosted game can be listed without Life hardcoding',()=>{
+ const other={...game,gameId:'example.chess',component:'chess-server',title:'Chess',
+    apiBaseUrl:'https://api.example.org/looprd/chess-server/v1',
+    launchUrl:'https://games.example.org/chess/index.html'};
+ assert.deepEqual(validateHostedCatalog({...base,games:[game,other]}).games.map(g=>g.gameId),['life.loop','example.chess']);
+ assert.throws(()=>validateHostedCatalog({...base,games:[{...other,apiBaseUrl:game.apiBaseUrl}]}));
+});

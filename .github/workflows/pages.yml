@@ -1,5 +1,10 @@
 name: Publish reviewed Atrium Pages
 on:
+  # Opt-in once at repository level: ATRIUM_AUTO_PUBLISH_CATALOG=true.
+  # Runs only after a successful exact-commit Verify Atrium source workflow.
+  workflow_run:
+    workflows: ['Verify Atrium source']
+    types: [completed]
   workflow_dispatch:
     inputs:
       publish_checkers_demo:
@@ -33,6 +38,13 @@ jobs:
   publish:
     name: Build and publish reviewed Atrium storefront
     runs-on: ubuntu-latest
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' ||
+           (github.event_name == 'workflow_run' &&
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.head_branch == 'main' &&
+            vars.ATRIUM_AUTO_PUBLISH_CATALOG == 'true' &&
+            vars.ATRIUM_TAVI_BASE_URL != '') }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -40,6 +52,7 @@ jobs:
       - name: Check out reviewed source
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
       - name: Use Node 22
         uses: actions/setup-node@v4
@@ -58,7 +71,7 @@ jobs:
           npm run verify
       - name: Configure operator-reviewed hosted-game catalog (no secrets)
         env:
-          ATRIUM_PUBLIC_HOSTED_CATALOG_URL: ${{ inputs.hosted_catalog_url }}
+          ATRIUM_PUBLIC_HOSTED_CATALOG_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.hosted_catalog_url || '' }}
         run: |
           node tools/configure_hosted_catalog.mjs
           npm run verify
@@ -71,7 +84,7 @@ jobs:
           npm run verify
       - name: Build optional Tavi extension from the same source revision
         env:
-          ATRIUM_TAVI_BASE_URL: ${{ inputs.extension_base_url }}
+          ATRIUM_TAVI_BASE_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.extension_base_url || vars.ATRIUM_TAVI_BASE_URL }}
         run: |
           if [ -n "$ATRIUM_TAVI_BASE_URL" ]; then
             node tools/build_tavi_extension.mjs

@@ -1,0 +1,16 @@
+{
+  "schema": "atrium.trusted-game-sources/v1",
+  "games": [
+    {
+      "repository": "ExamplePublisher/example-game",
+      "gameId": "example.game",
+      "publisherId": "examplepublisher",
+      "component": "example-game",
+      "deploymentId": "example-prod",
+      "launchBase": "https://publisher.example.org/games/example/",
+      "apiBaseUrl": "https://api.example.org/looprd/example-game/v1",
+      "status": "active",
+      "autoPublish": true
+    }
+  ]
+}

@@ -1,4 +1,6 @@
-0.5.30 CI-only patch: removed unsupported `ziprunner-manifest.json` `project.summary` seen in GitHub Actions 39388435728; no game behavior or publication change. See `docs/P1_076_CI_INTERCHANGE_PROJECT_KEYS.adoc`.
+Atrium 0.5.31: GitHub Action+receiver for trusted game registration, registered JSON in main, optional automatic Pages after exact-commit Verify. ATR-112-GITHUB-GAME-REGISTER remains in Review pending real GitHub App/PAT, origin and CI checks. No default publisher trust, no GitHub App secret, no production publication or auto-Pages rollout. Operator gates and live multiplayer remain unverified. See docs/P1_077_GITHUB_GAME_REGISTRATION.adoc.
+
+0.5.31 CI-only patch: removed unsupported `ziprunner-manifest.json` `project.summary` seen in GitHub Actions 39388435728; no game behavior or publication change. See `docs/P1_076_CI_INTERCHANGE_PROJECT_KEYS.adoc`.
 
 = Atrium 0.5.21 — corrected ZipRunner source candidate
 

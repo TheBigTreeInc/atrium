@@ -292,3 +292,7 @@ An operator-started loopback-only read-only gateway serves only the live, hash-v
 ### 0.5.29: Hosted Life catalog
 
 The read-only reviewed hosted-game gateway and Tavi extension use the shared UI; see `docs/P1_075_LIFE_REVIEWED_HOSTED_PUBLICATION.adoc` for configuration and outstanding operator gates. Discovery does not grant public publication or Life player credentials.
+
+## 0.5.31 Git-based hosted-game registration
+
+See `docs/P1_077_GITHUB_GAME_REGISTRATION.adoc`; game-side action `TheBigTreeInc/atrium/.github/actions/register-game`, registration receiver `.github/workflows/receive-game.yml`, operator trust `registry/trusted-sources.json`. Registration requires explicitly enabled trust and does not certify live multiplayer.
