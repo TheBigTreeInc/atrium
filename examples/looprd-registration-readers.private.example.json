@@ -1,0 +1,16 @@
+{
+  "schema": "atrium.looprd-registration-readers/v1",
+  "connections": [
+    {
+      "deploymentId": "example-node",
+      "hostOrigin": "https://looprd.example.org",
+      "apiOrigin": "https://looprd.example.org",
+      "readerKeyFile": "/run/secrets/atrium-registration-reader",
+      "authority": "pull",
+      "atriumReceiver": {
+        "origin": "https://atrium-api.example.org",
+        "senderKeyFile": "/run/secrets/atrium-discovery-sender"
+      }
+    }
+  ]
+}

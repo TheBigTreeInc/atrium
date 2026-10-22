@@ -10,6 +10,7 @@ PYTHON = ROOT / '.venv' / ('Scripts/python.exe' if os.name == 'nt' else 'bin/pyt
 COMMANDS = [
     ['tools/validate_atriumd.py', 'examples/life.atriumd.yaml', '--component', 'the-life-loop'],
     ['tools/build_registry_spec.py', '--check'],
+    ['tools/build_registration_spec.py', '--check'],
     ['tools/build_spec.py', '--check'],
     ['tools/check_specs.py'],
     ['-m', 'unittest', 'discover', '-s', 'tests', '-v'],

@@ -1,52 +1,26 @@
-= Git-based game registration — initial trusted publisher workflow
-:revnumber: 0.5.31
+// HISTORICAL 0.5.32 POLL-ONLY DESIGN: 0.5.33 adds optional public LoopRD notification while keeping this polling as fallback. See docs/P1_078_PUBLIC_LOOPRD_REGISTRATION.adoc.
+= Git-hosted game registration — Atrium pull model (v0.5.32)
+:revnumber: 0.5.32
 :revdate: 2026-10-21
 :toc: left
 
-== Goal
-A game repository includes the Atrium composite action. After a successful GitHub Pages deployment, it checks portable `looprd.yaml` and `atriumd.yaml`. When an already-approved source releases a compatible revision, Atrium independently verifies it and writes a version-controlled `registry/games/<game-id>.json` and generated `web/hosted-games.json` on `main`. A successful Atrium CI run can automatically refresh its Pages catalog. No game writes into the Atrium repository directly.
+== Status
 
-== Actual contracts
+Supersedes the v0.5.31 cross-repository workflow dispatch concept. A game does NOT receive a GitHub App token, Atrium workflow permission, or an Atrium registration secret. See link:GITHUB_PULL_GAME_REGISTRATION.adoc[full procedure].
 
-* `.github/actions/register-game/action.yml` and `check.py` provide **source compatibility only**, not live gameplay/match authorization or approval of arbitrary code.
-* The game includes `examples/github/atrium-register.yml` as `.github/workflows/atrium-register.yml` and customizes its existing Pages workflow name. It runs only when a Pages workflow succeeded on `main` and checks out its immutable released SHA.
-* For automatic notification, a first-party operator provides `ATRIUM_REGISTRATION_TOKEN` as an Actions:write-only fine-grained token for **Atrium only** (or a short-lived GitHub App installation token minted at workflow runtime). No permissions to write Atrium contents, no DAPI API key and no Social bearer are given to the game. With no token, the action validates but does not register.
-* The game action POSTs `workflow_dispatch` to Atrium `receive-game.yml` containing only source repository, exact SHA and game ID. The event is a **request**, not evidence. Workflow dispatch never supplies its own launch URL, API origin or review status.
-* Atrium `.github/workflows/receive-game.yml` re-fetches both files from the immutable SHA and checks its current trusted-source policy, portable contract, latest successful GitHub Pages deployment SHA and approved game website/API bindings. Only an explicitly allowed repository may trigger a source update. The source is read as data, never executed in the Atrium runner.
-* The Atrium-owned allowlist `registry/trusted-sources.json` is the **one-time trust and deployment policy**. Its records must have: `repository`, `gameId`, `publisherId`, `component`, `deploymentId`, `launchBase` (HTTPS trailing `/`), `apiBaseUrl` (versioned `/looprd/<component>/vN`), `status: active`, and `autoPublish: true`. The game repo has no way to edit this file through the action. An operator reviews a PR adding or changing this policy, including proof of the launch origin and binding to real LoopRD deployment. `games: []` by default.
-* On approved update, `tools/github_game_registry.py` writes `registry/games/<gameId>.json` and regenerates `web/hosted-games.json`. The receiver uses Atrium's **own** `GITHUB_TOKEN` for its source commit. It then triggers a `workflow_dispatch` of `verify.yml`, because ordinary pushes made by a `GITHUB_TOKEN` do not trigger other workflows.
-* GitHub repository variable `ATRIUM_AUTO_PUBLISH_CATALOG=true` enables `.github/workflows/pages.yml` to deploy after successful exact-commit Atrium verification (`workflow_run`). This is opt-in. Leave unset to keep operator-dispatched Pages-only behavior. The static file on Pages can then update without a game-specific Atrium or Tavi release.
+== Game responsibility
 
-== Why JSON rather than committing a live SQLite database?
-Git is the publication ledger, not the authoritative multiplayer service. JSON records are inspectable, diffable, mergeable and auditable; sqlite files would create lock/write races and expose runtime records, potentially including private data. `registry/games/*.json` are the reviewed source of truth and `web/hosted-games.json` the generated, read-only public projection. Game state, users, credentials and sessions stay with Social/LoopRD and the game.
+* Publish a successful GitHub Pages release from a portable `looprd.yaml` and `atriumd.yaml` at the same immutable source revision.
+* Optionally run the Atrium compatibility Action using its own repository's read-only `contents: read` credential; this is local validation only.
+* No cross-repository events, grant or secret required.
 
-== One-time operator onboarding
+== Atrium responsibility
 
-1. Verify publisher and Pages origin ownership. Add a trusted-source record via an Atrium PR; do not accept game-supplied public addresses.
-2. Verify the active LoopRD component, deployment ID, versioned public API route and Pages project path; bind these in Atrium's own policy, never in `atriumd.yaml`.
-3. Install scoped GitHub App credentials for the game repository and set `ATRIUM_REGISTRATION_TOKEN`, or use an operator relay. Public, unrelated third-party games cannot be given privileged Atrium repository credentials; implement a public PR submission broker for those later.
-4. Allow `github-actions[bot]` to push approved catalog records on `main`, using appropriate branch rules/repo policy; do not bypass a required review if the repository's policy does not permit trusted automatic publication.
-5. Optionally set repository variable `ATRIUM_AUTO_PUBLISH_CATALOG=true` to refresh the hosted catalog automatically. The workflow still validates and builds before deployment and respects GitHub Pages environment protection.
+* Approve each publisher / source / origin binding once through `registry/trusted-sources.json` review.
+* `.github/workflows/receive-game.yml` runs on an Atrium-owned 15-minute schedule or manual dispatch. It discovers latest successful Pages deployments from approved public repos; `tools/sync_github_game_registry.py` revalidates fetched manifests and generates `registry/games/*.json` plus `web/hosted-games.json`.
+* Its own `GITHUB_TOKEN` can update Atrium `main` where branch policy permits. Optional auto Pages publication uses **Atrium** repository variables and Atrium-owned workflow credentials only.
+* New third-party repositories remain pending until an operator reviews trust and origin ownership; mere public compatibility does not approve games.
 
-== Tavi extension versioning
+== Boundaries
 
-The hosted-game catalog validator and UI changed with this pass, so the extension package advances from 1.0.1 to **1.0.2**. Game catalog updates after this release do not require another extension update because the extension reads the hosted catalog dynamically.
-
-== Current limitations and required next pass
-
-* The action validates portable source compatibility, and the receiver validates GitHub Pages deployment evidence. **This is not a real multiplayer acceptance test**. A successful Pages deploy cannot prove backend match ownership, OAuth exchange, session recovery, latency, or Tavi's navigation permissions.
-* The new source-driven public catalog supports multiple hosted web cards; Tavi's current `ui.requestGameLaunch` broker only recognizes `life.loop` and an existing match ID. Other cards are visibly unavailable inside embedded Tavi until the shared host adds a generic, consent-based navigation/launch API. Standalone Atrium can open their reviewed website.
-* The existing `tools/live_hosted_games.py` life-specific operator gateway remains supported as an alternative; the Git-managed static publisher and live gateway are **distinct modes**. Configuring `hosted_catalog_url` points to the live gateway, overriding the static Pages projection. Publishing/revocation semantics differ: static removal requires a new Git+Pages deployment, unlike live runtime revocation.
-* Disabling a trusted deployment, changing its approved URL or revoking a game should trigger the catalog removal workflow. In this initial pass, such removal is manual (reviewed Git change) and does **not** immediately follow LoopRD registry state. Do not claim real-time revocation.
-* If a Pages workflow has already finished but the action runs against a new commit that has not deployed, the receiver refuses publication and the workflow should be rerun after that commit's successful Pages deployment.
-* Before enabling trusted-source auto-publish, run a disposable end-to-end test with a real scoped GitHub App token and repository branch policies. No production GitHub secrets, backend credentials or approved deployment binding are supplied in the source ZIP.
-
-== Acceptance tests
-
-. A valid `atriumd.yaml`/`looprd.yaml` pair produces a pass in the game action; mismatched component, URL in portable sidecar or invalid entrypoint fails.
-. Registration request cannot set publisher, launch URL, API URL, approved status or registry paths.
-. Atrium rejects untrusted repo, unapproved game ID, mismatch of publisher/component, non-matching SHA or latest unsuccessful GitHub Pages deployment.
-. An operator-trusted game at exact deployed SHA produces one Git diff for `registry/games/` and `web/hosted-games.json` and is idempotent on repeat.
-. GitHub CI passes before optional Pages deploy; unknown third-party game has no authority to write Atrium main.
-. Withdraw/change of a reviewed record removes or updates the public listing only after a corresponding approved commit+Pages publication.
-. Tavi cannot launch generic games without host permission; no raw bearer, invitation or match-seat proof reaches browser URLs.
+This is eventually consistent; scheduled GitHub Actions may be delayed. Compatibility and Pages success do not certify Social identity, LoopRD match authorization or Tavi embedded launch. Disabled trust removes public snapshot only after an approved Atrium sync and Pages refresh.

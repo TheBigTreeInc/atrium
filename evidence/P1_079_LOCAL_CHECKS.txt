@@ -1,0 +1,27 @@
+Atrium 0.5.34 — local source verification, 2026-10-22.
+Target: optional Looprd 0.3 registration reader, Atrium v2 receiver bridge.
+
+PASS  python -m unittest tests.test_looprd_registration_reader -v  (20/20)
+      Includes generated Atrium v2 receiver with disposable SQLAlchemy DB,
+      no public release, durable source/receipt checkpoint, restart + withdraw,
+      invalid acknowledgement and failed receiver retries.
+      Also covers sidecar-only content changes without generation changes.
+PASS  python -m unittest tests.test_unified_spec -v        (4/4)
+      Distinguishes standalone public registration component from includes.
+PASS  npm test                                          (43/43)
+PASS  npm run build
+PASS  npm run verify
+PASS  npm run build:tavi
+PASS  python tools/build_registration_spec.py --check
+PASS  python tools/build_registry_spec.py --check
+PASS  python tools/build_spec.py --check
+PASS  python tools/check_specs.py
+
+PASS  python -m unittest discover -s tests -q      (273 tests)
+      Full suite passed with the corrected separate-component boundary test.
+      The later-added sidecar-only update regression also passed in the
+      targeted 20-test reader run (was added after full suite discovery).
+NOT RUN: Actual disposable Looprd 0.3.0 registration service reader,
+         exact-source Windows ZipRunner, exact-commit GitHub CI,
+         deployment credential isolation and operator publication approval.
+No Git push, Pages deployment or live registration performed.

@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.31",
-  "summary": "0.5.31 Git-hosted game registration candidate: portable game-side action, independent Atrium source/Pages check, operator-owned trusted source allowlist, Git-managed hosted game catalog. No game may write Atrium main; Tavi generic game launch remains pending.",
+  "version": "0.5.34",
+  "summary": "0.5.34 adds optional Looprd 0.3.0 generic service reader that consumes registered atriumd.yaml documents using per-deployment reader keys, forwards only to scoped Atrium v2 discovery candidates, and conservatively reconciles incomplete inventories. Existing push and GitHub public notice flows remain unchanged; no publication or operator acceptance.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -85,7 +85,7 @@
       "title": "Persist reviewed-only portable game discovery candidates",
       "summary": "Operator-key protected candidate POST/GET validates portable atriumd/v1, records immutable source revision/fingerprint per deployment/component, rejects publisher takeover and never publishes. Atrium DB schema v3 additive.",
       "operator_checks": [
-        "Back up Atrium SQLite DB before v2\u2192v3; verify schema migration on disposable deployment and test existing publisher history.",
+        "Back up Atrium SQLite DB before v2→v3; verify schema migration on disposable deployment and test existing publisher history.",
         "After external Looprd game activates, use deployer command with private apps:approve key; verify candidate appears only in operator GET queue and public Pages catalog stays unchanged."
       ]
     },
@@ -106,7 +106,7 @@
       "priority": "high",
       "summary": "Source implements additive schema v4, scoped issue/verify/status endpoints and direct pinned public-IP HTTPS verification; proof never grants identity or publication.",
       "operator_checks": [
-        "Backup SQLite and validate additive schema v3\u2192v4 on a disposable DAPI deployment without changing existing releases.",
+        "Backup SQLite and validate additive schema v3→v4 on a disposable DAPI deployment without changing existing releases.",
         "Issue challenge for an existing operator-approved publisher/origin, host exactly the returned bytes at the HTTPS proof URL, then verify via apps:approve scope.",
         "Confirm private DNS, DNS rebinding, redirect, TLS failure, expired/replayed/reissued proof, wrong origin and second-publisher attempts fail closed.",
         "Ensure public catalog and publisher approval remain unchanged; verification does not identify a Social user or approve publication."
@@ -163,7 +163,7 @@
       "title": "Atrium automatic owner-trusted v2 game metadata registration and durable DAPI 0.2.0 acknowledgement",
       "summary": "v2 receiver is a source candidate; operator stages actual Looprd 0.2.0 sender with dedicated service credential and schema v6 migration. Does not publish an immutable game release or authorize player launch.",
       "operator_checks": [
-        "Back up Atrium v5 database and rehearse additive v5\u2192v6 migration; preserve old publisher, candidate and immutable release rows.",
+        "Back up Atrium v5 database and rehearse additive v5→v6 migration; preserve old publisher, candidate and immutable release rows.",
         "Configure one trusted deployment binding (service subject, publisher namespace, trusted API origin and originRef map); exercise real Looprd 0.2.0 GET capabilities and POST observations under apps:discover only.",
         "Verify exact and delayed replay, source updates, withdraw/re-register, multiple components/deployments, game-ID changes, wrong credential, conflicting publisher, and no automatic public AppRelease.",
         "Run exact installed ZIP post-update tests and both GitHub CI jobs before operator acceptance; verify DAPI sender remains disabled until the gates pass."
@@ -177,6 +177,19 @@
         "On exact pushed commit, verify both Linux and Windows GitHub Actions jobs pass and official ZipRunner v2.3 validation completes.",
         "Run disposable DAPI smoke with pinned runtime, ensure real 403 authorization denial is observed and replay/withdraw/restart assertions pass.",
         "Verify installed ZIP SHA-specific post-update tests and that local 37-ticket operator Work board statuses and criteria remain intact."
+      ]
+    },
+    {
+      "id": "ATR-114-LOOPRD-03-READER",
+      "title": "Consume generic Looprd 0.3 optional registration readers without publication shortcuts",
+      "summary": "Source-only opt-in reader and durable v2 discovery candidate bridge with bounded private credential handling, hash-based idempotence and fail-closed withdrawals. Looprd host 0.3 runtime and production deployment remain independently unverified.",
+      "operator_checks": [
+        "Confirm Looprd 0.3.0 game host advertises registration.readers.v1, inventory for service=atrium and generation-pinned document; older host must retain previously active generation.",
+        "Configure separate per-deployment Atrium reader key and distinct apps:discover sender credential privately; verify wrong-service and revoked keys fail closed.",
+        "Run disposable poll twice and after restart; verify exact document hash, durable acknowledgement and no duplicate candidate. Mutate sidecar with unchanged component generation and verify update.",
+        "Confirm incomplete inventory, stale generation, read errors and 401/403/409/429/503 do not withdraw a prior candidate; complete inventory omission withdraws only the correct deployment.",
+        "Ensure existing push remains operative where configured, no active collision in pull-controlled deployment, no private key in logs/ZIP, and no public game or player identity is auto-approved.",
+        "Verify Windows ZipRunner build and exact-commit GitHub CI; operator reviews before marking work done."
       ]
     }
   ],
@@ -238,7 +251,13 @@
     {
       "id": "ATR-112-GITHUB-GAME-REGISTER",
       "title": "Review trusted GitHub game registration and generated catalog publication",
-      "summary": "0.5.31 source implements game-side compatibility action, independent immutable release/Pages proof, trusted-source allowlist, Git-managed reviewed source JSON and opt-in Pages refresh. Requires real GitHub App/PAT permissions, branch-rule, runtime and Tavi acceptance; no third-party self-service yet.",
+      "summary": "0.5.34 source implements game-side compatibility action, independent immutable release/Pages proof, trusted-source allowlist, Git-managed reviewed source JSON and opt-in Pages refresh. Requires real GitHub App/PAT permissions, branch-rule, runtime and Tavi acceptance; no third-party self-service yet.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-113-PUBLIC-LOOPRD-REGISTRATION",
+      "title": "Verify public token-free LoopRD registration and automatic marketplace promotion",
+      "summary": "0.5.34 source candidate: separate anonymous low-privilege LoopRD inbox, external curl after Pages success, Atrium-owned independent verification and Git-backed publication; deploy HTTPS/service and test against actual Life Pages before accepting.",
       "priority": "high"
     }
   ]

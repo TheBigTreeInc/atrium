@@ -1,49 +1,5 @@
-Atrium 0.5.31: GitHub Action+receiver for trusted game registration, registered JSON in main, optional automatic Pages after exact-commit Verify. ATR-112-GITHUB-GAME-REGISTER remains in Review pending real GitHub App/PAT, origin and CI checks. No default publisher trust, no GitHub App secret, no production publication or auto-Pages rollout. Operator gates and live multiplayer remain unverified. See docs/P1_077_GITHUB_GAME_REGISTRATION.adoc.
+Atrium 0.5.34 — optional Looprd 0.3 generic service reader. Source ZIP candidate for review; no production API activation or Git push. The 0.5.33 public curl registration and existing v2 push adapters remain unchanged. New tools/pull_looprd_registrations.py uses a separately mounted per-service reader key to GET the Looprd registration inventory + generation-pinned sidecar and an independent apps:discover sender key to submit validated candidate to Atrium v2; only operator configured authority=pull is active. No automatic game publication, no browser credentials and no new source repository allowlist. See docs/P1_079_LOOPRD_03_GENERIC_READER.adoc, examples/looprd-registration-readers.private.example.json, tests/test_looprd_registration_reader.py. Do not add registrations to component specs before upgrading the external Looprd host to 0.3.0. Historical 40-ticket operator board preserved; new candidate ATR-114-LOOPRD-03-READER is source-implemented but operator acceptance outstanding.
 
-0.5.31 CI-only patch: removed unsupported `ziprunner-manifest.json` `project.summary` seen in GitHub Actions 39388435728; no game behavior or publication change. See `docs/P1_076_CI_INTERCHANGE_PROJECT_KEYS.adoc`.
+0.5.34 final regression: 20 optional reader tests include the generated Atrium v2 receiver with a disposable database, restart/replay, refusal to accept a mismatching acknowledgement, and fail-closed withdrawal on delivery errors. These tests cannot establish actual Looprd 0.3.0 runtime deployment, authentication or production publication. Independent activation and operator acceptance are still required.
 
-= Atrium 0.5.21 — corrected ZipRunner source candidate
-
-0.5.19 failed Windows Python CI integration test because `.github/workflows/verify.yml` named the 0.5.18 artifact. Fixed workflow validation and upload references to 0.5.21, bumped source version declarations and added regression assertions. No change to Life game authority, Tavi or DAPI. See `docs/P1_070_WORKFLOW_VERSION_REPAIR.adoc`. Operator should apply this ZIP without deleting local state and check exact installed bytes; no push or deployment authorized.
-
-= Atrium v0.5.18 CI smoke repair handoff
-
-A source-only CI repair for run 39173201839 isolates disposable v1/v2 DAPI smoke phases into separate rate-limit sessions sharing one persisted DB; production limits remain unchanged. The latest 37-ticket local operator snapshot is preserved as `docs/ZIPRUNNER_LOCAL_WORKBOARD_37_20261019.json`. See `docs/P1_068_CI_SMOKE_ISOLATION.adoc`. No automatic Git push, deployment, game publication, DAPI sender activation or operator acceptance.
-
-# Atrium v0.5.18 — Trusted discovery v2 handoff
-
-Deliver a **complete, flat-root source** ZIP to existing ZipRunner project `atrium`. Keep the historical workboard IDs/statuses and operator decisions. New source-candidate task: `ATR-108-TRUSTED-V2-RECEIVER`. Updated `looprd.yaml` release 0.5.18, additive database schema 6; backup existing v5 database and rehearse migration before any real activation. v2 DAPI service handshake/endpoints: `/registry/discovery/v2/capabilities` (GET), `/observations` (POST) with `apps:discover` service identity bound once to trusted deployment, plus apps:approve `manage`, apps:read `catalog`. v1 API remains unchanged. See `docs/P1_067_TRUSTED_DISCOVERY_V2.adoc` and fixture examples. Run source tests, official pinned ZipRunner 2.3 validator, pinned DAPI receiver/handler smoke and exact-commit GitHub CI; separately test the **actual Looprd 0.2.0 sender** in staging. No source ZIP authorizes Pi deployment, API secrets from logs, Git push, auto publication, database deletion or operator Work board approval.
-
-# Atrium 0.5.16 — DAPI discovery receiver ZipRunner handoff
-
-Atrium now accepts operator-bound DAPI `atriumd/v1` observations using a dedicated `apps:discover` service key with exact deployment/component/source identity; v5 additive SQL, strict Git/content provenance, ordered idempotent receipts, withdrawn/outage preservation, metadata-only operator review and trusted operator-only launch origin diagnostics. **Nothing discovered becomes automatically published.** DAPI pinned revision `dc79897a54f69141ce300bbdadd3bdd6bd996d14` provides **observe-only** discovery, not a sender. Real auto delivery requires an additional DAPI-side implementation and acceptance. No game or Social credential lives in the web frontend or sidecar. See `docs/P1_066_DAPI_DISCOVERY_RECEIVER.adoc` and fixtures `examples/discovery/`.
-
-No Git push, release or production migrations/deployments are performed by this ZIP.
-
-# Atrium 0.5.15 — ZipRunner handoff
-
-Project key: `atrium` · Base: `0.5.14` · Source update only, no auto-push/deploy.
-
-New bounded Work board source candidate `ATR-110-LOBBY-PREVIEW`: Atrium multiplayer lobby UI and transport-injected mock Life API, typed create/invite/join/list/resume, simulated 60h or unlimited turn policy, adapter/protocol negative tests and Pages-safe static build. The default public catalog remains empty, but the explicitly labelled Multiplayer Lab is visible. No user identity, persisted match state, public Life `/play` activation, Social event or DAPI migration is claimed. Python adapter was extended to the same proposed envelope, and Life's **internal-only** capability shape remains rejected as a public service.
-
-The prior Checkers and publisher/gateway review candidates, operator acceptance criteria, deferred work and the remaining Life/Looprd discovery priorities are preserved. All source `done_work` records denote delivered candidate code, **not** accepted operator Done. The latest local operator Work board remains authoritative.
-
-Source check evidence is `evidence/P1_065_LOCAL_CHECKS.txt`; documentation is `docs/P1_065_MULTIPLAYER_LOBBY_PREVIEW.adoc`. Rebuild and validate the exact `atrium-0.5.16-ziprunner.zip` with pinned upstream CI after an explicitly authorized push. The operator independently verifies installed-ZIP SHA, browser UI on real Pages, manual publication controls, and whether the work is accepted. No release is requested.
-
----
-
-# Atrium 0.5.14 — ZipRunner handoff
-
-Project key: `atrium` · Base: `0.5.13` · Source update (no automatic deployment).
-
-Bounded task: `ATR-106-CHECKERS-PREVIEW`, first-party standalone local Checkers gameplay, operator-gated manual Pages publication and improved storefront. The default catalog remains empty until `publish_checkers_demo=true` on an explicitly dispatched `Publish reviewed Atrium Pages` workflow, with `catalog_url` empty. Life remains a coming-soon non-playable item; no Looprd/Tavi/Social integration or registry auto-approval was added.
-
-Implemented source is **review candidate only**. Do not mark Done without operator acceptance. Preserve all existing Work board statuses and all remaining IDs. No source push, Git tag, release, hosted gateway deployment or Pages publication was performed.
-
-Local checks: 192 Python tests under an offline system-package compatibility path; 18 Node tests; clean npm build and verification; opt-in Checkers asset created and SHA256 verified. Isolated `.venv` creation was blocked by unavailable pip index in this container; official Windows/Linux CI and target ZipRunner will run with their own dependency sources. Chromium headless smoke timed out in this container; real browser acceptance is pending. See `evidence/P1_064_LOCAL_CHECKS.txt`.
-
-Next: operator installs this ZIP, verifies exact-commit CI, manually dispatches Pages `publish_checkers_demo=true` after approval, tests actual Play and opt-out rollback. The eventual Life path is `ATR-108-LOOPRD-DISCOVERY`; `ATR-107-AUTH`, `ATR-104-LIVE` and prior publisher-proof operator checks remain separate.
-
-## 0.5.29 reviewed Life hosted catalog
-
-See `docs/P1_075_LIFE_REVIEWED_HOSTED_PUBLICATION.adoc`. The source now supports reviewed live Life catalog projection, operator-owned `/life/` Pages path binding, and Tavi extension 1.0.1. The live registry SQLite, Pages approval file, HTTPS proxy, and Social credential exchange are not packaged or deployed. Local test results do NOT approve or publish Life.
+Full local Python suite: 273 tests passed; final 20-case reader suite and 4-case unified-spec suite passed; 43 JavaScript tests, web build/verify and Tavi build passed. No external host, Windows ZipRunner or exact-commit GitHub CI was run.

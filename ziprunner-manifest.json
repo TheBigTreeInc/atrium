@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.31",
+    "version": "0.5.34",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261021-032",
+    "id": "ATR-P1-20261021-034",
     "kind": "source_update",
     "created_at": "2026-10-20T08:09:00+02:00",
-    "summary": "0.5.31 GitHub Action registration workflow with operator-managed trust policy, independent immutable-source verification, Git-managed static hosted catalog and gated Pages refresh; no automatic approval of unknown publishers."
+    "summary": "0.5.34 adds an opt-in Atrium reader for Looprd 0.3.0 generic registration.readers.v1: verifies registration inventory and generation-pinned atriumd.yaml via separate mounted credentials, deduplicates and forwards to existing reviewed-only v2 candidates, conservatively handles withdrawal. Does not deploy Looprd 0.3 or publish a game."
   },
   "planned_work": [
     {
@@ -127,6 +127,18 @@
       "title": "Review trusted GitHub game registration and generated catalog publication",
       "priority": "high",
       "acceptance_criteria": "Validate valid and unsafe source, independent Pages SHA check, operator allowlist binding and no game-repo crosswrite. On disposable repositories confirm action dispatch, Atrium Git commit, exact-commit Verify, opt-in Pages deployment, repeat idempotence, withdrawal behavior and preservation of Tavi host control. Operator approval required."
+    },
+    {
+      "id": "ATR-113-PUBLIC-LOOPRD-REGISTRATION",
+      "title": "Verify public token-free LoopRD registration and automatic marketplace promotion",
+      "acceptance_criteria": "Configure disposable HTTPS routing and isolated public LoopRD component; approve Life source only after independent review; verify anonymous invalid/unapproved curl fails, valid source queues and Atrium separately checks exact Pages run ID and revision before committing catalog on main; ensure Tavi sees game only after approved Pages publication; test revoke/disable and no credentials in game workflow.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-114-LOOPRD-03-READER",
+      "title": "Opt-in generic Looprd 0.3 service registration reader",
+      "acceptance_criteria": "Source tests for bounded per-service reader, independent v2 sender, durable replay/incomplete-inventory behavior and operator-reviewed actual Looprd 0.3 runtime wire compatibility",
+      "priority": "high"
     }
   ],
   "done_work": [
@@ -556,6 +568,27 @@
           "description": "Reproduction, repair boundary, validation and next operator gates"
         }
       ]
+    },
+    {
+      "id": "ATR-114-LOOPRD-03-READER",
+      "summary": "Implement source-side generic reader and privacy-preserving durable checkpoint, without disabling v2 push or public GitHub notices; awaiting actual Looprd 0.3 deployment/receiver operator review.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/pull_looprd_registrations.py",
+          "description": "Strict same-origin reader with independent token, v2 candidate forward and durable state"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_looprd_registration_reader.py",
+          "description": "No-network contract and negative reconciliation regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_079_LOOPRD_03_GENERIC_READER.adoc",
+          "description": "Operator setup, Looprd 0.3 host prerequisite and pending live acceptance"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -567,7 +600,12 @@
     {
       "id": "ATR-112-GITHUB-GAME-REGISTER",
       "status": "review",
-      "next_action": "Review 0.5.31 source ZIP, provision scoped Actions:write token and operator-owned source policy on disposable repositories; test complete GitHub and Pages workflow and operator acceptance."
+      "next_action": "Review 0.5.34 source ZIP, provision scoped Actions:write token and operator-owned source policy on disposable repositories; test complete GitHub and Pages workflow and operator acceptance."
+    },
+    {
+      "id": "ATR-113-PUBLIC-LOOPRD-REGISTRATION",
+      "status": "review",
+      "next_action": "Review 0.5.34 ZIP; deploy separate registration component and HTTPS endpoint on disposable LoopRD; configure Atrium registration URL; perform negative/positive end-to-end Life workflow and exact SHA GitHub CI and operator acceptance."
     }
   ],
   "validation": {
@@ -704,23 +742,38 @@
         "description": "Pinned DAPI smoke and ZipRunner official v2.3 package validator under exact pushed source commit",
         "status": "not_run",
         "reason": "Requires operator source push and observed GitHub Actions; do not infer from local tests."
+      },
+      {
+        "id": "ATR-114-LOOPRD-03-READER-T1",
+        "status": "passed",
+        "description": "20 deterministic local reader, generated Atrium v2 receiver, restart/replay and revocation regressions",
+        "command": "python -m unittest tests.test_looprd_registration_reader -q",
+        "environment": "Linux source test harness",
+        "evidence_ref": "evidence/P1_079_LOCAL_CHECKS.txt"
+      },
+      {
+        "id": "ATR-114-LOOPRD-03-READER-LIVE",
+        "status": "not_run",
+        "description": "Disposable live Looprd 0.3 host and two-key end-to-end reader/receiver acceptance",
+        "reason": "Requires operator-deployed Looprd 0.3 with private service reader and independently-scoped sender"
       }
     ]
   },
   "handover": {
-    "next_pass": "Operator review of GitHub App Actions-only token and first trusted source entry, disposable action dispatch->Atrium commit->verify->Pages proof. Add shared generic game launch to Tavi and runtime revocation reconciliation.",
+    "next_pass": "On a disposable Looprd 0.3.0 host, activate real registrations and validate reader response wire format, independent keys, provenance, v2 scoped candidate delivery and complete-inventory withdrawal; verify operator acceptance before publishing a game.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
       "A broken reverse proxy or intermediary ignoring no-store can serve stale data; verify no-store and TLS at public edge.",
       "An already-running/background browser is not instantaneously revoked; current foreground interval is 60 seconds. Game authorization must remain authoritative server-side.",
       "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
-      "Real publisher HTTPS origin challenge and v3\u2192v4 production migration remain separately operator-unverified.",
+      "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified.",
       "Mock Life matches are deliberately tab-memory only; an unlocked static UI does not prove Social auth, persistent 60-hour games, Life engine fairness, OpenClaw game actions or deployed API compatibility."
     ],
     "blockers": [
       "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",
-      "Life internal AtriumLifeLaunch currently does not expose the proposed public /play/info envelope or authenticated /play routes; API contract alignment, trust and endpoint deployment remain independent owner gates."
+      "Life internal AtriumLifeLaunch currently does not expose the proposed public /play/info envelope or authenticated /play routes; API contract alignment, trust and endpoint deployment remain independent owner gates.",
+      "Looprd 0.3.0 registration.readers.v1 host and separate reader credential are not provisioned by this Atrium source ZIP; no live host-wire interoperability claim."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
@@ -729,7 +782,8 @@
       "v0.5.1 adds an explicit Life/hosted-game registration design and sample only; current v1 cannot register current multi-MiB Life build.",
       "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field.",
       "v0.5.14 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy.",
-      "v0.5.16 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled."
+      "v0.5.16 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled.",
+      "v0.5.34 adds opt-in local reader with per-deployment pull authority. Existing v2 push and public GitHub workflow registration are preserved; discovery is not publication."
     ]
   },
   "operator_actions": [

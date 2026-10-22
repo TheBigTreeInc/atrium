@@ -12,6 +12,11 @@ on:
         required: false
         type: boolean
         default: false
+      registration_endpoint_url:
+        description: Public HTTPS LoopRD registration endpoint (configured by Atrium operator, no game secret)
+        required: false
+        type: string
+        default: ''
       extension_base_url:
         description: Approved HTTPS URL ending in /atrium/tavi/ (empty disables extension publication)
         required: false
@@ -74,6 +79,12 @@ jobs:
           ATRIUM_PUBLIC_HOSTED_CATALOG_URL: ${{ github.event_name == 'workflow_dispatch' && inputs.hosted_catalog_url || '' }}
         run: |
           node tools/configure_hosted_catalog.mjs
+          npm run verify
+      - name: Configure public registration URL for game-side Action
+        env:
+          ATRIUM_PUBLIC_REGISTRATION_ENDPOINT: ${{ inputs.registration_endpoint_url }}
+        run: |
+          node tools/configure_registration.mjs
           npm run verify
       - name: Stage operator-approved Checkers local preview (optional)
         if: ${{ inputs.publish_checkers_demo }}

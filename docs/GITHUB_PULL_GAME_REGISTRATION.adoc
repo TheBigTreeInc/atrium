@@ -1,0 +1,21 @@
+// HISTORICAL 0.5.32 POLL-ONLY DESIGN: 0.5.33 adds optional public LoopRD notification while keeping this polling as fallback. See docs/P1_078_PUBLIC_LOOPRD_REGISTRATION.adoc.
+= Atrium v0.5.32 — GitHub-owned game registration without game-side Atrium permissions
+:toc: left
+
+== Ownership and trust boundary
+
+Game repositories may validate their own `looprd.yaml` / `atriumd.yaml` using Atrium's read-only composite Action. They DO NOT need an `ATRIUM_REGISTRATION_TOKEN`, GitHub App install on Atrium, repository dispatch rights, or any permission in Atrium. The game action no longer calls Atrium.
+
+Atrium runs `.github/workflows/receive-game.yml` on its OWN 15-minute schedule, or manually. Its own `GITHUB_TOKEN` has source-write only in Atrium and Actions-write in Atrium for optional internal Pages dispatch; neither token nor permissions are provided to Life. It fetches release evidence only from the public game repository allowlisted in `registry/trusted-sources.json`, obtains the latest completed successful GitHub Pages workflow's immutable commit SHA, re-fetches the source sidecars at precisely that SHA, and verifies compatibility, publisher, component, launch URL binding and the Pages run before producing `registry/games/*.json` and `web/hosted-games.json`.
+
+`registry/trusted-sources.json` starts empty, by design. A maintainer approves new repository bindings in an Atrium PR. A source with `autoPublish: true` only receives automatic updates **after** its initial approval and approved deployment URLs. Removing or disabling that policy entry withdraws its generated catalog entry at the next synchronization. API/network failures do not invent approvals and keep last verified release pending independent revocation.
+
+== Starting it
+
+Game developer: include `examples/github/atrium-register.yml`, or simply ship `atriumd.yaml` / `looprd.yaml` in public game repository. Run the game's normal successful Pages deployment. Optional compatibility action uses only `contents: read`. No shared secrets.
+
+Atrium operator: verify publisher/source, commit `registry/trusted-sources.json` policy through review, run `Synchronize approved game releases` manually once to preview status, then allow the 15-minute scheduled check. An Atrium-owned bot can commit changed catalog records to `main` if repository branch policies permit. Public Pages promotion is separately opt-in with repository variable `ATRIUM_AUTO_DEPLOY_PAGES=true`; configure an approved `ATRIUM_TAVI_BASE_URL`, preserving extension publication, and optional `ATRIUM_PUBLIC_HOSTED_CATALOG_URL` / `ATRIUM_PUBLIC_CATALOG_URL`. New catalog changes do not need a new Tavi extension version.
+
+== Limitations
+
+Schedules are eventually consistent and may be delayed by GitHub. This is **not** immediate event delivery. A future optional real-time path uses GitHub Actions OIDC ID token attestation to a LoopRD-owned HTTPS endpoint with aud/repository/SHA/run validation; that token would not grant GitHub permissions on Atrium. This first pass deliberately requires no new online service. Source compatibility and Pages deployment are not proof of game-owned seat authorization, Social login, live LoopRD API health or end-to-end multiplayer.

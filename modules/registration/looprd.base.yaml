@@ -1,0 +1,23 @@
+apiVersion: looprd/v1
+component: atrium-registration
+release: 0.5.34
+api:
+  version: v1
+auth:
+  mode: public
+database:
+  backend: sqlite
+  schemaVersion: 1
+models:
+  RegistrationNotice:
+    fields:
+      id: {type: integer, primaryKey: true, generated: true}
+      repository: {type: string, required: true, maxLength: 200, unique: true}
+      sha: {type: string, required: true, maxLength: 40}
+      runId: {type: integer, required: true}
+      seenAt: {type: string, required: true, maxLength: 40}
+limits:
+  requestsPerMinute: 30
+  burstPerSecond: 3
+  maxRows: 100
+handlers: []

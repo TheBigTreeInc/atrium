@@ -1,0 +1,46 @@
+= Atrium 0.5.33: token-free public LoopRD registration notice
+:toc: left
+
+== Intended player/developer experience
+
+A developer includes `TheBigTreeInc/atrium/.github/actions/register-game@<reviewed-commit>` in the *game's* post-Pages-deployment GitHub workflow. The action validates the game's `looprd.yaml` and `atriumd.yaml` at the successfully deployed SHA, then calls a PUBLIC LoopRD endpoint using `curl`. It sends only `repository`, `sha` and `runId`, without any Atrium token or cross-repository GitHub permissions. The public endpoint responds `queued` (never `published`). The developer's action must not falsely announce an approved game.
+
+Atrium's own scheduled GitHub workflow fetches the queue, independently queries the latest Pages workflow, downloads both files from exactly that commit, and validates against the operator-owned trusted publisher+repository+deployment policy. ONLY Atrium's GitHub token may commit `registry/games/*.json`, `registry/registration-history.json` and `web/hosted-games.json` to Atrium's `main`. Optional Pages promotion follows Atrium's own policy.
+
+== Deployment topology
+
+The main `atrium` LoopRD component **must remain** `auth.mode: database`. Adding a `scopes: []` handler to it would still require bearer authentication from LoopRD's dispatcher. The public endpoint is instead the separate `atrium-registration` component, generated in `modules/registration/looprd.yaml`, with `auth.mode: public`, own SQLite storage, strictly bounded inputs, IP rate limiting and no privileged component service calls. It is not included in the Atrium root specification and must be installed as a separate component in the operator's LoopRD `sources.yaml`.
+
+Example configured endpoint path (replace host with the operator's actual public HTTPS origin):
+
+[source,text]
+----
+https://YOUR-ATRIUM-HOST/looprd/atrium-registration/v1/registrations
+----
+
+After publisher review, update `registry/trusted-sources.json`, regenerate `python tools/build_registration_spec.py`, and deploy the new public component spec. The generated source embeds the *approved repository IDs only*, so unknown repositories do not get database entries. A public POST cannot approve a new publisher, arbitrary URL, game code or API credential.
+
+Configure the actual URL in the Atrium GitHub repository variable `ATRIUM_PUBLIC_REGISTRATION_ENDPOINT`. To make it discoverable to **all game workflows**, dispatch Atrium's `pages.yml` once with `registration_endpoint_url` set to that URL. The published `https://thebigtreeinc.github.io/atrium/registration-config.json` is a public discovery file. An empty URL keeps the ingress disabled and causes a clear game-workflow error rather than silently indicating publication.
+
+== Game workflow integration
+
+Copy `examples/github/atrium-register.yml` to a game's `.github/workflows/`. It runs only after a successful GitHub Pages deployment on `main` and invokes the bundled composite action with `source-sha` and `pages-run-id`. The action fetches the operator-published public endpoint config and sends:
+
+[source,bash]
+----
+curl --fail-with-body --retry 2 --max-time 15 \
+  -H 'Content-Type: application/json' \
+  -d '{"schema":"atrium.registration-notice/v1","repository":"TheBigTreeInc/life","sha":"<EXACT-40-CHAR-SHA>","runId":<SUCCESSFUL-PAGES-RUN-ID>}' \
+  'https://YOUR-ATRIUM-HOST/looprd/atrium-registration/v1/registrations'
+----
+
+The endpoint returns `{schema: atrium.registration-ack/v1, status: queued, ...}`. A public GET of the same route returns a bounded non-secret queue. Atrium's `receive-game.yml` performs independent reconciliation on its own 15-minute schedule (and on manual dispatch), commits the actual approved catalog entry, and writes a reviewable `registry/registration-history.json` entry with status `published`, `rejected`, `pending_sync` or `pending_verification`. The game never writes to `main`.
+
+== Guarantees and limitations
+
+* An anonymous POST is an untrusted notification, not an authenticated claim of publisher ownership. Another party can submit a notice for an approved public repository; independent GitHub and publisher-policy checks prevent that from granting publication. A signed GitHub OIDC identity may be required later for meaningful developer attribution, but is not necessary for this low-privilege hint path.
+* Dynamic GitHub Pages / Tavi storefront deployment is a separate operator-controlled step. Committing `main` does not itself mean the website was republished.
+* The source allowlist starts empty. Life must be approved as a publisher/source and have verified frontend/API bindings before it can publish.
+* This approach is not instantaneous: `curl` queues immediately, but the Atrium-owned workflow currently checks every 15 minutes subject to GitHub scheduling delays. An optional backend-owned dispatch could shorten this later, without handing tokens to games.
+* LoopRD activation, public TLS routing, persisted DB, Game/LoopRD live API, Social identity/seat exchange and GitHub branch permissions are operator acceptance gates. ZIP import alone does not provide or activate any such remote service.
+* Keep the old scheduled pull reconciliation for missing and failed notification events. The public handler may not directly write Git, call privileged Atrium handlers, add a new trusted repository, launch Life, or claim multiplayer certification.

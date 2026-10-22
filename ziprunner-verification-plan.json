@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.31",
+  "version": "0.5.34",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -399,6 +399,27 @@
           "mode": "manual",
           "checks": [
             "ATR-111-CI-SMOKE-LIMIT-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-114-LOOPRD-03-READER",
+      "criteria": [
+        {
+          "id": "ATR-114-LOOPRD-03-READER-AC-SOURCE",
+          "description": "Separate mounted keys, same-origin bounded generic reader, idempotent candidate forwarding and safe missing/incomplete reconciliations",
+          "mode": "automated",
+          "checks": [
+            "ATR-114-LOOPRD-03-READER-T1"
+          ]
+        },
+        {
+          "id": "ATR-114-LOOPRD-03-READER-AC-OPERATOR",
+          "description": "Disposable Looprd 0.3 host, registered service reader, scoped DAPI receiver and exact-SHA build acceptance",
+          "mode": "manual",
+          "checks": [
+            "ATR-114-LOOPRD-03-READER-M1"
           ]
         }
       ]
@@ -843,6 +864,26 @@
       "stage": "acceptance",
       "description": "Exact-commit GitHub CI, official ZipRunner package and target SHA acceptance",
       "instructions": "Verify run 39173201839 failure reproduction then inspect new exact-commit GitHub CI; Linux pinned DAPI smoke expects 403 not 429 and official ZIP validation passes; Windows job passes. Re-run installed SHA-specific post-update acceptance before changing status."
+    },
+    {
+      "id": "ATR-114-LOOPRD-03-READER-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "No-network Looprd 0.3 reader and existing v2 receiver source contracts",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_looprd_registration_reader.py",
+      "assertions": [
+        "Only configured HTTPS Looprd origin receives service reader token and generation-pinned document path",
+        "Failed/incomplete reads preserve last accepted registration; complete inventory omission withdraws one association",
+        "Existing push path and public GitHub notification remain available; no publication from discovery alone"
+      ]
+    },
+    {
+      "id": "ATR-114-LOOPRD-03-READER-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Disposable Looprd 0.3 real reader and candidate receiver acceptance",
+      "instructions": "Upgrade disposable host to Looprd 0.3.0 before declaring registrations; issue distinct private reader/sender credentials; verify real schema and source provenance, repeated idempotent updates/withdrawal, exact ZipRunner SHA post-update and GitHub CI before operator approval."
     }
   ]
 }

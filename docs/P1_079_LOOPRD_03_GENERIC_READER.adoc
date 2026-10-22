@@ -1,0 +1,153 @@
+= Atrium 0.5.34 — Looprd 0.3.0 generic optional registration reader
+:revdate: 2026-10-22
+:toc: left
+
+== Status and ownership
+
+Atrium now includes a standalone *opt-in* generic reader client in
+`tools/pull_looprd_registrations.py`. This consumes the Looprd 0.3.0
+`registration.readers.v1` service reader interface. It does not implement
+that interface in Looprd, activate or upgrade any Looprd deployment, or make
+registrations visible to players without existing Atrium approval.
+
+Looprd 0.3.0 is required on the *game host* before a game adds
+`registrations:`. Older strict hosts cannot parse the new field. Existing
+registrations remain optional, games continue without Atrium, and the
+independent `looprd.yaml` remains portable. Atrium still validates the
+existing `atriumd/v1` format, whose logical originRef is not a URL.
+
+This reader does not replace the 0.5.33 public GitHub Actions notification
+endpoint. They are *different optional channels* for different operators:
+
+* Generic 0.3 host reader: uses a private service-specific key and fetches
+  the successfully activated source + document from Looprd. No GitHub
+  credentials or repository allowlist is required to discover a candidate.
+* Prior v2 sender: uses its existing Atrium `apps:discover` service credential
+  to push an observation. It is unchanged and must remain available.
+* Public 0.5.33 curl endpoint: accepts only hints from preapproved GitHub
+  repositories; it cannot grant a trusted deployment or publisher status.
+
+Only one source reconciliation writer may own a given `(deploymentId,
+component)` at a time. The operator must explicitly choose pull vs push for
+that deployment. Selecting `authority: push` makes the reader skip it;
+installing this ZIP never silently disables the existing v2 sender.
+
+== Operator-managed connection
+
+Copy `examples/looprd-registration-readers.private.example.json` to a private
+file outside the source repository. Fill the *actual* Looprd host and
+Atrium API HTTPS origins, installed deployment ID, and separate secret-file
+paths. The `hostOrigin` is the trusted Looprd reader origin; `apiOrigin` is
+its separately operator-approved component API origin. Both may differ only
+when independently configured and reviewed. Never take an origin from game
+metadata or inbound HTTP Host/Origin headers.
+
+The `readerKeyFile` must hold the service-unique 32–512-character Looprd
+registration reader key. The Atrium `senderKeyFile` is a DIFFERENT, locally
+mounted Looprd service key with `apps:discover` only, bound by the existing
+Atrium v2 trusted-deployment setup. Neither key appears in `atriumd.yaml`,
+Git, CI artifacts, the state file, or user-facing responses. The supplied
+public example contains only paths and placeholder hostnames.
+
+The Atrium v2 receiver still enforces operator-bound deployment ID, service
+subject, publisher namespace and allowed API origin. Its durable receipt is
+*review of a registration candidate*, **not** publication approval. There is
+no second Atrium publisher database and no new anonymous management route.
+
+== One-shot reader execution
+
+Run on the machine where the private files and outbound Atrium service
+connection are available, for example from an operator-owned systemd timer
+or a Looprd scheduled job. The reader itself does not create its timer:
+
+[source,bash]
+----
+python tools/pull_looprd_registrations.py \
+  --config /etc/atrium/looprd-readers.json \
+  --state /var/lib/atrium/looprd-reader-state.json
+----
+
+For each `authority: pull` connection:
+
+. GET `/_looprd/registrations` with the reader key and require
+  `schema: looprd.registrations/v1`, `service: atrium`, the configured
+  deployment ID, and a bounded registration inventory.
+. For each component, fetch **only** the supplied Looprd-relative
+  `documentPath?generation=...` on the configured same origin, with the SAME
+  reader key, no redirect and bounded response. No game-supplied URL receives
+  a reader credential. Validate generation, component, source consistency,
+  UTF-8 size limit, and SHA-256 of exact returned content including endings.
+. Parse `atriumd/v1` with Atrium's current sidecar contract and preserve
+  game-owned simulation, credentials and authoritative state.
+. Convert sufficiently typed Looprd source provenance to the existing
+  Atrium v2 observation (no invented Git revisions) and deliver with the
+  *separate* Atrium service key. A source lacking required kind/revision
+  fields remains retryable; don't invent provenance to satisfy the v2 API.
+. Persist the acknowledgement, source/document fingerprint, sequence,
+  blocked flag and active/withdrawn status in the private atomic checkpoint.
+  Repeated reads and retried delivery are idempotent. Never store secret
+  contents or duplicate the game sidecar in this checkpoint.
+. Only after a *complete* inventory with no failed positive reads may
+  missing components be withdrawn **for that deployment only**. An
+  incomplete inventory, 401/403/404/409/429/503, changed generation,
+  inconsistent hash, or unavailable Atrium receiver never triggers a
+  withdrawal. A blocked component stays registered with blocked=true.
+
+This version performs a single bounded polling cycle. The operator must
+configure a recurring schedule with jitter/backoff suitable for the number
+of deployed hosts. The code makes one serial document read at a time, below
+Looprd's four-concurrent-reader limit.
+
+== Source compatibility and release validation
+
+* The generic Looprd 0.3 capability is the optional
+  `registration.readers.v1`; no extra Atrium handler is added to Looprd core.
+* `examples/game-looprd-0.3-registration.yaml` is an illustrative game
+  root spec, **not** included in Atrium's current Looprd component.
+* `docs/UPSTREAM_LOCK.json` and Atrium's pinned DAPI CI remain on the older
+  pinned runtime. Do not declare that this source pass proves live 0.3 runtime
+  compatibility; the operator must test actual inventory and document JSON
+  wire format against a disposable 0.3 host.
+* Atrium's public GitHub-backed static catalog and current hosted-game
+  launch rules are unchanged; discovery does not automatically add a game
+  to the public marketplace.
+* Native games are still allowed by the platform architecture. The present
+  `atriumd/v1` validator only accepts hosted-web launch; extending launch
+  types is separate, versioned implementation work.
+
+== Required operator acceptance
+
+. Install Looprd 0.3.0 on a disposable host and activate a game with the
+  `registrations` declaration; check inventory and document responses and
+  generation/source/hash consistency. Check old hosts reject the field
+  without breaking their previously active component generation.
+. Configure one Atrium-specific reader key and a different Atrium
+  `apps:discover` sender key, bound to that exact deployment and publisher;
+  ensure neither can access another consumer or privileged admin functions.
+. Repeated poll, process restart, sidecar-only edits, out-of-order generation,
+  401/403/404/409/429/503, incomplete inventory and network failure must
+  not remove an accepted candidate or publish a game.
+. Confirm declared removal from a *complete* inventory withdraws only that
+  deployment's association, not application data or other game instances.
+. Verify the original push adapter still works when pull is not configured.
+  Never allow push and pull to race for the same binding.
+. Run Windows ZipRunner tests and GitHub Actions on the exact delivered ZIP
+  source SHA. Operator review remains required for publication.
+
+== Source integration regression (0.5.34)
+
+`tests/test_looprd_registration_reader.py` exercises the reader against a
+real generated Atrium v2 receiver and disposable SQLAlchemy registry, rather
+than trusting a mocked acknowledgement alone. It verifies that the sidecar
+produces a reviewed discovery instance with an operator-bound launch base,
+that repeated polling and process restarts preserve sequence numbers, that a
+complete-inventory withdrawal removes only that instance, and that no
+`AppRelease` or public catalog entry is created. Additional cases reject
+wrong receipt fingerprints, detect sidecar-only document changes without a
+component generation change, and prove a failed withdrawal leaves the local
+checkpoint unchanged for a safe retry.
+
+These are *local source* tests, not acceptance of a deployed Looprd 0.3 host.
+Exact wire formats, reader-key isolation, cross-deployment behavior, timer
+operation, actual operator authorization, and Windows/CI builds remain
+independent deployment checks.

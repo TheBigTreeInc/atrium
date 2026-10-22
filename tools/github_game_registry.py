@@ -8,9 +8,13 @@ It NEVER reads endpoints, URLs, approvals or publisher rights from the sender.
 from __future__ import annotations
 import argparse
 import json
+import os
 import re
 from pathlib import Path
-from urllib.request import Request, urlopen
+if __name__ == '__main__':
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from urllib.request import Request, build_opener, HTTPRedirectHandler
 from urllib.parse import urlsplit
 import yaml
 from src.atriumd_contract import validate_document
@@ -54,8 +58,17 @@ def parse_yaml(data: bytes):
 def read_json(path: Path):
     return json.loads(path.read_text(encoding='utf-8'))
 
+class _NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None  # Never forward Atrium's own token to a redirect target.
+
+
 def read_public(url: str, max_bytes=131_072):
-    with urlopen(Request(url,headers={'User-Agent':'Atrium-GitHub-Registration/1.0','Accept':'application/vnd.github+json'}), timeout=15) as res:
+    headers={'User-Agent':'Atrium-GitHub-Registration/1.0','Accept':'application/vnd.github+json'}
+    # Token belongs to Atrium's OWN workflow; game repositories never receive it.
+    if url.startswith('https://api.github.com/repos/') and os.environ.get('GITHUB_TOKEN'):
+        headers['Authorization']='Bearer '+os.environ['GITHUB_TOKEN']
+    with build_opener(_NoRedirect()).open(Request(url,headers=headers),timeout=15) as res:
         data = res.read(max_bytes+1)
         if len(data)>max_bytes: raise RegistrationError('Remote source exceeds limit')
         return data

@@ -1,0 +1,12 @@
+# Illustrative source fragment for a game on a Looprd 0.3.0+ host.
+# Add the registrations list to the game's own root looprd.yaml, not Atrium's.
+apiVersion: looprd/v1
+component: sample-game
+release: '1'
+api:
+  version: v1
+auth:
+  mode: public
+registrations:
+  - service: atrium
+    document: atriumd.yaml

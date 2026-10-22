@@ -1,30 +1,20 @@
-name: Review trusted game registration
+name: Synchronize verified game registrations
+# Runs entirely in Atrium. No game workflow sends tokens or edits this repository.
 on:
+  schedule:
+    - cron: '17,32,47,2 * * * *'
   workflow_dispatch:
-    inputs:
-      repository:
-        description: Released source repository owner/name; untrusted until Atrium verifies policy
-        required: true
-        type: string
-      sha:
-        description: Exact immutable successful source release SHA
-        required: true
-        type: string
-      gameId:
-        description: Claimed game ID (compared to fetched source)
-        required: true
-        type: string
 permissions:
   contents: write
-  actions: write
+  actions: write   # only Atrium may optionally dispatch Atrium Pages
 concurrency:
-  group: atrium-git-game-registry
+  group: atrium-approved-games-sync
   cancel-in-progress: false
 jobs:
-  register:
-    name: Revalidate trusted source and update reviewed catalog
+  synchronize:
+    name: Pull and validate approved GitHub Pages games
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,43 +23,48 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
       - name: Install source verification dependencies
         run: python -m pip install -r requirements-dev.txt
-      - name: Fetch immutable game source and independently verify publication
+      - name: Verify public LoopRD notices and independently reconcile approved releases
         env:
-          SOURCE_REPOSITORY: ${{ inputs.repository }}
-          SOURCE_SHA: ${{ inputs.sha }}
-          SOURCE_GAME_ID: ${{ inputs.gameId }}
+          GITHUB_TOKEN: ${{ github.token }}
+          ATRIUM_PUBLIC_REGISTRATION_ENDPOINT: ${{ vars.ATRIUM_PUBLIC_REGISTRATION_ENDPOINT }}
+        run: python tools/sync_registration_notices.py
+      - name: Verify generated catalog and compatibility contracts
         run: |
-          python tools/github_game_registry.py --repository "$SOURCE_REPOSITORY" --sha "$SOURCE_SHA"
-          python - <<'PY'
-          import json,os
-          game=json.load(open('web/hosted-games.json',encoding='utf-8'))
-          if not any(x['gameId']==os.environ['SOURCE_GAME_ID'] and x['sourceRevision']==os.environ['SOURCE_SHA'] for x in game['games']):
-              raise SystemExit('Dispatched game does not match independent catalog output')
-          PY
-      - name: Verify catalog rendering and source contracts
-        run: |
-          python -m unittest discover -s tests -q
+          python -m unittest tests.test_github_game_registry tests.test_github_source_sync tests.test_public_registration -q
           npm test
           npm run build
           npm run verify
-      - name: Commit verified source-of-truth JSON to Atrium main
+      - name: Commit Atrium-owned catalog changes
+        id: catalog
         run: |
-          git config user.name 'atrium-registration[bot]'
+          git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add registry/games web/hosted-games.json
+          git add registry/games registry/registration-history.json web/hosted-games.json
           if git diff --cached --quiet; then
-            echo 'Already registered at the same immutable revision'
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            echo 'No approved game registration changes' >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
-          git commit -m 'Register reviewed game from trusted GitHub source'
+          git commit -m 'Sync approved game releases from trusted GitHub sources'
           git push origin HEAD:main
-          # A push made with GITHUB_TOKEN does not start ordinary push workflows.
-          # workflow_dispatch is an allowed exception: run source checks explicitly.
-          gh workflow run verify.yml --ref main
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+      - name: Publish updated Pages only if Atrium operator enabled automation
+        if: steps.catalog.outputs.changed == 'true' && vars.ATRIUM_AUTO_DEPLOY_PAGES == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          ATRIUM_TAVI_BASE_URL: ${{ vars.ATRIUM_TAVI_BASE_URL }}
+          ATRIUM_PUBLIC_HOSTED_CATALOG_URL: ${{ vars.ATRIUM_PUBLIC_HOSTED_CATALOG_URL }}
+          ATRIUM_PUBLIC_REGISTRATION_ENDPOINT: ${{ vars.ATRIUM_PUBLIC_REGISTRATION_ENDPOINT }}
+          ATRIUM_PUBLIC_CATALOG_URL: ${{ vars.ATRIUM_PUBLIC_CATALOG_URL }}
+        run: |
+          if [ -z "$ATRIUM_TAVI_BASE_URL" ]; then
+            echo 'Atrium Pages auto-publication requires approved ATRIUM_TAVI_BASE_URL to preserve Tavi publication' >&2
+            exit 1
+          fi
+          gh workflow run pages.yml --ref main \
+            -f extension_base_url="$ATRIUM_TAVI_BASE_URL" \
+            -f hosted_catalog_url="$ATRIUM_PUBLIC_HOSTED_CATALOG_URL" \
+            -f registration_endpoint_url="$ATRIUM_PUBLIC_REGISTRATION_ENDPOINT" \
+            -f catalog_url="$ATRIUM_PUBLIC_CATALOG_URL"

@@ -1,3 +1,9 @@
+= Atrium v0.5.34 — Optional Looprd 0.3 generic registration reader
+
+Games can include `TheBigTreeInc/atrium/.github/actions/register-game` in their successful Pages-deployment workflow. The action validates their portable metadata and sends a token-free `curl` to an operator-published public LoopRD registration endpoint. A *separate* `auth: public` LoopRD component (`modules/registration/looprd.yaml`) queues limited approved-source hints. Atrium independently verifies the exact successful GitHub Pages workflow and source SHA against its own trusted-source policy before committing Git-backed catalog entries to `main`. Registration is queued immediately; GitHub sync is scheduled every 15 minutes or operator-dispatched. No game-side Atrium repository permission or backend credential is required. The public endpoint cannot authorize a publisher, grant publication or call privileged Atrium APIs.
+
+This release is a source/ZipRunner candidate, **not a live public endpoint**. Before use, operator must install the separate LoopRD component, review trusted sources, configure HTTPS and `ATRIUM_PUBLIC_REGISTRATION_ENDPOINT`, dispatch the Pages discovery config, and separately verify exact-commit CI, source artifacts, operator approvals and game/Tavi runtime. See `docs/P1_078_PUBLIC_LOOPRD_REGISTRATION.adoc`. The previously exported 40-ticket operator board is preserved as `docs/ZIPRUNNER_LOCAL_WORKBOARD_40_20261020.json` and remains authoritative; no status is silently promoted. The Tavi extension remains 1.0.2 because its shipped files did not change.
+
 = Atrium 0.5.21 — Windows ZipRunner CI artifact version repair
 
 This source-only pass repairs the hard-coded 0.5.18 CI artifact paths that caused the 0.5.19 Windows build regression; see `docs/P1_070_WORKFLOW_VERSION_REPAIR.adoc`. Hosted Life 0.5.19 adapter remains review-gated. No live Life match, publication or operator acceptance is claimed.
@@ -293,6 +299,10 @@ An operator-started loopback-only read-only gateway serves only the live, hash-v
 
 The read-only reviewed hosted-game gateway and Tavi extension use the shared UI; see `docs/P1_075_LIFE_REVIEWED_HOSTED_PUBLICATION.adoc` for configuration and outstanding operator gates. Discovery does not grant public publication or Life player credentials.
 
-## 0.5.31 Git-based hosted-game registration
+## 0.5.32 Git-based hosted-game registration
 
-See `docs/P1_077_GITHUB_GAME_REGISTRATION.adoc`; game-side action `TheBigTreeInc/atrium/.github/actions/register-game`, registration receiver `.github/workflows/receive-game.yml`, operator trust `registry/trusted-sources.json`. Registration requires explicitly enabled trust and does not certify live multiplayer.
+See `docs/P1_077_GITHUB_GAME_REGISTRATION.adoc`; game-side action `TheBigTreeInc/atrium/.github/actions/register-game`, Atrium-owned scheduled reconciler `.github/workflows/receive-game.yml`, operator trust `registry/trusted-sources.json`. Registration requires explicitly enabled trust and does not certify live multiplayer.
+
+== Looprd 0.3 generic service registration reader (source candidate)
+
+An operator-installed `tools/pull_looprd_registrations.py` reads `registration.readers.v1` inventories and Atrium sidecars using separate private service credentials and forwards candidates to Atrium v2. It does not activate the Looprd 0.3 host or publish games; see `docs/P1_079_LOOPRD_03_GENERIC_READER.adoc`.

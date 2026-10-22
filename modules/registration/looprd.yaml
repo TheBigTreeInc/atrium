@@ -1,0 +1,168 @@
+apiVersion: looprd/v1
+component: atrium-registration
+release: 0.5.34
+api:
+  version: v1
+auth:
+  mode: public
+database:
+  backend: sqlite
+  schemaVersion: 1
+models:
+  RegistrationNotice:
+    fields:
+      id:
+        type: integer
+        primaryKey: true
+        generated: true
+      repository:
+        type: string
+        required: true
+        maxLength: 200
+        unique: true
+      sha:
+        type: string
+        required: true
+        maxLength: 40
+      runId:
+        type: integer
+        required: true
+      seenAt:
+        type: string
+        required: true
+        maxLength: 40
+limits:
+  requestsPerMinute: 30
+  burstPerSecond: 3
+  maxRows: 100
+handlers:
+- path: /registrations
+  method: POST
+  kind: python
+  scopes: []
+  source: |
+    """A deliberately unprivileged, bounded **hint** inbox for game workflows.
+
+    Only operator-approved repositories are accepted. The caller supplies no trusted
+    identity, claim of success, web URL, bearer secret, or publication rights. An
+    Atrium-owned GitHub workflow independently fetches GitHub's Pages evidence and
+    source at the immutable SHA before changing catalog files on main.
+
+    Embedded into the independent auth:public `atrium-registration` LoopRD component.
+    """
+    import re as _reg_re
+    from datetime import datetime as _reg_dt, timezone as _reg_tz
+    from sqlalchemy import text as _reg_text
+    from starlette.exceptions import HTTPException as _RegError
+
+    # Overridden by the deterministic source generator; never read from caller data.
+    TRUSTED_REPOSITORIES = frozenset()
+    _REG_REPOSITORY = _reg_re.compile(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z')
+    _REG_SHA = _reg_re.compile(r'[a-f0-9]{40}\Z')
+
+
+    def registration_payload(body, trusted=None):
+        """Validate before any transaction, outbound operation or side effect."""
+        if not isinstance(body, dict) or set(body) != {'schema', 'repository', 'sha', 'runId'}:
+            raise _RegError(status_code=422, detail='invalid_registration')
+        repo, sha, run = body['repository'], body['sha'], body['runId']
+        if body['schema'] != 'atrium.registration-notice/v1' or not isinstance(repo, str) or len(repo)>200 or not _REG_REPOSITORY.fullmatch(repo):
+            raise _RegError(status_code=422, detail='invalid_repository')
+        if not isinstance(sha, str) or not _REG_SHA.fullmatch(sha) or type(run) is not int or not (0 < run < 2**63):
+            raise _RegError(status_code=422, detail='invalid_release_evidence')
+        # Untrusted repository IDs cannot consume durable storage. Publisher onboarding
+        # always happens via an Atrium-owned approved policy change, never via POST.
+        if repo not in (TRUSTED_REPOSITORIES if trusted is None else trusted):
+            raise _RegError(status_code=403, detail='repository_not_approved')
+        return repo, sha, run
+
+
+    async def register_notice(ctx):
+        repo, sha, run = registration_payload(ctx.body)
+        now = _reg_dt.now(_reg_tz.utc).isoformat(timespec='seconds')
+        with ctx.transaction() as db:
+            existing = db.execute(_reg_text('SELECT "sha","runId" FROM "RegistrationNotice" WHERE "repository"=:repo'), {'repo': repo}).mappings().first()
+            if existing is None:
+                db.execute(_reg_text('INSERT INTO "RegistrationNotice" ("repository","sha","runId","seenAt") VALUES (:repo,:sha,:run,:now)'), {'repo':repo,'sha':sha,'run':run,'now':now})
+            elif existing['sha'] != sha or existing['runId'] != run:
+                db.execute(_reg_text('UPDATE "RegistrationNotice" SET "sha"=:sha,"runId"=:run,"seenAt"=:now WHERE "repository"=:repo'), {'repo':repo,'sha':sha,'run':run,'now':now})
+        # 202 explicitly means queued, NOT approved or published.
+        return {'schema':'atrium.registration-ack/v1','status':'queued',
+                'repository':repo,'sha':sha,'runId':run}
+
+
+    async def list_notices(ctx):
+        with ctx.session_factory() as db:
+            rows=db.execute(_reg_text('SELECT "repository","sha","runId","seenAt" FROM "RegistrationNotice" ORDER BY "repository" LIMIT 100')).mappings().all()
+        return {'schema':'atrium.registration-queue/v1','notices':[
+            {'repository':row['repository'],'sha':row['sha'],'runId':int(row['runId']),'seenAt':row['seenAt']} for row in rows]}
+
+    TRUSTED_REPOSITORIES = frozenset(())
+
+    async def handle(ctx):
+        return await register_notice(ctx)
+- path: /registrations
+  method: GET
+  kind: python
+  scopes: []
+  source: |
+    """A deliberately unprivileged, bounded **hint** inbox for game workflows.
+
+    Only operator-approved repositories are accepted. The caller supplies no trusted
+    identity, claim of success, web URL, bearer secret, or publication rights. An
+    Atrium-owned GitHub workflow independently fetches GitHub's Pages evidence and
+    source at the immutable SHA before changing catalog files on main.
+
+    Embedded into the independent auth:public `atrium-registration` LoopRD component.
+    """
+    import re as _reg_re
+    from datetime import datetime as _reg_dt, timezone as _reg_tz
+    from sqlalchemy import text as _reg_text
+    from starlette.exceptions import HTTPException as _RegError
+
+    # Overridden by the deterministic source generator; never read from caller data.
+    TRUSTED_REPOSITORIES = frozenset()
+    _REG_REPOSITORY = _reg_re.compile(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z')
+    _REG_SHA = _reg_re.compile(r'[a-f0-9]{40}\Z')
+
+
+    def registration_payload(body, trusted=None):
+        """Validate before any transaction, outbound operation or side effect."""
+        if not isinstance(body, dict) or set(body) != {'schema', 'repository', 'sha', 'runId'}:
+            raise _RegError(status_code=422, detail='invalid_registration')
+        repo, sha, run = body['repository'], body['sha'], body['runId']
+        if body['schema'] != 'atrium.registration-notice/v1' or not isinstance(repo, str) or len(repo)>200 or not _REG_REPOSITORY.fullmatch(repo):
+            raise _RegError(status_code=422, detail='invalid_repository')
+        if not isinstance(sha, str) or not _REG_SHA.fullmatch(sha) or type(run) is not int or not (0 < run < 2**63):
+            raise _RegError(status_code=422, detail='invalid_release_evidence')
+        # Untrusted repository IDs cannot consume durable storage. Publisher onboarding
+        # always happens via an Atrium-owned approved policy change, never via POST.
+        if repo not in (TRUSTED_REPOSITORIES if trusted is None else trusted):
+            raise _RegError(status_code=403, detail='repository_not_approved')
+        return repo, sha, run
+
+
+    async def register_notice(ctx):
+        repo, sha, run = registration_payload(ctx.body)
+        now = _reg_dt.now(_reg_tz.utc).isoformat(timespec='seconds')
+        with ctx.transaction() as db:
+            existing = db.execute(_reg_text('SELECT "sha","runId" FROM "RegistrationNotice" WHERE "repository"=:repo'), {'repo': repo}).mappings().first()
+            if existing is None:
+                db.execute(_reg_text('INSERT INTO "RegistrationNotice" ("repository","sha","runId","seenAt") VALUES (:repo,:sha,:run,:now)'), {'repo':repo,'sha':sha,'run':run,'now':now})
+            elif existing['sha'] != sha or existing['runId'] != run:
+                db.execute(_reg_text('UPDATE "RegistrationNotice" SET "sha"=:sha,"runId"=:run,"seenAt"=:now WHERE "repository"=:repo'), {'repo':repo,'sha':sha,'run':run,'now':now})
+        # 202 explicitly means queued, NOT approved or published.
+        return {'schema':'atrium.registration-ack/v1','status':'queued',
+                'repository':repo,'sha':sha,'runId':run}
+
+
+    async def list_notices(ctx):
+        with ctx.session_factory() as db:
+            rows=db.execute(_reg_text('SELECT "repository","sha","runId","seenAt" FROM "RegistrationNotice" ORDER BY "repository" LIMIT 100')).mappings().all()
+        return {'schema':'atrium.registration-queue/v1','notices':[
+            {'repository':row['repository'],'sha':row['sha'],'runId':int(row['runId']),'seenAt':row['seenAt']} for row in rows]}
+
+    TRUSTED_REPOSITORIES = frozenset(())
+
+    async def handle(ctx):
+        return await list_notices(ctx)

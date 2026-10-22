@@ -5,3 +5,7 @@ components:
   - id: atrium
     specification: ../looprd.yaml
     enabled: true
+  # Operator deployment opt-in: separate anonymous registration inbox.
+  # - id: atrium-registration
+  #   specification: ../modules/registration/looprd.yaml
+  #   enabled: true
