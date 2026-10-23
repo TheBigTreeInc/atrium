@@ -1,6 +1,6 @@
 apiVersion: looprd/v1
 component: atrium
-release: 0.5.34
+release: 0.5.36
 api:
   version: v1
 auth:
@@ -79,8 +79,11 @@ database:
       "component", "sequence"))
 requires:
 - spec.includes
+- spec.subcomponents
 - events.transactional
 - events.replay
+subcomponents:
+- source: games/market-grove/looprd.yaml
 includes:
 - modules/registry/looprd.yaml
 - modules/arcade/looprd.yaml

@@ -1,0 +1,9 @@
+# LoopRD 0.4+ parent-controlled child source. Pin ref to reviewed immutable Git SHA
+# when operating a production instance; this example deliberately uses main.
+apiVersion: looprd/v1
+components:
+  - id: atrium
+    repository: https://github.com/TheBigTreeInc/atrium.git
+    ref: main
+    specification: looprd.yaml
+    enabled: true

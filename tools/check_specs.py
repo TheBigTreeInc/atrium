@@ -85,7 +85,15 @@ def compose(path, seen=None, depth=0, *, root=ROOT, budget=None):
 
 def verify():
     s = compose(ROOT / "looprd.yaml")
-    assert s["component"] == "atrium", "only the Atrium component may be declared"
+    assert s["component"] == "atrium", "root Atrium identity required"
+    assert "spec.subcomponents" in s["requires"], "LoopRD 0.4 subcomponents required"
+    assert s["subcomponents"] == [{"source": "games/market-grove/looprd.yaml"}], "independent child declaration required"
+    child = parse((ROOT / "games/market-grove/looprd.yaml").read_text(encoding="utf-8"))
+    assert child["component"] == "market-grove" and child["database"]["backend"] == "sqlite"
+    assert child["registrations"] == [{"service": "atrium", "document": "atriumd.yaml"}]
+    assert not (set(child.get("models", {})) & set(s.get("models", {})))
+    assert all(not h["path"].startswith("/market/") for h in s["handlers"]), "no child API in parent"
+
     assert {"spec.includes", "events.replay", "events.transactional"} <= set(s["requires"]), "required DAPI capabilities missing"
     assert s["auth"]["mode"] == "database", "the current registry is operator-scoped only"
     assert set(s["resources"]) == {"apps", "endpoints", "lounges", "tables", "records", "snapshots"}

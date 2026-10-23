@@ -149,7 +149,10 @@ def _document_path(value):
 
 
 def _api_path(value, component):
-    if type(value) is not str or not re.fullmatch(r'/looprd/' + re.escape(component) + r'/v[1-9][0-9]*', value):
+    if (type(value) is not str or not value.startswith('/looprd/')
+            or not re.fullmatch(r'/looprd/(?:[a-z][a-z0-9-]{0,47}/){0,8}'
+                                + re.escape(component) + r'/v[1-9][0-9]*', value)
+            or len(set(value.split('/')[2:-1])) != len(value.split('/')[2:-1])):
         raise ReaderError('Unsafe or unrelated component API path')
     return value
 

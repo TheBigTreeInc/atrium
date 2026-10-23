@@ -10,4 +10,11 @@ for(const f of ['hosted_catalog.mjs','hosted_cards.mjs'])await copyFile(path.joi
 for(const name of ['multiplayer_lobby.mjs','mock_life_api.mjs','multiplayer_preview_ui.mjs','hosted_life.mjs'])await copyFile(path.join(root,'src',name),path.join(out,'src',name));
 const entry = await readFile(path.join(out,'main.mjs'),'utf8');
 await (await import('node:fs/promises')).writeFile(path.join(out,'main.mjs'),entry.replace("from '../src/apphost.mjs'","from './src/apphost.mjs'").replace("from '../src/catalog_client.mjs'","from './src/catalog_client.mjs'").replace("from '../src/hosted_cards.mjs'","from './src/hosted_cards.mjs'").replace("from '../src/multiplayer_preview_ui.mjs'","from './src/multiplayer_preview_ui.mjs'"));
+// Market Grove stays an operator preview until verified Social wallet settlement is available.
+await mkdir(path.join(out,'games','market-grove'),{recursive:true});
+for(const [source,target] of [
+ ['web/games/market-grove.html','index.html'],
+ ['web/games/market-grove-app.js','market-grove-app.js'],
+ ['web/games/market-grove-style.css','market-grove-style.css'],
+]) await copyFile(path.join(root,source),path.join(out,'games','market-grove',target));
 console.log('static web output at dist/ (not deployed)');

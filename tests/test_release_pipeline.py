@@ -1,5 +1,6 @@
 """P0 packaging, task-ID continuity and upstream version-lock regressions."""
 from pathlib import Path
+import ast
 import json
 import hashlib
 import unittest
@@ -15,7 +16,7 @@ class P0ReleaseTests(unittest.TestCase):
 
 
     def test_package_identity_and_required_files(self):
-        self.assertEqual(NAME, 'atrium-0.5.34-ziprunner.zip')
+        self.assertEqual(NAME, 'atrium-0.5.36-ziprunner.zip')
         paths={path.relative_to(ROOT).as_posix() for path in source_files()}
         self.assertTrue({'.ziprunner-workboard-update.json','project.zr',
                          'ziprunner.looprd.json','ziprunner-verification-plan.json',
@@ -44,7 +45,21 @@ class P0ReleaseTests(unittest.TestCase):
         self.assertTrue(all(x.startswith('ATR-') for x in ids))
         self.assertIn('ATR-P0-004',ids)
         self.assertEqual(update['project'],'atrium')
-        self.assertEqual(update['version'],'0.5.34')
+        self.assertEqual(update['version'],'0.5.36')
+
+    def test_workboard_items_meet_ziprunner_intake_contract(self):
+        """Regression: ZipRunner refuses any remaining item lacking summary."""
+        update = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
+        for section in ('implemented', 'remaining'):
+            for row in update[section]:
+                with self.subTest(section=section, task=row.get('id')):
+                    for field, limit in (('id', 120), ('title', 240), ('summary', 2000)):
+                        value = row.get(field)
+                        self.assertIsInstance(value, str)
+                        self.assertTrue(value.strip())
+                        self.assertLessEqual(len(value), limit)
+                    if section == 'implemented':
+                        self.assertTrue(row.get('operator_checks'))
 
     def test_ziprunner_manifest_project_has_only_pinned_supported_fields(self):
         """CI 39388435728: official pinned validator rejects $.project.summary."""
@@ -71,7 +86,7 @@ class P0ReleaseTests(unittest.TestCase):
             self.assertTrue(isinstance(item['next_action'],str) and item['next_action'].strip())
             if item['status']=='blocked':
                 self.assertTrue(item.get('blockers'))
-        self.assertEqual(manifest['project']['version'],'0.5.34')
+        self.assertEqual(manifest['project']['version'],'0.5.36')
 
     def test_verification_plan_exact_implemented_coverage(self):
         """Pinned ZipRunner 2.3 verification-plan task and check linkage."""
@@ -116,6 +131,25 @@ class P0ReleaseTests(unittest.TestCase):
                 self.assertTrue(check.get('assertions'))
             else:
                 self.assertTrue(check.get('instructions'))
+
+    def test_explicit_utf8_for_source_text_io(self):
+        """Windows Python 3.13 defaults to cp1252 without explicit encoding.
+
+        Treat repository files and test fixtures as UTF-8 across Linux/Windows.
+        A locale-dependent Path.read_text() previously broke three market tests.
+        """
+        for directory in ('tests', 'tools'):
+            for path in sorted((ROOT / directory).rglob('*.py')):
+                with self.subTest(path=path.relative_to(ROOT).as_posix()):
+                    tree = ast.parse(path.read_text(encoding='utf-8'))
+                    for node in ast.walk(tree):
+                        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+                                and node.func.attr in ('read_text', 'write_text')):
+                            encoding = next((kw.value for kw in node.keywords if kw.arg == 'encoding'), None)
+                            self.assertIsInstance(encoding, ast.Constant,
+                                f'{path}:{node.lineno} must explicitly select UTF-8 for {node.func.attr}')
+                            self.assertEqual(str(encoding.value).lower().replace('-', ''), 'utf8',
+                                             f'{path}:{node.lineno}')
 
     def test_commercial_secrets_are_not_packaged(self):
         names=[x.name for x in source_files()]

@@ -3,7 +3,7 @@
   "date": "2026-10-17",
   "dapi": {
     "repository": "pac-labs/dapi",
-    "revision": "dc79897a54f69141ce300bbdadd3bdd6bd996d14"
+    "revision": "c2b486bc7f526e71d8c26d77cb56bff9270d3347"
   },
   "ziprunnerSpec": {
     "repository": "pac-labs/ziprunner-spec",

@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.34",
+    "version": "0.5.36",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261021-034",
+    "id": "ATR-P1-20261023-036",
     "kind": "source_update",
-    "created_at": "2026-10-20T08:09:00+02:00",
-    "summary": "0.5.34 adds an opt-in Atrium reader for Looprd 0.3.0 generic registration.readers.v1: verifies registration inventory and generation-pinned atriumd.yaml via separate mounted credentials, deduplicates and forwards to existing reviewed-only v2 candidates, conservatively handles withdrawal. Does not deploy Looprd 0.3 or publish a game."
+    "created_at": "2026-10-23T17:38:00+02:00",
+    "summary": "LoopRD 0.4 native Atrium subcomponents, nested discovery/read-only paths, responsive mobile storefront and Market Grove game; source candidate, no Wallet Gold settlement or publication."
   },
   "planned_work": [
     {
@@ -138,6 +138,18 @@
       "id": "ATR-114-LOOPRD-03-READER",
       "title": "Opt-in generic Looprd 0.3 service registration reader",
       "acceptance_criteria": "Source tests for bounded per-service reader, independent v2 sender, durable replay/incomplete-inventory behavior and operator-reviewed actual Looprd 0.3 runtime wire compatibility",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-IMPORT",
+      "title": "Validate Market Grove independent LoopRD import, Atrium discovery and user authorization",
+      "acceptance_criteria": "Verify separate component/database source activation in a disposable LoopRD 0.3 host, reader registration candidate and removal safety; two independently authenticated market accounts place persistent orders settled by hourly jobs; review Wallet Gold settlement and Tavi shared identity before public catalog publication.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-115-LOOPRD-04-MOBILE",
+      "title": "LoopRD 0.4 Atrium nested child and mobile UI",
+      "acceptance_criteria": "Source tests plus operator validation of real nested API, reader, responsive phone/tablet layouts and no credential exposure.",
       "priority": "high"
     }
   ],
@@ -606,6 +618,16 @@
       "id": "ATR-113-PUBLIC-LOOPRD-REGISTRATION",
       "status": "review",
       "next_action": "Review 0.5.34 ZIP; deploy separate registration component and HTTPS endpoint on disposable LoopRD; configure Atrium registration URL; perform negative/positive end-to-end Life workflow and exact SHA GitHub CI and operator acceptance."
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-IMPORT",
+      "status": "review",
+      "next_action": "Deploy on disposable LoopRD 0.3 host; validate identity, scheduler, discovery and wallet-disabled public launch gate."
+    },
+    {
+      "id": "ATR-115-LOOPRD-04-MOBILE",
+      "status": "review",
+      "next_action": "Run disposable LoopRD 0.4 and physical phone UI/operator acceptance; no auto-publication."
     }
   ],
   "validation": {
@@ -760,14 +782,14 @@
     ]
   },
   "handover": {
-    "next_pass": "On a disposable Looprd 0.3.0 host, activate real registrations and validate reader response wire format, independent keys, provenance, v2 scoped candidate delivery and complete-inventory withdrawal; verify operator acceptance before publishing a game.",
+    "next_pass": "Operator-review LoopRD 0.4 nested host activation and reader reconciliation, device tests, then Wallet integration.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
       "A broken reverse proxy or intermediary ignoring no-store can serve stale data; verify no-store and TLS at public edge.",
       "An already-running/background browser is not instantaneously revoked; current foreground interval is 60 seconds. Game authorization must remain authoritative server-side.",
       "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
-      "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified.",
+      "Real publisher HTTPS origin challenge and v3\u2192v4 production migration remain separately operator-unverified.",
       "Mock Life matches are deliberately tab-memory only; an unlocked static UI does not prove Social auth, persistent 60-hour games, Life engine fairness, OpenClaw game actions or deployed API compatibility."
     ],
     "blockers": [

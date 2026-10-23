@@ -9,8 +9,8 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.34-ziprunner.zip'
-SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh'}
+NAME = 'atrium-0.5.36-ziprunner.zip'
+SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'dist-tavi', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
 
@@ -35,9 +35,17 @@ def source_files():
 
 
 def main():
-    workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text())
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.34'
-    link = json.loads((ROOT/'ziprunner.looprd.json').read_text())
+    workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.36'
+    # ZipRunner validates both sections before it overlays any files. Fail the
+    # source build at the same boundary, instead of distributing a broken ZIP.
+    for section in ('implemented', 'remaining'):
+        for item in workboard[section]:
+            for field, limit in (('id', 120), ('title', 240), ('summary', 2000)):
+                value = item.get(field)
+                if not isinstance(value, str) or not value.strip() or len(value) > limit:
+                    raise ValueError(f'Workboard {section} {item.get("id", "<unknown>")}: invalid {field}')
+    link = json.loads((ROOT/'ziprunner.looprd.json').read_text(encoding='utf-8'))
     assert link['project'] == 'atrium' and link['component'] == 'atrium'
     actual_hash = hashlib.sha256((ROOT/link['specification']).read_bytes()).hexdigest()
     assert link['specification_sha256'] == actual_hash, 'stale DAPI link; regenerate hash'

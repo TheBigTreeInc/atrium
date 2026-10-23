@@ -306,3 +306,29 @@ See `docs/P1_077_GITHUB_GAME_REGISTRATION.adoc`; game-side action `TheBigTreeInc
 == Looprd 0.3 generic service registration reader (source candidate)
 
 An operator-installed `tools/pull_looprd_registrations.py` reads `registration.readers.v1` inventories and Atrium sidecars using separate private service credentials and forwards candidates to Atrium v2. It does not activate the Looprd 0.3 host or publish games; see `docs/P1_079_LOOPRD_03_GENERIC_READER.adoc`.
+
+## Atrium 0.5.36 — nested Market Grove on LoopRD 0.4
+
+**Updated deployment model:** Atrium's root `looprd.yaml` now owns the `subcomponents` declaration for `games/market-grove/looprd.yaml`. LoopRD 0.4+ exposes its independent API at `/looprd/atrium/market-grove/v1`, with its **own** authentication, database and jobs. The operator imports **one** Atrium parent source, not two flat sources. A trusted Atrium discovery reader consumes the child's `atriumd.yaml` and verified actual nested `apiPath`; candidate registration and public publication remain distinct. See `docs/P1_081_LOOPRD_04_SUBCOMPONENTS_MOBILE.adoc`.
+
+The Atrium storefront and Market Grove practice-trading UI now include phone-first navigation, stackable holdings, safe-area spacing, larger touch targets and a clear Back-to-games path. Live LoopRD 0.4 host/device acceptance and Wallet Gold settlement are still pending.
+
+## Market Grove (0.5.35 historical two-flat-source model)
+
+Atrium includes the separately deployable fictional exchange under
+`games/market-grove/`. Its generated `games/market-grove/looprd.yaml` declares the
+optional LoopRD 0.3 `registrations: [{service: atrium, document: atriumd.yaml}]`
+contract. The `market-grove` component has its *own* `auth: database`, market
+SQLite state, scoped trade API and scheduled UTC auctions; no game trading
+handler or database is merged into `atrium/looprd.yaml`.
+
+A **disposable** combined source example is in
+`examples/sources.with-market-grove.yaml` (one parent on 0.5.36); the actual operator source list is
+not changed. `npm run build` packages a responsive practice-game operator preview
+at `dist/games/market-grove/index.html`. The built public storefront catalog
+still does **not** list or auto-publish this game. To discover it, use LoopRD
+0.3 and configure the existing Atrium reader for the deployment with private
+service-specific grants. See `docs/P1_080_MARKET_GROVE_LOOPRD_IMPORT.adoc`.
+
+No Tavi Gold trading or Social account sign-in is wired into this source
+candidate. Don't expose the practice-game operator key form as public login.

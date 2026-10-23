@@ -22,7 +22,7 @@ class HostedGatewayTests(unittest.TestCase):
           'publisherId':'thebigtreeinc','deploymentId':'prod-life','component':'the-life-loop',
           'sourceRevision':SHA,'pagesWorkflowRunId':123456789,'launchUrl':URL,'apiBaseUrl':API,
           'approvedBy':'operator-review','approvedAt':'2026-10-20T00:00:00Z','embedAllowed':False}
-        self.approval.write_text(json.dumps(self.review))
+        self.approval.write_text(json.dumps(self.review), encoding='utf-8')
         with closing(sqlite3.connect(self.db)) as db, db:
             db.executescript('''CREATE TABLE "AtriumTrustedDeployment" ("deploymentId" TEXT,"status" TEXT,"launchOrigins" TEXT,"apiOrigin" TEXT);
             CREATE TABLE "AtriumTrustedInstance" ("deploymentId" TEXT,"component" TEXT,"gameId" TEXT,"publisherId" TEXT,"state" TEXT,"sidecar" TEXT,"sourceProvenance" TEXT,"apiBaseUrl" TEXT);''')
@@ -78,7 +78,7 @@ class HostedGatewayTests(unittest.TestCase):
 
     def test_malformed_approval_refused(self):
         self.review['sourceRevision']='main'
-        self.approval.write_text(json.dumps(self.review))
+        self.approval.write_text(json.dumps(self.review), encoding='utf-8')
         with self.assertRaises(ValueError):public_snapshot(self.db,self.approval)
 
 if __name__=='__main__':unittest.main()

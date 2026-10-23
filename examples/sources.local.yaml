@@ -9,3 +9,5 @@ components:
   # - id: atrium-registration
   #   specification: ../modules/registration/looprd.yaml
   #   enabled: true
+  # Market Grove is a declared subcomponent in ../looprd.yaml on LoopRD 0.4+.
+  # Do not register it again as an independent root source.

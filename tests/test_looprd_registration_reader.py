@@ -59,8 +59,8 @@ class ReaderTests(unittest.TestCase):
         self.tmp=tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.root=Path(self.tmp.name)
-        (self.root/'reader.key').write_text('a'*48)
-        (self.root/'sender.key').write_text('b'*48)
+        (self.root/'reader.key').write_text('a'*48, encoding='utf-8')
+        (self.root/'sender.key').write_text('b'*48, encoding='utf-8')
         self.connection={'deploymentId':'example-node','hostOrigin':'https://looprd.example.org',
                          'apiOrigin':'https://looprd.example.org',
                          'readerKeyFile':str(self.root/'reader.key'),'authority':'pull',
@@ -86,7 +86,7 @@ class ReaderTests(unittest.TestCase):
         self.assertEqual(posted['fingerprint'],reader.digest({k:v for k,v in posted.items() if k not in ('operationId','sequence','fingerprint')}))
         self.assertEqual(self.sync(),[])
         self.assertEqual(len(self.fake.posts),1)
-        raw=self.state.read_text()
+        raw=self.state.read_text(encoding='utf-8')
         self.assertNotIn('a'*48,raw)
         self.assertNotIn('b'*48,raw)
         self.assertNotIn('Life Loop',raw) # metadata stays in Atrium, not duplicate local registry
@@ -160,7 +160,7 @@ class ReaderTests(unittest.TestCase):
         self.fake.registrations[0]['blocked']=True
         self.sync()
         self.assertEqual(len(self.fake.posts),1)
-        self.assertTrue(json.loads(self.state.read_text())['deployments']['example-node']['the-life-loop']['blocked'])
+        self.assertTrue(json.loads(self.state.read_text(encoding='utf-8'))['deployments']['example-node']['the-life-loop']['blocked'])
 
     def test_push_authority_not_disabled(self):
         self.connection['authority']='push'
@@ -180,7 +180,7 @@ class ReaderTests(unittest.TestCase):
         self.assertEqual(self.fake.posts,[])
 
     def test_reader_and_sender_key_must_be_separate(self):
-        (self.root/'sender.key').write_text('a'*48)
+        (self.root/'sender.key').write_text('a'*48, encoding='utf-8')
         with self.assertRaises(reader.ReaderError):
             self.sync()
         self.assertFalse(self.state.exists())
@@ -331,10 +331,10 @@ class ReaderTests(unittest.TestCase):
 
     def test_private_config_validation(self):
         cfg=self.root/'config.json'
-        cfg.write_text(json.dumps(self.config))
+        cfg.write_text(json.dumps(self.config), encoding='utf-8')
         self.assertEqual(len(reader.load_config(cfg)['connections']),1)
         self.config['connections'].append(dict(self.connection))
-        cfg.write_text(json.dumps(self.config))
+        cfg.write_text(json.dumps(self.config), encoding='utf-8')
         with self.assertRaises(reader.ReaderError):reader.load_config(cfg)
 
 if __name__=='__main__':unittest.main()

@@ -1,0 +1,255 @@
+"""One persistent shared exchange. Loopback demo identity/credits are not Tavi identities/Gold.
+
+Uniform-price scheduled call auctions, finite maker share inventory, no client clock
+control. SQLite BEGIN IMMEDIATE serializes orders/settlement across processes.
+"""
+from __future__ import annotations
+from contextlib import contextmanager
+import hashlib
+import json
+from pathlib import Path
+import re
+import secrets
+import sqlite3
+import time
+
+COMPANIES = (
+    ('CEDR', 'Cedarworks', 'Forestry & materials', 93, '🌲'),
+    ('LUME', 'Lumen Labs', 'Research & technology', 142, '✦'),
+    ('HARB', 'Harborline', 'Shipping & trade', 76, '⚓'),
+    ('HIVE', 'Honeycomb Co.', 'Farms & food', 58, '✿'),
+    ('FORG', 'Ironforge', 'Industry & energy', 118, '⚒'),
+    ('MOSS', 'Moss & Co.', 'Homes & gardens', 48, '❧'),
+)
+SYMBOLS = {c[0] for c in COMPANIES}
+REQUEST = re.compile(r'^[a-zA-Z0-9_-]{8,100}$')
+MAX_QTY = 1000
+MAX_PRICE = 10000
+START_CREDITS = 1500
+MAKER_FLOAT = 400
+MAKER_CASH = 10000000
+
+class MarketError(Exception):
+    def __init__(self, status, code):
+        super().__init__(code)
+        self.status, self.code = status, code
+
+
+def fee(qty, price):
+    return max(1, (qty * price + 99)//100)
+
+
+def per_share_reserve(price):
+    return price + max(1, (price + 99)//100)
+
+
+def drift(symbol, period):
+    return (int.from_bytes(hashlib.sha256(f'market-grove-v2:{symbol}:{period}'.encode()).digest()[:2], 'big') % 7 - 3)*18
+
+
+class Market:
+    """Single authoritative state per database. Production must replace demo sessions
+    and practice cash with trusted realm authentication and wallet settlement.
+    """
+    def __init__(self, path: str | Path, *, interval_seconds=3600, now=None, seed_demo_players=True):
+        if type(interval_seconds) is not int or not 10 <= interval_seconds <= 86400 or 86400 % interval_seconds:
+            raise ValueError('interval must divide a UTC day, between 10 and 86400 seconds')
+        self.path = str(path)
+        self.interval = interval_seconds
+        self.clock = now or time.time
+        Path(path).parent.mkdir(parents=True, exist_ok=True)
+        with self.conn() as db:
+            db.executescript('''
+                CREATE TABLE IF NOT EXISTS clock (id INTEGER PRIMARY KEY CHECK(id=1), period INTEGER NOT NULL, interval INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS companies (symbol TEXT PRIMARY KEY, price INTEGER NOT NULL CHECK(price>0), maker_shares INTEGER NOT NULL CHECK(maker_shares>=0), maker_cash INTEGER NOT NULL CHECK(maker_cash>=0), volume INTEGER NOT NULL DEFAULT 0, flow INTEGER NOT NULL DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS history (symbol TEXT NOT NULL, period INTEGER NOT NULL, price INTEGER NOT NULL, volume INTEGER NOT NULL, flow INTEGER NOT NULL, PRIMARY KEY(symbol,period));
+                CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, cash INTEGER NOT NULL CHECK(cash>=0), locked INTEGER NOT NULL CHECK(locked>=0 AND locked<=cash));
+                CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, player_id TEXT NOT NULL REFERENCES players(id));
+                CREATE TABLE IF NOT EXISTS holdings (player_id TEXT NOT NULL REFERENCES players(id), symbol TEXT NOT NULL REFERENCES companies(symbol), shares INTEGER NOT NULL CHECK(shares>=0), locked INTEGER NOT NULL CHECK(locked>=0 AND locked<=shares), basis INTEGER NOT NULL CHECK(basis>=0), PRIMARY KEY(player_id,symbol));
+                CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, player_id TEXT NOT NULL REFERENCES players(id), request_id TEXT NOT NULL, digest TEXT NOT NULL, symbol TEXT NOT NULL REFERENCES companies(symbol), side TEXT NOT NULL CHECK(side IN ('buy','sell')), quantity INTEGER NOT NULL, remaining INTEGER NOT NULL CHECK(remaining>=0), limit_price INTEGER NOT NULL, period INTEGER NOT NULL, status TEXT NOT NULL, created INTEGER NOT NULL, UNIQUE(player_id,request_id));
+                CREATE TABLE IF NOT EXISTS fills (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id TEXT NOT NULL REFERENCES orders(id), player_id TEXT NOT NULL REFERENCES players(id), symbol TEXT NOT NULL, side TEXT NOT NULL, quantity INTEGER NOT NULL, price INTEGER NOT NULL, fee INTEGER NOT NULL, period INTEGER NOT NULL);
+                CREATE INDEX IF NOT EXISTS idx_orders_book ON orders(symbol,status,created,id);
+            ''')
+            row=db.execute('SELECT period,interval FROM clock WHERE id=1').fetchone()
+            if row is None:
+                period = int(self.clock())//interval_seconds
+                db.execute('INSERT INTO clock VALUES(1,?,?)',(period,interval_seconds))
+                for symbol,_,_,price,_ in COMPANIES:
+                    db.execute('INSERT INTO companies(symbol,price,maker_shares,maker_cash) VALUES(?,?,?,?)',(symbol,price,MAKER_FLOAT,MAKER_CASH))
+                    db.execute('INSERT INTO history VALUES(?,?,?,0,0)',(symbol,period,price))
+                if seed_demo_players:
+                    for name in ('alice','bob'):
+                        db.execute('INSERT INTO players VALUES(?,?,0)',(name,START_CREDITS))
+            elif row['interval']!=interval_seconds:
+                raise ValueError('Trading period is immutable for an existing exchange; use its original interval')
+
+    @contextmanager
+    def conn(self):
+        db=sqlite3.connect(self.path,timeout=15,isolation_level=None)
+        db.row_factory=sqlite3.Row
+        db.execute('PRAGMA busy_timeout=15000')
+        db.execute('PRAGMA foreign_keys=ON')
+        try:
+            db.execute('BEGIN IMMEDIATE')
+            yield db
+            db.commit()
+        except BaseException:
+            db.rollback()
+            raise
+        finally: db.close()
+
+    def ensure_service_player(self, principal_id):
+        """Practice account derived only from an authenticated LoopRD principal.
+
+        This temporary key-scoped identity is NOT a Social account or Wallet grant.
+        """
+        if not isinstance(principal_id, str) or not re.fullmatch(r'[A-Za-z0-9:_-]{12,128}', principal_id):
+            raise MarketError(401, 'invalid_service_principal')
+        player = 'svc_' + hashlib.sha256(principal_id.encode()).hexdigest()[:48]
+        with self.conn() as db:
+            db.execute('INSERT OR IGNORE INTO players(id,cash,locked) VALUES(?,?,0)', (player, START_CREDITS))
+        return player
+
+    def demo_session(self, player):
+        # Deliberately insecure demo account chooser: API must remain bound to loopback.
+        if player not in ('alice','bob'):
+            raise MarketError(422,'invalid_demo_player')
+        token=secrets.token_urlsafe(32)
+        with self.conn() as db:
+            db.execute('INSERT INTO sessions VALUES(?,?)',(hashlib.sha256(token.encode()).hexdigest(),player))
+        return {'schema':'market-grove.demo-session/v1','token':token,'player':player,'mode':'shared-practice','warning':'Local-only demo identity. Never use for an Internet service.'}
+
+    def principal(self, token):
+        if not isinstance(token,str) or len(token)>180 or not token:
+            raise MarketError(401,'session_required')
+        with self.conn() as db:
+            row=db.execute('SELECT player_id FROM sessions WHERE token_hash=?',(hashlib.sha256(token.encode()).hexdigest(),)).fetchone()
+            if not row: raise MarketError(401,'session_required')
+            return row['player_id']
+
+    def _settle_due(self, db, now):
+        period= int(now)//self.interval
+        last=db.execute('SELECT period FROM clock WHERE id=1').fetchone()['period']
+        if period<=last:return
+        # One catch-up auction after downtime; no inaccessible historical replay.
+        for symbol,_,_,_,_ in COMPANIES:
+            c=db.execute('SELECT price,maker_shares,maker_cash FROM companies WHERE symbol=?',(symbol,)).fetchone()
+            opening=c['price']
+            orders=db.execute('SELECT * FROM orders WHERE symbol=? AND status IN (\'open\',\'partial\') ORDER BY created,rowid',(symbol,)).fetchall()
+            executed={'buy':0,'sell':0}; volume=0
+            # Selling replenishes finite exchange inventory before buying in same auction.
+            for side in ('sell','buy'):
+                for order in orders:
+                    if order['side']!=side or (side=='buy' and order['limit_price']<opening) or (side=='sell' and order['limit_price']>opening):continue
+                    maker=db.execute('SELECT maker_shares,maker_cash FROM companies WHERE symbol=?',(symbol,)).fetchone()
+                    capacity=(maker['maker_shares'] if side=='buy' else (maker['maker_cash'] // opening))
+                    qty=min(order['remaining'],capacity)
+                    if not qty:continue
+                    gross=qty*opening; brokerage=fee(qty,opening)
+                    if side=='buy':
+                        reserved=qty*per_share_reserve(order['limit_price'])
+                        cost=gross+brokerage
+                        assert cost<=reserved
+                        db.execute('UPDATE players SET cash=cash-?,locked=locked-? WHERE id=?',(cost,reserved,order['player_id']))
+                        db.execute('INSERT INTO holdings(player_id,symbol,shares,locked,basis) VALUES(?,?,?,0,?) ON CONFLICT(player_id,symbol) DO UPDATE SET shares=shares+excluded.shares,basis=basis+excluded.basis',(order['player_id'],symbol,qty,cost))
+                        db.execute('UPDATE companies SET maker_shares=maker_shares-?,maker_cash=maker_cash+? WHERE symbol=?',(qty,gross,symbol))
+                    else:
+                        h=db.execute('SELECT shares,basis FROM holdings WHERE player_id=? AND symbol=?',(order['player_id'],symbol)).fetchone()
+                        if h is None or h['shares']<qty:raise RuntimeError('escrow invariant violated')
+                        basis=h['basis'] if qty==h['shares'] else h['basis']*qty//h['shares']
+                        db.execute('UPDATE holdings SET shares=shares-?,locked=locked-?,basis=basis-? WHERE player_id=? AND symbol=?',(qty,qty,basis,order['player_id'],symbol))
+                        db.execute('UPDATE players SET cash=cash+? WHERE id=?',(gross-brokerage,order['player_id']))
+                        db.execute('UPDATE companies SET maker_shares=maker_shares+?,maker_cash=maker_cash-? WHERE symbol=?',(qty,gross,symbol))
+                    remaining=order['remaining']-qty
+                    db.execute('UPDATE orders SET remaining=?,status=? WHERE id=?',(remaining,'filled' if remaining==0 else 'partial',order['id']))
+                    db.execute('INSERT INTO fills(order_id,player_id,symbol,side,quantity,price,fee,period) VALUES(?,?,?,?,?,?,?,?)',(order['id'],order['player_id'],symbol,side,qty,opening,brokerage,period))
+                    executed[side]+=qty;volume+=qty
+            net=executed['buy']-executed['sell']
+            pressure=max(-1200,min(1200,70*net))
+            # Macro background moves are deterministic; only executed flow influences pressure.
+            macro=drift(symbol,period)
+            newprice=max(2,min(2500,(opening*(10000+pressure+macro)+5000)//10000))
+            db.execute('UPDATE companies SET price=?,volume=?,flow=? WHERE symbol=?',(newprice,volume,net,symbol))
+            db.execute('INSERT INTO history VALUES(?,?,?,?,?)',(symbol,period,newprice,volume,net))
+        db.execute('UPDATE clock SET period=? WHERE id=1',(period,))
+
+    def settle_due(self, now=None):
+        with self.conn() as db:
+            self._settle_due(db,self.clock() if now is None else now)
+
+    def _view(self, db, player):
+        period=db.execute('SELECT period FROM clock WHERE id=1').fetchone()['period']
+        me=db.execute('SELECT cash,locked FROM players WHERE id=?',(player,)).fetchone()
+        companies=[];holdings=[];equity=0
+        for sym,name,sector,_,icon in COMPANIES:
+            row=db.execute('SELECT price,maker_shares,volume,flow FROM companies WHERE symbol=?',(sym,)).fetchone()
+            companies.append({'symbol':sym,'name':name,'sector':sector,'icon':icon,'price':str(row['price']),'exchangeShares':row['maker_shares'],'lastVolume':row['volume'],'lastNetDemand':row['flow']})
+            h=db.execute('SELECT shares,locked,basis FROM holdings WHERE player_id=? AND symbol=?',(player,sym)).fetchone()
+            if h and h['shares']:
+                worth=h['shares']*row['price'];equity+=worth
+                holdings.append({'symbol':sym,'shares':str(h['shares']),'available':str(h['shares']-h['locked']),'reserved':str(h['locked']),'costBasis':str(h['basis']),'marketValue':str(worth),'unrealizedPnL':str(worth-h['basis']),'lastPrice':str(row['price'])})
+        orders=[{'id':r['id'],'side':r['side'],'symbol':r['symbol'],'quantity':r['quantity'],'remaining':r['remaining'],'limitPrice':r['limit_price'],'status':r['status']} for r in db.execute('SELECT id,side,symbol,quantity,remaining,limit_price,status FROM orders WHERE player_id=? AND status IN (\'open\',\'partial\') ORDER BY created,id',(player,))]
+        return {'schema':'market-grove.snapshot/v2','mode':'shared-practice','walletConnected':False,'player':player,'period':period,'marketDay':period*self.interval//86400,'intervalSeconds':self.interval,'nextAuctionAt':(period+1)*self.interval,'cash':str(me['cash']),'availableCash':str(me['cash']-me['locked']),'reservedCash':str(me['locked']),'equity':str(equity),'netWorth':str(me['cash']+equity),'companies':companies,'holdings':holdings,'orders':orders,'marketScope':'shared-single-server','warning':'Practice credits only. Demo identities are not secure accounts.'}
+
+    def snapshot(self, player):
+        with self.conn() as db:
+            self._settle_due(db,self.clock())
+            if db.execute('SELECT 1 FROM players WHERE id=?',(player,)).fetchone() is None:raise MarketError(401,'unknown_player')
+            return self._view(db,player)
+
+    def order(self, player, body):
+        if not isinstance(body,dict) or set(body)!={'side','symbol','quantity','limitPrice','requestId'}:
+            raise MarketError(422,'invalid_order')
+        side,sym,qty,lim,key=(body[k] for k in ('side','symbol','quantity','limitPrice','requestId'))
+        if side not in ('buy','sell') or sym not in SYMBOLS or type(qty) is not int or not 1<=qty<=MAX_QTY or type(lim) is not int or not 1<=lim<=MAX_PRICE or not isinstance(key,str) or not REQUEST.fullmatch(key):
+            raise MarketError(422,'invalid_order')
+        digest=hashlib.sha256(json.dumps({k:v for k,v in body.items() if k!='requestId'},sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        with self.conn() as db:
+            self._settle_due(db,self.clock())
+            dup=db.execute('SELECT id,digest,status FROM orders WHERE player_id=? AND request_id=?',(player,key)).fetchone()
+            if dup:
+                if dup['digest']!=digest:raise MarketError(409,'request_id_reused')
+                return {'schema':'market-grove.order-receipt/v2','orderId':dup['id'],'status':dup['status'],'duplicate':True}
+            account=db.execute('SELECT cash,locked FROM players WHERE id=?',(player,)).fetchone()
+            if account is None:raise MarketError(401,'unknown_player')
+            if side=='buy':
+                reserve=qty*per_share_reserve(lim)
+                if reserve>account['cash']-account['locked']:raise MarketError(409,'insufficient_available_credits')
+                db.execute('UPDATE players SET locked=locked+? WHERE id=?',(reserve,player))
+            else:
+                h=db.execute('SELECT shares,locked FROM holdings WHERE player_id=? AND symbol=?',(player,sym)).fetchone()
+                if h is None or h['shares']-h['locked']<qty:raise MarketError(409,'insufficient_available_shares')
+                db.execute('UPDATE holdings SET locked=locked+? WHERE player_id=? AND symbol=?',(qty,player,sym))
+            period=db.execute('SELECT period FROM clock WHERE id=1').fetchone()['period']
+            oid=secrets.token_hex(12)
+            db.execute('INSERT INTO orders VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',(oid,player,key,digest,sym,side,qty,qty,lim,period,'open',int(self.clock())))
+            return {'schema':'market-grove.order-receipt/v2','orderId':oid,'status':'open','duplicate':False,'nextAuctionAt':(period+1)*self.interval}
+
+    def cancel(self, player, order_id):
+        if not isinstance(order_id,str) or not re.fullmatch(r'[0-9a-f]{24}',order_id):raise MarketError(422,'invalid_order_id')
+        with self.conn() as db:
+            self._settle_due(db,self.clock())
+            order=db.execute('SELECT * FROM orders WHERE id=? AND player_id=?',(order_id,player)).fetchone()
+            if order is None:raise MarketError(404,'unknown_order')
+            if order['status']=='cancelled':return {'status':'cancelled','orderId':order_id}
+            if order['status']=='filled':raise MarketError(409,'already_filled')
+            if order['side']=='buy':
+                db.execute('UPDATE players SET locked=locked-? WHERE id=?',(order['remaining']*per_share_reserve(order['limit_price']),player))
+            else:db.execute('UPDATE holdings SET locked=locked-? WHERE player_id=? AND symbol=?',(order['remaining'],player,order['symbol']))
+            db.execute("UPDATE orders SET remaining=0,status='cancelled' WHERE id=?",(order_id,))
+            return {'status':'cancelled','orderId':order_id}
+
+    def history(self, sym):
+        if sym not in SYMBOLS:raise MarketError(404,'unknown_company')
+        with self.conn() as db:
+            self._settle_due(db,self.clock())
+            return {'schema':'market-grove.history/v2','symbol':sym,'points':[{'period':r['period'],'price':r['price'],'volume':r['volume'],'flow':r['flow']} for r in db.execute('SELECT period,price,volume,flow FROM history WHERE symbol=? ORDER BY period DESC LIMIT 60',(sym,)).fetchall()][::-1]}
+
+    def activity(self, player):
+        with self.conn() as db:
+            self._settle_due(db,self.clock())
+            return {'schema':'market-grove.activity/v2','fills':[dict(r) for r in db.execute('SELECT order_id AS orderId,symbol,side,quantity,price,fee,period FROM fills WHERE player_id=? ORDER BY id DESC LIMIT 50',(player,))]}
+
+    def wallet_projection(self, player):
+        snap=self.snapshot(player)
+        return {'schema':'tavi.wallet-assets/v1','source':'market-grove','mode':'shared-practice','realm':'demo-loopback-only','asOfPeriod':snap['period'],'currencyId':'practice-credit','holdings':snap['holdings'],'totalMarketValue':snap['equity'],'note':'Demonstration only. No verified Tavi Wallet ownership or Gold.'}

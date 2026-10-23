@@ -39,7 +39,7 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn('working-directory: _upstream/dapi', workflow)
         self.assertIn('npm ci --ignore-scripts', workflow)
         self.assertIn('python -m pip install -e _upstream/dapi', workflow)
-        self.assertIn('ref: dc79897a54f69141ce300bbdadd3bdd6bd996d14', workflow)
+        self.assertIn('ref: c2b486bc7f526e71d8c26d77cb56bff9270d3347', workflow)
 
     def test_disposable_dapi_smoke_phases_respect_runtime_rate_limit(self):
         """Regression for exact push 3df644cd: 429 obscured the required 403."""
@@ -57,11 +57,11 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn('A further fresh server must read committed DB state', smoke)
 
     def test_ci_artifacts_use_current_source_version(self):
-        self.assertIn('atrium-0.5.34-ziprunner.zip', self.workflow)
+        self.assertIn('atrium-0.5.36-ziprunner.zip', self.workflow)
         self.assertNotIn('atrium-0.4.7-ziprunner.zip', self.workflow)
         self.assertNotIn('atrium-0.5.18-ziprunner', self.workflow)
-        self.assertIn('name: atrium-0.5.34-ziprunner', self.workflow)
-        self.assertIn('path: dist/atrium-0.5.34-ziprunner.zip', self.workflow)
+        self.assertIn('name: atrium-0.5.36-ziprunner', self.workflow)
+        self.assertIn('path: dist/atrium-0.5.36-ziprunner.zip', self.workflow)
         self.assertIn('python tools/run_python_checks.py', self.workflow)
 
 

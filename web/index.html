@@ -48,17 +48,41 @@ main{max-width:1130px;margin:29px auto;padding:0 20px 50px}.sectionTitle{display
 .lobbySelected{border-left:3px solid #88b9b2;padding:13px 15px;background:#203940;border-radius:6px;margin-top:18px}
 .lobbyMessage{color:#e5cfaa;font-size:14px}
 @media(max-width:600px){.multiplayerCard{padding:16px}.lobbyJoin input{width:100%;margin:0 0 10px}}
+.preview-link{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border:1px solid #75b9b6;border-radius:8px;padding:11px 14px;color:#e2faf4;text-decoration:none;font-weight:700;background:#244b4b}.preview-link:focus-visible{outline:3px solid #f0d18d;outline-offset:3px}
+/* Phone-first adaptation: no viewport-width minimums, touch targets, safe areas. */
+html{scroll-padding-top:16px;-webkit-text-size-adjust:100%}
+body{min-width:0;overflow-wrap:break-word}
+#gameTools{position:sticky;top:0;z-index:4;background:#101b23e8;padding:10px 0;backdrop-filter:blur(10px)}
+#gameTools button{min-height:46px}
+@media(max-width:650px){
+ header .inner{padding:18px max(15px,env(safe-area-inset-right)) 22px max(15px,env(safe-area-inset-left))}
+ .brand{gap:6px}.brand h1{font-size:25px}.brand .mini{font-size:10px;letter-spacing:.06em}
+ .hero{margin-top:14px}.hero h2{font-size:clamp(24px,7vw,35px);margin:5px 0 10px}.hero p{font-size:14px;line-height:1.45}
+ main{margin-top:20px;padding:0 max(12px,env(safe-area-inset-right)) calc(70px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+ .grid{grid-template-columns:minmax(0,1fr);gap:12px}.tile .body{padding:15px}.tile .art{height:94px}
+ .tile button,.lobbyControls button,.lobbyActions button{min-height:46px}
+ .sectionTitle{align-items:flex-start;gap:5px;margin-bottom:10px}.sectionTitle h2{font-size:20px}
+ .multiplayerCard{padding:14px}.lobbyControls{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .lobbyControls button{width:100%}.lobbyActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .lobbyMatch{padding:12px}.lobbyJoin input{width:100%}
+ #stage iframe{display:block;height:calc(100dvh - 115px);min-height:370px;max-height:900px;border-radius:9px}
+ #gameTools button{width:100%}
+}
+@media(max-width:360px){.brand .mini{display:none}.lobbyActions{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style></head><body>
 <header><div class="inner"><div class="brand"><h1>Atrium</h1><span class="mini">Games &amp; apps · Web preview</span></div><div class="hero"><span class="mini">A growing place to play</span><h2>Find your next little adventure.</h2><p>Discover reviewed games, try playable previews and pick up where you left off as the platform grows. Social login and cross-device multiplayer are still under development.</p></div></div></header>
 <main><div class="sectionTitle"><h2>Games &amp; applications</h2><span class="muted smallprint" id="catalogStatus">Checking approved catalog…</span></div>
 <section aria-label="Published apps"><div class="grid" id="apps"><article class="tile"><div class="body"><h3>Loading catalog…</h3></div></article></div></section>
-<section id="stage" aria-live="polite" aria-label="Game viewport"></section>
+<div id="gameTools" hidden><button id="closeGame" type="button" aria-label="Close game and return to games">← Back to games</button></div>
+<section id="stage" aria-live="polite" aria-label="Game viewport" tabindex="-1"></section>
 <section aria-label="Multiplayer integration preview" style="margin-top:36px">
 <div class="sectionTitle"><h2>Multiplayer lab</h2><span class="muted smallprint">Interactive UI preview · No live game sessions</span></div>
 <div id="multiplayerLab" class="multiplayerCard"><p>Preparing offline mock lobby…</p></div>
 </section>
 <section aria-label="Coming next" style="margin-top:34px"><div class="sectionTitle"><h2>On the horizon</h2><span class="muted smallprint">Not yet playable here</span></div><div class="grid">
 <article class="tile preview" id="checkers-coming-soon"><div class="art"><div class="boardIcon" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="body"><span class="pill waiting">Awaiting publication</span><h3>Checkers</h3><p>Play locally against a friend or the baseline Staff opponent when this first-party preview is approved.</p><button disabled>Not published yet</button></div></article>
+<article class="tile preview" id="market-grove-operator-preview"><div class="art" aria-hidden="true" style="font-size:52px">↗</div><div class="body"><span class="pill waiting">Operator preview · No public wallet</span><h3>Market Grove</h3><p>One shared fictional stock market. An operator-approved test key and LoopRD 0.4 service are required to try the practice exchange.</p><a class="preview-link" href="./games/market-grove/index.html" aria-label="Open Market Grove operator preview">Open operator preview →</a></div></article>
 <article class="tile preview" id="life-coming-soon"><div class="art" aria-hidden="true" style="font-size:56px">⌂</div><div class="body"><span class="pill waiting">Integration planned</span><h3>Life</h3><p>Life already has its own game logic. Atrium discovery and reviewed launch still need integration with Looprd.</p><button disabled>Coming later</button></div></article>
 </div></section>
 <p class="smallprint footnote">Only operator-approved catalog entries can be launched. Browser games run in isolated frames; no Social credentials or operator API keys are supplied to them. Checkers preview (when enabled) is local play, not an online Looprd match.</p>

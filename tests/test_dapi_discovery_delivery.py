@@ -15,7 +15,7 @@ from tools.package_zip import ROOT
 manage = _namespace['manage_discovery']
 receive = _namespace['receive_discovery_observation']
 manual = _namespace['record_discovery']
-life = yaml.safe_load((ROOT/'examples/life.atriumd.yaml').read_text())
+life = yaml.safe_load((ROOT/'examples/life.atriumd.yaml').read_text(encoding='utf-8'))
 SOURCE_ID = '1'*64
 EPOCH = '2'*32
 ORIGIN = 'https://life.example.org'

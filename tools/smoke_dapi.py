@@ -26,11 +26,13 @@ def main():
         settings = Settings(sources=str(ROOT/'examples'/'sources.local.yaml'),
                             data=temp/'data', secrets=temp/'secrets', poll_seconds=3600,
                             bootstrap_admin=False, allow_python=True,
-                            trusted_components=('atrium',))
+                            trusted_components=('atrium','market-grove'))
         with TestClient(create_app(settings=settings)) as client:
             runtime = client.app.state.runtime
             assert client.get('/_looprd/health').status_code == 200
             assert 'atrium' in runtime.active, runtime.errors
+            assert 'market-grove' in runtime.active, runtime.errors
+            assert client.get('/looprd/atrium/market-grove/v1/market/state').status_code == 401, 'nested market route must require its own key'
             spec = runtime.active['atrium'].spec
             expected_release = json.loads((ROOT / 'package.json').read_text(encoding='utf-8'))['version']
             assert spec.release == expected_release and spec.database.schemaVersion == 6
@@ -81,7 +83,7 @@ def main():
                                             'service':'life-prod-sender'})
             assert machine_key.status_code == 201, machine_key.text
             machine={'Authorization':'Bearer '+machine_key.json()['apiKey']}
-            life = yaml.safe_load((ROOT/'examples/life.atriumd.yaml').read_text())
+            life = yaml.safe_load((ROOT/'examples/life.atriumd.yaml').read_text(encoding='utf-8'))
             source_identity=sha256(b'test-life-source-location').hexdigest()
             config={'operation':'register_binding','payload':{'deploymentId':'life-production',
                 'component':'the-life-loop','gameId':'life.loop','publisherId':'thebigtreeinc',
@@ -183,7 +185,7 @@ def main():
                               headers=read).json()['games']==[]
             assert client.get('/looprd/atrium/v1/registry/discovery/v2/capabilities',
                               headers=machine).json()['deploymentId']=='pi-one'
-    print('DAPI disposable registry smoke passed (one component, schema v6, scoped v1/v2 discovery and publishing)')
+    print('DAPI disposable Atrium+Market Grove smoke passed (isolated nested child, schema v6, scoped discovery/publishing)')
 
 
 if __name__ == '__main__':

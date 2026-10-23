@@ -1,0 +1,41 @@
+= Market Grove — Wallet Investments integration (proposed v2)
+:revdate: 2026-10-22
+:status: source contract only; NO Tavi Wallet service modified or deployed
+:toc:
+
+== Goal
+
+Share ownership changes the same global Market Grove economy for all participating players. After a settled trade, Tavi's first-party core Wallet shows Market Grove assets in a read-only *Investments* section with ticker, quantity, reserved quantity, cost basis, globally observed price, quote age and unrealized gain/loss. The game's backend remains independently operable and authoritative for share supply, orders and settlements. The Wallet remains authoritative for the user's Gold (including restricted/free vs shopping-eligible). Tavi is messenger-first and provides optional navigation, not a second exchange.
+
+== Demonstration vs future Gold market
+
+Market Grove 0.2.0 provides a loopback-only shared PRACTICE exchange. `GET /api/wallet-preview` responds with schema `tavi.wallet-assets/v1`, `mode: shared-practice`, realm `demo-loopback-only`, and `currencyId: practice-credit`. This is illustrative, **not a trusted Tavi Wallet endpoint**. The demo chooser is not valid Internet authentication.
+
+Currently shipped first-party Wallet broker allows only bundled `org.tavi.core.wallet` to call `wallet.balance`, `wallet.transactions`, `wallet.claim`, `wallet.convert`, `wallet.purchase`, `wallet.orderStatus`; no generic dynamic stock settlement exists. Never expose the Social bearer to Market Grove's web iframe; no third-party extension receives first-party Wallet privileges. Do not translate a demo balance into Gold or register demo shares as trusted.
+
+== Authority and nonduplication
+
+* Market Grove: one authoritative share ownership register keyed by `(marketRealm, verifiedSocialRealm, verifiedSubject, assetId)`, trading pool, outstanding orders, price/period revision, transaction receipts, market scheduler and released/settled fills.
+* Tavi Wallet: Gold debit/credit, shopping-eligible-only funding classification, exchange Gold escrow, ledger journal, idempotency, first-party read-only Investments display. Portfolio views are *projections* of verified game-owned shares; Wallet does not create its own competing mutable share balance.
+* Social: scoped identity and delegation. A matching UUID is not proof of authorization across servers/realms.
+* Atrium: reviewed discovery and optional launch, no authority over Gold or shares.
+
+== Atomicity across services
+
+Because Market Grove and Wallet are separately authoritative, merely calling `/wallet/purchase` and then `/market/buy` is NOT safe. Proposed durable settlement state machine (subject to Social operator review):
+
+. Market Grove creates an idempotent order with server-validated limit, realm/account, season and revision, held in `pending_wallet_reservation` (not executable yet).
+. Wallet performs a server-authorized, short-lived hold for **shopping-eligible** Gold only, tied to `(marketId,orderId,realm,subject)` with maximum price and fees; no debit from refill Gold. The confirmation and actual account authority are checked by Wallet.
+. Market Grove marks the order eligible only once the hold is verified, and runs its scheduled global auction. Fills become provisionally recorded, with locked shares and fixed price/amount. No external ownership view should advertise provisional stock as settled.
+. An idempotent settlement coordinator commits Gold from the hold to an exchange-backed pool and finalizes the game's corresponding shares; a durable outbox/inbox reconciles partially completed operations. Unfilled limit-order remainder is held, released on cancellation/expiry or reauthorized at policy boundaries.
+. On error/timeout, state remains `pending_reconciliation` and blocks spending/transfer of affected Gold or shares. A reconciler retries with the same settlement ID; it does not mint compensation based on client reports. Operator-approved recovery or compensating journal reversal is required if commit cannot complete.
+. For a stock sale, the exchange's pre-funded Wallet treasury guarantees Gold payout; selling players' shares remain locked until wallet credit is confirmed. A failed wallet payout cannot produce spendable Gold or sell the same shares twice.
+. Wallet projections consume authorized Market Grove `market.positions.read` with consistency proof/revision and time of quote. If unavailable, Wallet may display last verified holdings/quote with clear age and unavailable badge, but never infer a successful fill from a submitted order.
+
+Alternatives: co-locate both Gold and shares in a single transactional Ledger component if operator approves full share custody transfer; if chosen, Market Grove must stop independently owning shares to prevent dual source-of-truth. No design should claim an atomic distributed transaction without implementing and testing the recovery protocol.
+
+== Core UI and testing
+
+The eventual Wallet UI needs `Investments` beside Gold and recent activity, not a user-installable extension. Views should show total practice/mock and settled holdings in **separate**, clearly marked sections; never blend totals. Stock value is a *virtual estimated valuation*, not a Gold account balance. Purchases through wallet require review and confirmation. Free/refill Gold cannot buy stocks, cannot be converted into stock-spendable currency and cannot be made shopping-eligible via refunds or trade loops.
+
+Test offline fills, per-account isolation, duplicate callbacks, replay, reserve expiry, partial fills, cancellation, sold-out shares, crossing buy/sell, service restart, leader failover, wallet outage, stale quotes, out-of-order receipts, Gold-source laundering and unauthorized Tavi extension requests. None of these are proved for live Gold in the 0.2.0 source package.

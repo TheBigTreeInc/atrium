@@ -1,0 +1,56 @@
+= Atrium 0.5.36 — LoopRD 0.4 independent subcomponents and mobile UX
+:revdate: 2026-10-23
+:toc:
+
+== Normative upstream dependency
+
+The pinned `pac-labs/dapi` revision `c2b486bc7f526e71d8c26d77cb56bff9270d3347` documents independent `subcomponents` (LoopRD 0.4.0) in `docs/subcomponents.adoc`. Unlike existing `includes`, a `subcomponents: - source: ...` child is a complete independent component with its own auth, database, jobs and lifecycle. The host mounts Market Grove at `/looprd/atrium/market-grove/v1`; the parent remains at `/looprd/atrium/v1`. An explicit parent entry in the *existing* LoopRD sources manifest activates both; the child is NOT a second flat source or alias.
+
+[source,yaml]
+----
+apiVersion: looprd/v1
+component: atrium
+release: 0.5.36
+api: {version: v1}
+# existing auth, database, handlers, includes remain intact
+requires: [spec.includes, spec.subcomponents, events.transactional, events.replay]
+subcomponents:
+  - source: games/market-grove/looprd.yaml
+----
+
+The fragment above explains the new declarations, not a replacement for the actual full root `looprd.yaml`.
+
+Market Grove's `games/market-grove/looprd.yaml` remains a complete component (`component: market-grove`, SQLite, `market:read`/`market:trade`, bounded one-minute scheduler, generic Atrium registration sidecar). It does not inherit Atrium's application-scoped keys or database and does not settle Tavi Gold. The root `includes` continue to represent registry/arcade/checkers fragments of Atrium itself; there are no separately hosted child databases for those fragments.
+
+== Source registration and discovery
+
+The operator source manifest needs exactly one Atrium root entry, as in `examples/sources.with-market-grove.yaml` and `examples/sources.market-grove-from-atrium-git.yaml`. Local paths are relative to the sources manifest. Git deployment should pin the *root repository ref* to an audited full commit; LoopRD reads child files from that same revision. Do not add a second `market-grove` root source simultaneously: IDs are unique per deployment. The `atriumd.yaml` file is next to the child `looprd.yaml`; LoopRD 0.4 registration reader identifies it under the actual mounted child path.
+
+The `tools/pull_looprd_registrations.py` reader now verifies both the legacy flat `/looprd/market-grove/v1` and the child `/looprd/atrium/market-grove/v1` API paths, with strictly bounded, safe component segments. Its receiver continues enforcing operator-owned HTTPS origins and stable final component identity. Do not construct child paths from IDs or flatten upstream URLs. The existing v1/v2 push delivery and public notice flows remain operator-configured and do not auto-publish any game. Use at most one authoritative reader/push path per deployment.
+
+== Security and service prerequisites
+
+* Upgrade host to LoopRD >= 0.4.0 **before** deploying Atrium 0.5.36. Older strict parsers reject `subcomponents` and the capability requirement. Do not downgrade with an active nested child checkpoint without a reviewed migration.
+* Set `LOOPRD_ALLOW_PYTHON=true` only on a trusted application host, and explicitly trust **both** `atrium` and `market-grove` via operator configuration. Parent trust does not imply child trust; child code is trusted Python, not sandboxed.
+* Use independent component-scoped database keys and access policies. Child game shares no passwords or gold wallet ledger. All game orders and wallets are owned by their designated service; no sidecar or manifest grants cross-component authority.
+* The service reader still uses a per-deployment secret mounted as a file and a separate Atrium `apps:discover` sender credential. Neither is distributed to the static frontend. Read-only discovery is not public approval.
+* Market Grove browser preview only uses a manually supplied short-lived operator test key in memory. It must be replaced by reviewed Social realm sign-in and delegated capability auth before public onboarding. No real-money or real-security features.
+* Successful source activation and candidate visibility must never auto-create an Atrium AppRelease, permit Wallet Gold buys, or imply an approved public listing.
+
+== Mobile-first UI changes
+
+* Atrium storefront has narrow-screen single-column cards, compact masthead, large touch targets, safe-area paddings and a visible Back to games control when an approved game is launched.
+* Market Grove keeps a four-tab bottom navigation at phone widths with safe-area padding; portfolio table rows become labeled stacked positions, avoiding horizontal table scrolling; order buttons, order confirmation and company targets remain touch-sized.
+* Game URL input accepts LoopRD 0.4 nested paths. No browser token is persisted or passed to the marketplace shell. Live shared state still resides in the game service, not a phone cache.
+* Small-screen changes need physical Android/iOS/Windows responsive verification: 320 px, 390 px, 768 px, landscape, keyboard focus, dark mode and back navigation. CSS/source tests alone are insufficient evidence of device acceptance.
+
+== Acceptance and rollback
+
+. Back up the parent and child DBs, import one Atrium source on a disposable LoopRD 0.4 host, verify two separately scoped components are active and call their distinct `/looprd/atrium/v1` and `/looprd/atrium/market-grove/v1` endpoints.
+. Confirm a child handler and its job operate only on its independent storage. Block/disable child and verify Atrium parent stays healthy; test invalid child reload preserves its previous generation, and explicit removal retires the API but retains data.
+. Configure registration.readers.v1 and both secrets, verify a complete inventory shows Market Grove with nested `apiPath`; sidecar-only changes upsert idempotently and incomplete inventory preserves previous candidate. Verify wrong service credentials, malformed paths, origin substitution and source inconsistencies fail closed.
+. Test authentication on all nested routes (401 without child key), a live test-account trade, scheduled settlement and restart across two accounts. No client/user-selected balances and no automatic public game approval.
+. Verify frontend on physical phone/tablet, including keyboard, scroll and safe areas; check `Wallet` remains a preview and free/restricted Gold is never spent.
+. Validate exact pushed-commit GitHub Linux/Windows CI, ZipRunner SHA-specific installed tests and operator acceptance before deployment/promotion.
+
+This is a source candidate, **not** evidence of a live LoopRD 0.4 activation, marketplace listing, or cross-service Wallet settlement. The Atrium 0.5.35 two-flat-source deployment instructions in `docs/P1_080_MARKET_GROVE_LOOPRD_IMPORT.adoc` are superseded for 0.5.36; retain them for older operating history only.

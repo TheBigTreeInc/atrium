@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.34",
-  "summary": "0.5.34 adds optional Looprd 0.3.0 generic service reader that consumes registered atriumd.yaml documents using per-deployment reader keys, forwards only to scoped Atrium v2 discovery candidates, and conservatively reconciles incomplete inventories. Existing push and GitHub public notice flows remain unchanged; no publication or operator acceptance.",
+  "version": "0.5.36",
+  "summary": "0.5.36 opts Atrium into LoopRD 0.4 independent subcomponents, updates trusted nested discovery paths and improves mobile storefront and market trading interface. Production and operator approval remain pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -259,6 +259,19 @@
       "title": "Verify public token-free LoopRD registration and automatic marketplace promotion",
       "summary": "0.5.34 source candidate: separate anonymous low-privilege LoopRD inbox, external curl after Pages success, Atrium-owned independent verification and Git-backed publication; deploy HTTPS/service and test against actual Life Pages before accepting.",
       "priority": "high"
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-IMPORT",
+      "title": "Validate Market Grove independent LoopRD import, Atrium discovery and user authorization",
+      "next_action": "Operator tests disposable LoopRD 0.3 market service, reader and shared identity; no public publication or real Gold.",
+      "priority": "high",
+      "summary": "Atrium source integrates a separately hosted Market Grove exchange with its own database, trading orders, auction scheduler, discovery descriptor and private test authentication. Disposable runtime activation, shared Tavi identity, real Wallet Gold settlement and public publication remain operator-gated."
+    },
+    {
+      "id": "ATR-115-LOOPRD-04-MOBILE",
+      "title": "LoopRD 0.4 nested Market Grove and responsive Atrium",
+      "next_action": "Accept on a disposable LoopRD 0.4 host and real phone before marking Done.",
+      "summary": "Atrium 0.5.36 adopts LoopRD 0.4 independent subcomponents and nested discovery paths for Market Grove, with a mobile-friendly storefront and trading interface. Actual LoopRD 0.4 activation, Android/iOS device acceptance and operator approval remain pending."
     }
   ]
 }

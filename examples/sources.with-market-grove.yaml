@@ -1,0 +1,7 @@
+# LoopRD 0.4+ imports the child declared by Atrium. Disposable operator test only.
+# A child failure keeps the last healthy subtree; no game data is deleted.
+apiVersion: looprd/v1
+components:
+  - id: atrium
+    specification: ../looprd.yaml
+    enabled: true

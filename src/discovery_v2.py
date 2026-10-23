@@ -192,6 +192,22 @@ async def trusted_discovery_capabilities(ctx):
             'operations':['upsert','withdraw'], 'provenanceKinds':list(_V2_PROVENANCE)}
 
 
+def _v2_trusted_component_path(url, origin, component):
+    """LoopRD 0.4 permits nested subcomponent paths; every segment is a component ID.
+
+    The exact HTTPS origin is bound by the operator. The final segment must be
+    the authenticated component, not an arbitrary sibling or parent endpoint.
+    """
+    if type(url) is not str or not url.startswith(origin + '/looprd/'):
+        return False
+    path = url[len(origin + '/looprd/'):]
+    segments = path.split('/')
+    return (2 <= len(segments) <= 10 and segments[-2] == component
+            and _v2_re.fullmatch(r'v[1-9][0-9]*', segments[-1]) is not None
+            and all(_V2_COMPONENT.fullmatch(part) for part in segments[:-1])
+            and len(set(segments[:-1])) == len(segments[:-1]))
+
+
 def _v2_validate_observation(value, config):
     _v2_exact(value, ('schema','deploymentId','component','operation','source','runtime',
                       'sidecar','reason','operationId','sequence','fingerprint'))
@@ -216,8 +232,7 @@ def _v2_validate_observation(value, config):
         _v2_exact(value['runtime'], ('apiBaseUrl',))
         api_base = value['runtime']['apiBaseUrl']
         _v2_require(type(api_base) is str and
-                    _v2_re.fullmatch(_v2_re.escape(config['apiOrigin'] + '/looprd/' + component)
-                                     + r'/v[1-9][0-9]*', api_base) is not None,
+                    _v2_trusted_component_path(api_base, config['apiOrigin'], component),
                     'untrusted_api_binding',403)
         _v2_require(value['reason'] is None, 'invalid_reason')
         _v2_require(type(value['sidecar']) is dict, 'invalid_sidecar')

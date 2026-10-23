@@ -1,0 +1,61 @@
+= Atrium 0.5.35 — Market Grove imported LoopRD game component
+:revdate: 2026-10-22
+:status: source candidate / operator acceptance required
+
+== Ownership
+
+Atrium contains the Market Grove source and distribution presentation but *does not merge* game rules or state into the Atrium registry component. The independently activated `market-grove` LoopRD component owns order matching, shares, fictional practice balances, UTC price series and market time. Atrium owns discovery, reviewed publication and its optional web launcher. Tavi remains messenger-first. The Wallet owns Gold and does not currently authorize Market Grove transactions.
+
+This design intentionally does NOT add `games/market-grove/looprd.yaml` to `atrium/looprd.yaml` `includes`: includes MERGE into the same component, compromising identity and persistence boundaries. Instead, deploy it as an additional source in the operator's LoopRD sources file.
+
+== Files
+
+* `games/market-grove/looprd.base.yaml` — independently scoped component, `auth: database`, minute-cadence `clear-market` watcher for hourly auctions, optional generic `registrations: service: atrium`.
+* `games/market-grove/looprd.yaml` — self-contained generated handler sources; root-relative `atriumd.yaml`.
+* `games/market-grove/atriumd.yaml` — portable `atriumd/v1`, `originRef: atrium-web`, `entrypoint: games/market-grove/index.html`. Does not contain URLs or secrets.
+* `games/market-grove/game/engine.py` — deterministic simulated call auctions with one shared market inventory; secure service principal namespaced to scoped database-auth keys; no public demo-session route.
+* `web/games/market-grove.html`, `web/games/market-grove-app.js`, `web/games/market-grove-style.css` — Atrium-hosted *operator-only* API preview, with a manually supplied ephemeral market key and configured LoopRD HTTPS URL. Not a public game onboarding surface.
+* `tools/build_market_grove_spec.py` — embeds the same source in independently hosted LoopRD handlers and job.
+
+== Deployment and discovery (explicit opt-in)
+
+. Install/upgrade the component host to LoopRD 0.3.0 supporting `registration.readers.v1`. Existing pinned DAPI 0.2 strict readers will reject the new `registrations` field. Do not silently strip it from a deployed spec.
+. In the operator-controlled **sources file**, enable a *separate* entry such as:
++
+[source,yaml]
+----
+- id: market-grove
+  specification: ../games/market-grove/looprd.yaml
+  enabled: true
+----
++
+If using a Git-sourced deployment, use a reviewed source ref and a `specification` pointing at `games/market-grove/looprd.yaml`. No additional game Git repository or Atrium repository credential is necessary. The ready-to-adapt Git sources example is `examples/sources.market-grove-from-atrium-git.yaml`; both Atrium and Market Grove are read from the same Atrium repository and revision, but activated as independent components.
+. Ensure `LOOPRD_ALLOW_PYTHON=true`, persistent SQLite database for this component, and one ASGI worker. The in-process generator embeds trusted Python code into the LoopRD spec; do not load it from untrusted repositories.
+. Provision separate test LoopRD database-auth principals with scoped `market:read` and `market:trade`. The username/account derived from each key is NOT Tavi Social identity. Key rotation currently changes the practice-account identity and requires a future delegated stable-identity design. Do not treat keys as player credentials for production.
+. Configure the Atrium service reader on that LoopRD *deployment* with one private 32–512-character reader credential. Configure the Atrium 0.5.34+ pull client and its separate `apps:discover` delivery grant, deployment identity, reviewed API origin and `atrium-web` launch origin mapping. Existing push/pull ownership must not collide.
+. Poll `/_looprd/registrations`; verify service `atrium`, generation-pinned sidecar hash, and the candidate appears in Atrium's **review queue**, not the public catalog. Removal must require a complete inventory.
+. For a web operator preview, build `npm run build`. The relative static page is `dist/games/market-grove/index.html`. Serve through an operator HTTPS origin with strict CORS on LoopRD; do not distribute personal API keys or publish an approved game listing.
+
+== Market behavior and limits
+
+* One persistent SQLite market. Every authenticated test principal gets only their own **practice** credit wallet (1,500 credits), holdings, orders and receipts. No player can choose another user's ID; demo Alice/Bob routes are NOT registered with LoopRD.
+* Orders reserve practice cash or shares. A LoopRD `clear-market` job checks every minute and executes due *hourly* auctions at the opening price; the game engine also reconciles a missed tick on the next API request. Jobs are at-least-once and settlement is idempotent by period; server operators must test job retries and leader behavior.
+* Shares available through the market maker are finite. Executed net flow changes everyone else's quotes. SQLite is a single-deployment demonstration backend, not a globally federated stock exchange.
+* Stocks are fictional, there is no fiat/crypto/real securities or gambling, and none of the practice credit balances are Tavi Gold. `market/investments` exposes a key-scoped *practice-only* view; it is NOT a trusted Tavi Wallet holdings projection.
+
+== Security and non-negotiable gates
+
+The source candidate is NOT yet production-ready. An operator MUST verify LoopRD 0.3 parser acceptance, scoped authorization and rate limits, database migration/init behavior, job leases and restart replay, market ordering under concurrency, proper web CORS, and game identity association. Importing it into Atrium source does not enable the component or certify its availability.
+
+The existing Wallet supports only a first-party host bridge; no direct debit by a remote game. Gold-backed trading requires a server-to-server escrow/debit/confirm/release transaction that is idempotent, ties account identities to the home realm, and only spends **shopping-eligible earned Gold**. Free/refill Gold must never fund shares, directly or via conversion. Purchases must update game-owned shares only after authoritative Wallet settlement, and Wallet must display a read-only verified projection, not a second mutable shares database. Until this exists, public play and Gold transactions must remain disabled.
+
+The public Atrium catalog is not updated by registering the sidecar. Reviewed source, launch-origin ownership, release provenance, operator publication, real browser/device tests and return-to-messenger navigation are still required.
+
+== Acceptance tests
+
+. Verify `atrium/looprd.yaml` is unchanged except release, and has NO Market Grove include or exposed game write handler.
+. Confirm Market Grove separate component can be validated and loaded on a LoopRD 0.3 host with two scoped test principals, durable state, hourly scheduler and no anonymous trade route.
+. Run engine/API tests: conflicting buys, selling reserved shares, cancelled orders, retries, startup, scheduled settlement and own-account-only portfolio.
+. Verify reader service `atrium` receives `atriumd.yaml` with trusted component identity; no other consumer can read it; no auto-publication; complete inventory withdrawal affects only this game's deployment association.
+. Verify Atrium Pages subpath correctly opens the operator preview and Tavi Home is not trapped.
+. Verify integration remains disabled for real Gold and Tavi user identity until ledger/federation transaction acceptance.

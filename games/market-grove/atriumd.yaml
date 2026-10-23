@@ -1,0 +1,24 @@
+schema: atriumd/v1
+component: market-grove
+game:
+  id: market.grove
+  publisher: thebigtreeinc
+  title: Market Grove
+  summary: A fictional shared stock exchange with scheduled global auctions and persistent orders.
+  kind: game
+  platforms:
+    - runtime: web
+      formFactors: [desktop, tablet, phone]
+      installMode: none
+  launch:
+    mode: hosted-web
+    originRef: atrium-web
+    entrypoint: games/market-grove/index.html
+  services:
+    - component: market-grove
+      role: activity
+  integration:
+    atriumOptional: true
+    sessions: game-owned
+    state: game-owned
+    identity: game-owned

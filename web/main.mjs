@@ -4,6 +4,9 @@ import {loadIsolatedApp} from '../src/apphost.mjs';
 import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
 const area = document.querySelector('#apps');
 const stage = document.querySelector('#stage');
+const gameTools = document.querySelector('#gameTools');
+const closeGame = document.querySelector('#closeGame');
+closeGame.addEventListener('click', () => { revokeOpenApp(''); stage.replaceChildren(); gameTools.hidden = true; document.querySelector('#apps').scrollIntoView({block:'start'}); });
 const catalogStatus = document.querySelector('#catalogStatus');
 let refreshInFlight = false;
 let activeApp = null;
@@ -14,6 +17,7 @@ function revokeOpenApp(reason = 'This game is no longer available in the approve
   generation++;
   activeApp = null;
   stage.replaceChildren();
+  gameTools.hidden = true;
   stage.textContent = reason;
 }
 
@@ -81,6 +85,7 @@ async function refreshCatalog() {
             }
           });
           activeApp = app;
+          gameTools.hidden = false;
           stage.scrollIntoView({behavior:'smooth',block:'start'});
         } catch (error) {
           if (requestId === generation) revokeOpenApp('Cannot open game: ' + error.message);

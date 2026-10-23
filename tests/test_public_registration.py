@@ -25,7 +25,7 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual({h['method'] for h in spec['handlers']},{'POST','GET'})
         self.assertTrue(all(h.get('scopes')==[] for h in spec['handlers']))
         self.assertIn('TRUSTED_REPOSITORIES',spec['handlers'][0]['source'])
-        private=(ROOT/'looprd.yaml').read_text()
+        private=(ROOT/'looprd.yaml').read_text(encoding='utf-8')
         self.assertIn('mode: database',private)
         self.assertNotIn('component: atrium-registration',private)
 
@@ -62,9 +62,9 @@ class RegistrationTests(unittest.TestCase):
         self.assertEqual(queue['notices'][0]['runId'],444)
 
     def test_action_calls_curl_no_cross_repository_token(self):
-        action=(ROOT/'.github/actions/register-game/action.yml').read_text()
-        shell=(ROOT/'.github/actions/register-game/notify.sh').read_text()
-        example=(ROOT/'examples/github/atrium-register.yml').read_text()
+        action=(ROOT/'.github/actions/register-game/action.yml').read_text(encoding='utf-8')
+        shell=(ROOT/'.github/actions/register-game/notify.sh').read_text(encoding='utf-8')
+        example=(ROOT/'examples/github/atrium-register.yml').read_text(encoding='utf-8')
         self.assertIn('run: bash "$ACTION_PATH/notify.sh"',action)
         self.assertIn('curl --silent',shell)
         self.assertIn('--data-binary',shell)
@@ -77,30 +77,30 @@ class RegistrationTests(unittest.TestCase):
     def test_trusted_notice_is_independently_verified_by_atrium(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'registry/games').mkdir(parents=True);(root/'web').mkdir()
-            (root/'registry/trusted-sources.json').write_text(json.dumps(TRUST))
+            (root/'registry/trusted-sources.json').write_text(json.dumps(TRUST), encoding='utf-8')
             inbox='https://atrium.example.org/looprd/atrium-registration/v1/registrations'
             notices={'schema':'atrium.registration-queue/v1','notices':[{'repository':REPO,'sha':SHA,'runId':39315484654,'seenAt':'2026-10-21T00:00:00+00:00'}]}
             def get(url):
                 return json.dumps(notices).encode() if url==inbox else fake_get(url)
             first,receipts=synchronize(root,endpoint=inbox,get=get)
             self.assertEqual(receipts[0]['status'],'published')
-            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text())['games'][0]['gameId'],'life.loop')
+            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text(encoding='utf-8'))['games'][0]['gameId'],'life.loop')
             history=(root/'registry/registration-history.json').read_bytes()
             synchronize(root,endpoint=inbox,get=get)
             self.assertEqual(history,(root/'registry/registration-history.json').read_bytes())
             notices['notices'][0]['runId']=99
             _,receipts=synchronize(root,endpoint=inbox,get=get)
             self.assertEqual(receipts[0]['status'],'rejected')
-            self.assertEqual(len(json.loads((root/'web/hosted-games.json').read_text())['games']),1)
+            self.assertEqual(len(json.loads((root/'web/hosted-games.json').read_text(encoding='utf-8'))['games']),1)
 
     def test_unapproved_notice_cannot_publish(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp);(root/'registry/games').mkdir(parents=True);(root/'web').mkdir()
-            (root/'registry/trusted-sources.json').write_text(json.dumps({'schema':'atrium.trusted-game-sources/v1','games':[]}))
+            (root/'registry/trusted-sources.json').write_text(json.dumps({'schema':'atrium.trusted-game-sources/v1','games':[]}), encoding='utf-8')
             inbox='https://atrium.example.org/looprd/atrium-registration/v1/registrations'
             body={'schema':'atrium.registration-queue/v1','notices':[{'repository':REPO,'sha':SHA,'runId':3,'seenAt':'2026-10-21T00:00:00+00:00'}]}
             results,receipts=synchronize(root,endpoint=inbox,get=lambda url:json.dumps(body).encode())
             self.assertEqual(receipts,[])
-            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text())['games'],[])
+            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text(encoding='utf-8'))['games'],[])
 
 if __name__=='__main__':unittest.main()

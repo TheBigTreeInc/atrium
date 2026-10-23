@@ -1,0 +1,63 @@
+# Atrium-managed source, but a SEPARATE LoopRD component and database identity.
+# Generated handlers are self-contained. Host must support registration.readers.v1.
+apiVersion: looprd/v1
+component: market-grove
+release: '0.3.0'
+api:
+  version: v1
+auth:
+  mode: database
+  scopes:
+    - market:read
+    - market:trade
+database:
+  backend: sqlite
+  schemaVersion: 1
+registrations:
+  - service: atrium
+    document: atriumd.yaml
+requires:
+  - registration.readers.v1
+limits:
+  requestsPerMinute: 120
+  burstPerSecond: 8
+  maxRows: 100
+jobs:
+  clear-market:
+    intervalSeconds: 60
+    execution: inline
+    timeoutSeconds: 30
+    maxAttempts: 3
+    retrySeconds: 60
+    source: "generated"
+handlers:
+  - path: /market/state
+    method: GET
+    kind: python
+    scopes: [market:read]
+    source: "generated"
+  - path: /market/order
+    method: POST
+    kind: python
+    scopes: [market:trade]
+    source: "generated"
+  - path: /market/cancel
+    method: POST
+    kind: python
+    scopes: [market:trade]
+    source: "generated"
+  - path: /market/history
+    method: GET
+    kind: python
+    scopes: [market:read]
+    source: "generated"
+  - path: /market/activity
+    method: GET
+    kind: python
+    scopes: [market:read]
+    source: "generated"
+  - path: /market/investments
+    method: GET
+    kind: python
+    scopes: [market:read]
+    source: "generated"

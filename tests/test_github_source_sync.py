@@ -17,14 +17,14 @@ def fake_get(url):
 
 class PullRegistrationTests(unittest.TestCase):
     def test_action_does_not_accept_any_atrium_credential_or_send_dispatch(self):
-        action=(ROOT/'.github/actions/register-game/action.yml').read_text()
-        example=(ROOT/'examples/github/atrium-register.yml').read_text()
+        action=(ROOT/'.github/actions/register-game/action.yml').read_text(encoding='utf-8')
+        example=(ROOT/'examples/github/atrium-register.yml').read_text(encoding='utf-8')
         for source in [action,example]:
             self.assertNotIn('atrium-token',source)
             self.assertNotIn('ATRIUM_REGISTRATION_TOKEN',source)
             self.assertNotIn('/dispatches',source)
         self.assertIn('contents: read',example)
-        receiver=(ROOT/'.github/workflows/receive-game.yml').read_text()
+        receiver=(ROOT/'.github/workflows/receive-game.yml').read_text(encoding='utf-8')
         self.assertIn('schedule:',receiver)
         self.assertIn('python tools/sync_registration_notices.py',receiver)
         self.assertIn('ATRIUM_PUBLIC_REGISTRATION_ENDPOINT',receiver)
@@ -44,11 +44,11 @@ class PullRegistrationTests(unittest.TestCase):
             root=Path(temp)
             (root/'registry/games').mkdir(parents=True)
             (root/'web').mkdir()
-            (root/'registry/trusted-sources.json').write_text(json.dumps(TRUST))
+            (root/'registry/trusted-sources.json').write_text(json.dumps(TRUST), encoding='utf-8')
             results=reconcile(root,get=fake_get)
             self.assertIn('verified Pages run',results[0][1])
             catalog=root/'web/hosted-games.json'
-            self.assertEqual(json.loads(catalog.read_text())['games'][0]['gameId'],'life.loop')
+            self.assertEqual(json.loads(catalog.read_text(encoding='utf-8'))['games'][0]['gameId'],'life.loop')
             before=catalog.read_bytes()
             reconcile(root,get=fake_get)
             self.assertEqual(before,catalog.read_bytes())
@@ -59,16 +59,16 @@ class PullRegistrationTests(unittest.TestCase):
             (root/'registry/games').mkdir(parents=True)
             (root/'web').mkdir()
             policy=root/'registry/trusted-sources.json'
-            policy.write_text(json.dumps(TRUST))
+            policy.write_text(json.dumps(TRUST), encoding='utf-8')
             reconcile(root,get=fake_get)
             def down(_): raise OSError('network unavailable')
             errors=reconcile(root,get=down)
             self.assertIn('unavailable',errors[0][1])
-            self.assertEqual(len(json.loads((root/'web/hosted-games.json').read_text())['games']),1)
+            self.assertEqual(len(json.loads((root/'web/hosted-games.json').read_text(encoding='utf-8'))['games']),1)
             disabled=json.loads(json.dumps(TRUST));disabled['games'][0]['status']='disabled'
-            policy.write_text(json.dumps(disabled))
+            policy.write_text(json.dumps(disabled), encoding='utf-8')
             reconcile(root,get=down)
-            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text())['games'],[])
+            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text(encoding='utf-8'))['games'],[])
             self.assertFalse((root/'registry/games/life.loop.json').exists())
 
     def test_policy_does_not_make_untrusted_repository_public(self):
@@ -76,10 +76,10 @@ class PullRegistrationTests(unittest.TestCase):
             root=Path(temp)
             (root/'registry/games').mkdir(parents=True)
             (root/'web').mkdir()
-            (root/'registry/trusted-sources.json').write_text(json.dumps({'schema':'atrium.trusted-game-sources/v1','games':[]}))
+            (root/'registry/trusted-sources.json').write_text(json.dumps({'schema':'atrium.trusted-game-sources/v1','games':[]}), encoding='utf-8')
             called=[]
             self.assertEqual(reconcile(root,get=lambda u: called.append(u)),[])
             self.assertEqual(called,[])
-            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text())['games'],[])
+            self.assertEqual(json.loads((root/'web/hosted-games.json').read_text(encoding='utf-8'))['games'],[])
 
 if __name__=='__main__':unittest.main()

@@ -1,0 +1,54 @@
+= Market Grove — Global shared exchange and scheduled auctions
+:revnumber: 0.2.0
+:revdate: 2026-10-22
+:toc:
+
+== Product model
+
+Market Grove is ONE economy per explicitly configured server/market realm, not one simulation per player or browser. Every order and share position references the same company supply and global quote. Players may be offline; their outstanding orders remain in the shared server's queue. A server-controlled scheduler, never a browser `Next day` command, clears orders periodically. A continuously connected web view is optional for placing/monitoring orders; the actual exchange and holdings require an authoritative online service. The first 0.2.0 build is a safe, two-player *loopback-only demonstration*, not a publicly deployed marketplace or production LoopRD component.
+
+== First implemented auction algorithm
+
+* Define a single UTC epoch and configurable interval; the CLI demo defaults to 60 seconds, production target one hour (3600 seconds) with 24 auctions per UTC day. Changing interval for an existing database fails closed.
+* Players place limit orders at any time. BUY reserves practice credits at the offered maximum price plus a bounded 1% fee reserve; SELL reserves available shares. Orders are checked for duplicate request IDs scoped per player. Nobody may spend or sell the same funds or shares twice.
+* At the first server tick in the new interval, one SQLite `BEGIN IMMEDIATE` transaction clears all eligible SELL orders, then BUY orders. Execution occurs at the *previous shared price*, so all fills in one auction have the same price. An order not meeting its own limit remains queued. Ordering is by submission time then SQLite insertion order; cross-process locking serializes the queue.
+* A finite exchange market-maker inventory initially provides 400 shares in each company and a finite practice cash pool. Sellers replenish float, buyers deplete it. Fills may be partial when float runs out. Player-to-player order matching is a possible future extension; today the pool stands as intermediary, with indirect player-to-player price and inventory effects.
+* After executions, global closing price moves by executed net demand: `netFilledShares × 70 basis points`, capped to +/-1200 basis points per auction, plus a deterministic bounded company/period macro drift. Unexecuted/unfunded bids cannot affect prices. Price range is clamped to 2..2500 practice credits.
+* Store the new period, fills and prices in the same database transaction. After a restart or missed UTC periods, process a single catch-up auction at the current interval, not thousands of artificial retroactive trades. Repeated ticks never fill the same order a second time.
+* Keep all state in the same SQLite database for the local demonstration. A deployment with a production database needs transaction/leader coordination and real authorization; do not copy these demo login endpoints to a public server.
+
+== Player-visible consequences
+
+* Alice buys shares: the exchange float falls, Alice owns those shares, her buying pressure raises or lowers the next shared price when combined with other trades. Bob sees the new price and reduced exchange float after the auction.
+* Bob submits a limit buy and closes Tavi: the order is persisted, its practice funds remain reserved, and the next server auction executes it if price/float permit.
+* Alice sells after Bob has queued a buy: the shared float is replenished within the auction so Bob's buy can fill if the uniform auction price and limits permit.
+* Alice buys out the market float: Bob cannot buy more until someone sells or a later operator-approved corporate action replenishes float. There is no secret per-player supply.
+* Neither Alice nor Bob can click an advance-day control; all price candles and trade history are server-owned.
+
+== Authentication, market realms and Wallet
+
+The included demonstration deliberately supports Alice/Bob chooser and server-issued random practice tokens and binds to **127.0.0.1 only**. Such a chooser provides NO proof of Social identity, ownership or delegation. A production LoopRD component must resolve authenticated `(homeRealm, verifiedSubject)` to a private account and reject arbitrary demo selectors. The game is online-only in production; it may offer cached charts offline but no offline fills or wallet spends. Do not trust a client clock, player ID, transaction amount or bearer from an iframe.
+
+The game owns market quotes, company supply, orders, executions and *one authoritative share register*. Tavi Wallet is authoritative for eligible Gold and offers a first-party read-only Investments projection of registered share positions, enriched with verified quote revisions. The Wallet must not independently mutate a competing stock inventory. Cross-service Gold/stock exchange requires a reviewed prepare/commit settlement mechanism (escrow/holds, deduplicated settlement ID, commit acknowledgments and compensating releases) or a co-located transactional custody authority; a simple two-step `debit Gold` then `credit shares` can lose player assets on network failure. No such service exists in 0.2.0. Free/refill Gold is never eligible for stock orders, conversion, rewards laundering or stock-market resale settlement. Gold stays virtual, has no fiat exchange, cash-out or betting.
+
+Specific proposed capability contracts:
+
+* `market.quotes.read`: anonymous bounded fictional price/market-state snapshot, revisioned by exchange period.
+* `market.orders.place`: authenticated principal + user consent + idempotent limit order and escrow request; no amount chosen by the client beyond an approved limit.
+* `market.orders.cancel`: owner-only, unfilled remainder, return escrow.
+* `market.positions.read`: trusted per-realm/account read-only shares projection for Wallet's `Investments` view, including owner binding, position revision, settled quantity, reserved quantity and quote observation age.
+* `wallet.gold.hold/commit/release`: hypothetical privileged settlement service. Only shopping-eligible Gold, never free play Gold. All transitions durable and resumable.
+* `market.auction.tick`: operator/service-only clock action with database lock, not browser accessible. Needs LoopRD schedule or a single leased job worker.
+
+== Deployment, Atrium and portability
+
+`looprd.yaml` can declare optional `registrations: [{service: atrium, document: atriumd.yaml}]` on a real LoopRD 0.3+ component. The supplied files in `examples/` are illustrative, not runnable standalone server deployments. A deployed game resolves its backend API base from its own trusted hosting configuration; `atriumd.yaml` contains no fixed installation URL. Atrium discovers/reviews the game; discovery never bypasses publisher approval or grants Wallet access. Tavi remains a messenger first, and games can open independently without the messenger installed. A public production service needs verified Social identity/delegation, rate limits, abuse controls, HTTPS, distributed serialization, recovery monitoring, backup/restore and actual Wallet settlement before any real Gold transaction is enabled.
+
+== Verification and next tasks
+
+. Run the loopback test as Alice and Bob; buy/sell across sessions and verify finite global float, conserved shares and shared changes.
+. Verify order queue, limits, partial fills, escrow, cancellation, per-account idempotency, replay, restart and outage catch-up.
+. Replace local demo authentication with real Social home realm identity and operator-scoped market account enrollment.
+. Deploy production game component and scheduled job on disposable LoopRD 0.3+; verify one ticker per period under multiple worker processes/restarts.
+. Implement a dedicated Wallet Investments read projection and trusted Gold escrow/settlement. Refuse any live conversion of practice-credit positions.
+. Register/review Market Grove in Atrium once hosted and operator-approved, then test Tavi return-to-chat navigation.

@@ -8,7 +8,7 @@ from tools.check_specs import compose, parse, verify, MAX_BYTES
 class SpecValidationTests(unittest.TestCase):
     def test_actual_spec_is_one_component(self):
         document = verify()
-        self.assertEqual(document['release'], '0.5.34')
+        self.assertEqual(document['release'], '0.5.36')
         self.assertIn('spec.includes', document['requires'])
 
     def test_duplicate_key_rejected(self):
@@ -18,11 +18,11 @@ class SpecValidationTests(unittest.TestCase):
     def _fixture(self, root_yaml, children=None):
         temp = TemporaryDirectory()
         root = Path(temp.name)
-        (root/'looprd.yaml').write_text(root_yaml)
+        (root/'looprd.yaml').write_text(root_yaml, encoding='utf-8')
         for name, text in (children or {}).items():
             path = root/name
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text)
+            path.write_text(text, encoding='utf-8')
         return temp, root
 
     def test_parent_escape(self):

@@ -10,7 +10,7 @@ from tools.github_game_registry import (RegistrationError, locally_compatible, a
 ROOT=Path(__file__).resolve().parents[1]
 SHA='a'*40
 REPO='TheBigTreeInc/life'
-SAMPLE=yaml.safe_load((ROOT/'examples/life.atriumd.yaml').read_text())
+SAMPLE=yaml.safe_load((ROOT/'examples/life.atriumd.yaml').read_text(encoding='utf-8'))
 LOOP={'component':'the-life-loop','apiVersion':'looprd/v1'}
 TRUST={'schema':'atrium.trusted-game-sources/v1','games':[
     {'repository':REPO,'gameId':'life.loop','publisherId':'thebigtreeinc','component':'the-life-loop',
@@ -67,7 +67,7 @@ class GitRegistryTests(unittest.TestCase):
             root=Path(tmp)
             (root/'registry/games').mkdir(parents=True)
             (root/'web').mkdir()
-            (root/'registry/trusted-sources.json').write_text(json.dumps(TRUST))
+            (root/'registry/trusted-sources.json').write_text(json.dumps(TRUST), encoding='utf-8')
             a,run=update(root,REPO,SHA,get=fake_get)
             self.assertEqual(a['sourceRevision'],SHA)
             self.assertEqual(a['launchUrl'],'https://thebigtreeinc.github.io/life/index.html')
@@ -78,9 +78,9 @@ class GitRegistryTests(unittest.TestCase):
             self.assertEqual(snapshot(root)['games'][0]['gameId'],'life.loop')
 
     def test_static_catalog_is_data_not_unreviewed_runtime_sqlite(self):
-        config=json.loads((ROOT/'registry/trusted-sources.json').read_text())
+        config=json.loads((ROOT/'registry/trusted-sources.json').read_text(encoding='utf-8'))
         self.assertEqual(config['schema'],'atrium.trusted-game-sources/v1')
         self.assertIsInstance(config['games'],list)
-        self.assertEqual(snapshot(ROOT),json.loads((ROOT/'web/hosted-games.json').read_text()))
+        self.assertEqual(snapshot(ROOT),json.loads((ROOT/'web/hosted-games.json').read_text(encoding='utf-8')))
 
 if __name__=='__main__':unittest.main()
