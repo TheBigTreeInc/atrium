@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.39",
-  "summary": "Atrium 0.5.39 repairs 0.5.38 cross-file release and TaviX immutable staging versions, adopts user-supplied TaviX SDK surface-first with explicit Life compatibility; operator acceptance remains pending.",
+  "version": "0.5.40",
+  "summary": "Atrium 0.5.40 adds trusted nested TaviX game launch with explicit fallback and a persistent player-hostless lobby source core. Real Life/Tavi/LoopRD joint runtime acceptance remains pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -206,11 +206,21 @@
     {
       "id": "ATR-TAVIX-PUBLISH-038",
       "title": "Stage compiled TaviX Atrium extension after successful build",
-      "summary": "Post-build staging into Git-reviewed TaviX repository; 0.5.39 increments immutable extension to 1.0.3, fixes release CI/test mismatch, and adds TaviX SDK surface-first launch with Life compatibility. Local/target staging acceptance pending.",
+      "summary": "Post-build staging into Git-reviewed TaviX repository; 0.5.40 increments immutable extension to 1.0.3, fixes release CI/test mismatch, and adds TaviX SDK surface-first launch with Life compatibility. Local/target staging acceptance pending.",
       "operator_checks": [
-        "Run Atrium 0.5.39 build with sibling tavix project and verify new TaviX release + unchanged other apps.",
+        "Run Atrium 0.5.40 build with sibling tavix project and verify new TaviX release + unchanged other apps.",
         "Run a second identical build and confirm no changes. Reuse same version with modified content and verify fail-closed collision.",
         "Review Git diff in tavix, manually push and verify Pages and Tavi opt-in App Store; no implicit operator approval."
+      ]
+    },
+    {
+      "id": "ATR-117-TAVIX-LIFE-HOSTLESS",
+      "title": "Trusted nested Life surface and hostless lobby core",
+      "summary": "Verified LoopRD publication and deployed target before TaviX request; no automatic external browser on older hosts; compact extension 1.0.4; server-persistent SQLite lobby source with match/seat callbacks, idempotence and restart tests. Not deployed or operator-accepted.",
+      "operator_checks": [
+        "Verify TaviX 1.0.4 immutable staging and real Tavi host with advertised generic surface; older host requires explicit external fallback.",
+        "Run source and installed-byte tests; inspect 320/390/355/768px panel and host Back/Home.",
+        "Confirm server-owned lobby core source tests and lack of live public API; do not mark Life/M2 playable until real authorized two-account acceptance."
       ]
     }
   ],
@@ -293,6 +303,13 @@
       "title": "LoopRD 0.4 nested Market Grove and responsive Atrium",
       "next_action": "Run disposable LoopRD 0.4, Life auto-publication and physical phone UI/operator acceptance.",
       "summary": "Atrium 0.5.37 retains LoopRD 0.4 independent subcomponents and nested discovery paths for Market Grove, with the new game-store shell and automatic publication for active operator-trusted game registrations. Actual LoopRD 0.4 activation and physical Android/iOS acceptance remain pending."
+    },
+    {
+      "id": "ATR-118-HOSTLESS-RUNTIME",
+      "title": "Activate authenticated Atrium lobby API with Life seat grants",
+      "summary": "Connect source-only durable lobby core to LoopRD with authenticated Social caller, a single Life-audience-scoped grant, exact Life match/seat confirmation and recovery/outbox acceptance. No public handler or live game authority installed yet.",
+      "priority": "high",
+      "next_action": "Coordinate Life /play/info and Social game grants, implement authenticated LoopRD endpoints, exercise 2 accounts and offline/restarts."
     }
   ]
 }

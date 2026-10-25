@@ -15,5 +15,5 @@ test('Atrium stages via immutable TaviX Git checkout only after verify',async()=
  const second=JSON.parse(await readFile(path.join(root,'atrium.zr')));
  assert.deepEqual(second.build,recipe.build);
  const manifest=JSON.parse(await readFile(path.join(root,'extensions/tavi/manifest.json')));
- assert.equal(manifest.version,'1.0.3');
+ assert.equal(manifest.version,'1.0.4');
 });

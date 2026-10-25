@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 const manifest=JSON.parse(fs.readFileSync('extensions/tavi/manifest.json','utf8'));
-test('TaviX extension uses immutable 1.0.3 and only panel permission',()=>{
- assert.equal(manifest.schema,'tavi.extension/v1');assert.equal(manifest.version,'1.0.3');
+test('TaviX extension uses immutable 1.0.4 and only panel permission',()=>{
+ assert.equal(manifest.schema,'tavi.extension/v1');assert.equal(manifest.version,'1.0.4');
  assert.deepEqual(manifest.permissions,['ui.panel']);assert.equal(manifest.hostApi.min,'1.0.0');
 });
 test('TaviX SDK is used for scoped navigation, not a private host broker',()=>{

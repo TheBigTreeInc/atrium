@@ -1,0 +1,24 @@
+Atrium 0.5.40 source QA (2026-10-25)
+========================================
+Baseline source: supplied Atrium 0.5.39 ZipRunner archive.
+Requested specification: TAVI_LIFE_TAVIX_SESSION_HANDOFF_2026-10-25_HOSTLESS_AMENDED.zip
+
+Local Node: `npm test` -> 54/54 passed.
+Local focused Python: `python -m unittest tests.test_hostless_lobby tests.test_release_pipeline tests.test_spec_validation tests.test_ci_integrations -q` -> 30/30 passed.
+Local broad Python suite: `python -m unittest discover -s tests -q` with system Python -> 314/314 passed (includes nested source checks).
+Local web: `npm run build` -> passed.
+Local Pages-safe verification: `npm run verify` -> passed.
+Local TaviX extension build: `node tools/build_tavi_extension.mjs` -> passed.
+Local TaviX staging: `node tools/stage_tavix.mjs` -> TAVIX_STAGE_SKIPPED, sibling TaviX checkout not present; NOT a staging pass.
+Canonical Python runner: `python tools/run_python_checks.py` -> NOT PASSED in sandbox. Its isolated .venv lacks PyYAML; `python tools/setup_build_env.py` attempted but pinned PyYAML wheel could not be downloaded because this sandbox has no package index network access. The broader system-Python suite did pass; it is separate from the authoritative isolated ZipRunner command. The project venv is excluded from this source ZIP.
+Physical Android, Windows native Tavi, HTTPS Pages and real Life backend: NOT TESTED.
+Headless Chromium screenshot was attempted but the browser timed out without producing a screenshot.
+No TaviX 1.0 host feature advertisement was observed from a running host. Mock host regression checks do not prove a real host is ready.
+Atrium hostless lobby is a pure server-owned SQLite source core. No public LoopRD API handler, credential exchange, user identity authority or Life confirmation integration is active yet.
+No automatic repo push or local Windows state/config changed.
+
+Required operator gates:
+- Exact installed ZipRunner ZIP Python/Node/build tests.
+- Actual TaviX 1.0.4 staging, repeat staging with unchanged bytes and separately reviewed Git/Pages publication.
+- Tavi nested surface host (feature-advertised) on Windows/Android/web and Life's actual embeddability; M1 only then.
+- Social/LoopRD verified principal and Life-audience grants, durable authoritative Life matches, 2-account offline/restored turns, turn-ready delivery; M2 only then.

@@ -1,3 +1,7 @@
+= Atrium 0.5.40 — TaviX Life launch and server-owned hostless lobby source
+
+See `docs/P1_084_HOSTLESS_TAVIX_LIFE_HANDOFF.adoc`. This is a source candidate. Atrium only launches verified published games through a TaviX host that advertises the surface capability; older Tavi hosts offer explicit fallback, never automatic Chrome. A durable SQLite lobby source core is included but deliberately has **no unauthenticated LoopRD HTTP handler**; Life/Social audience-scoped seat grants, native embedding and deployment tests remain required. Extension 1.0.4 is a separate immutable TaviX release and will be staged only to an available sibling checkout, with no producer Git push.
+
 = Atrium v0.5.39 — TaviX staging repair and generic game surfaces
 
 Atrium 0.5.39 corrects 0.5.38 release identity drift across `package.json`, `looprd.yaml`, ZipRunner workboard, post-update stamp, verification plan, CI names, packaging and Python release tests. The TaviX extension changes from immutable version `1.0.2` to `1.0.3` to preserve already staged/published `1.0.2` bytes. The user-supplied TaviX 1.0.0 SDK drives host-owned navigation and `tavix.surface/v1` where advertised; Life keeps feature-gated `atrium.tavi-launch/v1` compatibility for clients without generic surfaces. See `docs/P1_084_TAVIX_STAGE_REPAIR.adoc`.

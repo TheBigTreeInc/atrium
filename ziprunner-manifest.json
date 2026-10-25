@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.39",
+    "version": "0.5.40",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261025-039",
+    "id": "ATR-P1-20261025-040",
     "kind": "source_update",
     "created_at": "2026-10-25T11:11:00+01:00",
-    "summary": "Repair incomplete 0.5.38 release metadata, advance immutable TaviX Atrium extension 1.0.3, and implement SDK-standard surface-first launches with a safe Life legacy fallback."
+    "summary": "Implement reviewed TaviX game surface with explicit browser/legacy fallback and a persistent hostless Atrium lobby core (source only; no live server activation)."
   },
   "planned_work": [
     {
@@ -162,6 +162,18 @@
       "id": "ATR-TAVIX-PUBLISH-038",
       "title": "Stage built TaviX Atrium extension into separate reviewed Git project",
       "acceptance_criteria": "Import v0.5.39, run source suite and build TaviX assets; with sibling tavix checkout, verify extensions/inc.thebigtree.tavi.atrium/1.0.3, immutable catalog and no automatic Git push; without checkout build reports TAVIX_STAGE_SKIPPED; CI and native app acceptance separate.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-117-TAVIX-LIFE-HOSTLESS",
+      "title": "Trusted nested Life surface and persistent hostless lobby source",
+      "acceptance_criteria": "Verify reviewed LoopRD metadata before generic TaviX surface request; no silent browser; source-only durable lobby with Life match/seat callbacks, restart and security tests; test extension 1.0.4 under Tavi host capability gate.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-118-HOSTLESS-RUNTIME",
+      "title": "Activate authenticated Atrium lobby API with Life seat grants",
+      "acceptance_criteria": "Integrate server-owned lobby persistence into LoopRD with verified Social principal, Life-scoped game grant, secure create/invite/join/list/resume/close operations and outage reconciliation; two real accounts and restarts, no player-host requirement.",
       "priority": "high"
     }
   ],
@@ -650,6 +662,32 @@
           "description": "Post-build ordering, no push, fallback behavior"
         }
       ]
+    },
+    {
+      "id": "ATR-117-TAVIX-LIFE-HOSTLESS",
+      "summary": "Source implements verified TaviX surface launch, explicit fallback UX, compact panel and persistent hostless lobby core. Real Tavi broker and Life authenticated service activation remain pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/hostless_lobby.py",
+          "description": "Transactional service-owned SQLite lobby core"
+        },
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/extension-bridge.mjs",
+          "description": "Validated catalog surface request and explicit compatibility path"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_hostless_lobby.py",
+          "description": "Persistent hostless and nonmember regression"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavix_surface.test.mjs",
+          "description": "TaviX host feature and catalog gating"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -677,6 +715,11 @@
       "id": "ATR-115-LOOPRD-04-MOBILE",
       "status": "review",
       "next_action": "Run disposable LoopRD 0.4 with Life trusted auto-publication and physical phone UI/operator acceptance."
+    },
+    {
+      "id": "ATR-118-HOSTLESS-RUNTIME",
+      "status": "planned",
+      "next_action": "Coordinate exact Social/Life game grant and /play/info operations, then implement verified LoopRD handlers, recovery and two-account live acceptance."
     }
   ],
   "validation": {

@@ -1,7 +1,7 @@
 {
   "schema": "tavi.extension/v1",
   "id": "inc.thebigtree.tavi.atrium",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "name": "Atrium",
   "summary": "Browse approved social games and resume through their own authorized services. Tavi stays your messenger.",
   "publisher": "thebigtreeinc",

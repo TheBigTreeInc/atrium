@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.39",
+  "version": "0.5.40",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -450,7 +450,7 @@
       "criteria": [
         {
           "id": "ATR-TAVIX-PUBLISH-038-AC-SOURCE",
-          "description": "Build verified extension payload using TaviX 1.0 SDK and immutable extension version 1.0.3; keep host-owned navigation and Life compatibility. Package and CI metadata must agree at Atrium 0.5.39.",
+          "description": "Build verified extension payload using TaviX 1.0 SDK and immutable extension version 1.0.3; keep host-owned navigation and Life compatibility. Package and CI metadata must agree at Atrium 0.5.40.",
           "mode": "automated",
           "checks": [
             "ATR-TAVIX-PUBLISH-038-T1"
@@ -462,6 +462,28 @@
           "mode": "manual",
           "checks": [
             "ATR-TAVIX-PUBLISH-038-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-117-TAVIX-LIFE-HOSTLESS",
+      "criteria": [
+        {
+          "id": "ATR-117-TAVIX-LIFE-HOSTLESS-AC-SOURCE",
+          "description": "Reviewed TaviX surface and durable hostless source tests; no silent Chrome fallback; independent extension release 1.0.4.",
+          "mode": "automated",
+          "checks": [
+            "ATR-117-TAVIX-LIFE-HOSTLESS-T1",
+            "ATR-117-TAVIX-LIFE-HOSTLESS-T2"
+          ]
+        },
+        {
+          "id": "ATR-117-TAVIX-LIFE-HOSTLESS-AC-OPERATOR",
+          "description": "Operator verifies exact installed ZIP, Tavi and Life hosted runtime/phone acceptance separately; source tests do not prove actual M1/M2.",
+          "mode": "manual",
+          "checks": [
+            "ATR-117-TAVIX-LIFE-HOSTLESS-M1"
           ]
         }
       ]
@@ -946,7 +968,7 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Life and phone-first game-store acceptance",
-      "instructions": "On the exact installed 0.5.39 ZIP, activate trusted Life discovery with the reviewed HTTPS Pages launch origin. Verify Life appears in Discover/My Games without another approval action, launches on phone/Tavi, and is removed after withdrawal or deployment disable. Check 320/390/768px layouts and Back to Atrium/Tavi navigation."
+      "instructions": "On the exact installed 0.5.40 ZIP, activate trusted Life discovery with the reviewed HTTPS Pages launch origin. Verify Life appears in Discover/My Games without another approval action, launches on phone/Tavi, and is removed after withdrawal or deployment disable. Check 320/390/768px layouts and Back to Atrium/Tavi navigation."
     },
     {
       "id": "ATR-TAVIX-PUBLISH-038-T1",
@@ -957,7 +979,7 @@
       "test_ref": "tests/tavix-stage.test.mjs",
       "assertions": [
         "TaviX extension version bumped to 1.0.3 for changed bytes",
-        "Source ZIP release and LoopRD/spec/CI metadata agree at 0.5.39",
+        "Source ZIP release and LoopRD/spec/CI metadata agree at 0.5.40",
         "Generic game surface launch requires host feature; Life fallback remains explicitly negotiated",
         "Staging invokes separate TaviX repository.py without Git operations"
       ]
@@ -967,7 +989,36 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Operator TaviX stage and Tavi installation checks",
-      "instructions": "Import exact Atrium 0.5.39 ZIP into ZipRunner. With a clean reviewed sibling tavix checkout, verify staged extensions/inc.thebigtree.tavi.atrium/1.0.3 and repository index. Re-run identical build and confirm no diff, changed same-version payload must fail closed; review/push through tavix separately, test Tavi optional broker and Life legacy fallback on real clients."
+      "instructions": "Import exact Atrium 0.5.40 ZIP into ZipRunner. With a clean reviewed sibling tavix checkout, verify staged extensions/inc.thebigtree.tavi.atrium/1.0.3 and repository index. Re-run identical build and confirm no diff, changed same-version payload must fail closed; review/push through tavix separately, test Tavi optional broker and Life legacy fallback on real clients."
+    },
+    {
+      "id": "ATR-117-TAVIX-LIFE-HOSTLESS-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Persistent hostless lobby regressions",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_hostless_lobby.py",
+      "assertions": [
+        "Creator offline/restart, idempotent create, Life match/seat confirmation, invitation claims and nonmember isolation."
+      ]
+    },
+    {
+      "id": "ATR-117-TAVIX-LIFE-HOSTLESS-T2",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Trusted TaviX nested game surface regression",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/tavix_surface.test.mjs",
+      "assertions": [
+        "Exact trusted LoopRD game/deployment URL required; only feature-advertised embedded launch, explicit older-host fallback, credential-free context."
+      ]
+    },
+    {
+      "id": "ATR-117-TAVIX-LIFE-HOSTLESS-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "TaviX/Life joint installed-host acceptance",
+      "instructions": "Run exact 0.5.40 ZIP and stage Atrium TaviX 1.0.4 to separately reviewed repository; check Tavi surface broker + isolated Life solo, phone widths and Back. Exercise server-owned 2-account Life lobby and 60h offline turn only after Social/LoopRD auth integration. Do not infer M1/M2 from source tests."
     }
   ]
 }

@@ -11,8 +11,9 @@ test('TaviX advertised surface first, Life-only opt-in legacy fallback',()=>{
 test('hosted game refreshes publication before Tavi surface or browser',()=>{
  assert.match(cards,/fetchConfiguredHostedCatalog\(fetcher\)/);
  assert.match(cards,/JSON.stringify\(current\)!==JSON.stringify\(game\)/);
- assert.match(cards,/surfaceLaunch\(game.gameId,current.launchUrl,matchId\)/);
- assert.match(cards,/if\(!opened\)openExternal\(current.launchUrl\)/);
+ assert.match(cards,/surfaceLaunch\(game.gameId,game.deploymentId,current.launchUrl,matchId\)/);
+ assert.match(cards,/browser.addEventListener\('click'/);
+ assert.doesNotMatch(cards,/if\(!opened\)openExternal/);
 });
 test('no bearer tokens or popup privilege in TaviX bridge',()=>{
  assert.doesNotMatch(bridge,/window.open|location.assign|Bearer\s|localStorage|sessionStorage|allow-popups/);

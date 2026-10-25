@@ -1,0 +1,50 @@
+= Atrium 0.5.40 — TaviX surfaces and player-hostless lobby source
+:revdate: 2026-10-25
+:toc:
+
+== Input authority and scope
+
+Derived from the 2026-10-25 handoff `TAVI_LIFE_TAVIX_SESSION_HANDOFF_2026-10-25_HOSTLESS_AMENDED.zip`, particularly `00-COORDINATION.adoc`, `02-ATRIUM.adoc`, `05-TAVIX-DISTRIBUTION.adoc`, and `06-HOSTLESS-ATRIUM-LOBBY.adoc`. The hostless amendment takes precedence over any earlier suggestion of a peer/client-hosted room.
+
+M1 (Life solo inside Tavi) and M2 (two-account authenticated hostless asynchronous match) are separate gates. This release is a *source candidate*, not a claim either joint runtime milestone has passed. Tavi 0.3.111 still needs the secured `tavix.surface/v1` host broker; Life must accept isolation/framing and deploy its `play/info` service. Tavi remains messaging-first.
+
+== M1: verified hosted surface launch
+
+* `extensions/tavi/extension-bridge.mjs` uses SDK `createTaviXSDK` and `surfaces.requestOpen`. Tavi `host.info.features` must advertise `tavix.surface/v1`, otherwise it cannot be considered embeddable.
+* `window.__atriumTaviOpenGame` re-fetches the anonymous **validated published** LoopRD hosted catalog and matches `(gameId, deploymentId, launchUrl)` exactly. The public UI revalidates before asking for a surface. This does not supersede Tavi's independent installed-app grant, origin, CSP, and iframe checks.
+* A surface contains only `schema`, `id`, `kind`, approved HTTPS `target`, optional opaque `context.matchId`, and `presentation`. A solo game uses `{}` context. No Social/session/seat/game bearer, invite proof, query token or raw user details.
+* Older Tavi clients can request the existing Life `atrium.tavi-launch/v1` *only after explicit user selection*. Absence of generic surfaces cannot silently open Chrome. The player can explicitly choose `Open in browser` after a fresh publication check. Standalone Atrium's direct Play continues to open a reviewed browser game.
+* The TaviX package gets a compact game-first layout; host-owned navigation hides redundant Atrium masthead and Return button, while an older host retains the fallback control. The isolated multiplayer sandbox is hidden in the Tavi extension and is never a live game lobby.
+* Package version 0.5.40 and independent TaviX extension 1.0.4 are bumped. A new release must not alter already-published 1.0.2/1.0.3 bytes. Stage with the existing `node tools/stage_tavix.mjs`, never auto-push.
+
+== M2: persistent Atrium lobby core — not yet activated
+
+`src/hostless_lobby.py` provides a persistent, transactional SQLite core backed by a **server-owned** database. It does not use memory or the creating player's connection as authority. Its supported source methods are `create`, `bind_match`, `invite`, `join`, `inspect`, `list_for`, `leave`, and `finish`.
+
+* `create` records a stable `lobbyId`, `gameId`, trusted deployment, publisher, creator, request ID and pending state; a retry for the same request/payload is idempotent. A changed payload is a conflict.
+* `bind_match` requires a trusted Life `confirm_match` callback that verifies `(gameId,deploymentId,matchId,creator,requestId)`. Pending lobbies are **not** playable. The operation is replay-safe.
+* `invite` issues cryptographically random, server-side hash-stored tickets only for ready lobbies. `join` reserves the invitation to one verified principal, then calls a trusted idempotent Life `confirm_seat` before final membership; failed or interrupted joins can be retried by that same principal.
+* `inspect`/`list_for` restrict visibility to joined principals; a pending claimant has no lobby read access. Creator's Tavi process can close or restart without changing any server data. `leave` affects *only lobby membership*, never deletes the Life match. `finish` requires authoritative Life terminal-state confirmation.
+* **Security boundary**: the store NEVER creates Life seats, submits Life moves, issues Social credentials or accepts a client-submitted arbitrary `principal` as authentication. A LoopRD HTTP handler with verified account principal, Life-audience grant, supported Life `/play/info` operation schemas and trusted service-to-service callbacks MUST be implemented and accepted before exposing the source API publicly. Do not connect this source core to a public route prematurely.
+
+== Cross-repository dependencies
+
+Tavi (`TheBigTreeInc/social`): implement and advertise `tavix.surface/v1` only when its permissioned nested surface broker and host Back/Home work in Windows/Android/web. Frame navigation and stored chats/drafts must remain messenger-owned. Old hosts are explicitly labelled fallback.
+
+Life (`TheBigTreeInc/life`): deploy embeddable hosted solo client for M1; `/play/info` and game-owned authenticated `create/invite/join/list_matches/resume/legal_actions/act/end_turn` plus game-authoritative persistence and outbox for M2. A match ID never authenticates a seat; Live Life API must verify every privilege.
+
+Social/LoopRD: agree audience-bound `life.loop` principal and game-seat verification, authenticated durable turn-ready inbox/events, idempotent replay; no deployment-specific hostname hardcoded into portable YAML. Do not put long-lived Tavi credentials into Atrium or a game surface.
+
+TaviX (`TheBigTreeInc/tavix`): validate staged immutable Atrium 1.0.4 package and repo index, operator-reviewed push, exact Pages hashes. It does not own Life game discovery or lobby/game state.
+
+== Verification and rollback gates
+
+. Exact 0.5.40 ZipRunner archive installs with all release stamps agreeing; rebuild and run Python tests, Node tests, web and Tavi extension build/static verification on the installed ZIP bytes. No local private DB/secrets/env/active TaviX repo should be present in the ZIP.
+. On a mock TaviX host advertising the capability, reviewed `life.loop` from trusted catalog requests `surface.requestOpen` with no credentials. Removed/changed/mismatched deployment and unsafe URL fail before host RPC.
+. On an older host, no automatic external navigation occurs; only explicit fallback triggers a browser open or the Life-specific consented legacy handoff.
+. At 355x630, 320px, 390px, 768px and expanded desktop, check host Back, Home and accessible Play solo / Resume controls, including keyboard/safe areas. On a host-verified navigation owner, no second global masthead.
+. SQLite source test: two subjects, creator offline, durable restart, idempotent create and match/seat confirmation, expiring invitation, nonmember denial, creator leave without game deletion, and no match playable before Life confirmation.
+. **Future gate:** Implement/verify authenticated LoopRD API adapters around the store before showing live lobbies in Tavi. Reconcile failures between Atrium and Life across outages and server restarts. Test two real accounts over a >24h offline interval, 60h deadline, and one durable `turn.ready` notification per revision.
+. Real native Tavi broker/Life embed, hosted LoopRD deployment, real Life seat grants and two-account notifications remain operator-unverified. No Git push, approval, published site, schema upgrade or user data mutation is performed by this archive.
+
+Rollback is app-release based: retain previously published TaviX releases and install a previously verified version through the Tavi App Store; never mutate immutable release directories. The new SQLite store is not activated, so there is no production database migration to roll back in this candidate.

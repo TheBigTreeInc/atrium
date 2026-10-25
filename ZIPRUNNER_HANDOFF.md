@@ -1,3 +1,7 @@
+= Atrium 0.5.40 — operator handoff
+
+Source package based on 0.5.39 (SHA-256 d689ae3f5fe6fb342d0468a773eb8ca0607c1d620636c8bf24b15ada664cfce6), with the 2026-10-25 hostless Tavi/Life/TaviX cross-session handoff. TaviX 1.0.4 is an immutable update; 1.0.2/1.0.3 bytes stay untouched. Source implements reviewed game surface launch and opt-in legacy/browser fallback; the server-owned SQLite lobby core is **not publicly routed or activated** until exact Social/Life authorization is agreed. No automatic commit, push, GitHub Pages release, private state, or runtime migrations. M1 and M2 await physical/native and two-account backend acceptance; see `docs/P1_084_HOSTLESS_TAVIX_LIFE_HANDOFF.adoc`.
+
 # Atrium 0.5.39 — Repair handoff (2026-10-25)
 
 **Input:** uploaded `atrium-0.5.38-ziprunner(1).zip`. Build failure diagnosis is source-derived, not a claimed reproduction of ZipRunner's private Windows traceback; the local ZipRunner report did not include the failing command.

@@ -3,6 +3,7 @@
 // SDK 1.0.0 supplied with the Atrium 0.5.39 source. No bearer, Social token,
 // LoopRD operator key or player proof is forwarded into the launched surface.
 import {createTaviXSDK, assertTaviXHostInfo} from './tavix-sdk.mjs';
+import {fetchConfiguredHostedCatalog} from '../../src/hosted_catalog.mjs';
 
 const tavi=createTaviXSDK();
 const MATCH=/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
@@ -38,7 +39,7 @@ export async function requestLifeLaunch(target,matchId,info){
 }
 
 /** Returns false only when a capability is absent, allowing a normal browser launch. */
-export async function requestGameSurface(gameId,target,matchId=''){
+export async function requestGameSurface(gameId,target,matchId='',{allowLegacy=false}={}){
  if(typeof gameId!=='string'||!GAME.test(gameId))throw Error('Invalid game identity');
  validatedTarget(target);
  if(matchId&&(!MATCH.test(matchId)||gameId!=='life.loop'))throw Error('Invalid game match context');
@@ -54,15 +55,31 @@ export async function requestGameSurface(gameId,target,matchId=''){
   return true;
  }
  if(gameId==='life.loop'&&matchId&&info?.features?.includes('atrium.tavi-launch/v1')){
+  if(!allowLegacy)throw Error('An older Tavi host can only hand Life off externally. Select the separate legacy launch action to continue.');
   await requestLifeLaunch(target,matchId,info);
   return true;
  }
- return false;
+ throw Error('This Tavi host cannot open an embedded game yet. Use the explicit Open in browser action or update Tavi.');
 }
 
-// These bindings exist only in the TaviX extension build, not public Pages.
-window.__atriumTaviOpenGame=requestGameSurface;
-window.__atriumTaviLaunch=(target,matchId)=>requestLifeLaunch(target,matchId);
+/** Tavi-facing game entry point. A caller cannot supply an arbitrary URL: the
+ * validated public, no-credential LoopRD catalog must contain the same deployed
+ * game and exact target at the moment we ask the host to open a surface.
+ * This is defense in depth; Tavi must independently enforce its own grants.
+ */
+export async function requestReviewedGameSurface(gameId,deploymentId,target,matchId='',options={}) {
+ const catalog=await fetchConfiguredHostedCatalog(options.fetcher || fetch);
+ const approved=catalog.games.find(game=>game.gameId===gameId && game.deploymentId===deploymentId && game.launchUrl===target);
+ if(!approved)throw Error('This game is not published by the trusted LoopRD catalog');
+ if(options.legacyOnly){
+  if(gameId!=='life.loop'||!matchId)throw Error('Legacy launch requires an existing Life match');
+  return requestGameSurface(gameId,approved.launchUrl,matchId,{allowLegacy:true});
+ }
+ return requestGameSurface(gameId,approved.launchUrl,matchId);
+}
+// Only the reviewed public catalog can supply a launch target to Tavi.
+window.__atriumTaviOpenGame=(gameId,deploymentId,target,matchId)=>requestReviewedGameSurface(gameId,deploymentId,target,matchId);
+window.__atriumTaviLaunch=(deploymentId,target,matchId)=>requestReviewedGameSurface('life.loop',deploymentId,target,matchId,{legacyOnly:true});
 
 const returnButton=document.getElementById('returnTavi');
 returnButton?.addEventListener('click',async()=>{
@@ -76,5 +93,5 @@ returnButton?.addEventListener('click',async()=>{
  }catch{returnButton.disabled=false;}
 });
 void tavi.info().then(info=>{
- if(hostOwnsNavigation(info))returnButton?.remove();
+ if(hostOwnsNavigation(info)){document.body?.classList?.add('tavix-host-navigation');returnButton?.remove();}
 }).catch(()=>{});
