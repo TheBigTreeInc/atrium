@@ -1,0 +1,37 @@
+ATRIUM 0.5.41 SOURCE QA — 2026-10-25
+Baseline: atrium-0.5.40-ziprunner.zip
+Baseline SHA256: a8c88e39e117a88c5debff1da67e002bfb8ef21aa4275254452369a0bf285691
+Scope: ATR-118-AUTH-ADAPTER-041 source-only preparation of ATR-118-HOSTLESS-RUNTIME
+
+SOURCE TESTS OBSERVED
+- npm test: 54 passed / 54 total.
+- Focused Python suite: 78 passed / 78 total, including lobby runtime,
+  durable outbox, hostless storage, live discovery, release/CI and publisher proof.
+- python -m unittest tests.test_lobby_runtime tests.test_lobby_outbox
+  tests.test_hostless_lobby: 13 passed / 13 total after final seat-check hardening.
+- npm run build: passed.
+- npm run verify: passed.
+- node tools/build_tavi_extension.mjs: passed.
+- 0.5.40 vs 0.5.41 compiled dist-tavi file-by-file byte comparison: no differences.
+- node tools/stage_tavix.mjs: skipped (separate checkout absent), not a pass.
+- python -m unittest discover -s tests -q: timed out in this sandbox;
+  whole suite not claimed passed. Isolated venv runner not executed.
+- ZipRunner Windows, exact-commit CI, Tavi embedded Life and 60h two-account
+  offline acceptance: pending; no new commit or release was pushed.
+
+RELEASE SAFETY
+- No new LoopRD handler/scopes/public endpoint, game seat grant, identity store,
+  notification sender, or production DB migration.
+- New src/lobby_runtime.py can only run when the host injects verified Social
+  authentication, operator-trusted active game mapping, and Life authority.
+- New SQLite lobby outbox records domain events transactionally. Life owns
+  turn.ready notifications and actual game revisions.
+- Public client assets unchanged; TaviX manifest remains immutable 1.0.4.
+- Workboard ATR-118-HOSTLESS-RUNTIME remains planned. New
+  ATR-118-AUTH-ADAPTER-041 is source-implemented but not operator-approved.
+
+NEXT DEPENDENCY
+Joint Life/Social/LoopRD audience/seat-grant agreement, then disposable
+authenticated host route and durable outbox consumer; two real accounts,
+revocation/restarts, 60h offline turn and one Life turn.ready notification per
+revision. No client is a persistent match host.

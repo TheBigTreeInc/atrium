@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.40",
+  "version": "0.5.42",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -484,6 +484,49 @@
           "mode": "manual",
           "checks": [
             "ATR-117-TAVIX-LIFE-HOSTLESS-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-118-AUTH-ADAPTER-041",
+      "criteria": [
+        {
+          "id": "ATR-118-AUTH-ADAPTER-041-AC-SOURCE",
+          "description": "Source-only host adapter authenticates verified Social actor from trusted host, resolves operator-trusted publication, enforces Life match/seat and emits restart-persistent idempotent lobby outbox records.",
+          "mode": "automated",
+          "checks": [
+            "ATR-118-AUTH-ADAPTER-041-T1",
+            "ATR-118-AUTH-ADAPTER-041-T2"
+          ]
+        },
+        {
+          "id": "ATR-118-AUTH-ADAPTER-041-AC-OPERATOR",
+          "description": "Production LoopRD Social/ Life grant and two-account hostless deployment are external acceptance gates.",
+          "mode": "manual",
+          "checks": [
+            "ATR-118-AUTH-ADAPTER-041-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042",
+      "criteria": [
+        {
+          "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042-AC-SOURCE",
+          "description": "Source-only verified Tavi game-challenge/v1 correlation, Life idempotent create, seat check, durable membership and fail-closed interactions.",
+          "mode": "automated",
+          "checks": [
+            "ATR-119-TAVI-CHALLENGE-BRIDGE-042-T1"
+          ]
+        },
+        {
+          "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042-AC-OPERATOR",
+          "description": "The actual two-account Social challenge service, Life grant, multi-device Tavi resume and turn notifications require operator-approved runtime acceptance.",
+          "mode": "manual",
+          "checks": [
+            "ATR-119-TAVI-CHALLENGE-BRIDGE-042-M1"
           ]
         }
       ]
@@ -1019,6 +1062,60 @@
       "stage": "acceptance",
       "description": "TaviX/Life joint installed-host acceptance",
       "instructions": "Run exact 0.5.40 ZIP and stage Atrium TaviX 1.0.4 to separately reviewed repository; check Tavi surface broker + isolated Life solo, phone widths and Back. Exercise server-owned 2-account Life lobby and 60h offline turn only after Social/LoopRD auth integration. Do not infer M1/M2 from source tests."
+    },
+    {
+      "id": "ATR-118-AUTH-ADAPTER-041-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Verified actor/game binding, immutable request schema and fail-closed Life authority tests",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_lobby_runtime.py",
+      "assertions": [
+        "Social identity comes only from trusted host callback",
+        "Unknown/wrong actor, game swap, Life outage fail closed",
+        "Two principals resume without creator online and no credential returned"
+      ]
+    },
+    {
+      "id": "ATR-118-AUTH-ADAPTER-041-T2",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Transactional lobby outbox tests",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_lobby_outbox.py",
+      "assertions": [
+        "Create, bind, join, leave and finish emit one stable server-owned lifecycle event",
+        "Events survive restart, ack idempotently and contain no raw invite or game grant",
+        "Failed Life match callback emits no lobby-ready event"
+      ]
+    },
+    {
+      "id": "ATR-118-AUTH-ADAPTER-041-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "LoopRD/Life external activation gate",
+      "instructions": "After approved Social issuer/subject and Life audience/grant schema, mount an authenticated LoopRD adapter and run disposable 2-account Life match with hostless turn and notification replay across restarts and 60-hour offline. Confirm TaviX 1.0.4 unchanged, producer has not pushed/published and no browser token is accepted. Current package has no public lobby route."
+    },
+    {
+      "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Challenge mapping and Life authority source regressions",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_social_challenge_bridge.py",
+      "assertions": [
+        "Original Tavi challenge ID is single-lobby, issuer and recipient-bound and persisted across restart",
+        "Life creates authoritative match idempotently, pending lobby never claims game readiness",
+        "Tavi acceptance alone cannot grant a Life seat; verified Life join and resume are required",
+        "Wrong issuer, audience, game identity, publisher, actor and expired/declined challenge are rejected"
+      ]
+    },
+    {
+      "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Real Life/Tavi hostless challenge and seat acceptance",
+      "instructions": "Deploy a reviewed Social server-side original challenge lookup and Life /play create/join/verify_seat, then check two real accounts, 60h offline, restart, turn notification and OpenClaw API on isolated LoopRD; do not mark Done from these source tests. No public endpoint in Atrium 0.5.42."
     }
   ]
 }

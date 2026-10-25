@@ -1,3 +1,11 @@
+# Atrium 0.5.42 — verified Tavi challenge correlation (source only)
+
+The Atrium lobby host can now correlate **Tavi's existing game challenge** to a Life-confirmed persistent match, reusing Tavi friendships and inbox. `src/social_challenge_bridge.py` deliberately runs only behind an authenticated Social host and a Life-authoritative match/seat adapter. The exposed user experience still awaits the Social server-side original-challenge lookup, Life create/join/grant integration and live Tavi operator verification. No new public lobby endpoint, duplicate notification flow or game-specific LoopRD URL was added. Extension 1.0.4 remains byte-identical. See `docs/P1_086_SOCIAL_CHALLENGE_TO_LIFE_LOBBY.adoc`.
+
+= Atrium 0.5.41 — hostless lobby authority adapter and outbox
+
+0.5.41 adds an opt-in **unmounted** hostless lobby adapter (Social actor supplied by trusted LoopRD host, operator-trusted game binding, Life-scoped game grant callbacks) and an idempotent, server-persistent lobby lifecycle outbox. **No public handler or production authorization is enabled** pending joint Social/Life contract approval. See `docs/P1_085_HOSTLESS_AUTHORITY_ADAPTER.adoc`. TaviX compiled UI is unchanged at immutable **1.0.4**.
+
 = Atrium 0.5.40 — TaviX Life launch and server-owned hostless lobby source
 
 See `docs/P1_084_HOSTLESS_TAVIX_LIFE_HANDOFF.adoc`. This is a source candidate. Atrium only launches verified published games through a TaviX host that advertises the surface capability; older Tavi hosts offer explicit fallback, never automatic Chrome. A durable SQLite lobby source core is included but deliberately has **no unauthenticated LoopRD HTTP handler**; Life/Social audience-scoped seat grants, native embedding and deployment tests remain required. Extension 1.0.4 is a separate immutable TaviX release and will be staged only to an available sibling checkout, with no producer Git push.

@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.40",
-  "summary": "Atrium 0.5.40 adds trusted nested TaviX game launch with explicit fallback and a persistent player-hostless lobby source core. Real Life/Tavi/LoopRD joint runtime acceptance remains pending.",
+  "version": "0.5.42",
+  "summary": "Atrium 0.5.42 adds a source-only existing-Tavi-challenge -> durable Atrium lobby -> Life match/seat integration seam, with restart and fail-closed verification. Full live multi-account flow remains operator-gated.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -222,6 +222,28 @@
         "Run source and installed-byte tests; inspect 320/390/355/768px panel and host Back/Home.",
         "Confirm server-owned lobby core source tests and lack of live public API; do not mark Life/M2 playable until real authorized two-account acceptance."
       ]
+    },
+    {
+      "id": "ATR-118-AUTH-ADAPTER-041",
+      "title": "Hostless lobby authentication/authority adapter and durable outbox",
+      "summary": "Source candidate: injected verified Social actor, operator-trusted active LoopRD binding, Life-grant/seat callbacks, publisher revocation, persistent lobby event outbox, no public route. Full ATR-118 remains planned and operator-gated.",
+      "operator_checks": [
+        "Verify v0.5.41 source/Windows build and both CI jobs; source tests cover unauthenticated and wrong-audience denial, publisher swap, Life outage and multi-client restarts.",
+        "Integrate only after Life /play/info and Social/LoopRD audience/grant contract is approved; reject a browser-supplied actor/token and prove two actual accounts cannot impersonate each other.",
+        "Verify host-owned outbox replay/delivery, Life match/seat check, creator offline, restart, and unchanged TaviX 1.0.4 compiled bytes.",
+        "No operator acceptance inferred: live route, grant format, durable transport and two-account 60h acceptance remain open."
+      ]
+    },
+    {
+      "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042",
+      "title": "Correlate accepted Tavi game challenges with real Life lobbies",
+      "summary": "Source-only bridge correlates an existing verified Tavi 0.3.113 challenge with one durable Atrium lobby/confirmed Life match; internal idempotent Life creation and optional Life-owned seat admission; no public route or new invitation system.",
+      "operator_checks": [
+        "Review Tavi 0.3.113 source mapping: game_challenge_send uses Social catalogue gameId life and original numeric SocialInteraction id; verify an operator-trusted server-side challenge lookup without trusting browser JSON.",
+        "On a disposable Social/LoopRD + Life deployment, test two real accepted Tavi contacts: Atrium new_game creates one Life-authoritative match, Tavi sends one existing challenge, recipient accepts, Life admits the seat, and Atrium resumes the same match.",
+        "Prove wrong recipient, foreign Social issuer, spoofed challenge, wrong Life publisher, cancelled/expired challenge, revoked friendship, disabled game, stale seat and duplicate acceptance fail closed without granting or duplicating a seat.",
+        "Restart Atrium/Life, close both Tavi clients, verify immutable lobby-to-match mapping and server-owned state persist, and confirm native TaviX 1.0.4 bytes and existing Work board operator decisions remain unchanged."
+      ]
     }
   ],
   "remaining": [
@@ -309,7 +331,7 @@
       "title": "Activate authenticated Atrium lobby API with Life seat grants",
       "summary": "Connect source-only durable lobby core to LoopRD with authenticated Social caller, a single Life-audience-scoped grant, exact Life match/seat confirmation and recovery/outbox acceptance. No public handler or live game authority installed yet.",
       "priority": "high",
-      "next_action": "Coordinate Life /play/info and Social game grants, implement authenticated LoopRD endpoints, exercise 2 accounts and offline/restarts."
+      "next_action": "Agree Social-to-Life audience-bound grant and Life /play/info semantics, mount reviewed user-authorized LoopRD route around 0.5.41 source adapter, wire durable outbox consumer, validate two real accounts, 60h offline and restart. Not implemented as public runtime."
     }
   ]
 }

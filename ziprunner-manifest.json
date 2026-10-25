@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.40",
+    "version": "0.5.42",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261025-040",
+    "id": "ATR-P1-20261025-042",
     "kind": "source_update",
     "created_at": "2026-10-25T11:11:00+01:00",
-    "summary": "Implement reviewed TaviX game surface with explicit browser/legacy fallback and a persistent hostless Atrium lobby core (source only; no live server activation)."
+    "summary": "Source-only bridge correlates an existing verified Tavi 0.3.113 challenge with one durable Atrium lobby/confirmed Life match; internal idempotent Life creation and optional Life-owned seat admission; no public route or new invitation system."
   },
   "planned_work": [
     {
@@ -174,6 +174,18 @@
       "id": "ATR-118-HOSTLESS-RUNTIME",
       "title": "Activate authenticated Atrium lobby API with Life seat grants",
       "acceptance_criteria": "Integrate server-owned lobby persistence into LoopRD with verified Social principal, Life-scoped game grant, secure create/invite/join/list/resume/close operations and outage reconciliation; two real accounts and restarts, no player-host requirement.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-118-AUTH-ADAPTER-041",
+      "title": "Hostless lobby authentication/authority adapter and durable outbox",
+      "acceptance_criteria": "Verify source-only authenticated Social actor boundary, trusted publication resolution, Life grant/seat checks, no client credentials or public registration, durable outbox and server restart tests. Operator must review real DAPI/Life integration before activation.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042",
+      "title": "Bridge Social challenge acceptance to Life-authorized lobby seat",
+      "acceptance_criteria": "Link existing Social original challenge ID to one Life-authorized lobby; require trusted Social actor/accepted status/contact and verified Life seat, prevent duplicate mapping, prove restart recovery, no new inbox or public handler; live operator tests pending.",
       "priority": "high"
     }
   ],
@@ -686,6 +698,63 @@
           "kind": "test",
           "ref": "tests/tavix_surface.test.mjs",
           "description": "TaviX host feature and catalog gating"
+        }
+      ]
+    },
+    {
+      "id": "ATR-118-AUTH-ADAPTER-041",
+      "summary": "Added opt-in, unmounted adapter for verified Social actors, operator-trusted LoopRD game binding and Life-scoped authority callbacks; transactional outbox and restart/failure regressions. No public API, real grant, production DB migration or notification sender.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/lobby_runtime.py",
+          "description": "Authenticated host adapter; no browser principal, URL or bearer forwarding"
+        },
+        {
+          "kind": "source",
+          "ref": "src/hostless_lobby.py",
+          "description": "SQLite lobby domain outbox and private invitation provenance lookup"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_lobby_runtime.py",
+          "description": "Source-only two-party actor grant and authority regressions"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_lobby_outbox.py",
+          "description": "Persistent idempotent event storage and ack regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_085_HOSTLESS_AUTHORITY_ADAPTER.adoc",
+          "description": "Cross-project gate and proposed host integration contract"
+        }
+      ]
+    },
+    {
+      "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042",
+      "summary": "Source-only bridge correlates an existing verified Tavi 0.3.113 challenge with one durable Atrium lobby/confirmed Life match; internal idempotent Life creation and optional Life-owned seat admission; no public route or new invitation system.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/social_challenge_bridge.py",
+          "description": "Server-injected trusted Social challenge status and Life seat verification"
+        },
+        {
+          "kind": "source",
+          "ref": "src/lobby_runtime.py",
+          "description": "Idempotent new_game life match creation seam"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_social_challenge_bridge.py",
+          "description": "Fake-authority contract and restart/security regression"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_086_SOCIAL_CHALLENGE_TO_LIFE_LOBBY.adoc",
+          "description": "Real Tavi and Life interface mapping, missing deployment prerequisites"
         }
       ]
     }

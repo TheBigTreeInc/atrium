@@ -17,7 +17,7 @@ import time
 
 IDENTITY = re.compile(r"^[a-z][a-z0-9.-]{2,119}$")
 DEPLOYMENT = re.compile(r"^[a-z][a-z0-9-]{2,95}$")
-OPAQUE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$")
+OPAQUE = re.compile(r"^(?:acct_[1-9][0-9]{0,18}|[A-Za-z0-9][A-Za-z0-9_-]{7,127})$")
 INVITATION = re.compile(r"^[A-Za-z0-9_-]{32,128}$")
 
 
@@ -69,6 +69,14 @@ class HostlessLobbyStore:
                 code_digest TEXT PRIMARY KEY, lobby_id TEXT NOT NULL REFERENCES lobby(lobby_id),
                 issued_by TEXT NOT NULL, claim_by TEXT, expires INTEGER NOT NULL,
                 created INTEGER NOT NULL);
+              CREATE TABLE IF NOT EXISTS lobby_outbox (
+                event_id TEXT PRIMARY KEY, lobby_id TEXT NOT NULL REFERENCES lobby(lobby_id),
+                event_key TEXT NOT NULL, event_type TEXT NOT NULL,
+                principal TEXT, created INTEGER NOT NULL,
+                delivered INTEGER,
+                UNIQUE(lobby_id,event_key));
+              CREATE INDEX IF NOT EXISTS lobby_outbox_undelivered
+                ON lobby_outbox(delivered,created,event_id);
               CREATE INDEX IF NOT EXISTS lobby_members_by_user
                 ON lobby_member(principal,state);
               CREATE INDEX IF NOT EXISTS lobby_by_game
@@ -93,6 +101,39 @@ class HostlessLobbyStore:
 
     def _now(self):
         return int(self.clock())
+
+    def _event(self, db, lobby_id, key, event_type, principal=None):
+        """Durable, credential-free lobby-domain event within the state transaction.
+
+        Life owns turn.ready events. External deliverers must deduplicate by
+        eventId: the local outbox is at-least-once, not a push gateway.
+        """
+        event_id = _digest(lobby_id + ':' + key)
+        db.execute('''INSERT OR IGNORE INTO lobby_outbox
+                 (event_id,lobby_id,event_key,event_type,principal,created)
+                 VALUES(?,?,?,?,?,?)''',
+                   (event_id, lobby_id, key, event_type, principal, self._now()))
+
+    def pending_events(self, *, limit=100):
+        """Service-only outbox read. NOT part of public lobby operations."""
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise LobbyError('invalid_outbox_limit')
+        with self._db() as db:
+            rows = db.execute('''SELECT event_id,lobby_id,event_type,principal,created
+                  FROM lobby_outbox WHERE delivered IS NULL
+                  ORDER BY created,event_id LIMIT ?''', (limit,)).fetchall()
+            return [{'eventId': r['event_id'], 'lobbyId': r['lobby_id'],
+                     'type': r['event_type'], 'principal': r['principal'],
+                     'created': r['created']} for r in rows]
+
+    def acknowledge_event(self, event_id):
+        """Ack only after external durable transport accepts this eventId."""
+        _required(event_id, re.compile(r'^[0-9a-f]{64}$'), 'invalid_outbox_id')
+        with self._db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            cursor = db.execute('UPDATE lobby_outbox SET delivered=COALESCE(delivered,?) WHERE event_id=?',
+                                (self._now(), event_id))
+            return cursor.rowcount == 1
 
     def _member(self, db, lobby_id, principal):
         row = db.execute('SELECT state FROM lobby_member WHERE lobby_id=? AND principal=?',
@@ -136,6 +177,7 @@ class HostlessLobbyStore:
                   _digest(payload), now, now))
             db.execute('INSERT INTO lobby_member(lobby_id,principal,state,joined) VALUES(?,?,?,?)',
                        (lobby_id, principal, 'joined', now))
+            self._event(db, lobby_id, 'created', 'lobby.created', principal)
             return self._view(db, lobby_id, principal)
 
     def bind_match(self, principal, lobby_id, match_id, *, confirm_match):
@@ -168,6 +210,7 @@ class HostlessLobbyStore:
                 raise LobbyError('match_binding_conflict', 409)
             db.execute("UPDATE lobby SET match_id=?,state='ready',updated=? WHERE lobby_id=?",
                        (match_id, self._now(), lobby_id))
+            self._event(db, lobby_id, 'match:' + match_id, 'lobby.ready', principal)
             return self._view(db, lobby_id, principal, require_ready=True)
 
     def inspect(self, principal, lobby_id, *, require_ready=False):
@@ -198,6 +241,25 @@ class HostlessLobbyStore:
                        (_digest(code), lobby_id, principal, None,
                         self._now()+seconds, self._now()))
             return code
+
+    def invitation_target(self, code):
+        """Server-internal lookup for publication trust before Life seat grant.
+
+        Returns no player identity, credentials or opaque match ID. This is
+        NOT an anonymous endpoint, and it never establishes membership.
+        """
+        _required(code, INVITATION, 'invalid_invitation')
+        with self._db() as db:
+            row = db.execute('''SELECT l.game_id,l.deployment_id,l.publisher_id,
+                   l.state,i.expires FROM lobby_invite i JOIN lobby l
+                   ON i.lobby_id=l.lobby_id WHERE i.code_digest=?''',
+                   (_digest(code),)).fetchone()
+            if row is None or row['expires'] <= self._now():
+                raise LobbyError('invitation_expired_or_missing', 404)
+            if row['state'] != 'ready':
+                raise LobbyError('game_match_not_confirmed', 409)
+            return {'gameId': row['game_id'], 'deploymentId': row['deployment_id'],
+                    'publisherId': row['publisher_id']}
 
     def join(self, principal, code, *, confirm_seat):
         """Resumable two-phase join. Life callback is idempotent per lobby+subject.
@@ -241,6 +303,50 @@ class HostlessLobbyStore:
                 raise LobbyError('invitation_conflict', 409)
             db.execute("UPDATE lobby_member SET state='joined',joined=? WHERE lobby_id=? AND principal=? AND state='pending'",
                        (self._now(), lobby_id, principal))
+            self._event(db, lobby_id, 'joined:' + principal, 'lobby.joined', principal)
+            return self._view(db, lobby_id, principal, require_ready=True)
+
+    def _admit_trusted_challenge(self, principal, lobby_id, match_id, *, confirm_seat):
+        """Server-internal Social challenge admission, NEVER a public API.
+
+        The calling bridge MUST independently verify a Social accepted challenge,
+        its sender/recipient and the current accepted-contact relationship.
+        This method does not issue a Life seat. Life must have independently
+        authorized it before returning literal True from `confirm_seat`.
+        """
+        _required(principal, OPAQUE, 'unverified_principal')
+        _required(lobby_id, OPAQUE, 'invalid_lobby_id')
+        _required(match_id, OPAQUE, 'invalid_match_id')
+        if not callable(confirm_seat):
+            raise LobbyError('trusted_seat_verifier_required', 503)
+        with self._db() as db:
+            row = db.execute('SELECT * FROM lobby WHERE lobby_id=?', (lobby_id,)).fetchone()
+            if row is None or row['state'] != 'ready' or row['match_id'] != match_id:
+                raise LobbyError('game_match_not_confirmed', 409)
+            member = db.execute('SELECT state FROM lobby_member WHERE lobby_id=? AND principal=?',
+                                (lobby_id, principal)).fetchone()
+            if member and member['state'] == 'left':
+                raise LobbyError('membership_revoked', 403)
+            gid, dep = row['game_id'], row['deployment_id']
+        if confirm_seat(gid, dep, match_id, principal, lobby_id) is not True:
+            raise LobbyError('life_seat_unverified', 403)
+        with self._db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT state,match_id FROM lobby WHERE lobby_id=?', (lobby_id,)).fetchone()
+            if row is None or row['state'] != 'ready' or row['match_id'] != match_id:
+                raise LobbyError('game_match_not_confirmed', 409)
+            member = db.execute('SELECT state FROM lobby_member WHERE lobby_id=? AND principal=?',
+                                (lobby_id, principal)).fetchone()
+            if member and member['state'] == 'left':
+                raise LobbyError('membership_revoked', 403)
+            if member is None:
+                db.execute("""INSERT INTO lobby_member(lobby_id,principal,state,joined)
+                              VALUES(?,?,'joined',?)""", (lobby_id, principal, self._now()))
+                self._event(db, lobby_id, 'joined:' + principal, 'lobby.joined', principal)
+            elif member['state'] == 'pending':
+                db.execute("UPDATE lobby_member SET state='joined',joined=? WHERE lobby_id=? AND principal=?",
+                           (self._now(), lobby_id, principal))
+                self._event(db, lobby_id, 'joined:' + principal, 'lobby.joined', principal)
             return self._view(db, lobby_id, principal, require_ready=True)
 
     def leave(self, principal, lobby_id):
@@ -252,6 +358,7 @@ class HostlessLobbyStore:
             self._member(db, lobby_id, principal)
             db.execute("UPDATE lobby_member SET state='left' WHERE lobby_id=? AND principal=?",
                        (lobby_id, principal))
+            self._event(db, lobby_id, 'left:' + principal, 'lobby.left', principal)
             return {'lobbyId': lobby_id, 'left': True, 'matchUnchanged': True}
 
     def finish(self, principal, lobby_id, *, confirm_finished):
@@ -275,4 +382,5 @@ class HostlessLobbyStore:
                 raise LobbyError('match_binding_conflict', 409)
             db.execute("UPDATE lobby SET state='finished',updated=? WHERE lobby_id=?",
                        (self._now(), lobby_id))
+            self._event(db, lobby_id, 'finished', 'lobby.finished', principal)
             return self._view(db, lobby_id, principal)

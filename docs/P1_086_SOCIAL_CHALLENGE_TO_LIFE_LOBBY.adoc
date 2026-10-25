@@ -1,0 +1,63 @@
+= Atrium 0.5.42 — Existing Tavi challenge to persistent Life lobby
+:revdate: 2026-10-25
+:toc:
+
+== User experience (target, not yet a live claim)
+
+Tavi Home -> Games -> Atrium -> The Life Loop -> New game -> Invite a friend -> Friend accepts -> Join game -> Life inside Tavi. The creator can close both Tavi and their computer. Atrium owns the persistent lobby; Life owns the match and authorized seats; Tavi handles the *existing* friends, challenge and notification surfaces. Neither client runs a game server.
+
+== What 0.5.42 actually supplies
+
+New unmounted source adapter `src/social_challenge_bridge.py`, building upon the `HostlessLobbyStore` and `HostlessLobbyRuntime` in 0.5.40/0.5.41:
+
+* `new_game` internal runtime command first saves an idempotent pending lobby, then requests `Life.create_match` through a trusted host-injected provider keyed by the creator's verified Social subject and a stable requestId. It **never** reports a room playable until Life separately verifies and Atrium binds the resulting matchId. On partial failure, the lobby stays pending; retried requests use Life's idempotent creation operation. No direct `/play` URL, unapproved mode, client-supplied seat or Social bearer is added.
+* Tavi's existing `game_challenge_send` returns `{schema:"tavi.game-challenge/v1",id:<integer>,status:"pending",gameId:"life",peer:"acct_N"}`. The approved host obtains that challenge directly from Social, not from user-supplied interaction JSON. Atrium's `SocialChallengeBridge.attach` links its original interaction ID to precisely one reviewed, ready Life lobby. The Tavi catalog name `life` is deliberately not treated as the `atriumd.yaml` game ID `life.loop`: the host provides the explicit reviewed mapping.
+* The friend selects Tavi's existing `accept-challenge` interaction. No second Atrium notification or alternate challenge system is created. Only a trusted *server-side* Social challenge lookup can confirm acceptance; the different originator-side `game.challenge.response` interaction is not sufficient.
+* `SocialChallengeBridge.accept` permits only the exact verified Social recipient, checks the accepted contact, active trusted Life deployment, original lobby/match relationship and Social acceptance, then optionally asks the *Life-owned* idempotent `admit_life_seat` adapter to join the game. Life `verify_seat` and `can_resume` must each return literal `True` before Atrium shows the new member a resumable room. No invitation code or grant leaves the server.
+* A schema-additive `lobby_social_challenge` table records issuer, original Social interaction ID, lobby reference, sender, recipient, catalog game ID and immutable Life match mapping, but no bearer tokens. Replays return the original mapping; attempts to relocate an interaction to another lobby fail with conflict. Membership persists independently of either player's browser process.
+* `HostlessLobbyStore` now recognizes actual Social account subjects such as `acct_1` (previously rejected because only subjects of >=8 characters were allowed). `HostlessLobbyRuntime` has an explicit trusted `social_issuer` binding; callers still cannot supply it through their request payload.
+
+**No public Atrium route has been mounted, no Social backend modified, no Life `/play` API invented or deployed, and no TaviX UI changed in this pass.** The 1.0.4 extension must remain immutable and should re-stage unchanged.
+
+== Required host integration that is still missing
+
+[cols="2,3,3",options="header"]
+|===
+|Owner|Required server-only operation|Why
+|Social/LoopRD |Operator-authorized lookup of original `SocialInteraction.id`, verified issuer, sender/recipient, catalog game, terminal response and current accepted-friend relationship |Current `game_challenge_send`/`interaction_reply` are account API operations; an authenticated recipient's browser inbox is not trusted server evidence for Life seat admission
+|Life/LoopRD |Reviewed `create` operation that is idempotent by verified creator and request ID, returning only an opaque match ID |The creator must not become an authoritative game host; crashes between Life commit and Atrium bind must not duplicate games
+|Life/LoopRD |Reviewed recipient `join`/seat admission operation with a Life-audience-scoped, verified caller, independent invitation policy and idempotent challenge reference |Social acceptance confirms interest only, not a Life seat
+|Life/LoopRD |Independent `verify_match`, `verify_seat`, `can_resume` at the Life boundary |Every privileged game action must use Life's own current seat and turn authorization
+|Atrium/LoopRD |Host-mounted, authenticated commands around the source adapter and durable database; operator-managed service bindings |The source module intentionally cannot accept direct browser principals or tokens
+|Tavi |Expose existing challenge send, accept and game navigation through TaviX host affordances; no second invite inbox |The messenger owns relationships and communication, Atrium owns lobby identity
+|===
+
+Tavi's existing challenge catalogue uses `life`, while Atrium's canonical game registration uses `life.loop`. The binding must be configured from *reviewed operator data*, not inferred from a URL or string prefix. Generic LoopRD remains portable: there is no hardcoded Atrium or Life endpoint in `looprd.yaml`.
+
+== Internal example (NOT an exposed HTTP contract)
+
+[source,python]
+----
+# Host injects independently verified principal, trusted deployment and Life authority.
+# The Life create/join callback semantics must be finalized by the owning repo.
+room = runtime.dispatch(verified_context, 'new_game', {
+    'requestId': 'stable_client_intent_id',
+    'gameId': 'life.loop', 'deploymentId': 'approved-life-deployment'
+})
+# Host sends Tavi's existing game_challenge_send (gameId='life'), receives its id.
+bridge.attach(verified_creator_context, lobby_id=room['lobbyId'], challenge_id=123)
+# Friend accepts in Tavi through existing interaction_reply.
+# Social server verifies original challenge and Life verifies an independent seat.
+ready = bridge.accept(verified_friend_context, challenge_id=123)
+# ready includes an opaque lobbyId and matchId, never Social credentials.
+----
+
+== Source regression and acceptance gates
+
+`python -m unittest tests.test_social_challenge_bridge` exercises two verified Social accounts, the 0.3.113 numeric challenge ID, Tavi `life` to Atrium `life.loop` mapping, idempotent Life creation, service outage/retry, acceptance before association, issuer/membership failures, wrong friend and game, reassignment rejection, Life seat admission denial, durable restart recovery and closing the creator's lobby membership without deleting Life.
+
+For **M2 acceptance**, separately deploy the approved Social challenge-lookup and Life `/play` bindings. With two actual Tavi accounts: create a reviewed lobby, invite, accept, join Life, take a turn and close both clients. The other player must resume and act after service/client restarts and an extended offline period. Verify Life's `turn.ready` recipient outbox reaches Tavi exactly once and OpenClaw executes legal API actions as its own account. Tavi game surface and device Back/Home are independent M1 acceptance. Operator must review database backup/migration, publisher trust and installed SHA before moving this work out of Review.
+
+== Rollback
+
+The bridge does not modify production databases until an operator intentionally installs/mounts it. For a disposable runtime rehearsal, back up SQLite first. The extra `lobby_social_challenge` table is additive; rollback should disable the host adapter without deleting existing lobby, match or historical Social interaction data. Do not automatically Git push, publish TaviX, or mark operator-approved tasks Done.

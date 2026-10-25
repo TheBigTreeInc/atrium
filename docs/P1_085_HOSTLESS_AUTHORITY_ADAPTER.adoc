@@ -1,0 +1,47 @@
+= Atrium 0.5.41 — hostless lobby authority adapter and lifecycle outbox
+:revdate: 2026-10-25
+:toc:
+
+== Scope, baseline and release safety
+
+Atrium 0.5.41 builds on the exact 0.5.40 ZipRunner source. The new `src/lobby_runtime.py` is **not mounted** as a DAPI/LoopRD HTTP handler. This is intentional: the Social verified-principal wire envelope and the Life-audience-scoped seat grant have not yet been jointly accepted. No public credential format, independent identity store or new LoopRD scope is presumed or generated. Tavi remains a messenger first. Atrium owns the lobby and game selection, Life owns match/seat/game authority, LoopRD hosts the services, and TaviX owns UI surface protocol.
+
+`ATR-118-AUTH-ADAPTER-041` is a source candidate; the operator's `ATR-118-HOSTLESS-RUNTIME` remains *planned*. CI/source success does not imply real two-account or native Tavi acceptance. The 1.0.4 TaviX extension is **intentionally not version-bumped** because no compiled extension inputs changed; immutable 1.0.2/1.0.3/1.0.4 bytes remain intact.
+
+== Integration boundary (abstract, not a public API)
+
+Host integrations MUST inject these independently approved callbacks into `HostlessLobbyRuntime`:
+
+* `authenticate(host_request) -> VerifiedActor(subject, issuer='social', audience='atrium.lobby')`. Only LoopRD/Social's signed/session-verified result, never a browser field; actual issuer/audience spelling is provisional until the joint contract is accepted.
+* `resolve_game(game_id, deployment_id) -> TrustedGame`: operator-trusted, active LoopRD binding (game, deployment and immutable publisher). No arbitrary launch URLs.
+* `issue_life_grant(actor, game) -> ephemeral Life-audience proof`: the Social/Life host defines the cryptographic grant, never Atrium or a match ID. Reject an unavailable/denied grant.
+* Life authority methods: `verify_match(game, grant, match_id, creator, request_id)`, `verify_seat(game, grant, match_id, actor, lobby_id)`, `verify_finished(game, grant, match_id, actor)`, `can_resume(game, grant, match_id, actor)`. Only a literal boolean `true` from the trusted provider authorizes. Provider outages return a 503-like `LobbyError` and leave durable state intact.
+
+In the future, the reviewed server route may call `runtime.dispatch(host_request, operation, payload)`. Each payload uses an exact allowlist:
+
+[source,json]
+----
+{ "operation": "create", "payload": { "requestId": "request_12345678", "gameId": "life.loop", "deploymentId": "life-deployment" } }
+{ "operation": "bind_match", "payload": { "lobbyId": "l_<opaque>", "matchId": "life_match_123456" } }
+{ "operation": "invite", "payload": { "lobbyId": "l_<opaque>", "ttlSeconds": 86400 } }
+{ "operation": "join", "payload": { "invitation": "<opaque random code>" } }
+{ "operation": "list", "payload": {} }
+{ "operation": "inspect", "payload": { "lobbyId": "l_<opaque>" } }
+{ "operation": "resume", "payload": { "lobbyId": "l_<opaque>" } }
+{ "operation": "leave", "payload": { "lobbyId": "l_<opaque>" } }
+{ "operation": "finish", "payload": { "lobbyId": "l_<opaque>" } }
+----
+
+The above is illustrative application input to the UNMOUNTED adapter, not advertised HTTP endpoints. `principal`, `grant`, `token`, `seat`, `target` and `url` fields are rejected from client payloads. `resume` requires a fresh Life seat check even if the actor remains a lobby member. `bind_match` requires Life's proof of matching creator/request ID. Join first resolves the invitation's operator-trusted game binding and must receive Life's seat confirmation; retry after an outage preserves the original claim. Disabled/changed game binding cannot be resumed through Atrium.
+
+== Durable lifecycle outbox
+
+`src/hostless_lobby.py` now creates additive `lobby_outbox` in the server-owned SQLite store. `lobby.created`, `lobby.ready`, `lobby.joined`, `lobby.left`, `lobby.finished` entries are inserted within the same transaction as their corresponding change. Unique `(lobbyId,eventKey)` and deterministic `eventId` deduplicate repeated creator/match/seat requests. `pending_events(limit)` returns at most 100 pending records; an external **trusted worker** must deliver idempotently by `eventId` and call `acknowledge_event` only after durable destination receipt. Delivery is at least once across crashes. Raw invitation codes, game grants, credentials and arbitrary URLs are never written into events. The producer does not send external messages.
+
+These are *lobby-domain events*, **not** Life `turn.ready` notifications. Game event production, revision CAS and recipient notification delivery remain exclusively Life + Social/LoopRD responsibilities. No background worker is created or deployed by this release.
+
+== Source test and remaining operator gates
+
+Run `python -m unittest tests.test_lobby_runtime tests.test_lobby_outbox tests.test_hostless_lobby -v`, followed by the normal full Python and Node/build/ZipRunner verification suites. Validate clean source-only ZIP and unmodified TaviX 1.0.4 manifest. On operator disposable environments, only **after** joint contract approval, test two verified users, durable Life seats and revision actions, invitation takeover denial, active-player offline for 60h, restarts, publisher revocation, outbox redelivery and exact-one visible turn-ready notification per Life revision. No player device may host or hold the authoritative session.
+
+No production database migration, private credential, Git push, TaviX publication, Pages deployment or operator acceptance is included in this versioned source ZIP.

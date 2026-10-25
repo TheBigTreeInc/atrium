@@ -1,0 +1,32 @@
+ATRIUM 0.5.42 — SOURCE QA AND DEPLOYMENT HANDOFF
+Date: 2026-10-25
+Baseline: 0.5.41 ZipRunner source
+Target: atrium
+
+Scope
+- Durable source-only mapping from Tavi game_challenge_send original SocialInteraction integer ID to one Life-confirmed Atrium lobby.
+- Internal new_game command creating a pending Atrium lobby and requiring Life's independently idempotent match creation plus verification before ready.
+- Optional Life-owned seat-admission adapter; recipient must independently verify Social acceptance and Life seat before Atrium adds membership/resumes.
+- Explicit trusted Social issuer configuration and support for actual Social subjects acct_1, acct_2.
+- The Tavi game catalog ID 'life' is a distinct, operator-bound identity from atriumd game.id='life.loop'. No hardcoded LoopRD deployment URL.
+- Compiled TaviX 1.0.4 assets unchanged compared with baseline (17 files SHA256-equal). No new extension release.
+
+Checks executed in this container
+PASS: python -m unittest -q tests.test_social_challenge_bridge tests.test_lobby_runtime tests.test_hostless_lobby tests.test_lobby_outbox tests.test_spec_validation tests.test_release_pipeline tests.test_ci_integrations tests.test_live_hosted_games
+Result: 53 tests passed.
+PASS: npm test — 54/54 Node tests.
+PASS: npm run build; npm run verify; npm run build:tavi.
+PASS: all 17 compiled TaviX files equal to baseline 0.5.41 output.
+PASS: source ZIP integrity, 276+ source files (see final package output), no known private/runtime paths, consistent package/LoopRD/verification/workboard stamps.
+NOT COMPLETED: full unrestricted Python suite. The long source discovery pass timed out; do not count it as passed. The focused suites above passed.
+NOT COMPLETED: pinned upstream ZipRunner interchange validation (source checkout unavailable here).
+NOT COMPLETED: native ZipRunner/Windows, deployed Social challenge service lookup, deployed Life grant/create/join, actual 2-account test, Android/Windows host UI acceptance, 60h offline, game turn and OpenClaw tests.
+
+Operator/live integration requirements
+1. Social exposes an authenticated *server-side* view of the ORIGINAL challenge interaction with verified issuer, sender/recipient, catalog game ID, status, current accepted friendship. Browser-feed JSON is NOT a suitable authority.
+2. Life provides idempotent create and join plus verification of creator, match, recipient game seat; an accepted Tavi interaction never grants a Life seat by itself.
+3. LoopRD operator binds approved Life and Social service endpoints privately and mounts a reviewed authenticated Atrium handler. Do not send social tokens, Life grants or invitation secrets to browser, TaviX or a match URL.
+4. On disposable database validate additive lobby_social_challenge schema after backup. Verify no player-host dependence, recovery after restart, and Life-owned turn-ready notifications.
+5. Operator accepts exact installed bytes and workboard; no item marked Done by this source pass.
+
+No Git push, production migration, automatic TaviX publish, runtime service activation or operator acceptance was performed.
