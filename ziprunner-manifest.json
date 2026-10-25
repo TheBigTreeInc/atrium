@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.44",
+    "version": "0.5.45",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261025-044",
+    "id": "ATR-P1-20261025-045",
     "kind": "source_update",
     "created_at": "2026-10-25T11:11:00+01:00",
-    "summary": "Require Atrium Windows post-build to stage the verified compiled TaviX extension into the adjacent reviewed TaviX project. Linux standalone CI remains optional; no automatic Git push or Tavi client publication."
+    "summary": "Anchor verified TaviX extension staging to npm run build so stale ZipRunner command arrays cannot omit mandatory Windows staging. Validate staged release and catalog index before success; no automatic TaviX push."
   },
   "planned_work": [
     {
@@ -199,6 +199,12 @@
       "title": "Require Windows Atrium post-build TaviX staging",
       "priority": "high",
       "acceptance_criteria": "Execute verified Atrium web build then compile and stage immutable TaviX output into adjacent tavix Git checkout with TAVIX_STAGE_REQUIRED=1 on Windows. Missing checkout or immutable collision fails the ZipRunner build; Linux CI may build without sibling checkout. Preserve no automatic Git push and operator validation of actual Tavi installation."
+    },
+    {
+      "id": "ATR-TAVIX-BUILD-ANCHOR-045",
+      "title": "Anchor immutable TaviX staging to existing Atrium npm build",
+      "priority": "high",
+      "acceptance_criteria": "Run existing npm run build from a cached five-command ZipRunner recipe and verify required Windows sibling TaviX release + repository index are produced; missing/invalid stage fails the command; identical version is no-op; separate TaviX Git review, push, Pages and Tavi install remain operator-gated."
     }
   ],
   "done_work": [
@@ -814,6 +820,32 @@
           "kind": "documentation",
           "ref": "docs/P1_088_REQUIRED_WINDOWS_TAVIX_POSTBUILD.adoc",
           "description": "User post-build command mapping and operator validation"
+        }
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-BUILD-ANCHOR-045",
+      "summary": "Source repair: npm build invokes verified extension staging; fail closed on missing/incorrect repository output. Real Windows operator proof still pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "package.json",
+          "description": "npm build executes web compile, verification and TaviX stage"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/stage_tavix.mjs",
+          "description": "Validate exact release/index exists before staging success"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavix-stage.test.mjs",
+          "description": "Build-level required staging fails closed and stages into disposable checkout"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_089_TAVIX_BUILD_ANCHOR.adoc",
+          "description": "Windows operator handoff and reproduction"
         }
       ]
     }

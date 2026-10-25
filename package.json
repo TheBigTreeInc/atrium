@@ -1,17 +1,17 @@
 {
   "name": "atrium",
-  "version": "0.5.44",
+  "version": "0.5.45",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "build": "node tools/build.mjs",
+    "build": "node tools/build.mjs && node tools/verify_web.mjs && node tools/post_build_tavix.mjs",
     "stage:checkers": "node tools/stage_checkers.mjs",
     "verify": "node tools/verify_web.mjs",
     "check": "npm test && npm run build && npm run verify",
-    "build:tavi": "npm run build && node tools/build_tavi_extension.mjs",
+    "build:tavi": "npm run build",
     "repository:tavi": "node tools/build_tavi_repository.mjs",
     "tavix:stage": "node tools/stage_tavix.mjs",
-    "build:tavix": "npm run build:tavi && npm run tavix:stage"
+    "build:tavix": "npm run build"
   }
 }

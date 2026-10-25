@@ -1,0 +1,20 @@
+Atrium 0.5.45 — anchor TaviX stage to actual npm build (2026-10-25)
+
+Origin: ZipRunner handoff reported 5 configured build commands while source 0.5.44 declared 6. The required final staging command might not have been executed. Local TaviX 1.0.4 folder absent.
+
+Changes: package.json npm build runs web build, web verification, and required/optional platform-aware TaviX post-build; new .zr recipe removes duplicate. stage_tavix now validates exact target release manifest, .tavix archive and indexed version before reporting ready. Windows GitHub Actions source-only exception.
+
+Regressions: actual npm run build with TAVIX_STAGE_REQUIRED=1 missing checkout returns failure; fake disposable TaviX stage returns ready only after release and index appear. Windows CI exception/required override tests.
+
+Pending independent acceptance: installed Windows ZipRunner logs/bytes, real TaviX repository.py staging, new Git push/Pages and Tavi client installed update, two-account Life gameplay. Neither CI nor source tests approve operator workboard.
+
+Observed local evidence (sandbox Linux):
+- npm test: 60/60 tests passed, including TaviX build and stage wiring.
+- Python release/spec/multiplayer suites: 47/47 passed.
+- Python CI/release/spec suites: 24/24 passed (overlapping suites, not additive).
+- npm run build: passed, invokes web verification then TaviX extension stage helper; on Linux without checkout, TAVIX_STAGE_SKIPPED is expected.
+- npm run verify: passed.
+- Forced required stage with missing sibling repo: npm run build returns nonzero.
+- Forced required stage with disposable fake TaviX repository: npm run build creates manifest, .tavix, catalog index and emits TAVIX_STAGE_READY. Real TaviX repository.py was not executed in this sandbox.
+- Compiled dist-tavi 17/17 files SHA-256-identical to v0.5.44; extension remains 1.0.4.
+- Pinned full CI/Windows execution and real operator checkout staging still pending.

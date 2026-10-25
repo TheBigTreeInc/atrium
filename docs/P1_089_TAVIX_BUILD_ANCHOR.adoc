@@ -1,0 +1,35 @@
+= Atrium 0.5.45 — TaviX staging guaranteed by npm build
+:revdate: 2026-10-25
+
+== Problem
+
+ZipRunner observed `configured_count=5` build commands for 0.5.44 while its source `project.zr` described six, ending in `node tools/post_build_tavix.mjs`. An already-registered project may retain a previously configured command array and never execute newly appended commands. The local TaviX extension directory was not present, so prior assumptions about successful staging were not supported.
+
+== Implementation
+
+`npm run build` (already in both old and new recipes) performs, in order: `tools/build.mjs` (web), `tools/verify_web.mjs`, `tools/post_build_tavix.mjs`. The latter assembles TaviX 1.0.4 and invokes `tools/stage_tavix.mjs` with a mandatory Windows sibling path. The stage script verifies the target manifest, `.tavix` and repository index before reporting `TAVIX_STAGE_READY`. New .zr recipes omit the redundant stand-alone staging command. Repeated identical staging is immutable and no-op; TaviX's own repository.py remains the packaging authority.
+
+Only GitHub-hosted CI (`GITHUB_ACTIONS=true`) can skip a missing Windows sibling checkout; explicit `TAVIX_STAGE_REQUIRED=1` always wins. Linux standalone source CI may skip unless explicitly required. No credentials, paths to active private state, Git commits or pushes are added to the archive.
+
+== Windows acceptance
+
+. Import Atrium v0.5.45. Verify the existing ZipRunner build invokes `npm run build` and that its output includes `TAVIX_STAGE_READY`. If `npm run build` is absent from the *actual* cached ZipRunner command list, manually correct the project recipe.
+. Inspect `C:\Users\dorbi\source\tavix\extensions\inc.thebigtree.tavi.atrium\1.0.4\manifest.json` and corresponding `.tavix`, then verify the TaviX `tavi.repository.json` entry. If TaviX repo does not exist, the build must fail instead of passing.
+. Rebuild identical bytes: no modification to existing immutable release. Change same-version output in a disposable clone: fail closed with no changed release.
+. Review and push *tavix* separately. Wait for the published TaviX repository to advertise 1.0.4 before checking the Tavi app update. No automatic operator approval.
+. Test Tavi Windows/Android 355px panel, no duplicated Back, Life registration and two-account resume separately.
+
+== Operator hotfix without importing 0.5.45
+
+[source,powershell]
+----
+cd C:\Users\dorbi\source\atrium
+$env:TAVIX_REPOSITORY_DIR = "C:\Users\dorbi\source\tavix"
+$env:TAVIX_STAGE_REQUIRED = "1"
+npm run build
+node tools/build_tavi_extension.mjs
+node tools/stage_tavix.mjs
+Test-Path "C:\Users\dorbi\source\tavix\extensions\inc.thebigtree.tavi.atrium\1.0.4\manifest.json"
+----
+
+This hotfix is the current v0.5.44 operator command chain and does not require a new artifact.

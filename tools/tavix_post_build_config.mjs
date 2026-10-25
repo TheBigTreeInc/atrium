@@ -11,7 +11,10 @@ export function tavixPostBuildEnvironment(projectRoot, {platform = process.platf
  const repository = requested
   ? paths.resolve(projectRoot, requested)
   : paths.resolve(projectRoot, '..', 'tavix');
- const required = platform === 'win32' || env.TAVIX_STAGE_REQUIRED === '1';
+ // GitHub-hosted Windows CI has no operator TaviX checkout. Explicit opt-in
+ // overrides this CI exception, and every other Windows build must stage.
+ const githubCI = env.GITHUB_ACTIONS === 'true';
+ const required = (platform === 'win32' && !githubCI) || env.TAVIX_STAGE_REQUIRED === '1';
  return {
   ...env,
   TAVIX_REPOSITORY_DIR: repository,

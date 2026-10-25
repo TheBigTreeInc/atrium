@@ -1,4 +1,4 @@
-# Atrium 0.5.44 — mandatory Windows TaviX post-build
+# Atrium 0.5.45 — mandatory Windows TaviX post-build
 
 **Change:** `project.zr` and `atrium.zr` retain a single build/verify step and run `node tools/post_build_tavix.mjs` after it. On Windows this resolves `../tavix` from the Atrium source checkout and forces `TAVIX_STAGE_REQUIRED=1`; it launches `build_tavi_extension.mjs` then `stage_tavix.mjs` with the same environment. No silent `TAVIX_STAGE_SKIPPED` is acceptable on Windows. Verify the staged immutable extension `1.0.4` in `C:\Users\dorbi\source\tavix`, and review/push the **tavix** project separately. Do not manually re-run staging on every build; ZipRunner owns this post-build step.
 
@@ -59,3 +59,7 @@ Operator acceptance: install exact 0.5.37 ZIP; activate/observe Life; verify it 
 
 
 Atrium 0.5.39 TaviX distribution: the ZipRunner recipe builds its Tavi UI, then stages it into a sibling `tavix` checkout after verification. No Git push or hosted publication is performed. See `docs/P1_083_TAVIX_GIT_STAGING.adoc`.
+
+## 0.5.45 — Corrected post-build dependency
+
+The 0.5.44 operator snapshot showed configured_count=5 although both .zr files declared six build commands. The installed recipe may be cached. This release moves verified extension staging into the existing `npm run build` script itself, so no newly appended ZipRunner command is needed. Real staging into the sibling TaviX checkout is still pending Windows proof; `TAVIX_STAGE_READY` and release/index files must be inspected. Never claim a successful source build itself proves publication.

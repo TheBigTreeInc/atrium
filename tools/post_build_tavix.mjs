@@ -1,6 +1,7 @@
 /** ZipRunner post-build: compile the Atrium extension and stage it in TaviX.
  *
- * The earlier ZipRunner recipe already runs `npm run build` and `npm run verify`.
+ * `npm run build` is the anchor so even an older, cached ZipRunner build recipe
+ * cannot omit extension staging. `npm run build` verifies web output first.
  * On Windows this process applies the same effective environment as:
  *   $env:TAVIX_REPOSITORY_DIR = "C:\\Users\\dorbi\\source\\tavix"
  *   $env:TAVIX_STAGE_REQUIRED = "1"
@@ -28,4 +29,4 @@ for (const script of ['build_tavi_extension.mjs', 'stage_tavix.mjs']) {
   process.exit(result.status || 1);
  }
 }
-console.log('[atrium-post-build] Extension build/staging completed. Review and push the TaviX project separately.');
+console.log('[atrium-post-build] TaviX post-build completed. A source build is not a Git publication; review/push TaviX separately.');

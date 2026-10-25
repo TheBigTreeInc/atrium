@@ -1,4 +1,4 @@
-# Atrium 0.5.44 — required Windows TaviX post-build staging
+# Atrium 0.5.45 — required Windows TaviX post-build staging
 
 Atrium's ZipRunner recipes run `npm run build`, `npm run verify`, then `node tools/post_build_tavix.mjs`. The post-build script builds the Tavi extension and stages it into the sibling **tavix** repository. For a Windows checkout at `C:\Users\dorbi\source\atrium`, it automatically sets `TAVIX_REPOSITORY_DIR=C:\Users\dorbi\source\tavix` and `TAVIX_STAGE_REQUIRED=1`. A missing checkout, invalid package or immutable-release collision fails the Windows build rather than skipping distribution silently. A separately configured TAVIX_REPOSITORY_DIR is respected.
 
@@ -369,3 +369,7 @@ candidate. Don't expose the practice-game operator key form as public login.
 
 
 Atrium 0.5.38 TaviX distribution: the ZipRunner recipe builds its Tavi UI, then stages it into a sibling `tavix` checkout after verification. No Git push or hosted publication is performed. See `docs/P1_083_TAVIX_GIT_STAGING.adoc`.
+
+## Windows TaviX staging (0.5.45)
+
+`npm run build` now verifies its web output, builds extension `1.0.4`, and runs the sibling TaviX staging tool. This is intentionally anchored to npm build, because existing ZipRunner registrations can retain an older build command list. Operator Windows builds require staging; GitHub-hosted Windows CI without a sibling checkout may skip unless explicitly required. Failure to find the required checkout or its staged release/index fails npm build. Review and push the `tavix` project separately.

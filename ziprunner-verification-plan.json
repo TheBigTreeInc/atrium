@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.44",
+  "version": "0.5.45",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -569,6 +569,27 @@
           "mode": "manual",
           "checks": [
             "ATR-TAVIX-POSTBUILD-044-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-BUILD-ANCHOR-045",
+      "criteria": [
+        {
+          "id": "ATR-TAVIX-BUILD-ANCHOR-045-AC-SOURCE",
+          "description": "npm build verifies web output and stages extension 1.0.4 even when ZipRunner cached recipe omits final post-build step; missing/incorrect output fails closed.",
+          "mode": "automated",
+          "checks": [
+            "ATR-TAVIX-BUILD-ANCHOR-045-T1"
+          ]
+        },
+        {
+          "id": "ATR-TAVIX-BUILD-ANCHOR-045-AC-WINDOWS",
+          "description": "Operator verifies TaviX 1.0.4 release and index in local Windows checkout, immutable repeat and separate Git publication.",
+          "mode": "manual",
+          "checks": [
+            "ATR-TAVIX-BUILD-ANCHOR-045-M1"
           ]
         }
       ]
@@ -1199,7 +1220,28 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Real Windows ZipRunner and TaviX acceptance",
-      "instructions": "Run exact installed 0.5.44 source through ZipRunner on Windows; inspect stage output/immutable package and tavi.repository.json. A missing checkout/collision must fail; identical rerun must no-op. Separately review, push tavix and confirm live Pages/Tavi App Store update. Do not mark Done on CI success alone."
+      "instructions": "Run exact installed 0.5.45 source through ZipRunner on Windows; inspect stage output/immutable package and tavi.repository.json. A missing checkout/collision must fail; identical rerun must no-op. Separately review, push tavix and confirm live Pages/Tavi App Store update. Do not mark Done on CI success alone."
+    },
+    {
+      "id": "ATR-TAVIX-BUILD-ANCHOR-045-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Actual npm build mandatory-stage negative and mock-release positive regression",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/tavix-stage.test.mjs",
+      "assertions": [
+        "npm run build executes web verification before extension staging",
+        "Missing required checkout makes npm build fail, regardless of cached ZipRunner build list",
+        "Simulated repository stage creates output manifest, immutable .tavix and repository index, and npm build passes",
+        "Windows GitHub Actions isolated source CI remains optional while non-GitHub Windows builds remain mandatory"
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-BUILD-ANCHOR-045-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Installed Windows ZipRunner and TaviX repository operator acceptance",
+      "instructions": "In real C:\\Users\\dorbi\\source\\atrium verify npm run build produces TAVIX_STAGE_READY and release 1.0.4 appears in sibling tavix repo, then perform separate TaviX push/Pages/Tavi upgrade and device checks. No implied acceptance."
     }
   ]
 }

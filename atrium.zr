@@ -13,8 +13,7 @@
     "python tools/run_python_checks.py",
     "npm test",
     "npm run build",
-    "npm run verify",
-    "node tools/post_build_tavix.mjs"
+    "npm run verify"
   ],
   "start": [],
   "build_window": "hidden",

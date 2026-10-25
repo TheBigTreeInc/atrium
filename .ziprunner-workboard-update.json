@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.44",
-  "summary": "0.5.44: Windows ZipRunner post-build requires and stages TaviX output into reviewed sibling checkout; no automatic publishing. Existing Social/Life source contracts preserved.",
+  "version": "0.5.45",
+  "summary": "0.5.45 repairs stale ZipRunner build-list staging omission by anchoring verified TaviX extension build and mandatory Windows staging to npm run build; remains operator-unverified.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -262,9 +262,21 @@
       "summary": "Added a single cross-platform post-build launcher, explicit Windows sibling path and mandatory staging, tests for override/missing checkout, preservation of optional Linux CI and separate Git publication. Not tested on operator Windows machine.",
       "priority": "high",
       "operator_checks": [
-        "Import exact 0.5.44 ZipRunner ZIP on Windows at C:\\Users\\dorbi\\source\\atrium with sibling tavix checkout; verify stage 1.0.4 and repository index under C:\\Users\\dorbi\\source\\tavix.",
+        "Import exact 0.5.45 ZipRunner ZIP on Windows at C:\\Users\\dorbi\\source\\atrium with sibling tavix checkout; verify stage 1.0.4 and repository index under C:\\Users\\dorbi\\source\\tavix.",
         "Rebuild same bytes and verify no changes; remove/rename disposable tavix checkout and verify the build fails, never silently skips; test immutable same-version collision fails.",
         "Review/push tavix separately and verify Tavi App Store offers 1.0.4; never infer operator acceptance from successful source tests."
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-BUILD-ANCHOR-045",
+      "title": "Ensure Atrium npm build stages its TaviX extension despite cached ZipRunner recipes",
+      "summary": "0.5.44 ZipRunner reported five configured build commands while source declared six; move verified extension staging into npm run build, validate resulting release and repository index, retain CI exception and immutable checks. Windows installed acceptance and TaviX push pending.",
+      "priority": "high",
+      "operator_checks": [
+        "Install the exact 0.5.45 ZIP and check existing npm run build executes TAVIX_STAGE_READY even if ZipRunner shows a five-command cached recipe.",
+        "Verify 1.0.4 folder, manifest, immutable .tavix and index in sibling local TaviX checkout; missing/incorrect stage must fail the build.",
+        "Repeat identical build to verify no-op, test same-version modified bytes in disposable checkout, and review/push TaviX separately.",
+        "Verify GitHub exact-commit CI, Tavi client update and existing 57 operator Work board statuses; do not mark Done until operator acceptance."
       ]
     }
   ],
