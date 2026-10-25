@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.42",
+    "version": "0.5.43",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261025-042",
+    "id": "ATR-P1-20261025-043",
     "kind": "source_update",
     "created_at": "2026-10-25T11:11:00+01:00",
-    "summary": "Source-only bridge correlates an existing verified Tavi 0.3.113 challenge with one durable Atrium lobby/confirmed Life match; internal idempotent Life creation and optional Life-owned seat admission; no public route or new invitation system."
+    "summary": "Strict, unmounted Social and Life contract-response adapters to complete persistent Tavi challenge -> Atrium lobby -> Life match orchestration. No real service or hosted gameplay claimed."
   },
   "planned_work": [
     {
@@ -186,6 +186,12 @@
       "id": "ATR-119-TAVI-CHALLENGE-BRIDGE-042",
       "title": "Bridge Social challenge acceptance to Life-authorized lobby seat",
       "acceptance_criteria": "Link existing Social original challenge ID to one Life-authorized lobby; require trusted Social actor/accepted status/contact and verified Life seat, prevent duplicate mapping, prove restart recovery, no new inbox or public handler; live operator tests pending.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-120-CONTRACT-CONSUMERS-043",
+      "title": "Consume reviewed Social and Life multiplayer service contracts",
+      "acceptance_criteria": "Review proposed Social lookup for original challenge ID, issuer, parties, catalog game, terminal status and current accepted friendship. Reject browser inbox echoes. Review Life create/match attestation/join/seat verification/resume shapes and separately bind short-lived Life-audience proof with trusted publisher/deployment; verify idempotence and restart recovery. Run focused source regression plus installed ZipRunner tests, then two-account Tavi/Life/LoopRD acceptance with real user seats and turn notifications. No public handler until contract sign-off. Confirm TaviX 1.0.4 staged bytes are unchanged, only opaque match reference appears in surface launch; no public URLs or session secrets added to portable looprd.yaml.",
       "priority": "high"
     }
   ],
@@ -755,6 +761,27 @@
           "kind": "documentation",
           "ref": "docs/P1_086_SOCIAL_CHALLENGE_TO_LIFE_LOBBY.adoc",
           "description": "Real Tavi and Life interface mapping, missing deployment prerequisites"
+        }
+      ]
+    },
+    {
+      "id": "ATR-120-CONTRACT-CONSUMERS-043",
+      "summary": "Source-only interop candidate adapters and fixtures; no public LoopRD route or outside-team API deployed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/trusted_multiplayer_contracts.py",
+          "description": "Trusted Social/Life service-bound response validators"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_trusted_multiplayer_contracts.py",
+          "description": "Fake service happy-path/restart/failure test"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_087_SOCIAL_LIFE_CONTRACT_CONSUMPTION.adoc",
+          "description": "Exact proposed wire contract shapes and owning-team gates"
         }
       ]
     }

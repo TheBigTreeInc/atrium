@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.42",
-  "summary": "Atrium 0.5.42 adds a source-only existing-Tavi-challenge -> durable Atrium lobby -> Life match/seat integration seam, with restart and fail-closed verification. Full live multi-account flow remains operator-gated.",
+  "version": "0.5.43",
+  "summary": "Atrium 0.5.43 adds strict candidate Social challenge-status/contact-status and Life create/join/verify/resume service response consumers around existing hostless orchestration; host-owned transport and live two-account acceptance remain pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -243,6 +243,17 @@
         "On a disposable Social/LoopRD + Life deployment, test two real accepted Tavi contacts: Atrium new_game creates one Life-authoritative match, Tavi sends one existing challenge, recipient accepts, Life admits the seat, and Atrium resumes the same match.",
         "Prove wrong recipient, foreign Social issuer, spoofed challenge, wrong Life publisher, cancelled/expired challenge, revoked friendship, disabled game, stale seat and duplicate acceptance fail closed without granting or duplicating a seat.",
         "Restart Atrium/Life, close both Tavi clients, verify immutable lobby-to-match mapping and server-owned state persist, and confirm native TaviX 1.0.4 bytes and existing Work board operator decisions remain unchanged."
+      ]
+    },
+    {
+      "id": "ATR-120-CONTRACT-CONSUMERS-043",
+      "title": "Consume reviewed Social and Life multiplayer service contracts",
+      "summary": "Source-only host-injected adapters validate trusted original Social challenge and current friend state, Life authoritative create/bind/join/seat/resume/terminal claims, and idempotent restart-safe lobby mapping. Wire schemas are proposals; endpoints and real grants are not enabled.",
+      "operator_checks": [
+        "Review proposed Social lookup for original challenge ID, issuer, parties, catalog game, terminal status and current accepted friendship. Reject browser inbox echoes.",
+        "Review Life create/match attestation/join/seat verification/resume shapes and separately bind short-lived Life-audience proof with trusted publisher/deployment; verify idempotence and restart recovery.",
+        "Run focused source regression plus installed ZipRunner tests, then two-account Tavi/Life/LoopRD acceptance with real user seats and turn notifications. No public handler until contract sign-off.",
+        "Confirm TaviX 1.0.4 staged bytes are unchanged, only opaque match reference appears in surface launch; no public URLs or session secrets added to portable looprd.yaml."
       ]
     }
   ],

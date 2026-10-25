@@ -1,0 +1,26 @@
+ATRIUM 0.5.43 — SOURCE QA / CONTRACT HANDOFF
+Date: 2026-10-25
+Baseline: 0.5.42; TaviX independent extension 1.0.4 (unchanged bytes)
+
+Implementation:
+- Added host-injected Social original challenge and current friendship status validators.
+- Added strict Life create/idempotency, creator-attestation, challenge-bound join, seat and resume authorizations, terminal status validation.
+- Composes existing durable lobby, original Tavi challenge bridge, Life authority callback, and TaviX 1.0 surface launcher.
+- No public Atrium server route, Tavi Social authenticator, Life game rules, or hardcoded URL.
+
+Observed source verification:
+- Node source suite: 54 tests passed.
+- Focused Python release, Social/Life bridge, lobby, game protocol suites: 56 tests passed.
+- npm run build; npm run verify; node tools/build_tavi_extension.mjs: passed.
+- Compiled TaviX extension: 17/17 files SHA256-identical to Atrium 0.5.42.
+- Expected pending: Windows installed-byte QA, complete isolated Python runner, exact new-commit GitHub CI, live Social/Life wire contract and two-account 60h offline Tavi game test.
+
+External contract ownership:
+- Social: approved original-challenge interaction status + latest accepted contact, stable issuer and recipient.
+- Life: authenticated/create/attest/join/seat/resume and live game rules/notifications.
+- LoopRD: private scoped service transport and reviewed deployment origin.
+- Atrium: persistent lobby, challenge association, launch and resume mapping only.
+
+Operator approvals, website publication, Git push, TaviX immutable release staging and production database migrations were not performed.
+
+See docs/P1_087_SOCIAL_LIFE_CONTRACT_CONSUMPTION.adoc for proposed exact schemas.

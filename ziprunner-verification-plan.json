@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.42",
+  "version": "0.5.43",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -527,6 +527,27 @@
           "mode": "manual",
           "checks": [
             "ATR-119-TAVI-CHALLENGE-BRIDGE-042-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-120-CONTRACT-CONSUMERS-043",
+      "criteria": [
+        {
+          "id": "ATR-120-CONTRACT-CONSUMERS-043-AC-SOURCE",
+          "description": "Adapters consume exact versioned trusted Social and Life response schemas; no invented authorization from challenge or matchId.",
+          "mode": "automated",
+          "checks": [
+            "ATR-120-CONTRACT-CONSUMERS-043-T1"
+          ]
+        },
+        {
+          "id": "ATR-120-CONTRACT-CONSUMERS-043-AC-LIVE",
+          "description": "All service credentials, bound runtime routes, actual Life match, TaviX surface and two-account offline run remain operator acceptance.",
+          "mode": "manual",
+          "checks": [
+            "ATR-120-CONTRACT-CONSUMERS-043-M1"
           ]
         }
       ]
@@ -1116,6 +1137,27 @@
       "stage": "acceptance",
       "description": "Real Life/Tavi hostless challenge and seat acceptance",
       "instructions": "Deploy a reviewed Social server-side original challenge lookup and Life /play create/join/verify_seat, then check two real accounts, 60h offline, restart, turn notification and OpenClaw API on isolated LoopRD; do not mark Done from these source tests. No public endpoint in Atrium 0.5.42."
+    },
+    {
+      "id": "ATR-120-CONTRACT-CONSUMERS-043-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Trusted Social and Life adapter regression suite",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_trusted_multiplayer_contracts.py",
+      "assertions": [
+        "Reject wrong Social challenge ID, issuer, game, subject and forged notification",
+        "Create Life match once and bind only independently verified creator/request/match",
+        "Only Life joins and verifies recipient seat, persistence survives restarts and service outages",
+        "No bearer tokens/URLs in transport envelopes or lobby persistence"
+      ]
+    },
+    {
+      "id": "ATR-120-CONTRACT-CONSUMERS-043-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Joint Social/Life/Tavi hosted multiplayer acceptance",
+      "instructions": "Do not enable the bridge before Social confirms service-side status lookup, Life confirms and deploys create/join/seat/resume, LoopRD host credentials and private origin bindings are reviewed. With two real accounts verify accepted challenge -> Life match/seat -> TaviX game surface -> 60h offline -> turn notifications and backend restart, exact ZIP CI and local operator acceptance. Remain planned while any external contract is unavailable."
     }
   ]
 }

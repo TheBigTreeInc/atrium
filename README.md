@@ -1,3 +1,9 @@
+# Atrium 0.5.43 — trusted Social/Life contract consumers (source integration)
+
+This candidate adds `src/trusted_multiplayer_contracts.py`: host-injected, strictly validated response consumers for Social's original challenge status/current accepted friendship and Life's authoritative create/match attestation/join/seat/resume/status operations. It composes the existing server-owned `HostlessLobbyRuntime`, SQLite `HostlessLobbyStore` and `SocialChallengeBridge`; no user-operated game host is required. It does not authenticate users itself or execute Life rules.
+
+**Coordination status:** Service response field shapes are *proposals* for the separate Tavi and Life sessions. The reviewed Social lookup and Life public game service are not yet provided here. This ZIP installs no public Atrium endpoint, no new game credentials, no new guest-facing lobby controls, and no production DB migration. TaviX 1.0.4 compiled assets remain identical to 0.5.42. Live two-account/60-hour offline resume remains pending. See `docs/P1_087_SOCIAL_LIFE_CONTRACT_CONSUMPTION.adoc` and `docs/QA_0_5_43.txt`.
+
 # Atrium 0.5.42 — verified Tavi challenge correlation (source only)
 
 The Atrium lobby host can now correlate **Tavi's existing game challenge** to a Life-confirmed persistent match, reusing Tavi friendships and inbox. `src/social_challenge_bridge.py` deliberately runs only behind an authenticated Social host and a Life-authoritative match/seat adapter. The exposed user experience still awaits the Social server-side original-challenge lookup, Life create/join/grant integration and live Tavi operator verification. No new public lobby endpoint, duplicate notification flow or game-specific LoopRD URL was added. Extension 1.0.4 remains byte-identical. See `docs/P1_086_SOCIAL_CHALLENGE_TO_LIFE_LOBBY.adoc`.

@@ -1,0 +1,104 @@
+= Atrium 0.5.43 — Trusted Social and Life contract consumers (coordination candidate)
+:revdate: 2026-10-25
+:toc: left
+
+== Ownership and deployment truth
+
+Atrium owns persistent lobby IDs, membership, invitation/challenge correlation, and launch/resume orchestration. Social/Tavi owns the accepted-friend graph, original Tavi challenge and recipient reply, shared issuer/subject authentication, notifications, and messenger UI. Life owns match IDs, match creation, seat admission, authoritative turn state, game rules, checkpoints, CAS, and game-generated turn alerts. LoopRD supplies service routing and durable hosting. Neither player hosts the match on their device.
+
+*Present in Atrium 0.5.43 source*: `src/trusted_multiplayer_contracts.py` composes strict Social and Life service-response adapters with existing `HostlessLobbyRuntime`, `SocialChallengeBridge`, SQLite `HostlessLobbyStore` and lobby outbox. There is NO publicly mounted Atrium HTTP route; the bridge does not claim that Social or Life has deployed its interop operations. `tavix.surface/v1` launch in `extensions/tavi/extension-bridge.mjs` is retained, not changed by this release. The extension is still independently versioned at 1.0.4, and legacy external launches are explicit user choices.
+
+*NOT established*: an approved cross-runtime credential transport, real Social challenge lookup, actual Life create/join endpoints, real Tavi device, real match notifications, tested two-account restarts or 60-hour offline resumption. Only source fixtures exercise those sequences. These contracts MUST be confirmed and published by the owning Social and Life sessions before mounting them in a public deployment.
+
+== Required host bindings, NOT URLs in portable manifests
+
+[source,python]
+----
+runtime, bridge = bind_trusted_multiplayer(
+    persistent_store,
+    authenticate=host_verified_social_actor,        # -> VerifiedActor(subject, issuer, 'atrium.lobby')
+    resolve_game=operator_trusted_looprd_game,      # -> TrustedGame(game_id, deployment_id, publisher_id, 'active')
+    issue_life_grant=host_scoped_game_identity,     # -> Life-audience-scoped ephemeral proof
+    social_exchange=privileged_social_exchange,    # -> (operation, request) -> verified response
+    life_exchange=privileged_life_exchange,        # -> (operation, request, grant, reviewed_game) -> verified response
+    social_issuer=operator_bound_social_issuer,
+    catalog_game_id='life',                        # review-bound mapping to life.loop, NOT guessed
+)
+----
+
+The host MUST use its own trusted service authentication, issuer/audience verification, approved deployment mapping and timeout/retry controls; passing client-supplied JSON as a response is not acceptable. Private credentials stay solely in host callback context and are never placed in service request envelopes, lobby rows, TaviX surface context, public catalog, logs or URLs. The transport is deliberately not implemented in Atrium; `ctx.call` works only for services on the same LoopRD runtime, not for remote websites. For separate runtimes use a reviewed authenticated HTTPS machine bridge; its endpoint/origin belongs to private deployment bindings, not `looprd.yaml` or `atriumd.yaml`.
+
+== Social session — proposed trusted lookup requests and exact responses
+
+Tavi 0.3.113 has account-facing `game_challenge_send` and recipient `interaction_reply`. Its source does **not** expose an authoritative service-side challenge status contract. Atrium proposes two operator-bound, authenticated, read-only operations in `atrium.social-challenge-status/v1` and `atrium.social-contact-status/v1` (the names are coordination candidates, NOT live Social endpoints). The source response validators reject missing, extra or conflicting fields.
+
+Only the original numeric `SocialInteraction.id` returned by `game_challenge_send` is a `challengeId`; the sender's `game.challenge.response` inbox notification is not proof of acceptance. The Social service MUST check original topic/publisher, recipient, Social issuer, game catalog ID, actual reply status, expiry and any revocation. It must never trust a forwarded client-side inbox object.
+
+[source,json]
+----
+{"schema":"atrium.social-challenge-status/v1","challengeId":123}
+----
+
+Expected verified service response:
+
+[source,json]
+----
+{"schema":"atrium.social-challenge-status/v1","challengeId":123,"issuer":"operator-bound-social-issuer","sender":"acct_1","recipient":"acct_2","gameId":"life","status":"accepted","original":true}
+----
+
+`status` is one of `pending`, `accepted`, `declined`, `expired`, `cancelled`. `original` MUST mean Social directly read and authorized the original `game.challenge.requested` row, not an inbox echo or client hint. Accepted historical replies need durable state so Atrium can recover after service/client restarts; renewal/revocation policy is owned by Social. A friend-acceptance reply alone DOES NOT authorize a Life seat.
+
+[source,json]
+----
+{"schema":"atrium.social-contact-status/v1","issuer":"operator-bound-social-issuer","sender":"acct_1","recipient":"acct_2"}
+----
+
+Expected service response:
+
+[source,json]
+----
+{"schema":"atrium.social-contact-status/v1","issuer":"operator-bound-social-issuer","sender":"acct_1","recipient":"acct_2","accepted":true}
+----
+
+This check MUST use the current friendship state (including removed/blocked contacts). No fallback to browser roster, stale cache, invented issuer or acceptedChallenge boolean. If Social is down, missing or returns unknown data, Atrium MUST NOT join the recipient.
+
+== Life session — proposed strict service adapter (Life owns implementation)
+
+The base published source candidate is Life's `looprd.game-play/v1`: `create`, `join`, `resume`, `legal_actions`, `act`, `end_turn`, etc. Its current `server/async_play_api.py` is INTERNAL, not a publicly mounted endpoint. The following normalized server-side projections are requests for the Life session to confirm. `match.attest` is an Atrium-specific interop attestation proposal because merely receiving an opaque match ID cannot prove its creator and idempotent creation request.
+
+. `create` request: `{"schema":"looprd.game-play/v1","op":"create","requestId":"stable_request_12345678"}`. Private host-held actor + game binding supplies creator, audience, settings and rule revision. Candidate response:
++
+[source,json]
+----
+{"schema":"looprd.game-play/v1","ok":true,"result":{"matchId":"life_match_abcdefgh123456","gameId":"life.loop","requestId":"stable_request_12345678","creator":"acct_1","confirmed":true}}
+----
++
+Life MUST guarantee `(reviewed game, issuer, creator, requestId)` idempotently returns the same match after connection loss/server restart. Rules/engine/settings must be Life-owned, not omitted accidentally from Life storage. Atrium persists a pending lobby first, then binds only after independent verification.
+
+. `match.attest` request: `{"schema":"atrium.life-match-attestation/v1","op":"verify_match","matchId":"life_match_abcdefgh123456","requestId":"stable_request_12345678"}`. Life's authenticated response MUST repeat `schema, gameId, matchId, creator, requestId, confirmed` with `confirmed` a literal boolean. Atrium checks all expected values before making the lobby ready. Life MUST implement this or agree on an equivalently verified, pinned contract.
+
+. `join` request: `{"schema":"looprd.game-play/v1","op":"join","matchId":"life_match_abcdefgh123456","socialChallengeId":123}`. Life's authenticated response MUST repeat `schema, gameId, matchId, subject, joined` with `joined` a literal boolean. Social acceptance does not itself authorize the seat. Life must independently validate the challenge through trusted Social, or equivalently validate a Life-owned private invitation bound to that challenge; **this transport and proof is not yet agreed**. Atrium does not mint or export a Life invitation secret. `join` MUST be idempotent for the same `(issuer, subject, matchId, challengeId)` and reject a second recipient for the same seat.
+
+. `seat.verify` and `resume` request: `{"schema":"looprd.game-play/v1","op":"resume","matchId":"life_match_abcdefgh123456"}` (replace op with `seat.verify` as appropriate). Return `{"schema":"looprd.game-play/v1","gameId":"life.loop","matchId":"life_match_abcdefgh123456","subject":"acct_2","authorized":true,"seat":1}`. The issuer is host-trusted; subject and numeric seat are computed by Life from its current roster. `false` is permitted for a removed/unseated actor; only literal `true` plus a valid seat permits Atrium lobby membership/resume.
+
+. `status` request uses `{"schema":"looprd.game-play/v1","op":"status","matchId":"life_match_abcdefgh123456"}`. Return `schema, gameId, matchId, subject, status` with status `active` or `completed`. Only Life can confirm terminal state; Atrium `leave` never ends a Life match.
+
+The `exchange(operation, request, grant, reviewed_game)` host binding MUST use Life's own verified identity grant, issuer, audience `life.loop`, expiry/revocation, and active deployment. No unsigned actor, seat, URL or bearer credential is allowed in the JSON envelope. All response shapes, fields and operation paths above are *proposals*. If Life publishes different compatible shapes, update the narrow adapter and its fixtures rather than changing the division of authority.
+
+== Atrium's persisted operations and invitation workflow
+
+. Creator signs into Tavi, selects Atrium > Life, selects New Game. Host authenticates Social `(issuer, subject)`; Atrium's `new_game` persists a pending lobby under stable `requestId`, invokes Life `create`, verifies `match.attest`, and binds immutable `matchId` in SQLite. The creator can now close Tavi/PC.
+. Tavi sends its EXISTING challenge to the accepted Tavi friend (`gameId=life`); Social returns numeric original challenge ID. Atrium `bridge.attach` associates `(issuer, challengeId)` with precisely one `(lobbyId, matchId, recipient)`. Repeated same requests succeed; different room/match pairings conflict.
+. Friend accepts inside Tavi. A trusted host calls `bridge.accept` with independently verified recipient identity; Atrium checks Social status `accepted` and current friendship, calls Life-owned `join`, checks `seat.verify`, then commits Atrium membership. Stale/revoked game deployment or wrong participant fails closed.
+. Tavi opens Life through Atrium's existing `tavix.surface/v1` SDK broker using a reviewed canonical HTTPS game launch URL and opaque `matchId` only. Tavi requests host approval; Life reauthenticates its actual seat separately. If no embedded capability, a separate explicit fallback is presented. Back to Atrium / Tavi Home does not terminate the Life match.
+. Subsequent resume uses fresh Social identity, current trusted game deployment and Life `resume` seat verification; the SQLite lobby and Life game checkpoint are independent of both devices. Life sends `turn.ready` via its durable outbox to Social (no Atrium imitation).
+
+== Source test evidence and activation gates
+
+Run `python -m unittest tests.test_trusted_multiplayer_contracts tests.test_social_challenge_bridge tests.test_lobby_runtime tests.test_hostless_lobby tests.test_lobby_outbox -v`. Tests exercise strict versioned schemas, duplicate idempotent creates, rejection of forged Social replies, rejection of malformed Life attestation/seat results, publisher swap, offline failure and restart recovery, without a real network service.
+
+Before enabling live routes: Social MUST supply reviewed privileged original-challenge/contact-status operations; Life MUST finalize create/join/attest/verify/resume contracts and mount the authorized game backend; LoopRD MUST provide scope-limited service credentials and operational HTTPS routing; two real accounts MUST create/invite/accept/join, close both clients, restart each backend, resume and commit a turn, validate idempotence and Life recipient-specific turn alerts; verify real TaviX host/device Back/Home. Compare exact installed ZipRunner bytes, run CI and review migration/data backups. No source test constitutes operator acceptance.
+
+== Rollback and preservation
+
+Changes are additive source adapters and an AsciiDoc contract; no live DB schema or public route is changed by installing source alone. Keep 0.5.42 as recovery version. Retain all 52 operator workboard tickets/states. Do not overwrite existing TaviX extension 1.0.4 bytes, publish GitHub Pages or mark tickets Done automatically.
