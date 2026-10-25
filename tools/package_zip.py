@@ -9,7 +9,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.43-ziprunner.zip'
+NAME = 'atrium-0.5.44-ziprunner.zip'
 SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'dist-tavi', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
@@ -36,7 +36,7 @@ def source_files():
 
 def main():
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.43'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.44'
     # ZipRunner validates both sections before it overlays any files. Fail the
     # source build at the same boundary, instead of distributing a broken ZIP.
     for section in ('implemented', 'remaining'):

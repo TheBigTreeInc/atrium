@@ -1,3 +1,9 @@
+# Atrium 0.5.44 — required Windows TaviX post-build staging
+
+Atrium's ZipRunner recipes run `npm run build`, `npm run verify`, then `node tools/post_build_tavix.mjs`. The post-build script builds the Tavi extension and stages it into the sibling **tavix** repository. For a Windows checkout at `C:\Users\dorbi\source\atrium`, it automatically sets `TAVIX_REPOSITORY_DIR=C:\Users\dorbi\source\tavix` and `TAVIX_STAGE_REQUIRED=1`. A missing checkout, invalid package or immutable-release collision fails the Windows build rather than skipping distribution silently. A separately configured TAVIX_REPOSITORY_DIR is respected.
+
+Linux/CI builds without TaviX are still supported; `TAVIX_STAGE_REQUIRED=1` requires staging on any OS. This is *staging only*: review/push the separate **tavix** Git repository to publish; Atrium does not push or update installed Tavi clients. The compiled Atrium TaviX extension remains **1.0.4** with unchanged browser UI. See `docs/P1_088_REQUIRED_WINDOWS_TAVIX_POSTBUILD.adoc`.
+
 # Atrium 0.5.43 — trusted Social/Life contract consumers (source integration)
 
 This candidate adds `src/trusted_multiplayer_contracts.py`: host-injected, strictly validated response consumers for Social's original challenge status/current accepted friendship and Life's authoritative create/match attestation/join/seat/resume/status operations. It composes the existing server-owned `HostlessLobbyRuntime`, SQLite `HostlessLobbyStore` and `SocialChallengeBridge`; no user-operated game host is required. It does not authenticate users itself or execute Life rules.

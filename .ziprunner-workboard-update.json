@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.43",
-  "summary": "Atrium 0.5.43 adds strict candidate Social challenge-status/contact-status and Life create/join/verify/resume service response consumers around existing hostless orchestration; host-owned transport and live two-account acceptance remain pending.",
+  "version": "0.5.44",
+  "summary": "0.5.44: Windows ZipRunner post-build requires and stages TaviX output into reviewed sibling checkout; no automatic publishing. Existing Social/Life source contracts preserved.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -254,6 +254,17 @@
         "Review Life create/match attestation/join/seat verification/resume shapes and separately bind short-lived Life-audience proof with trusted publisher/deployment; verify idempotence and restart recovery.",
         "Run focused source regression plus installed ZipRunner tests, then two-account Tavi/Life/LoopRD acceptance with real user seats and turn notifications. No public handler until contract sign-off.",
         "Confirm TaviX 1.0.4 staged bytes are unchanged, only opaque match reference appears in surface launch; no public URLs or session secrets added to portable looprd.yaml."
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-POSTBUILD-044",
+      "title": "Require TaviX staging during Atrium Windows ZipRunner post-build",
+      "summary": "Added a single cross-platform post-build launcher, explicit Windows sibling path and mandatory staging, tests for override/missing checkout, preservation of optional Linux CI and separate Git publication. Not tested on operator Windows machine.",
+      "priority": "high",
+      "operator_checks": [
+        "Import exact 0.5.44 ZipRunner ZIP on Windows at C:\\Users\\dorbi\\source\\atrium with sibling tavix checkout; verify stage 1.0.4 and repository index under C:\\Users\\dorbi\\source\\tavix.",
+        "Rebuild same bytes and verify no changes; remove/rename disposable tavix checkout and verify the build fails, never silently skips; test immutable same-version collision fails.",
+        "Review/push tavix separately and verify Tavi App Store offers 1.0.4; never infer operator acceptance from successful source tests."
       ]
     }
   ],

@@ -1,3 +1,9 @@
+# Atrium 0.5.44 — mandatory Windows TaviX post-build
+
+**Change:** `project.zr` and `atrium.zr` retain a single build/verify step and run `node tools/post_build_tavix.mjs` after it. On Windows this resolves `../tavix` from the Atrium source checkout and forces `TAVIX_STAGE_REQUIRED=1`; it launches `build_tavi_extension.mjs` then `stage_tavix.mjs` with the same environment. No silent `TAVIX_STAGE_SKIPPED` is acceptable on Windows. Verify the staged immutable extension `1.0.4` in `C:\Users\dorbi\source\tavix`, and review/push the **tavix** project separately. Do not manually re-run staging on every build; ZipRunner owns this post-build step.
+
+**Acceptance:** Source Node and Python release tests, Windows ZipRunner installed build with sibling checkout, second byte-identical build no-op, missing checkout must fail, malformed/collision must fail without mutation; no automatic Git publication. Linux CI may skip optional staging.
+
 = Atrium 0.5.43 — Social and Life service adapter handoff
 
 *Input*: operator baseline Atrium 0.5.42; 0.5.43 is an additive source-only version, preserving the persistent SQLite lobby, Social challenge correlation and TaviX `tavix.surface/v1` publisher integration. New `src/trusted_multiplayer_contracts.py` validates only trusted, host-provided `challenge.status`, `contact.status`, Life `create`, match attestation, `join`, seat verification, `resume` and terminal `status` replies. Service transports and Life/Social user verification must come from the owning deployments, not browser request JSON.

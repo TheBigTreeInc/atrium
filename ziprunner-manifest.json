@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.43",
+    "version": "0.5.44",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261025-043",
+    "id": "ATR-P1-20261025-044",
     "kind": "source_update",
     "created_at": "2026-10-25T11:11:00+01:00",
-    "summary": "Strict, unmounted Social and Life contract-response adapters to complete persistent Tavi challenge -> Atrium lobby -> Life match orchestration. No real service or hosted gameplay claimed."
+    "summary": "Require Atrium Windows post-build to stage the verified compiled TaviX extension into the adjacent reviewed TaviX project. Linux standalone CI remains optional; no automatic Git push or Tavi client publication."
   },
   "planned_work": [
     {
@@ -193,6 +193,12 @@
       "title": "Consume reviewed Social and Life multiplayer service contracts",
       "acceptance_criteria": "Review proposed Social lookup for original challenge ID, issuer, parties, catalog game, terminal status and current accepted friendship. Reject browser inbox echoes. Review Life create/match attestation/join/seat verification/resume shapes and separately bind short-lived Life-audience proof with trusted publisher/deployment; verify idempotence and restart recovery. Run focused source regression plus installed ZipRunner tests, then two-account Tavi/Life/LoopRD acceptance with real user seats and turn notifications. No public handler until contract sign-off. Confirm TaviX 1.0.4 staged bytes are unchanged, only opaque match reference appears in surface launch; no public URLs or session secrets added to portable looprd.yaml.",
       "priority": "high"
+    },
+    {
+      "id": "ATR-TAVIX-POSTBUILD-044",
+      "title": "Require Windows Atrium post-build TaviX staging",
+      "priority": "high",
+      "acceptance_criteria": "Execute verified Atrium web build then compile and stage immutable TaviX output into adjacent tavix Git checkout with TAVIX_STAGE_REQUIRED=1 on Windows. Missing checkout or immutable collision fails the ZipRunner build; Linux CI may build without sibling checkout. Preserve no automatic Git push and operator validation of actual Tavi installation."
     }
   ],
   "done_work": [
@@ -782,6 +788,32 @@
           "kind": "documentation",
           "ref": "docs/P1_087_SOCIAL_LIFE_CONTRACT_CONSUMPTION.adoc",
           "description": "Exact proposed wire contract shapes and owning-team gates"
+        }
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-POSTBUILD-044",
+      "summary": "Source implemented platform-aware mandatory Windows staging and regression fixtures; operator target acceptance still pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/post_build_tavix.mjs",
+          "description": "Ordered extension build then immutable staging with shared injected environment"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/tavix_post_build_config.mjs",
+          "description": "Windows sibling-path resolution and required stage policy"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavix-stage.test.mjs",
+          "description": "Cross-platform post-build configuration and recipe regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_088_REQUIRED_WINDOWS_TAVIX_POSTBUILD.adoc",
+          "description": "User post-build command mapping and operator validation"
         }
       ]
     }

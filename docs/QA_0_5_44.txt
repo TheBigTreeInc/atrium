@@ -1,0 +1,24 @@
+Atrium 0.5.44 — Post-build TaviX staging QA (2026-10-25)
+
+Source baseline: 0.5.43 ZipRunner ZIP.
+Scope: Require post-build staging in a sibling TaviX Git checkout on Windows; retain unchanged 1.0.4 extension bytes, source/package/workboard identity, and Linux/CI standalone compatibility.
+
+Source checks executed in this sandbox:
+- node --test tests/tavix-stage.test.mjs: 4 passed
+- npm test: 57 passed, 0 failed
+- npm run build: passed
+- npm run verify: passed
+- node tools/post_build_tavix.mjs: built 17-file TaviX bundle; Linux without checkout reported optional skip (expected)
+- TAVIX_STAGE_REQUIRED=1 TAVIX_REPOSITORY_DIR=/mnt/data/definitely-not-tavix node tools/post_build_tavix.mjs: FAILED exit 1 as expected; no silent skip
+- python -m unittest tests.test_release_pipeline -v: 12 passed
+- python -m unittest tests.test_hostless_lobby tests.test_lobby_runtime tests.test_social_challenge_bridge tests.test_trusted_multiplayer_contracts -q: 27 passed
+- Dist-tavi bytes compared with independently rebuilt exact 0.5.43 source: all 17 identical (extension 1.0.4 retained)
+- Unrestricted `python -m unittest discover -s tests -q`: sandbox timeout; do not count as passed
+
+Operator gates pending:
+- Windows ZipRunner installed build with adjacent actual C:\Users\dorbi\source\tavix checkout, required staging and real repository.py success.
+- No silent Windows skip; missing checkout/collision failures, second identical no-op.
+- TaviX separate Git review/push, Pages publication and installed Tavi 1.0.4 update.
+- Existing Social/Life real two-account and offline resume acceptance remains separately pending.
+
+No Git push, production update or operator Done status was performed.

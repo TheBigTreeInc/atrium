@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.43",
+  "version": "0.5.44",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -548,6 +548,27 @@
           "mode": "manual",
           "checks": [
             "ATR-120-CONTRACT-CONSUMERS-043-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-POSTBUILD-044",
+      "criteria": [
+        {
+          "id": "ATR-TAVIX-POSTBUILD-044-AC-SOURCE",
+          "description": "Only one verified web build, then dedicated post-build compiles/stages extension with mandatory Windows sibling TaviX checkout; Linux CI remains source-only.",
+          "mode": "automated",
+          "checks": [
+            "ATR-TAVIX-POSTBUILD-044-T1"
+          ]
+        },
+        {
+          "id": "ATR-TAVIX-POSTBUILD-044-AC-OPERATOR",
+          "description": "Operator witnesses fail-closed Windows stage, immutable release, separate Git review and Tavi App Store update.",
+          "mode": "manual",
+          "checks": [
+            "ATR-TAVIX-POSTBUILD-044-M1"
           ]
         }
       ]
@@ -1158,6 +1179,27 @@
       "stage": "acceptance",
       "description": "Joint Social/Life/Tavi hosted multiplayer acceptance",
       "instructions": "Do not enable the bridge before Social confirms service-side status lookup, Life confirms and deploys create/join/seat/resume, LoopRD host credentials and private origin bindings are reviewed. With two real accounts verify accepted challenge -> Life match/seat -> TaviX game surface -> 60h offline -> turn notifications and backend restart, exact ZIP CI and local operator acceptance. Remain planned while any external contract is unavailable."
+    },
+    {
+      "id": "ATR-TAVIX-POSTBUILD-044-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Required post-build TaviX stage default/override and recipe ordering regressions",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/tavix-stage.test.mjs",
+      "assertions": [
+        "Windows root under C:\\Users\\dorbi\\source\\atrium resolves sibling tavix and forces TAVIX_STAGE_REQUIRED=1",
+        "Explicit repository override respected, Linux CI optional unless env requests required",
+        "No duplicate npm build/staging, source recipes identical and fail on stage subprocess errors",
+        "Existing TaviX extension version 1.0.4 unchanged"
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-POSTBUILD-044-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Real Windows ZipRunner and TaviX acceptance",
+      "instructions": "Run exact installed 0.5.44 source through ZipRunner on Windows; inspect stage output/immutable package and tavi.repository.json. A missing checkout/collision must fail; identical rerun must no-op. Separately review, push tavix and confirm live Pages/Tavi App Store update. Do not mark Done on CI success alone."
     }
   ]
 }

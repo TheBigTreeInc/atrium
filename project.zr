@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.zr/v1",
   "project_key": "atrium",
-  "label": "Atrium \u2014 unified games and app registry (Looprd/DAPI)",
+  "label": "Atrium — unified games and app registry (Looprd/DAPI)",
   "match": [
     "atrium-*-ziprunner.zip"
   ],
@@ -14,8 +14,7 @@
     "npm test",
     "npm run build",
     "npm run verify",
-    "node tools/build_tavi_extension.mjs",
-    "node tools/stage_tavix.mjs"
+    "node tools/post_build_tavix.mjs"
   ],
   "start": [],
   "build_window": "hidden",

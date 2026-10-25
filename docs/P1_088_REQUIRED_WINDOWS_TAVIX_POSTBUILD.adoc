@@ -1,0 +1,39 @@
+= Atrium 0.5.44 — Mandatory Windows TaviX post-build
+:revdate: 2026-10-25
+
+== Operator-requested sequence
+
+In a Windows PowerShell session rooted at the operator's existing Atrium source checkout, the desired effect is:
+
+[source,powershell]
+----
+cd C:\Users\dorbi\source\atrium
+$env:TAVIX_REPOSITORY_DIR = "C:\Users\dorbi\source\tavix"
+$env:TAVIX_STAGE_REQUIRED = "1"
+npm run build
+node tools/build_tavi_extension.mjs
+node tools/stage_tavix.mjs
+----
+
+Both ZipRunner recipes already had the build/verify and extension build/stage commands, but a missing checkout could be ignored because TaviX staging was optional. The new recipe uses `node tools/post_build_tavix.mjs` after `npm run build` and `npm run verify`. The wrapper executes the final two commands in order, once, with the same explicit environment. ZipRunner already sets the Atrium source directory as the command working directory. No manual invocation is needed after successful ZipRunner builds.
+
+== Path, portability, failure policy
+
+* On Windows, derive the absolute TaviX checkout from the Atrium source directory's sibling `../tavix`. At the operator's given path this resolves to exactly `C:\Users\dorbi\source\tavix`. A valid `TAVIX_REPOSITORY_DIR` override takes priority for nonstandard source layouts; Windows still forces `TAVIX_STAGE_REQUIRED=1`.
+* The extension build copies the verified Atrium frontend into `dist-tavi`; the stage script delegates to the existing `tavix/tools/repository.py stage`, validates the immutable package and updates `tavi.repository.json` for review. Any missing checkout/validation failure/collision causes a nonzero Windows ZipRunner build result. No fallback skip is allowed.
+* Linux standalone CI may run without a sibling checkout, but any operator can set `TAVIX_STAGE_REQUIRED=1` to opt in to the same strict behavior on all platforms. The helper never stores machine-specific paths or secrets inside the portable game descriptor or UI bundle.
+* No Git commit/push, GitHub Pages publishing, Tavi application restart or App Store installation happens from Atrium's build. The `tavix` ZipRunner project remains responsible for review/push; Tavi users opt into updates separately.
+
+== Immutable extension version
+
+The compiled TaviX extension stays at `inc.thebigtree.tavi.atrium/1.0.4` because this source-only recipe change must not change the browser UI bytes. A same-version payload collision is a genuine error and must not be overwritten. Repeating an unchanged stage is a no-op.
+
+== Acceptance (pending on Windows)
+
+. Import exact Atrium 0.5.44 source through ZipRunner with the existing `tavix` sibling checkout.
+. Confirm the Windows build logs the required repository path and `TAVIX_STAGE_REQUIRED=1`, then logs `TAVIX_STAGE_READY`, without `TAVIX_STAGE_SKIPPED`.
+. Confirm `tavix/extensions/inc.thebigtree.tavi.atrium/1.0.4/` and the catalog were generated or remain byte-identical; inspect Git diff before separately pushing the `tavix` project.
+. Run an unchanged repeat; no staged byte or index churn. Simulate a missing checkout in a disposable test and confirm a nonzero build, not a silent skip. Test same-version changed bytes reject staging.
+. Confirm GitHub Pages and Tavi App Store advertise `1.0.4` after the independent TaviX review/push, with real Tavi reinstallation/update acceptance.
+
+These are operator acceptance criteria, not claims made by this candidate source ZIP. Life/Social hostless multiplayer integration is unaffected and remains subject to its existing live two-account tests.
