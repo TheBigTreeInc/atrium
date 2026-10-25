@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.36",
+  "version": "0.5.37",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -420,6 +420,27 @@
           "mode": "manual",
           "checks": [
             "ATR-114-LOOPRD-03-READER-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-116-MATERIAL-STORE-AUTOPUBLISH",
+      "criteria": [
+        {
+          "id": "ATR-116-MATERIAL-STORE-AUTOPUBLISH-AC-SOURCE",
+          "description": "Trusted LoopRD games auto-publish through the generic hosted catalog and Material storefront without per-game approval files; unsafe or inactive records fail closed.",
+          "mode": "automated",
+          "checks": [
+            "ATR-116-MATERIAL-STORE-AUTOPUBLISH-T1"
+          ]
+        },
+        {
+          "id": "ATR-116-MATERIAL-STORE-AUTOPUBLISH-AC-OPERATOR",
+          "description": "Exact installed ZIP and physical phone acceptance for Life discovery, launch, removal and Tavi return navigation.",
+          "mode": "manual",
+          "checks": [
+            "ATR-116-MATERIAL-STORE-AUTOPUBLISH-M1"
           ]
         }
       ]
@@ -884,6 +905,27 @@
       "stage": "acceptance",
       "description": "Disposable Looprd 0.3 real reader and candidate receiver acceptance",
       "instructions": "Upgrade disposable host to Looprd 0.3.0 before declaring registrations; issue distinct private reader/sender credentials; verify real schema and source provenance, repeated idempotent updates/withdrawal, exact ZipRunner SHA post-update and GitHub CI before operator approval."
+    },
+    {
+      "id": "ATR-116-MATERIAL-STORE-AUTOPUBLISH-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Automatic trusted publication and responsive storefront source regressions",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_live_hosted_games.py",
+      "assertions": [
+        "Active operator-trusted Life publishes without a second approval file",
+        "Disabled/withdrawn records disappear automatically",
+        "Generic trusted games can publish without Life hardcoding",
+        "Unsafe API/source bindings fail closed"
+      ]
+    },
+    {
+      "id": "ATR-116-MATERIAL-STORE-AUTOPUBLISH-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Life and phone-first game-store acceptance",
+      "instructions": "On the exact installed 0.5.37 ZIP, activate trusted Life discovery with the reviewed HTTPS Pages launch origin. Verify Life appears in Discover/My Games without another approval action, launches on phone/Tavi, and is removed after withdrawal or deployment disable. Check 320/390/768px layouts and Back to Atrium/Tavi navigation."
     }
   ]
 }

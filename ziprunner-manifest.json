@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.36",
+    "version": "0.5.37",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261023-036",
+    "id": "ATR-P1-20261024-037",
     "kind": "source_update",
-    "created_at": "2026-10-23T17:38:00+02:00",
-    "summary": "LoopRD 0.4 native Atrium subcomponents, nested discovery/read-only paths, responsive mobile storefront and Market Grove game; source candidate, no Wallet Gold settlement or publication."
+    "created_at": "2026-10-24T21:38:00+02:00",
+    "summary": "Material-style Atrium game store/lobby and automatic publication for active operator-trusted LoopRD games, including generic Life hosted launch path."
   },
   "planned_work": [
     {
@@ -150,6 +150,12 @@
       "id": "ATR-115-LOOPRD-04-MOBILE",
       "title": "LoopRD 0.4 Atrium nested child and mobile UI",
       "acceptance_criteria": "Source tests plus operator validation of real nested API, reader, responsive phone/tablet layouts and no credential exposure.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-116-MATERIAL-STORE-AUTOPUBLISH",
+      "title": "Material game store and LoopRD-authoritative automatic publication",
+      "acceptance_criteria": "Automated gateway/UI tests plus operator verification that trusted Life appears without a second approval and withdraw/disable removes it.",
       "priority": "high"
     }
   ],
@@ -601,6 +607,27 @@
           "description": "Operator setup, Looprd 0.3 host prerequisite and pending live acceptance"
         }
       ]
+    },
+    {
+      "id": "ATR-116-MATERIAL-STORE-AUTOPUBLISH",
+      "summary": "Replaces the catalog-first shell with responsive Discover/My Games/Lobbies/Activity navigation and generalizes the hosted-game gateway so active games from operator-trusted LoopRD deployments publish automatically after safe atriumd/source/origin validation. Withdrawal/disable removes listings automatically; no per-game approval file is required.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/live_hosted_games.py",
+          "description": "Generic read-only public projection from active operator-trusted LoopRD discovery records"
+        },
+        {
+          "kind": "source",
+          "ref": "web/index.html",
+          "description": "Responsive Material-inspired Discover/My Games/Lobbies/Activity shell"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_live_hosted_games.py",
+          "description": "Automatic publication, generic game, withdrawal and unsafe-binding regressions"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -627,7 +654,7 @@
     {
       "id": "ATR-115-LOOPRD-04-MOBILE",
       "status": "review",
-      "next_action": "Run disposable LoopRD 0.4 and physical phone UI/operator acceptance; no auto-publication."
+      "next_action": "Run disposable LoopRD 0.4 with Life trusted auto-publication and physical phone UI/operator acceptance."
     }
   ],
   "validation": {

@@ -1,33 +1,43 @@
 import {fetchConfiguredHostedCatalog} from './hosted_catalog.mjs';
-/** Safe public launcher: an opaque match reference is never proof of seat ownership. */
+
+const symbolFor = id => id === 'life.loop' ? '⌂' : id === 'market.grove' ? '↗' : '✦';
+const descriptionFor = game => game.gameId === 'life.loop'
+ ? 'Build a life, share a match and return when your next turn is ready.'
+ : 'A LoopRD-hosted game discovered from this deployment.';
+
+/** Public launcher. Trusted LoopRD publication is authoritative; a match id is never seat proof. */
 export async function mountHostedLife({area,fetcher=fetch,openExternal=url=>window.open(url,'_blank','noopener,noreferrer')}){
  const catalog=await fetchConfiguredHostedCatalog(fetcher);
  for(const game of catalog.games){
-  
-  const card=document.createElement('article');card.className='tile';card.dataset.gameId=game.gameId;
-  const body=document.createElement('div');body.className='body';
-  const badge=document.createElement('span');badge.className='pill';badge.textContent='Approved hosted game';
+  const card=document.createElement('article');card.className='game-card';card.dataset.gameId=game.gameId;card.dataset.source='looprd';
+  const cover=document.createElement('div');cover.className='cover';
+  const symbol=document.createElement('span');symbol.className='symbol';symbol.textContent=symbolFor(game.gameId);
+  const live=document.createElement('span');live.className='live';live.textContent='PLAYABLE';cover.append(symbol,live);
+  const body=document.createElement('div');body.className='card-body';
+  const meta=document.createElement('div');meta.className='meta';
+  const badge=document.createElement('span');badge.className='pill';badge.textContent='LoopRD verified';
+  const platform=document.createElement('span');platform.className='pill muted';platform.textContent='Web · Phone';meta.append(badge,platform);
   const heading=document.createElement('h3');heading.textContent=game.title;
-  const blurb=document.createElement('p');blurb.textContent=game.gameId==='life.loop'?'Play or resume through Life. Your game account and seat are verified by Life.':'This game uses its own website and backend; Atrium only provides the reviewed catalog listing.';
+  const blurb=document.createElement('p');blurb.textContent=descriptionFor(game);
+  const actions=document.createElement('div');actions.className='card-actions';
   const matchInput=document.createElement('input');matchInput.type='text';matchInput.placeholder='Existing match ID';matchInput.setAttribute('aria-label','Life match ID for resume');matchInput.maxLength=160;
-  const button=document.createElement('button');button.textContent=typeof window.__atriumTaviLaunch==='function'?(game.gameId==='life.loop'?'Resume Life':'Available on web'):'Open game';
+  const button=document.createElement('button');button.className='btn primary';button.textContent=game.gameId==='life.loop'?'Play Life':'Play';
   button.addEventListener('click',async()=>{
-   // Refresh review before launching; no remote URL from user input or Tavi message.
    try{const current=(await fetchConfiguredHostedCatalog(fetcher)).games.find(g=>g.gameId===game.gameId&&g.deploymentId===game.deploymentId);
-    if(!current||JSON.stringify(current)!==JSON.stringify(game))throw Error('Game approval changed');
+    if(!current||JSON.stringify(current)!==JSON.stringify(game))throw Error('Game publication changed');
     const launchThroughTavi=window.__atriumTaviLaunch;
-    if(typeof launchThroughTavi==='function'){
-     if(game.gameId!=='life.loop')throw Error('Tavi currently supports only Life game handoff; this game remains available through standalone Atrium');
+    if(typeof launchThroughTavi==='function'&&game.gameId==='life.loop'&&matchInput.value.trim()){
      const matchId=matchInput.value.trim();
-     if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(matchId))throw Error('An existing Life match ID is required for Tavi resume');
+     if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(matchId))throw Error('Invalid Life match ID');
      await launchThroughTavi(current.launchUrl,matchId);
-     button.textContent='Approve Open Life in Tavi';
     }else openExternal(current.launchUrl);
-   }catch(e){button.textContent='Launch unavailable';button.disabled=true;}
+   }catch(e){button.textContent='Unavailable';button.disabled=true;button.title=e.message;}
   });
-  if(typeof window.__atriumTaviLaunch==='function'&&game.gameId==='life.loop')body.append(matchInput);
-  if(typeof window.__atriumTaviLaunch==='function'&&game.gameId!=='life.loop'){button.disabled=true;button.title='Tavi must implement a generic external-game launch capability';}
-  body.append(badge,heading,blurb,button);card.append(body);area.append(card);
+  actions.append(button);
+  if(typeof window.__atriumTaviLaunch==='function'&&game.gameId==='life.loop'){
+   const resume=document.createElement('button');resume.className='btn outline';resume.textContent='Resume match';resume.addEventListener('click',()=>{matchInput.hidden=false;matchInput.focus();});actions.append(resume);matchInput.hidden=true;
+  }
+  body.append(meta,heading,blurb,matchInput,actions);card.append(cover,body);area.append(card);
  }
  return catalog.games.length;
 }

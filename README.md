@@ -1,3 +1,7 @@
+= Atrium v0.5.37 — Material game store and LoopRD-authoritative publication
+
+Atrium now presents a phone-first Material-inspired Discover / My Games / Lobbies / Activity experience. Active games from operator-trusted LoopRD deployments are published to the hosted-game catalog automatically after `atriumd/v1`, immutable Git revision, API-origin and HTTPS launch-origin validation. There is no second Life-specific approval document. Withdrawn or disabled deployments disappear automatically. Life remains game-owned for identity, sessions, state and multiplayer; Atrium only discovers and launches it. See `docs/P1_082_MATERIAL_STORE_AUTOPUBLISH.adoc`.
+
 = Atrium v0.5.34 — Optional Looprd 0.3 generic registration reader
 
 Games can include `TheBigTreeInc/atrium/.github/actions/register-game` in their successful Pages-deployment workflow. The action validates their portable metadata and sends a token-free `curl` to an operator-published public LoopRD registration endpoint. A *separate* `auth: public` LoopRD component (`modules/registration/looprd.yaml`) queues limited approved-source hints. Atrium independently verifies the exact successful GitHub Pages workflow and source SHA against its own trusted-source policy before committing Git-backed catalog entries to `main`. Registration is queued immediately; GitHub sync is scheduled every 15 minutes or operator-dispatched. No game-side Atrium repository permission or backend credential is required. The public endpoint cannot authorize a publisher, grant publication or call privileged Atrium APIs.

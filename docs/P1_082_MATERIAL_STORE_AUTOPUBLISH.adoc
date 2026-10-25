@@ -1,0 +1,32 @@
+= Atrium 0.5.37 — Material game store, lobby and LoopRD-authoritative publication
+:revdate: 2026-10-24
+:toc:
+
+== Product role
+
+Atrium is the game app store and lobby for LoopRD-connected games. Tavi remains messenger-first and may host Atrium as an extension; a user must always have an obvious way back to Tavi. The primary player surfaces are Discover, My Games, Lobbies and Activity. Phone layouts use a bottom navigation bar, large touch targets, safe-area spacing and single-column game cards.
+
+== Publication authority
+
+LoopRD is the deployment authority. If the operator trusts and activates a LoopRD deployment, a valid active `atriumd/v1` game observation from that deployment does not require a second Atrium approval. `tools/live_hosted_games.py` projects active `AtriumTrustedInstance` rows joined to active `AtriumTrustedDeployment` rows into the public hosted-game catalog.
+
+Publication still fails closed unless the game identity matches the sidecar, the source is pinned to an immutable 40-hex Git revision, the launch mode is `hosted-web`, the configured launch origin is HTTPS, the entrypoint is relative and safe, and the discovered API remains under the operator-bound API origin. Non-Git discovery remains operator-visible but is not emitted as a public browser launch target.
+
+Withdrawal or disabling the deployment removes the game on the next catalog read. No game record is deleted merely because it is temporarily unavailable.
+
+== Life acceptance path
+
+Life uses the generic path; there is no Life-specific publication exception. Its own LoopRD component supplies `atriumd.yaml`, its deployment binds the `game-web` origin, and Atrium exposes the trusted game as a playable card. Life continues to own sessions, match seats, game state and authorization. Atrium does not mint seats or proxy operator credentials.
+
+Inside Tavi, Atrium may use the existing `__atriumTaviLaunch` handoff for an opaque Life match reference. Without that bridge, Play opens the reviewed hosted URL externally.
+
+== Operator acceptance
+
+. Install the exact 0.5.37 ZipRunner package and activate a trusted Life LoopRD deployment with its immutable source revision and HTTPS launch origin.
+. Confirm Life appears in Discover and My Games without creating a second approval file.
+. Launch Life on desktop and physical phone; verify navigation back to Atrium and Tavi.
+. Withdraw Life and confirm it disappears after refresh, then restore it and confirm it returns.
+. Attempt unsafe origin/API/source substitutions and confirm the public catalog fails closed.
+. Verify layouts at 320, 390 and 768 px plus phone safe areas and keyboard focus.
+
+This source package does not itself activate the operator's LoopRD deployment, publish GitHub Pages, or prove physical-device acceptance.

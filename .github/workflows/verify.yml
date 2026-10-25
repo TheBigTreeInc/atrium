@@ -76,7 +76,7 @@ jobs:
       - name: Build and validate ZipRunner source ZIP
         run: |
           python tools/package_zip.py
-          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.36-ziprunner.zip --expected-project atrium --require-verification-plan
+          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.37-ziprunner.zip --expected-project atrium --require-verification-plan
           python _upstream/ziprunner-spec/tools/validate.py looprd ziprunner.looprd.json --root . --expected-project atrium
       - name: Upload Tavi extension build from same source SHA (no auto-deploy)
         uses: actions/upload-artifact@v4
@@ -87,8 +87,8 @@ jobs:
       - name: Upload source ZIP for operator review (no auto-deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: atrium-0.5.36-ziprunner
-          path: dist/atrium-0.5.36-ziprunner.zip
+          name: atrium-0.5.37-ziprunner
+          path: dist/atrium-0.5.37-ziprunner.zip
           if-no-files-found: error
 
   windows-ziprunner-build:
