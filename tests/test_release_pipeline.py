@@ -8,6 +8,26 @@ from tools.package_zip import NAME, source_files, ROOT
 
 
 class P0ReleaseTests(unittest.TestCase):
+    def test_cross_file_release_version_cannot_drift(self):
+        """0.5.38 regression: package bumped but CI, spec, plan and tests did not."""
+        version=json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']
+        stamp=json.loads((ROOT/'.ziprunner-post-update-tests.json').read_text(encoding='utf-8'))
+        board=json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
+        plan=json.loads((ROOT/'ziprunner-verification-plan.json').read_text(encoding='utf-8'))
+        manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+        workflow=(ROOT/'.github/workflows/verify.yml').read_text(encoding='utf-8')
+        link=json.loads((ROOT/'ziprunner.looprd.json').read_text(encoding='utf-8'))
+        import yaml
+        spec=yaml.safe_load((ROOT/'looprd.yaml').read_text(encoding='utf-8'))
+        for item in (stamp,board,plan):self.assertEqual(item['version'],version)
+        self.assertEqual(spec['release'],version)
+        self.assertEqual(manifest['project']['version'],version)
+        self.assertEqual(NAME,f'atrium-{version}-ziprunner.zip')
+        self.assertIn(f'dist/atrium-{version}-ziprunner.zip',workflow)
+        self.assertEqual(link['specification_sha256'],hashlib.sha256((ROOT/'looprd.yaml').read_bytes()).hexdigest())
+        tavi=json.loads((ROOT/'extensions/tavi/manifest.json').read_text(encoding='utf-8'))
+        self.assertIn(f'atrium-tavi-extension-{tavi["version"]}',workflow)
+
     def test_dapi_smoke_reads_authoritative_release(self):
         from pathlib import Path
         source = (Path(__file__).resolve().parents[1] / 'tools' / 'smoke_dapi.py').read_text(encoding='utf-8')
@@ -16,7 +36,7 @@ class P0ReleaseTests(unittest.TestCase):
 
 
     def test_package_identity_and_required_files(self):
-        self.assertEqual(NAME, 'atrium-0.5.37-ziprunner.zip')
+        self.assertEqual(NAME, f"atrium-{json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']}-ziprunner.zip")
         paths={path.relative_to(ROOT).as_posix() for path in source_files()}
         self.assertTrue({'.ziprunner-workboard-update.json','project.zr',
                          'ziprunner.looprd.json','ziprunner-verification-plan.json',
@@ -45,7 +65,7 @@ class P0ReleaseTests(unittest.TestCase):
         self.assertTrue(all(x.startswith('ATR-') for x in ids))
         self.assertIn('ATR-P0-004',ids)
         self.assertEqual(update['project'],'atrium')
-        self.assertEqual(update['version'],'0.5.37')
+        self.assertEqual(update['version'],json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version'])
 
     def test_workboard_items_meet_ziprunner_intake_contract(self):
         """Regression: ZipRunner refuses any remaining item lacking summary."""
@@ -86,7 +106,7 @@ class P0ReleaseTests(unittest.TestCase):
             self.assertTrue(isinstance(item['next_action'],str) and item['next_action'].strip())
             if item['status']=='blocked':
                 self.assertTrue(item.get('blockers'))
-        self.assertEqual(manifest['project']['version'],'0.5.37')
+        self.assertEqual(manifest['project']['version'],json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version'])
 
     def test_verification_plan_exact_implemented_coverage(self):
         """Pinned ZipRunner 2.3 verification-plan task and check linkage."""

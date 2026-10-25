@@ -3,6 +3,17 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const bridge=fs.readFileSync('extensions/tavi/extension-bridge.mjs','utf8');
 const cards=fs.readFileSync('src/hosted_cards.mjs','utf8');
-test('Tavi 0.3.66 launch requires feature negotiation and user approval',()=>{assert.match(bridge,/atrium.tavi-launch\/v1/);assert.match(bridge,/ui.requestGameLaunch/);assert.match(bridge,/awaitingApproval/);assert.match(bridge,/host.info/);});
-test('hosted card refreshes approval before Tavi request',()=>{assert.match(cards,/fetchConfiguredHostedCatalog\(fetcher\)/);assert.match(cards,/JSON.stringify\(current\)!==JSON.stringify\(game\)/);assert.match(cards,/launchThroughTavi\(current.launchUrl,matchId\)/);});
-test('no tokens or popup privilege in Tavi bridge',()=>{assert.doesNotMatch(bridge,/window.open|location.assign|Bearer\s|localStorage|sessionStorage|allow-popups/);});
+test('TaviX advertised surface first, Life-only opt-in legacy fallback',()=>{
+ assert.match(bridge,/tavix.surface\/v1/);assert.match(bridge,/assertTaviXHostInfo/);
+ assert.match(bridge,/atrium.tavi-launch\/v1/);assert.match(bridge,/ui.requestGameLaunch/);
+ assert.match(bridge,/awaitingApproval/);assert.match(bridge,/tavi.info\(/);
+});
+test('hosted game refreshes publication before Tavi surface or browser',()=>{
+ assert.match(cards,/fetchConfiguredHostedCatalog\(fetcher\)/);
+ assert.match(cards,/JSON.stringify\(current\)!==JSON.stringify\(game\)/);
+ assert.match(cards,/surfaceLaunch\(game.gameId,current.launchUrl,matchId\)/);
+ assert.match(cards,/if\(!opened\)openExternal\(current.launchUrl\)/);
+});
+test('no bearer tokens or popup privilege in TaviX bridge',()=>{
+ assert.doesNotMatch(bridge,/window.open|location.assign|Bearer\s|localStorage|sessionStorage|allow-popups/);
+});

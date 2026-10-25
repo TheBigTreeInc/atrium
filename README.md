@@ -1,3 +1,9 @@
+= Atrium v0.5.39 — TaviX staging repair and generic game surfaces
+
+Atrium 0.5.39 corrects 0.5.38 release identity drift across `package.json`, `looprd.yaml`, ZipRunner workboard, post-update stamp, verification plan, CI names, packaging and Python release tests. The TaviX extension changes from immutable version `1.0.2` to `1.0.3` to preserve already staged/published `1.0.2` bytes. The user-supplied TaviX 1.0.0 SDK drives host-owned navigation and `tavix.surface/v1` where advertised; Life keeps feature-gated `atrium.tavi-launch/v1` compatibility for clients without generic surfaces. See `docs/P1_084_TAVIX_STAGE_REPAIR.adoc`.
+
+This is a versioned *source* build candidate, not proof that the 0.5.39 package ran on the operator Windows ZipRunner host, that TaviX 1.0.3 was published, that Life was live-discovered, or that a real Tavi client advertised generic surface support. The separate TaviX repository owns all published extension releases. No runtime data, secrets, operator keys, Git push or native Tavi rebuild is included. Existing workboard ticket statuses remain operator-owned.
+
 = Atrium v0.5.37 — Material game store and LoopRD-authoritative publication
 
 Atrium now presents a phone-first Material-inspired Discover / My Games / Lobbies / Activity experience. Active games from operator-trusted LoopRD deployments are published to the hosted-game catalog automatically after `atriumd/v1`, immutable Git revision, API-origin and HTTPS launch-origin validation. There is no second Life-specific approval document. Withdrawn or disabled deployments disappear automatically. Life remains game-owned for identity, sessions, state and multiplayer; Atrium only discovers and launches it. See `docs/P1_082_MATERIAL_STORE_AUTOPUBLISH.adoc`.
@@ -336,3 +342,6 @@ service-specific grants. See `docs/P1_080_MARKET_GROVE_LOOPRD_IMPORT.adoc`.
 
 No Tavi Gold trading or Social account sign-in is wired into this source
 candidate. Don't expose the practice-game operator key form as public login.
+
+
+Atrium 0.5.38 TaviX distribution: the ZipRunner recipe builds its Tavi UI, then stages it into a sibling `tavix` checkout after verification. No Git push or hosted publication is performed. See `docs/P1_083_TAVIX_GIT_STAGING.adoc`.

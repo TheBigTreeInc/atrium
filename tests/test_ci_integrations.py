@@ -57,11 +57,12 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn('A further fresh server must read committed DB state', smoke)
 
     def test_ci_artifacts_use_current_source_version(self):
-        self.assertIn('atrium-0.5.37-ziprunner.zip', self.workflow)
+        version=json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']
+        self.assertIn(f'atrium-{version}-ziprunner.zip', self.workflow)
         self.assertNotIn('atrium-0.4.7-ziprunner.zip', self.workflow)
         self.assertNotIn('atrium-0.5.18-ziprunner', self.workflow)
-        self.assertIn('name: atrium-0.5.37-ziprunner', self.workflow)
-        self.assertIn('path: dist/atrium-0.5.37-ziprunner.zip', self.workflow)
+        self.assertIn(f'name: atrium-{version}-ziprunner', self.workflow)
+        self.assertIn(f'path: dist/atrium-{version}-ziprunner.zip', self.workflow)
         self.assertIn('python tools/run_python_checks.py', self.workflow)
 
 

@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.37",
-  "summary": "0.5.37 turns Atrium into a Material-inspired game store and lobby, and treats active operator-trusted LoopRD game deployments as automatically published after contract validation. Life can appear through the generic hosted-game path without a second approval file.",
+  "version": "0.5.39",
+  "summary": "Atrium 0.5.39 repairs 0.5.38 cross-file release and TaviX immutable staging versions, adopts user-supplied TaviX SDK surface-first with explicit Life compatibility; operator acceptance remains pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -85,7 +85,7 @@
       "title": "Persist reviewed-only portable game discovery candidates",
       "summary": "Operator-key protected candidate POST/GET validates portable atriumd/v1, records immutable source revision/fingerprint per deployment/component, rejects publisher takeover and never publishes. Atrium DB schema v3 additive.",
       "operator_checks": [
-        "Back up Atrium SQLite DB before v2\u2192v3; verify schema migration on disposable deployment and test existing publisher history.",
+        "Back up Atrium SQLite DB before v2→v3; verify schema migration on disposable deployment and test existing publisher history.",
         "After external Looprd game activates, use deployer command with private apps:approve key; verify candidate appears only in operator GET queue and public Pages catalog stays unchanged."
       ]
     },
@@ -106,7 +106,7 @@
       "priority": "high",
       "summary": "Source implements additive schema v4, scoped issue/verify/status endpoints and direct pinned public-IP HTTPS verification; proof never grants identity or publication.",
       "operator_checks": [
-        "Backup SQLite and validate additive schema v3\u2192v4 on a disposable DAPI deployment without changing existing releases.",
+        "Backup SQLite and validate additive schema v3→v4 on a disposable DAPI deployment without changing existing releases.",
         "Issue challenge for an existing operator-approved publisher/origin, host exactly the returned bytes at the HTTPS proof URL, then verify via apps:approve scope.",
         "Confirm private DNS, DNS rebinding, redirect, TLS failure, expired/replayed/reissued proof, wrong origin and second-publisher attempts fail closed.",
         "Ensure public catalog and publisher approval remain unchanged; verification does not identify a Social user or approve publication."
@@ -163,7 +163,7 @@
       "title": "Atrium automatic owner-trusted v2 game metadata registration and durable DAPI 0.2.0 acknowledgement",
       "summary": "v2 receiver is a source candidate; operator stages actual Looprd 0.2.0 sender with dedicated service credential and schema v6 migration. Does not publish an immutable game release or authorize player launch.",
       "operator_checks": [
-        "Back up Atrium v5 database and rehearse additive v5\u2192v6 migration; preserve old publisher, candidate and immutable release rows.",
+        "Back up Atrium v5 database and rehearse additive v5→v6 migration; preserve old publisher, candidate and immutable release rows.",
         "Configure one trusted deployment binding (service subject, publisher namespace, trusted API origin and originRef map); exercise real Looprd 0.2.0 GET capabilities and POST observations under apps:discover only.",
         "Verify exact and delayed replay, source updates, withdraw/re-register, multiple components/deployments, game-ID changes, wrong credential, conflicting publisher, and no automatic public AppRelease.",
         "Run exact installed ZIP post-update tests and both GitHub CI jobs before operator acceptance; verify DAPI sender remains disabled until the gates pass."
@@ -201,6 +201,16 @@
         "Disable or withdraw the Life component and verify it disappears on the next catalog refresh; restore it and verify it returns.",
         "Verify 320/390/768px layouts, bottom navigation, Play/Resume affordances and easy return to Atrium/Tavi on a physical phone.",
         "Confirm malformed launch origins, untrusted API origins and non-immutable public source revisions fail closed."
+      ]
+    },
+    {
+      "id": "ATR-TAVIX-PUBLISH-038",
+      "title": "Stage compiled TaviX Atrium extension after successful build",
+      "summary": "Post-build staging into Git-reviewed TaviX repository; 0.5.39 increments immutable extension to 1.0.3, fixes release CI/test mismatch, and adds TaviX SDK surface-first launch with Life compatibility. Local/target staging acceptance pending.",
+      "operator_checks": [
+        "Run Atrium 0.5.39 build with sibling tavix project and verify new TaviX release + unchanged other apps.",
+        "Run a second identical build and confirm no changes. Reuse same version with modified content and verify fail-closed collision.",
+        "Review Git diff in tavix, manually push and verify Pages and Tavi opt-in App Store; no implicit operator approval."
       ]
     }
   ],

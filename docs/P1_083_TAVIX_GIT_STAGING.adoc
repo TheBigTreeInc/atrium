@@ -1,0 +1,10 @@
+= Atrium 0.5.38 — TaviX Git checkout staging
+:revdate: 2026-10-25
+
+The ZipRunner `project.zr` and `atrium.zr` run the existing Python and Node tests, `npm run build`, `npm run verify`, `node tools/build_tavi_extension.mjs`, then `node tools/stage_tavix.mjs`. The extension output is `dist-tavi` with `manifest.json` and `ui/` assets. Pages-only `.nojekyll` is not bundled.
+
+With the sibling project checkout at `../tavix` (or an operator-selected `TAVIX_REPOSITORY_DIR`), stage into `tavix/extensions/inc.thebigtree.tavi.atrium/1.0.2/`. Repeated exact builds are no-ops. Reusing version `1.0.2` with modified bytes is rejected until Atrium increments its *extension* manifest version. The canonical TaviX project owns `tavi.repository.json`; Atrium never writes it directly.
+
+Without that separate checkout, source/local build still passes and writes `TAVIX_STAGE_SKIPPED`; set `TAVIX_STAGE_REQUIRED=1` to require publishing staging. Failed staging with a present checkout fails the recipe and preserves the last reviewed release. No script invokes Git push/commit, GitHub API, or Tavi client rebuild. Operator verifies the `tavix` Git diff/push, Pages and mobile/native App Store separately. Existing standalone Atrium GitHub Pages publication and LoopRD game discovery are independent.
+
+See `P1_084_TAVIX_STAGE_REPAIR.adoc` for the next release/version repair.

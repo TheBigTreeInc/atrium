@@ -25,16 +25,19 @@ export async function mountHostedLife({area,fetcher=fetch,openExternal=url=>wind
   button.addEventListener('click',async()=>{
    try{const current=(await fetchConfiguredHostedCatalog(fetcher)).games.find(g=>g.gameId===game.gameId&&g.deploymentId===game.deploymentId);
     if(!current||JSON.stringify(current)!==JSON.stringify(game))throw Error('Game publication changed');
-    const launchThroughTavi=window.__atriumTaviLaunch;
-    if(typeof launchThroughTavi==='function'&&game.gameId==='life.loop'&&matchInput.value.trim()){
-     const matchId=matchInput.value.trim();
-     if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(matchId))throw Error('Invalid Life match ID');
-     await launchThroughTavi(current.launchUrl,matchId);
-    }else openExternal(current.launchUrl);
+    const matchId=game.gameId==='life.loop'?matchInput.value.trim():'';
+    if(matchId&&!/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/.test(matchId))throw Error('Invalid Life match ID');
+    const surfaceLaunch=window.__atriumTaviOpenGame;
+    const oldLifeLaunch=window.__atriumTaviLaunch;
+    if(typeof surfaceLaunch==='function'){
+     const opened=await surfaceLaunch(game.gameId,current.launchUrl,matchId);
+     if(!opened)openExternal(current.launchUrl); // host lacks optional surface capability
+    }else if(game.gameId==='life.loop'&&matchId&&typeof oldLifeLaunch==='function')await oldLifeLaunch(current.launchUrl,matchId);
+    else openExternal(current.launchUrl);
    }catch(e){button.textContent='Unavailable';button.disabled=true;button.title=e.message;}
   });
   actions.append(button);
-  if(typeof window.__atriumTaviLaunch==='function'&&game.gameId==='life.loop'){
+  if((typeof window.__atriumTaviOpenGame==='function'||typeof window.__atriumTaviLaunch==='function')&&game.gameId==='life.loop'){
    const resume=document.createElement('button');resume.className='btn outline';resume.textContent='Resume match';resume.addEventListener('click',()=>{matchInput.hidden=false;matchInput.focus();});actions.append(resume);matchInput.hidden=true;
   }
   body.append(meta,heading,blurb,matchInput,actions);card.append(cover,body);area.append(card);

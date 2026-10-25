@@ -1,0 +1,18 @@
+= Atrium 0.5.39 — TaviX immutable output and ZipRunner build correction
+:revdate: 2026-10-25
+
+== Cause and correction
+
+The Atrium 0.5.38 source package changed its `package.json` to 0.5.38 but retained 0.5.37 in `looprd.yaml`, `ziprunner-verification-plan.json`, the GitHub CI archive paths, and source tests. This release corrects the complete cross-file release identity. The optional TaviX staging integration also attempted to reuse immutable extension version `1.0.2` despite newly compiled UI bytes; `TheBigTreeInc/tavix` already contains `extensions/inc.thebigtree.tavi.atrium/1.0.2/`. Atrium 0.5.39 stages extension version `1.0.3` instead. Do not overwrite `1.0.2`.
+
+== Host API
+
+The extension uses the user-provided TaviX 1.0.0 browser SDK (`extensions/tavi/tavix-sdk.mjs`) for generic `tavix.surface/v1` game launch where advertised, and `navigation.close` for the Return to Tavi control. The pre-existing `atrium.tavi-launch/v1` Life match handoff remains a compatibility path, only when that legacy feature is explicitly advertised. An older Tavi host without a generic surface broker keeps normal browser launch for non-Life games and unmatched sessions. No bearer token, operator credential or implied session authority enters a game surface.
+
+== Build/stage boundary
+
+The pinned TaviX repository script controls staging and index generation. The build calls it only after Python tests, Node tests, Pages build and static checks; an absent optional checkout is logged as a skip, while a configured/available checkout with a real validation or collision error fails closed. No Git commit, push, repository release or Tavi client rebuild is performed by Atrium. TaviX stages to `extensions/inc.thebigtree.tavi.atrium/1.0.3/`; a second byte-identical build is a no-op and any modified 1.0.3 payload must be assigned another extension version. Review diffs in `tavix` and publish through its own Git workflow.
+
+== Verification
+
+Run `python tools/setup_build_env.py`, `python tools/run_python_checks.py`, `npm test`, `npm run build`, `npm run verify`, `node tools/build_tavi_extension.mjs`, `node tools/stage_tavix.mjs` and `python tools/package_zip.py`. Verify the installed source ZIP SHA through ZipRunner and both exact-commit GitHub CI jobs separately. Live Life launch, native mobile device UI and an active LoopRD game discovery sender remain operator/runtime acceptance items, not claims of this source-only package.

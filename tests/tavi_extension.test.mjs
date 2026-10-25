@@ -1,5 +1,20 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 const manifest=JSON.parse(fs.readFileSync('extensions/tavi/manifest.json','utf8'));
-test('current Tavi API v1 permissions only',()=>{assert.equal(manifest.schema,'tavi.extension/v1');assert.deepEqual(manifest.permissions,['ui.panel']);assert.equal(manifest.hostApi.min,'1.0.0');});
-test('extension only closes its panel, not Social',()=>{const bridge=fs.readFileSync('extensions/tavi/extension-bridge.mjs','utf8');assert.match(bridge,/hostCall\('ui.close'\)/);assert.doesNotMatch(bridge,/Bearer\s|localStorage|sessionStorage|Authorization:/);});
-test('one shared Atrium web source',()=>{const builder=fs.readFileSync('tools/build_tavi_extension.mjs','utf8');assert.match(builder,/cp\(path.join\(web,'src'\),path.join\(dest,'src'\)/);assert.doesNotMatch(builder,/mock_life_api.*writeFile/);});
+test('TaviX extension uses immutable 1.0.3 and only panel permission',()=>{
+ assert.equal(manifest.schema,'tavi.extension/v1');assert.equal(manifest.version,'1.0.3');
+ assert.deepEqual(manifest.permissions,['ui.panel']);assert.equal(manifest.hostApi.min,'1.0.0');
+});
+test('TaviX SDK is used for scoped navigation, not a private host broker',()=>{
+ const bridge=fs.readFileSync('extensions/tavi/extension-bridge.mjs','utf8');
+ const sdk=fs.readFileSync('extensions/tavi/tavix-sdk.mjs','utf8');
+ assert.match(bridge,/createTaviXSDK/);assert.match(bridge,/tavi\.navigation\.close\(\)/);
+ assert.match(bridge,/tavix\.surface\/v1/);assert.match(bridge,/requestGameLaunch/);
+ assert.match(sdk,/TAVIX_STANDARD='tavix\/1.0'/);
+ assert.doesNotMatch(bridge,/window\.parent\.postMessage|Bearer\s|localStorage|sessionStorage|Authorization:/);
+});
+test('one shared Atrium web source, with SDK packaged as extension-only asset',()=>{
+ const builder=fs.readFileSync('tools/build_tavi_extension.mjs','utf8');
+ assert.match(builder,/cp\(path.join\(web,'src'\),path.join\(dest,'src'\)/);
+ assert.match(builder,/tavix-sdk\.mjs/);
+ assert.doesNotMatch(builder,/mock_life_api.*writeFile/);
+});

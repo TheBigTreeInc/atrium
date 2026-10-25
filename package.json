@@ -1,6 +1,6 @@
 {
   "name": "atrium",
-  "version": "0.5.37",
+  "version": "0.5.39",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,6 +10,8 @@
     "verify": "node tools/verify_web.mjs",
     "check": "npm test && npm run build && npm run verify",
     "build:tavi": "npm run build && node tools/build_tavi_extension.mjs",
-    "repository:tavi": "node tools/build_tavi_repository.mjs"
+    "repository:tavi": "node tools/build_tavi_repository.mjs",
+    "tavix:stage": "node tools/stage_tavix.mjs",
+    "build:tavix": "npm run build:tavi && npm run tavix:stage"
   }
 }

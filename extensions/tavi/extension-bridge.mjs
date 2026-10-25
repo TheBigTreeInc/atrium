@@ -1,52 +1,80 @@
-// Tavi 0.3.66 official Atrium extension: exact, opt-in launch broker.
-// No Social credentials, Life proofs, iframe popups or ambient navigation.
-const CHANNEL = 'tavi.extension/v1';
-let sequence = 0;
-const pending = new Map();
-function hostCall(method, extra = {}) {
- const id = ++sequence;
- return new Promise((resolve, reject) => {
-  const timer = setTimeout(() => { pending.delete(id); reject(Error('Tavi host did not respond')); }, 10000);
-  pending.set(id,{resolve,reject,timer});
-  window.parent.postMessage({channel:CHANNEL,direction:'request',id,method,...extra},'*');
- });
-}
-window.addEventListener('message', event => {
- if(event.source !== window.parent || event.data?.channel !== CHANNEL || event.data.direction !== 'response')return;
- const entry = pending.get(event.data.id);if(!entry)return;
- pending.delete(event.data.id);clearTimeout(entry.timer);
- if(event.data.ok)entry.resolve(event.data.result);else entry.reject(Error(event.data.error || 'Tavi host rejected request'));
-});
+// Atrium TaviX 1.0 browser integration. Tavi is messenger-first; game surfaces
+// are optional and must be explicitly advertised by the Tavi host.
+// SDK 1.0.0 supplied with the Atrium 0.5.39 source. No bearer, Social token,
+// LoopRD operator key or player proof is forwarded into the launched surface.
+import {createTaviXSDK, assertTaviXHostInfo} from './tavix-sdk.mjs';
+
+const tavi=createTaviXSDK();
 const MATCH=/^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
-const TARGET= /^https:\/\//;
-export function exactLifeHandoff(target, matchId) {
- if(typeof target!=='string'||!TARGET.test(target)||typeof matchId!=='string'||!MATCH.test(matchId))throw Error('Invalid Life launch context');
+const GAME=/^[a-z][a-z0-9.-]{2,118}$/;
+
+function validatedTarget(target){
+ if(typeof target!=='string'||!target.startsWith('https://'))throw Error('Invalid game launch target');
  const url=new URL(target);
- if(url.href!==target||url.protocol!=='https:'||url.username||url.password||url.search||url.hash||url.port||!url.hostname.includes('.')||url.hostname.endsWith('.localhost')||url.hostname.endsWith('.local')||url.hostname.endsWith('.internal')||/^\d+(?:\.\d+){3}$/.test(url.hostname)||url.hostname.includes(':'))throw Error('Unapproved Life target');
+ if(url.href!==target||url.protocol!=='https:'||url.username||url.password||url.search||url.hash||url.port||!url.hostname.includes('.')||
+    ['.localhost','.local','.internal','.test'].some(x=>url.hostname.endsWith(x))||
+    /^\d+(?:\.\d+){3}$/.test(url.hostname)||url.hostname.includes(':'))throw Error('Unapproved game target');
+ return target;
+}
+
+export function exactLifeHandoff(target,matchId){
+ validatedTarget(target);
+ if(typeof matchId!=='string'||!MATCH.test(matchId))throw Error('Invalid Life match context');
  return {schema:'atrium.tavi-launch/v1',gameId:'life.loop',target,matchContext:{matchId}};
 }
-export async function requestLifeLaunch(target, matchId) {
- const handoff=exactLifeHandoff(target,matchId);
- const info=await hostCall('host.info');
- if(!info?.features?.includes('atrium.tavi-launch/v1'))throw Error('Tavi does not support reviewed Life launch');
- const result=await hostCall('ui.requestGameLaunch',{handoff});
- if(result?.awaitingApproval!==true)throw Error('Tavi did not queue Life launch');
- return result;
-}
-// Loaded only in the official Tavi iframe build. Standalone web never uses it.
-window.__atriumTaviLaunch = requestLifeLaunch;
-document.getElementById('returnTavi')?.addEventListener('click',async event=>{
- const button=event.currentTarget;button.disabled=true;
- try{await hostCall('ui.close');}catch{button.disabled=false;}
-});
-// The outer Tavi host owns Home and App Store navigation. Hide the
-// injected escape button ONLY when host.info verifies that this specific
-// extension is embedded with host-managed navigation. Preserve fallback for
-// older Tavi hosts (and when host handshake fails).
-export function hostOwnsNavigation(info) {
+
+export function hostOwnsNavigation(info){
  return info?.extensionId==='inc.thebigtree.tavi.atrium' &&
         info?.mode==='embedded' && info?.navigation==='host';
 }
-void hostCall('host.info').then(info=>{
- if(hostOwnsNavigation(info))document.getElementById('returnTavi')?.remove();
+
+export async function requestLifeLaunch(target,matchId,info){
+ const handoff=exactLifeHandoff(target,matchId);
+ const host=info||await tavi.info();
+ if(!host?.features?.includes('atrium.tavi-launch/v1'))throw Error('Tavi does not support reviewed Life launch');
+ const result=await tavi.ui.requestGameLaunch(handoff); // compatibility: ui.requestGameLaunch
+ if(result?.awaitingApproval!==true)throw Error('Tavi did not queue Life launch');
+ return result;
+}
+
+/** Returns false only when a capability is absent, allowing a normal browser launch. */
+export async function requestGameSurface(gameId,target,matchId=''){
+ if(typeof gameId!=='string'||!GAME.test(gameId))throw Error('Invalid game identity');
+ validatedTarget(target);
+ if(matchId&&(!MATCH.test(matchId)||gameId!=='life.loop'))throw Error('Invalid game match context');
+ let info;
+ try{info=await tavi.info();}catch{return false;}
+ if(info?.features?.includes('tavix.surface/v1')){
+  // New games only use a conforming, capability-advertising TaviX host.
+  assertTaviXHostInfo(info);
+  await tavi.surfaces.requestOpen({
+   schema:'tavix.surface/v1',id:gameId,kind:'game',target,
+   context:matchId?{matchId}:{},presentation:'auto'
+  });
+  return true;
+ }
+ if(gameId==='life.loop'&&matchId&&info?.features?.includes('atrium.tavi-launch/v1')){
+  await requestLifeLaunch(target,matchId,info);
+  return true;
+ }
+ return false;
+}
+
+// These bindings exist only in the TaviX extension build, not public Pages.
+window.__atriumTaviOpenGame=requestGameSurface;
+window.__atriumTaviLaunch=(target,matchId)=>requestLifeLaunch(target,matchId);
+
+const returnButton=document.getElementById('returnTavi');
+returnButton?.addEventListener('click',async()=>{
+ returnButton.disabled=true;
+ try{
+  const info=await tavi.info();
+  if(info?.standard==='tavix/1.0'){
+   assertTaviXHostInfo(info);
+   await tavi.navigation.close();
+  }else await tavi.ui.close(); // old Tavi host fallback
+ }catch{returnButton.disabled=false;}
+});
+void tavi.info().then(info=>{
+ if(hostOwnsNavigation(info))returnButton?.remove();
 }).catch(()=>{});
