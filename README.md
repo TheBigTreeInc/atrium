@@ -1,3 +1,7 @@
+# Atrium 0.5.47 — Windows TaviX stage reliability
+
+Repairs the 0.5.46 Windows `npm test` failure with isolated TaviX contract fixtures and correct archived/current immutable release verification. No live Life activation is claimed. See `docs/P1_091_TAVIX_STAGING_WINDOWS_REPAIR.adoc`.
+
 # Atrium 0.5.45 — required Windows TaviX post-build staging
 
 Atrium's ZipRunner recipes run `npm run build`, `npm run verify`, then `node tools/post_build_tavix.mjs`. The post-build script builds the Tavi extension and stages it into the sibling **tavix** repository. For a Windows checkout at `C:\Users\dorbi\source\atrium`, it automatically sets `TAVIX_REPOSITORY_DIR=C:\Users\dorbi\source\tavix` and `TAVIX_STAGE_REQUIRED=1`. A missing checkout, invalid package or immutable-release collision fails the Windows build rather than skipping distribution silently. A separately configured TAVIX_REPOSITORY_DIR is respected.

@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.45",
+  "version": "0.5.47",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -590,6 +590,48 @@
           "mode": "manual",
           "checks": [
             "ATR-TAVIX-BUILD-ANCHOR-045-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-146-HOSTED-CATALOG-RELEASE",
+      "criteria": [
+        {
+          "id": "ATR-146-HOSTED-CATALOG-RELEASE-AC-SOURCE",
+          "description": "Operator-configured hosted gateway must be applied before TaviX immutable build and stage; blank URL retains 1.0.4, approved URL selects 1.0.5; missing or invalid URL fails closed.",
+          "mode": "automated",
+          "checks": [
+            "ATR-146-HOSTED-CATALOG-RELEASE-T1"
+          ]
+        },
+        {
+          "id": "ATR-146-HOSTED-CATALOG-RELEASE-AC-OPERATOR",
+          "description": "Live approved LoopRD origin, public TLS read-only gateway, immutable new extension, Tavi install and Life end-to-end reviewed independently.",
+          "mode": "manual",
+          "checks": [
+            "ATR-146-HOSTED-CATALOG-RELEASE-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-147-TAVIX-STAGE-ISOLATION",
+      "criteria": [
+        {
+          "id": "ATR-147-TAVIX-STAGE-ISOLATION-AC-SOURCE",
+          "description": "Isolate Windows npm staging tests from operator TaviX and preserve historical immutable releases without downgrading the active catalog.",
+          "mode": "automated",
+          "checks": [
+            "ATR-147-TAVIX-STAGE-ISOLATION-T1"
+          ]
+        },
+        {
+          "id": "ATR-147-TAVIX-STAGE-ISOLATION-AC-OPERATOR",
+          "description": "Windows ZipRunner succeeds and actual normal build stages to the user-owned TaviX Git checkout without auto-publication.",
+          "mode": "manual",
+          "checks": [
+            "ATR-147-TAVIX-STAGE-ISOLATION-M1"
           ]
         }
       ]
@@ -1242,6 +1284,48 @@
       "stage": "acceptance",
       "description": "Installed Windows ZipRunner and TaviX repository operator acceptance",
       "instructions": "In real C:\\Users\\dorbi\\source\\atrium verify npm run build produces TAVIX_STAGE_READY and release 1.0.4 appears in sibling tavix repo, then perform separate TaviX push/Pages/Tavi upgrade and device checks. No implied acceptance."
+    },
+    {
+      "id": "ATR-146-HOSTED-CATALOG-RELEASE-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Default/hosted release build and gateway validation regression",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/tavix-stage.test.mjs",
+      "assertions": [
+        "Blank gateway continues to stage previously published 1.0.4 with unchanged manifest and assets",
+        "Missing required endpoint or credential-bearing URL makes build fail before staging",
+        "Approved HTTPS /hosted-games.json endpoint is configured before TaviX compiling and yields version 1.0.5",
+        "Live release uses explicit source-controlled version metadata"
+      ]
+    },
+    {
+      "id": "ATR-146-HOSTED-CATALOG-RELEASE-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Private operator runtime activation with read-only published gateway and TaviX Pages release",
+      "instructions": "Follow docs/P1_090_LIFE_HOSTED_CATALOG_ACTIVATION.adoc: preserve every existing launchOrigins binding, inspect active Life source, operate TLS read-only gateway, run approved URL build once, verify immutable 1.0.5 staged asset hashes and independently accept installed Tavi and Life authorized seats."
+    },
+    {
+      "id": "ATR-147-TAVIX-STAGE-ISOLATION-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Isolated Windows TaviX fixture and historical/current index safety regression",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/tavix-stage.test.mjs",
+      "assertions": [
+        "Windows contract tests stage only into a temporary TaviX repository",
+        "Approved 1.0.5 build followed by default 1.0.4 retains 1.0.5 as catalog current",
+        "Immutable 1.0.5 archive hash remains identical through offline rebuild",
+        "Stage cannot falsely report a higher staged version with an older catalog index"
+      ]
+    },
+    {
+      "id": "ATR-147-TAVIX-STAGE-ISOLATION-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Verify real Windows operator staging separate from contract tests",
+      "instructions": "Import 0.5.47 with ZipRunner. Confirm npm test success with no actual TaviX repository edits, then npm run build stages current 1.0.4 or reports ARCHIVED when current index already higher. Preserve local private data and review TaviX Git changes separately before publication."
     }
   ]
 }

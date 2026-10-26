@@ -1,0 +1,23 @@
+= Atrium 0.5.47: TaviX Windows ZipRunner regression repair
+:toc:
+
+== Source of the incident
+
+The Windows ZipRunner `atrium-0.5.46` report shows 337 Python tests succeeded while the Node suite had 61 passes / 1 failure. `tests/tavix-stage.test.mjs` built the approved hosted variant `1.0.5` then the normal offline `1.0.4` using `TAVIX_STAGE_REQUIRED=0`. On operator Windows, `tavixPostBuildEnvironment` deliberately makes TaviX staging mandatory, despite that test override. The test consequently targeted the real adjacent TaviX checkout. The staging tool reported `1.0.4` as `unchanged` but the Atrium post-stage validator required the currently indexed extension to have version `1.0.4` despite the newer `1.0.5` release being current. It threw `TAVIX_STAGE_INCOMPLETE`.
+
+== Fixed source behavior
+
+* Contract tests point `TAVIX_REPOSITORY_DIR` at a disposable fixture and select `TAVIX_PYTHON=node` for an isolated test-only `repository.py`. They never override mandatory Windows staging and never target the sibling operator checkout.
+* The staging verifier requires real archived manifest, `.tavix`, and index file. The catalog must have exactly one entry for the extension and the listed entrypoint must match its own indexed version.
+* If the indexed version equals the staged version, report `TAVIX_STAGE_READY`. If the indexed version is higher, report `TAVIX_STAGE_ARCHIVED`, preserving the existing newer catalog selection. A missing index, entrypoint mismatch, or an indexed version older than the requested stage fails closed.
+* Regression tests build 1.0.5 from a public test URL, switch back to default 1.0.4, and verify the 1.0.5 archive SHA-256 and active index remain intact. An additional isolated test rejects an outdated current index.
+* No real public gateway, Git push, operator account, deployment, live Tavi session, or Life match is configured by this source package.
+
+== Acceptance on Windows
+
+. Import `atrium-0.5.47-ziprunner.zip` as a normal source update. Preserve `.env`, `ziprunner.config.json`, secrets, TaviX repository state, and generated output.
+. Check Python tests pass and `npm test` passes with no actual sibling TaviX repository changes due to tests.
+. Check the regular build (after tests) invokes the real sibling TaviX staging process and reports either `TAVIX_STAGE_READY` or `TAVIX_STAGE_ARCHIVED` as appropriate for indexed release state. `TAVIX_STAGE_ARCHIVED` is not proof that 1.0.4 is currently offered in the client.
+. Independently review TaviX Git diff and published index before any push or Tavi client update. Accept live hosted Life activation separately as specified in P1_090.
+
+No immutable TaviX extension version is bumped by this source-only repair. Public 1.0.5 remains gated on operator-approved HTTPS hosted catalog activation.

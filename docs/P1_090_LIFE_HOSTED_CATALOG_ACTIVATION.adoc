@@ -1,0 +1,64 @@
+= P1-090 — Atrium activation of registered Life in hosted TaviX catalog
+:revdate: 2026-10-26
+:toc:
+
+== Responsibility and baseline
+
+This is an Atrium-owned operator integration. Do not transfer this issue to Life or Tavi and do not re-register an already trusted Life component. LoopRD's accepted `looprd-network` sequence 6 makes `the-life-loop` / `life.loop` a discovery candidate; it does not publish an arbitrary browser URL or grant a Life game seat. The specific source revision in the supplied handoff is `59df81c08cbcd94c7f19b29ad11b73645b391328`, with Life 0.5.100. Independently verify the running deployment before any activation.
+
+Atrium 0.5.47 fixes the source-release ordering defect. Every `npm run build` now performs: compile static site; verify static site; configure hosted gateway; compile TaviX; stage TaviX if required. In v0.5.45 the configure step ran only manually, AFTER the default build had already immutably staged an extension with a blank URL.
+
+== 1. Operator-only trusted deployment binding
+
+Use an approved `apps:approve` management identity only at the active Atrium LoopRD API. Inspect `AtriumTrustedDeployment` for `looprd-network`. Capture the *complete existing* `launchOrigins` map, including URL values, from authorized private deployment config or authorized DB inspection. The management `list` operation alone reveals only origin names. Never overwrite unknown mapping values. Preserve deployment identity, approved source revision and sender credentials. Add or replace only `game-web` with `https://thebigtreeinc.github.io/life/` after inspecting the real Pages frontend and entrypoint.
+
+[source,json]
+----
+{
+ "operation":"set_origins",
+ "payload":{
+  "deploymentId":"looprd-network",
+  "launchOrigins":{
+   "game-web":"https://thebigtreeinc.github.io/life/"
+  }
+ }
+}
+----
+
+*This is a partial illustrative map, not a safe complete update.* POST to `/looprd/atrium/v1/registry/discovery/v2/manage` with the complete preserved mapping and the protected machine bearer outside any repo or logs. Query protected `GET /looprd/atrium/v1/registry/discovery/v2/catalog` with `apps:read`. Require a reviewed `life.loop` from the expected deployment, `launchAvailable=true`, and the expected exact launch URL. This discovery API is NOT the public hosted catalog.
+
+== 2. Launch a read-only public gateway
+
+On the operator host, with an authorized backup and the existing active registry SQLite, run:
+
+[source,bash]
+----
+python tools/live_hosted_games.py --database /PRIVATE/ACTIVE/atrium-registry.sqlite --listen 127.0.0.1 --port 8894
+----
+
+Expose only `/hosted-games.json` through an operator-owned HTTPS reverse proxy, with no anonymous access to registry management or the SQLite. Verify `Cache-Control: no-store`; no credentials, redirects or private metadata; and the exact Git revision, deployment, component and Life URL. A configured origin is not proof the Life backend accepts seats or allows framing. A live endpoint must be operator-approved, reachable from Tavi on Windows/Android and use an HTTPS URL ending in `/hosted-games.json` at the root path.
+
+== 3. Build the *distinct* immutable 1.0.5 TaviX hosted release
+
+Do this only after the approved gateway is live. With a process environment configured by the operator (not committed to Git):
+
+[source,powershell]
+----
+$env:ATRIUM_PUBLIC_HOSTED_CATALOG_URL = 'https://APPROVED-ATRIUM-GATEWAY.example/hosted-games.json'
+$env:ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG = '1'
+npm run build
+----
+
+The placeholder is NOT a deployable address. The build validates the exact HTTPS path and configures `dist/hosted-config.json` BEFORE compiling/staging TaviX. `extensions/tavi/hosted-release.json` records the intended new immutable **1.0.5** version. It is only selected when a nonempty, accepted public gateway URL is present. TaviX release `1.0.4` is selected on an ordinary/default build, remains byte-identical, and must NEVER be rewritten to contain the gateway. If `ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG=1` but no URL is supplied, the build fails before staging. Never silently publish a preview as 1.0.5. Repeat builds for 1.0.5 require the same bytes or the immutable release policy rejects them; any later changes require a distinct further release version, not a mutation of 1.0.5.
+
+The Windows operator's installed TaviX checkout must be available: `TAVIX_REPOSITORY_DIR` defaults to the sibling `tavix` directory. ZipRunner staging updates files only; TaviX Git review/push, Pages publication and user-approved installed-extension update remain separate, required actions.
+
+== 4. Acceptance boundaries and rollback
+
+. Confirm trusted discovery and public gateway both expose exactly the right instance and immutable revision; no static copy or fallback to an untrusted source.
+. Verify stage has `extensions/inc.thebigtree.tavi.atrium/1.0.5/manifest.json`, its immutable archive and indexed assets. A default build must still produce exactly 1.0.4 with `gatewayUrl=""`.
+. Release through TaviX Git review, test public asset URLs and Tavi App Store upgrade, open Atrium in Tavi and discover Life. No user credentials are sent to public catalog or launched URL.
+. Test withdrawal/disable at Atrium and gateway: the public entry must disappear and cached stale success must not persist. A catalog or gateway error fails closed.
+. Test Tavi's own approved `tavix.surface/v1` behavior separately, followed by Life's authorized seat, offline resume, turn-ready delivery, creator disconnection and hostless persistence. Do not claim any of these pass from catalog appearance alone.
+
+The software ZIP cannot change the active private LoopRD deployment mapping, its SQLite location, public TLS reverse proxy, source publication or installed Tavi update. Those require operator-host access and release authorization; source test results are not deployment acceptance.

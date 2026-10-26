@@ -1,3 +1,11 @@
+# Atrium 0.5.47 — Windows TaviX staging regression repair
+
+The 0.5.46 Windows ZipRunner log showed 337/337 Python tests and 61/62 Node tests. The final TaviX contract test staged 1.0.5 followed by offline 1.0.4 against the **real** sibling TaviX checkout because Windows staging is mandatory. `TAVIX_STAGE_INCOMPLETE` incorrectly required the historical 1.0.4 to still be the current repository-index entry.
+
+In 0.5.47, all staging tests use a temporary fake TaviX repository; source staging distinguishes `TAVIX_STAGE_READY` for current and `TAVIX_STAGE_ARCHIVED` for correctly archived historical release. A later current catalog entry may not be silently downgraded; a stale index for newer requested release still fails closed. The default extension remains 1.0.4 and hosted 1.0.5 remains operator-gated. Build in ZipRunner and separately review any real TaviX Git changes; do not auto-push, invent URLs, or include local secrets. See `docs/P1_091_TAVIX_STAGING_WINDOWS_REPAIR.adoc`.
+
+---
+
 # Atrium 0.5.45 — mandatory Windows TaviX post-build
 
 **Change:** `project.zr` and `atrium.zr` retain a single build/verify step and run `node tools/post_build_tavix.mjs` after it. On Windows this resolves `../tavix` from the Atrium source checkout and forces `TAVIX_STAGE_REQUIRED=1`; it launches `build_tavi_extension.mjs` then `stage_tavix.mjs` with the same environment. No silent `TAVIX_STAGE_SKIPPED` is acceptable on Windows. Verify the staged immutable extension `1.0.4` in `C:\Users\dorbi\source\tavix`, and review/push the **tavix** project separately. Do not manually re-run staging on every build; ZipRunner owns this post-build step.

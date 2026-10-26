@@ -31,13 +31,42 @@ if(!existsSync(tool)||!existsSync(path.join(repo,'project.zr'))){
  }
  const releaseManifest=JSON.parse(readFileSync(releaseManifestPath,'utf8'));
  const index=JSON.parse(readFileSync(indexPath,'utf8'));
+ // The repository advertises its CURRENT version, not every immutable archive.
+ // A repeated offline 1.0.4 build may therefore legitimately return
+ // `unchanged` after a reviewed, newer 1.0.5 has become the current entry.
+ // Preserve the old archive without downgrading the index or claiming it is
+ // currently offered to users. A newer request must still be indexed exactly.
  if (releaseManifest.id!==sourceManifest.id || releaseManifest.version!==sourceManifest.version ||
-     !Array.isArray(index.extensions) ||
-     !index.extensions.some(ext=>ext.manifest?.id===sourceManifest.id &&
-       ext.manifest?.version===sourceManifest.version &&
-       typeof ext.entrypoint==='string' &&
-       ext.entrypoint.includes(`/extensions/${sourceManifest.id}/${sourceManifest.version}/`))) {
-  throw Error('TAVIX_STAGE_INCOMPLETE: staged manifest or catalog does not match requested extension version');
+     !Array.isArray(index.extensions)) {
+  throw Error('TAVIX_STAGE_INCOMPLETE: staged manifest or repository catalog invalid');
  }
- console.log(`TAVIX_STAGE_READY: ${releasePath} (Git review/push required)`);
+ const matches=index.extensions.filter(ext=>ext?.manifest?.id===sourceManifest.id);
+ if (matches.length!==1) {
+  throw Error('TAVIX_STAGE_INCOMPLETE: exactly one catalog entry required for staged extension');
+ }
+ const published=matches[0];
+ const publishedVersion=published.manifest?.version;
+ const compare=(left,right)=>{
+  if(!/^\d+\.\d+\.\d+$/.test(left)||!/^\d+\.\d+\.\d+$/.test(right)){
+   throw Error('TAVIX_STAGE_INCOMPLETE: invalid semantic version in repository index');
+  }
+  const a=left.split('.').map(Number),b=right.split('.').map(Number);
+  for(let i=0;i<3;i++)if(a[i]!==b[i])return Math.sign(a[i]-b[i]);
+  return 0;
+ };
+ const relation=compare(publishedVersion,sourceManifest.version);
+ if (typeof published.entrypoint!=='string' ||
+     !published.entrypoint.includes(`/extensions/${sourceManifest.id}/${publishedVersion}/`)) {
+  throw Error('TAVIX_STAGE_INCOMPLETE: indexed extension entrypoint does not match its version');
+ }
+ if (relation<0) {
+  throw Error('TAVIX_STAGE_INCOMPLETE: index points to an older release than the staged version');
+ }
+ if (relation>0) {
+  // Correct historical behavior: never reinterpret an already-archived
+  // unchanged release as an active index promotion.
+  console.log(`TAVIX_STAGE_ARCHIVED: ${releasePath} remains immutable; catalog currently advertises ${publishedVersion} (Git review/push required)`);
+ } else {
+  console.log(`TAVIX_STAGE_READY: ${releasePath} (Git review/push required)`);
+ }
 }

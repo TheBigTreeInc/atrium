@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.45",
-  "summary": "0.5.45 repairs stale ZipRunner build-list staging omission by anchoring verified TaviX extension build and mandatory Windows staging to npm run build; remains operator-unverified.",
+  "version": "0.5.47",
+  "summary": "0.5.47 repairs Windows-only TaviX staging test contamination: contract builds use an isolated fixture, 1.0.4 historical archives no longer fail verification when catalog points at 1.0.5, no catalog downgrade or automatic publication.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -278,6 +278,27 @@
         "Repeat identical build to verify no-op, test same-version modified bytes in disposable checkout, and review/push TaviX separately.",
         "Verify GitHub exact-commit CI, Tavi client update and existing 57 operator Work board statuses; do not mark Done until operator acceptance."
       ]
+    },
+    {
+      "id": "ATR-146-HOSTED-CATALOG-RELEASE",
+      "title": "Stage approved hosted game catalog before immutable TaviX release",
+      "summary": "npm build now configures approved public gateway after verified static build and before compiling/staging TaviX; default remains 1.0.4 with empty gateway and byte-identical payload; explicit operator HTTPS gateway switches to dedicated version 1.0.5. Required activation flag rejects missing endpoint before staging. No live deployment or token is claimed.",
+      "operator_checks": [
+        "Import Atrium 0.5.47 without gateway; existing TaviX 1.0.4 must restage byte-identically and never release an empty 1.0.5.",
+        "After verifying active LoopRD trusted origin, database and public HTTPS hosted-games.json, set ATRIUM_PUBLIC_HOSTED_CATALOG_URL to the approved path and ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG=1, then build once and verify immutable 1.0.5 references the actual public URL.",
+        "Review/push separately via TaviX ZipRunner; verify indexed hash and client update; exercise withdrawal with no cached fallback."
+      ]
+    },
+    {
+      "id": "ATR-147-TAVIX-STAGE-ISOLATION",
+      "title": "Isolate TaviX contract builds and preserve indexed newer releases",
+      "summary": "Prevent Windows npm test from targeting the real sibling TaviX repository. Use temporary staging repository and assert that rebuilding immutable offline 1.0.4 while 1.0.5 is indexed keeps 1.0.5 current; reject stale index when attempting to stage a newer release. Explicitly distinguish current from archived results.",
+      "priority": "high",
+      "operator_checks": [
+        "Import the exact 0.5.47 package using ZipRunner on Windows; verify 337+ Python tests and all Node tests succeed without modifying real TaviX during npm test.",
+        "Check that normal npm run build still stages to the sibling TaviX checkout, with TAVIX_STAGE_READY for current or TAVIX_STAGE_ARCHIVED for an already retained historical version.",
+        "Confirm a later immutable release remains the active catalog entry; review and push TaviX separately."
+      ]
     }
   ],
   "remaining": [
@@ -366,6 +387,16 @@
       "summary": "Connect source-only durable lobby core to LoopRD with authenticated Social caller, a single Life-audience-scoped grant, exact Life match/seat confirmation and recovery/outbox acceptance. No public handler or live game authority installed yet.",
       "priority": "high",
       "next_action": "Agree Social-to-Life audience-bound grant and Life /play/info semantics, mount reviewed user-authorized LoopRD route around 0.5.41 source adapter, wire durable outbox consumer, validate two real accounts, 60h offline and restart. Not implemented as public runtime."
+    },
+    {
+      "id": "ATR-146-LIVE-OPERATOR-ACCEPTANCE",
+      "title": "Verify active Life trusted mapping and public hosted gateway",
+      "summary": "Requires operator-approved apps:approve credentials, preservation of all existing looprd-network launchOrigins, active read-only registry path and HTTPS public proxy; these are private runtime configuration and cannot be completed from source ZIP. Existing 1.0.4 remains unchanged until gateway is available.",
+      "operator_checks": [
+        "Inspect all currently configured launchOrigins values and atomically update without removing unrelated originRefs.",
+        "Ensure public hosted-games.json is no-store, anonymous, contains exactly reviewed Life with correct immutable revision and disables immediately after authorized withdrawal.",
+        "Run two-account live TaviX generic-surface and Life seat-grant, offline/restart/turn-ready notification tests."
+      ]
     }
   ]
 }

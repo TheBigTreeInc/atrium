@@ -18,7 +18,10 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const env = tavixPostBuildEnvironment(root);
 console.log(`[atrium-post-build] TAVIX_REPOSITORY_DIR=${env.TAVIX_REPOSITORY_DIR}`);
 console.log(`[atrium-post-build] TAVIX_STAGE_REQUIRED=${env.TAVIX_STAGE_REQUIRED}`);
-for (const script of ['build_tavi_extension.mjs', 'stage_tavix.mjs']) {
+// The configured public source MUST be written after static compilation and
+// before extension compilation. Otherwise an immutable release freezes a blank
+// gateway URL even when an approved operator URL was supplied.
+for (const script of ['configure_hosted_catalog.mjs', 'build_tavi_extension.mjs', 'stage_tavix.mjs']) {
  console.log(`[atrium-post-build] node tools/${script}`);
  const result = spawnSync(process.execPath, [path.join(root, 'tools', script)], {
   cwd: root, env, stdio: 'inherit', windowsHide: true,

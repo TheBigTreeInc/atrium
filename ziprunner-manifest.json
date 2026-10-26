@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.45",
+    "version": "0.5.47",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261025-045",
+    "id": "ATR-P1-20261026-047",
     "kind": "source_update",
-    "created_at": "2026-10-25T11:11:00+01:00",
-    "summary": "Anchor verified TaviX extension staging to npm run build so stale ZipRunner command arrays cannot omit mandatory Windows staging. Validate staged release and catalog index before success; no automatic TaviX push."
+    "created_at": "2026-10-26T09:23:00+01:00",
+    "summary": "Repair 0.5.46 Windows ZipRunner npm-test failure: TaviX release tests use disposable repositories and staging distinguishes archived immutable 1.0.4 from indexed 1.0.5 without a version rollback; no live activation claimed."
   },
   "planned_work": [
     {
@@ -205,6 +205,24 @@
       "title": "Anchor immutable TaviX staging to existing Atrium npm build",
       "priority": "high",
       "acceptance_criteria": "Run existing npm run build from a cached five-command ZipRunner recipe and verify required Windows sibling TaviX release + repository index are produced; missing/invalid stage fails the command; identical version is no-op; separate TaviX Git review, push, Pages and Tavi install remain operator-gated."
+    },
+    {
+      "id": "ATR-146-HOSTED-CATALOG-RELEASE",
+      "title": "Safely stage hosted Life catalog in separate immutable TaviX release",
+      "priority": "high",
+      "acceptance_criteria": "Automatically configure approved gateway before stage; preserve default 1.0.4 bytes, release 1.0.5 only when exact secure endpoint is present; no speculative production endpoint or automatic Git publication."
+    },
+    {
+      "id": "ATR-146-LIVE-OPERATOR-ACCEPTANCE",
+      "title": "Accept trusted hosted Life gateway on active deployment",
+      "priority": "high",
+      "acceptance_criteria": "Preserve entire trusted launchOrigins map, activate real public HTTPS catalog, verify snapshot publish/revoke and approved client update with hostless gameplay."
+    },
+    {
+      "id": "ATR-147-TAVIX-STAGE-ISOLATION",
+      "title": "Fix Windows TaviX staging regression and test isolation",
+      "priority": "high",
+      "acceptance_criteria": "Windows npm tests never stage into the live sibling TaviX repository, historical 1.0.4 survives catalog promotion to 1.0.5, higher staged versions still require correct catalog indexing."
     }
   ],
   "done_work": [
@@ -848,6 +866,53 @@
           "description": "Windows operator handoff and reproduction"
         }
       ]
+    },
+    {
+      "id": "ATR-146-HOSTED-CATALOG-RELEASE",
+      "summary": "Source implemented post-build gateway configuration ordering and dedicated opt-in 1.0.5 hosted TaviX manifest; tests cover failures, default and approved hosted paths. Operator acceptance remains pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/post_build_tavix.mjs",
+          "description": "Configure after static build and before TaviX compilation and staging"
+        },
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/hosted-release.json",
+          "description": "Explicit immutable 1.0.5 release only when an approved gateway is configured"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavix-stage.test.mjs",
+          "description": "Default, missing, bad and valid gateway builds covered"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_090_LIFE_HOSTED_CATALOG_ACTIVATION.adoc",
+          "description": "Private gateway activation and independent acceptance guide"
+        }
+      ]
+    },
+    {
+      "id": "ATR-147-TAVIX-STAGE-ISOLATION",
+      "summary": "Source stages older immutable releases without demanding that they remain current; regression tests use temp TaviX and reject newer archive with stale index. Linux focused Node checks pass; operator Windows re-run remains acceptance gate.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/stage_tavix.mjs",
+          "description": "Verify current versus archived release separately and enforce catalog monotonicity"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavix-stage.test.mjs",
+          "description": "Disposable TaviX fixtures and deterministic 1.0.5 then 1.0.4 transition with SHA-256 immutability"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_091_TAVIX_STAGING_WINDOWS_REPAIR.adoc",
+          "description": "Windows incident, isolation and operator verification guide"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -880,6 +945,15 @@
       "id": "ATR-118-HOSTLESS-RUNTIME",
       "status": "planned",
       "next_action": "Coordinate exact Social/Life game grant and /play/info operations, then implement verified LoopRD handlers, recovery and two-account live acceptance."
+    },
+    {
+      "id": "ATR-146-LIVE-OPERATOR-ACCEPTANCE",
+      "status": "blocked",
+      "next_action": "Run trusted deployment inspection and public TLS gateway activation using approved private operator access, then build/stage 1.0.5 with real endpoint and run two-account acceptance.",
+      "blockers": [
+        "Live apps:approve authorization and source-of-truth launchOrigins values are not present in source ZIP",
+        "Operator-owned HTTPS gateway and active registry SQLite access not available in source environment"
+      ]
     }
   ],
   "validation": {
