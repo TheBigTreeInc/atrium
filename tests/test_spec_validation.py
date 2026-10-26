@@ -1,5 +1,6 @@
 """Negative regression tests for nested component inclusion and packaging safety."""
 from pathlib import Path
+import json
 from tempfile import TemporaryDirectory
 import unittest
 from tools.check_specs import compose, parse, verify, MAX_BYTES
@@ -8,7 +9,8 @@ from tools.check_specs import compose, parse, verify, MAX_BYTES
 class SpecValidationTests(unittest.TestCase):
     def test_actual_spec_is_one_component(self):
         document = verify()
-        self.assertEqual(document['release'], '0.5.47')
+        package_version = json.loads((Path(__file__).resolve().parents[1] / 'package.json').read_text(encoding='utf-8'))['version']
+        self.assertEqual(document['release'], package_version)
         self.assertIn('spec.includes', document['requires'])
 
     def test_duplicate_key_rejected(self):

@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.47",
+  "version": "0.5.49",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -599,7 +599,7 @@
       "criteria": [
         {
           "id": "ATR-146-HOSTED-CATALOG-RELEASE-AC-SOURCE",
-          "description": "Operator-configured hosted gateway must be applied before TaviX immutable build and stage; blank URL retains 1.0.4, approved URL selects 1.0.5; missing or invalid URL fails closed.",
+          "description": "Operator-configured hosted gateway must be applied before TaviX immutable build and stage; blank URL retains 1.0.4, verified live URL selects new 1.0.6; missing or invalid URL fails closed.",
           "mode": "automated",
           "checks": [
             "ATR-146-HOSTED-CATALOG-RELEASE-T1"
@@ -632,6 +632,48 @@
           "mode": "manual",
           "checks": [
             "ATR-147-TAVIX-STAGE-ISOLATION-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-148-HOSTED-HEALTH-RELEASE-GATE",
+      "criteria": [
+        {
+          "id": "ATR-148-HOSTED-HEALTH-RELEASE-GATE-AC-SOURCE",
+          "description": "Disconnected, failed and truly empty catalog states are distinct; documentation hosts or inaccessible/untrusted public catalogs cannot become immutable extension releases.",
+          "mode": "automated",
+          "checks": [
+            "ATR-148-HOSTED-HEALTH-RELEASE-GATE-T1"
+          ]
+        },
+        {
+          "id": "ATR-148-HOSTED-HEALTH-RELEASE-GATE-AC-OPERATOR",
+          "description": "Active release on Windows and Android shows visible errors and real games via reviewed HTTPS public gateway; 1.0.6 is immutable.",
+          "mode": "manual",
+          "checks": [
+            "ATR-148-HOSTED-HEALTH-RELEASE-GATE-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-149-SPEC-RELEASE-VERSION-LOCK",
+      "criteria": [
+        {
+          "id": "ATR-149-SPEC-RELEASE-VERSION-LOCK-AC-SOURCE",
+          "description": "A bumped Atrium package release and LoopRD composed release agree without updating a literal in the spec validation test.",
+          "mode": "automated",
+          "checks": [
+            "ATR-149-SPEC-RELEASE-VERSION-LOCK-T1"
+          ]
+        },
+        {
+          "id": "ATR-149-SPEC-RELEASE-VERSION-LOCK-AC-WINDOWS",
+          "description": "Source ZIP succeeds on Windows ZipRunner and does not mutate immutable TaviX releases or apply operator runtime configuration.",
+          "mode": "manual",
+          "checks": [
+            "ATR-149-SPEC-RELEASE-VERSION-LOCK-M1"
           ]
         }
       ]
@@ -1295,7 +1337,7 @@
       "assertions": [
         "Blank gateway continues to stage previously published 1.0.4 with unchanged manifest and assets",
         "Missing required endpoint or credential-bearing URL makes build fail before staging",
-        "Approved HTTPS /hosted-games.json endpoint is configured before TaviX compiling and yields version 1.0.5",
+        "Approved HTTPS /hosted-games.json endpoint is configured before TaviX compiling and yields version 1.0.6",
         "Live release uses explicit source-controlled version metadata"
       ]
     },
@@ -1304,7 +1346,7 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Private operator runtime activation with read-only published gateway and TaviX Pages release",
-      "instructions": "Follow docs/P1_090_LIFE_HOSTED_CATALOG_ACTIVATION.adoc: preserve every existing launchOrigins binding, inspect active Life source, operate TLS read-only gateway, run approved URL build once, verify immutable 1.0.5 staged asset hashes and independently accept installed Tavi and Life authorized seats."
+      "instructions": "Follow docs/P1_092_HOSTED_CATALOG_INSPECTION_REPAIR.adoc: preserve every existing launchOrigins binding, inspect active Life source, operate TLS read-only gateway, run approved URL build once, verify new immutable 1.0.6 staged asset hashes and independently accept installed Tavi and Life authorized seats."
     },
     {
       "id": "ATR-147-TAVIX-STAGE-ISOLATION-T1",
@@ -1315,8 +1357,8 @@
       "test_ref": "tests/tavix-stage.test.mjs",
       "assertions": [
         "Windows contract tests stage only into a temporary TaviX repository",
-        "Approved 1.0.5 build followed by default 1.0.4 retains 1.0.5 as catalog current",
-        "Immutable 1.0.5 archive hash remains identical through offline rebuild",
+        "Approved 1.0.6 build followed by default 1.0.4 retains 1.0.6 as catalog current",
+        "Immutable 1.0.6 archive hash remains identical through offline rebuild",
         "Stage cannot falsely report a higher staged version with an older catalog index"
       ]
     },
@@ -1325,7 +1367,46 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Verify real Windows operator staging separate from contract tests",
-      "instructions": "Import 0.5.47 with ZipRunner. Confirm npm test success with no actual TaviX repository edits, then npm run build stages current 1.0.4 or reports ARCHIVED when current index already higher. Preserve local private data and review TaviX Git changes separately before publication."
+      "instructions": "Import 0.5.48 with ZipRunner. Confirm npm test success with no actual TaviX repository edits, then npm run build stages current 1.0.4 or reports ARCHIVED when current index already higher. Preserve local private data and review TaviX Git changes separately before publication."
+    },
+    {
+      "id": "ATR-148-HOSTED-HEALTH-RELEASE-GATE-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Client status visibility and strict live-gateway staging regression",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/catalog_ui_status.test.mjs",
+      "assertions": [
+        "Discover and My Games display catalog errors instead of falsely empty registries",
+        "Hosted source parser rejects reserved documentation hosts, offline config reports unconnected",
+        "New immutable 1.0.6 is staged only after anonymous public projection preflight as exercised in tavix-stage tests"
+      ]
+    },
+    {
+      "id": "ATR-148-HOSTED-HEALTH-RELEASE-GATE-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Deploy genuine operator-owned public catalog with trusted launch origins and verify installed Tavi extension 1.0.6",
+      "instructions": "Read docs/P1_092_HOSTED_CATALOG_INSPECTION_REPAIR.adoc; verify Life and Market Grove live hosted launcher, Tavi Discover/My Games, public no-store+CORS and revocation, and Social private auth separately. Never override published 1.0.5."
+    },
+    {
+      "id": "ATR-149-SPEC-RELEASE-VERSION-LOCK-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Dynamic spec release assertion and cross-file release consistency",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_spec_validation.py",
+      "assertions": [
+        "Composed LoopRD release equals authoritative package.json version, not a stale literal",
+        "Existing test_release_pipeline cross-checks manifest/workboard/verification plan/CI artifact"
+      ]
+    },
+    {
+      "id": "ATR-149-SPEC-RELEASE-VERSION-LOCK-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Run exact imported 0.5.49 on Windows ZipRunner",
+      "instructions": "Check Python 3.13 isolated tests, Node tests, TaviX stage and ZipRunner release plan; verify existing releases remain byte-identical. Production gateway activation remains separate."
     }
   ]
 }

@@ -70,7 +70,7 @@ test('reviewed surface revalidates the exact currently published deployment and 
  const game={gameId:'life.loop',component:'the-life-loop',publisherId:'thebigtreeinc',deploymentId:'test-life-1',title:'Life',
    launchUrl:target,apiBaseUrl:'https://api.example.org/looprd/the-life-loop/v1',sourceRevision:'a'.repeat(40),approved:true,status:'published',embedAllowed:true};
  let games=[game];
- const fetcher=async url=>({ok:true,json:async()=>url.includes('hosted-config')?{schema:'atrium.hosted-source/v1',gatewayUrl:''}:{schema:'atrium.hosted-games/v1',games}});
+ const fetcher=async url=>({ok:true,json:async()=>url.includes('hosted-config')?{schema:'atrium.hosted-source/v1',gatewayUrl:'https://catalog.operator-games.net/hosted-games.json'}:{schema:'atrium.hosted-games/v1',games}});
  requests.length=0;
  assert.equal(await requestReviewedGameSurface('life.loop','test-life-1',target,'',{fetcher}),true);
  assert(requests.some(x=>x.method==='surface.requestOpen'));

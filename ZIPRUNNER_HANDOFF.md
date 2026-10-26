@@ -1,4 +1,11 @@
-# Atrium 0.5.47 — Windows TaviX staging regression repair
+= Atrium 0.5.49 — Windows ZipRunner repair handoff
+
+Source-only repair from exact 0.5.48 ZIP; `tests/test_spec_validation.py` no longer hardcodes prior 0.5.47 release, checking `package.json` instead. Version metadata and LoopRD SHA are synchronized. No private config, runtime state, generated outputs, or existing immutable TaviX 1.0.4/1.0.5 changes are included. Re-run Windows Python/Node and staging checks. Full details: `docs/P1_093_SPEC_RELEASE_WINDOWS_REPAIR.adoc`. This ZIP does not activate any remote hosted catalog.
+
+# Atrium 0.5.48 — hosted catalog configuration and diagnostic repair
+
+Current repair: Tavi Windows inspection confirmed official Atrium TaviX 1.0.5 reads an invalid reserved placeholder hostname and fetch failures were erased by a zero-games message. 0.5.48 surfaces hosted transport/configuration problems in both views, prevents reserved or unreachable URLs from entering the new immutable 1.0.6 release, and preflights anonymous HTTPS, JSON schema, CORS, no-store and at least one active trusted launch-mapped game before staging. Default build copies the checksum-pinned historical 1.0.4 payload (not a regenerated shared UI); it does NOT fix the installed 1.0.5 until a real operator gateway is published and 1.0.6 is released through TaviX. No endpoint, service, credentials, launch mapping or deployment was modified by the source package. See `docs/P1_092_HOSTED_CATALOG_INSPECTION_REPAIR.adoc`.
+
 
 The 0.5.46 Windows ZipRunner log showed 337/337 Python tests and 61/62 Node tests. The final TaviX contract test staged 1.0.5 followed by offline 1.0.4 against the **real** sibling TaviX checkout because Windows staging is mandatory. `TAVIX_STAGE_INCOMPLETE` incorrectly required the historical 1.0.4 to still be the current repository-index entry.
 

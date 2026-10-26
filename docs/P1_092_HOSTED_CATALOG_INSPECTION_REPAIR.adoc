@@ -1,0 +1,31 @@
+= P1-092 — Desktop catalog failure and Atrium-owned repair
+:revdate: 2026-10-26
+:toc:
+
+== Observed facts (operator desktop inspection)
+
+Tavi Windows UI reports 0.3.117 despite binary/source 0.3.118. Atrium TaviX 1.0.5 is installed and current; the official repository works, but the installed release `ui/hosted-config.json` points at reserved `https://atrium.example.org/hosted-games.json` and cannot load games. The separate local `dist-tavi` 1.0.4 offline preview is not proof about the installed release. The old Discover and My Games UI silently convert a fetch failure into empty-registration notices. Life and Market Grove are observed as active trusted backend instances; `game-web` and `atrium-web` launch mappings are not set. Social's private Atrium connection is also unset (separate task).
+
+No live deployment, private configuration, account, or local installation was changed by this repair.
+
+== Atrium 0.5.48 source changes
+
+* `web/main.mjs`: show configuration/transport errors as separate visible issues in Discover and My Games. True empty-registration text appears only after both catalogs successfully respond and contain zero games. Render messages via textContent, not raw error HTML; remove stale cards on refresh errors. Keep existing reviewed games visible alongside hosted errors.
+* `src/hosted_catalog.mjs`: reject reserved documentation-hostnames in hosted gateway configuration; offline `gatewayUrl=""` reports `ATRIUM_HOSTED_NOT_CONFIGURED` rather than a connected empty catalog. Never send bearer/cookies.
+* `tools/configure_hosted_catalog.mjs`: before producing a new immutable hosted extension, fetch operator-supplied public gateway anonymously with no redirects, eight-second timeout, and no caching. Require HTTP success, JSON content-type, `Cache-Control: no-store`, `Access-Control-Allow-Origin: *`, valid strict `atrium.hosted-games/v1` schema and >=1 approved active game with resolved trusted launch URLs. Reject unreachable/empty/reserved/invalid endpoints before compiling/staging.
+* `extensions/tavi/hosted-release.json`: bump the NEXT hosted extension release to 1.0.6. Immutable published 1.0.5 is not replaced. Default no-gateway builds continue to select historical offline 1.0.4 and do not demote a newer indexed TaviX extension.
+* `extensions/tavi/immutable-1.0.4/` and its SHA-256 lock pin the historical 17-file offline extension; normal builds copy it verbatim rather than producing changed 1.0.4 bytes from the evolving shared UI. A real TaviX checkout must still verify these match the original archived 1.0.4.
+* Tests use disposable TaviX repositories and an isolated Node preflight fixture (not a production runtime bypass). No actual TaviX checkout is modified during tests.
+
+== Operator activation — required separately
+
+. Inspect active registry privately. Preserve the complete current `AtriumTrustedDeployment.launchOrigins` map and bind `game-web`/`atrium-web` only to explicitly reviewed existing HTTPS app entrypoints. Do not replace the whole mapping with an example partial map or invent URLs. Inspect each Life and Market Grove source revision, sidecar and route authority.
+. Start Atrium's existing `tools/live_hosted_games.py` against the real active read-only registry SQLite. Reverse proxy only `/hosted-games.json` from loopback 127.0.0.1:8894 behind publicly reachable TLS; no management paths, secrets, tokens, private source details or caching. Ensure anonymous cross-origin GET succeeds from a Tavi Windows and Android context.
+. Verify from an independent anonymous network that the public JSON shows the expected trusted active games with exact deployment/source revisions and HTTPS launch URLs. The source gate requires at least one; the Life + Market Grove launch acceptance should require both when the operator has bound both.
+. Set `ATRIUM_PUBLIC_HOSTED_CATALOG_URL` to the **real operator-owned URL** and `ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG=1` for the approved build invocation. The source gate preflights it, stages new 1.0.6 to sibling TaviX checkout; commit/review/push through the TaviX release workflow. Do not mutate 1.0.5 and do not insert an example hostname.
+. Verify official repo 1.0.6 assets, update the installed extension, open Discover and My Games, simulate a gateway failure and withdrawal. Both views must show connection errors rather than falsely saying no games exist.
+. Independently finish Social's **private** reader connection for challenge → Atrium lobby (does not belong in public hosted catalog) and test Life's real match, seat, hostless offline resume, turn-ready notifications and 60-hour policy with two authorized accounts.
+
+== Validation limits
+
+Successful source unit tests and a simulated hosted gateway prove only local code behavior, not a live public URL, actual LoopRD registration binding, physical Tavi UI, Tavi binary/UI version reconciliation, Social private-reader setup, Life seat authority, or a released 1.0.6. Tavi 0.3.117 reported UI with 0.3.118 binary/source merits a separate Tavi-owned version provenance fix; it does not justify changing Atrium identity or token contracts.

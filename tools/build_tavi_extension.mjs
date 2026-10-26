@@ -5,6 +5,37 @@ import {parseHostedCatalogSource} from '../src/hosted_catalog.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const web=path.join(root,'dist');
 const dest=path.join(root,'dist-tavi','ui');
+// The previously published 1.0.4 payload is immutable. Recompiling it from
+// evolving shared UI sources would change bytes and fail a real TaviX checkout.
+const configured=JSON.parse(await readFile(path.join(web,'hosted-config.json'),'utf8'));
+const configuredEndpoint=parseHostedCatalogSource(configured);
+if(configuredEndpoint==='./hosted-games.json'){
+ const frozen=path.join(root,'extensions','tavi','immutable-1.0.4');
+ const lock=JSON.parse(await readFile(path.join(root,'extensions','tavi','immutable-1.0.4.lock.json'),'utf8'));
+ if(lock.schema!=='atrium.tavix.immutable-lock/v1'||lock.version!=='1.0.4')throw Error('Invalid historical TaviX lock');
+ const {createHash}=await import('node:crypto');
+ const {readdir}=await import('node:fs/promises');
+ const relative=[];
+ async function walk(dir,prefix=''){
+  for(const entry of await readdir(dir,{withFileTypes:true})){
+   const sub=prefix?prefix+'/'+entry.name:entry.name;
+   if(entry.isDirectory())await walk(path.join(dir,entry.name),sub);
+   else if(entry.isFile())relative.push(sub);
+   else throw Error('Unexpected immutable release entry');
+  }
+ }
+ await walk(frozen);
+ if(relative.length!==Object.keys(lock.files).length)throw Error('Frozen TaviX file count changed');
+ for(const file of relative){
+  const expected=lock.files[file];
+  if(!/^[a-f0-9]{64}$/.test(expected||''))throw Error('Unpinned frozen TaviX file');
+  if(createHash('sha256').update(await readFile(path.join(frozen,...file.split('/')))).digest('hex')!==expected)
+   throw Error('Frozen TaviX file checksum changed: '+file);
+ }
+ await rm(path.join(root,'dist-tavi'),{recursive:true,force:true});
+ await cp(frozen,path.join(root,'dist-tavi'),{recursive:true});
+ console.log('Atrium TaviX 1.0.4: copied pinned immutable offline release; no shared UI rebuild');
+}else{
 await rm(path.join(root,'dist-tavi'),{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
 for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','hosted-games.json','hosted-config.json']) await cp(path.join(web,name),path.join(dest,name));
@@ -44,8 +75,7 @@ await cp(path.join(root,'extensions/tavi/tavix-sdk.mjs'),path.join(dest,'tavix-s
 // existing 1.0.4 bytes when the operator has not configured an approved URL.
 // Version for a future live release is explicit source-controlled metadata, not
 // chosen by runtime state, browser input, or a generic LoopRD manifest.
-const hostedSource=JSON.parse(await readFile(path.join(web,'hosted-config.json'),'utf8'));
-const endpoint=parseHostedCatalogSource(hostedSource);
+const endpoint=configuredEndpoint;
 const baseManifest=JSON.parse(await readFile(path.join(root,'extensions/tavi/manifest.json'),'utf8'));
 let extensionManifest=baseManifest;
 if(endpoint!=='./hosted-games.json'){
@@ -67,3 +97,5 @@ if(endpoint!=='./hosted-games.json'){
 await writeFile(path.join(root,'dist-tavi','manifest.json'),JSON.stringify(extensionManifest,null,2)+'\n');
 console.log(`Atrium TaviX ${extensionManifest.version}: ${endpoint==='./hosted-games.json'?'existing immutable offline preview':'operator-configured hosted catalog'}`);
 console.log('Tavi extension built from shared Atrium static UI');
+
+}

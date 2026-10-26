@@ -5,6 +5,9 @@ const HTTPS = value => {
  if(u.protocol!=='https:'||u.username||u.password||u.hash||u.search||u.port||!u.hostname.includes('.')||u.hostname.endsWith('.local')||u.hostname.endsWith('.localhost')||u.hostname.endsWith('.internal')||/^\d+(\.\d+){3}$/.test(u.hostname)||u.hostname.includes(':'))throw Error('Unsafe HTTPS URL');
  return u.href;
 };
+// A syntactically valid HTTPS URL is not necessarily a deployed endpoint.
+// Never use documentation/reserved example hosts in a published extension.
+const RESERVED_GATEWAY_HOST=/(?:^|\.)(?:example\.(?:com|org|net)|test|invalid|example)$/i;
 const ID=/^[a-z][a-z0-9.-]{2,119}$/;
 export function validateHostedCatalog(data){
  if(!data||data.schema!=='atrium.hosted-games/v1'||!Array.isArray(data.games)||Object.keys(data).some(k=>!['schema','games'].includes(k))||data.games.length>100)throw Error('Invalid hosted catalog');
@@ -22,17 +25,22 @@ export function parseHostedCatalogSource(config){
  if(!config||config.schema!=='atrium.hosted-source/v1'||Object.keys(config).some(k=>!['schema','gatewayUrl'].includes(k))||typeof config.gatewayUrl!=='string')throw Error('Invalid hosted catalog source configuration');
  if(!config.gatewayUrl)return './hosted-games.json';
  const url=config.gatewayUrl;
- if(HTTPS(url)!==url||new URL(url).pathname!=='/hosted-games.json')throw Error('Unapproved hosted catalog gateway URL');
+ if(HTTPS(url)!==url||RESERVED_GATEWAY_HOST.test(new URL(url).hostname)||new URL(url).pathname!=='/hosted-games.json')throw Error('Unapproved hosted catalog gateway URL');
  return url;
 }
 export async function loadHostedEndpoint(fetcher=fetch, configUrl='./hosted-config.json'){
  const response=await fetcher(configUrl,{cache:'no-store',credentials:'omit',redirect:'error'});
  if(!response.ok)throw Error('Hosted catalog source configuration unavailable');
- return parseHostedCatalogSource(await response.json());
+ const config=await response.json();
+ // Offline preview output is never the connected public LoopRD registry.
+ if(config?.schema==='atrium.hosted-source/v1' && config.gatewayUrl==='') {
+  throw Error('ATRIUM_HOSTED_NOT_CONFIGURED: The public game catalog is not connected.');
+ }
+ return parseHostedCatalogSource(config);
 }
 export async function fetchHostedCatalog(fetcher=fetch,url='./hosted-games.json'){
  const r=await fetcher(url,{credentials:'omit',cache:'no-store',redirect:'error'});
- if(!r.ok)throw Error('Hosted game approvals unavailable');
+ if(!r.ok)throw Error('ATRIUM_HOSTED_UNAVAILABLE: Public hosted catalog returned HTTP '+(Number.isInteger(r.status)?r.status:'error'));
  return validateHostedCatalog(await r.json());
 }
 export async function fetchConfiguredHostedCatalog(fetcher=fetch){

@@ -1,4 +1,11 @@
-# Atrium 0.5.47 — Windows TaviX stage reliability
+= Atrium 0.5.49 — Windows ZipRunner spec assertion repair
+
+The 0.5.48 build failed only because `tests/test_spec_validation.py` expected `0.5.47` while the LoopRD release was `0.5.48`. The assertion now derives its expected release from `package.json`, maintaining the version mismatch protection without static stale pins. Source is rebased onto exact 0.5.48 ZIP. See `docs/P1_093_SPEC_RELEASE_WINDOWS_REPAIR.adoc`. Live hosted catalog and TaviX 1.0.6 activation remain separate.
+
+# Atrium 0.5.48 — hosted catalog activation and error visibility
+
+Atrium 0.5.48 fixes the hidden failed fetch in Discover/My Games; empty public config means not connected, not no registered games. A new hosted TaviX 1.0.6 is only built after a live verified anonymous HTTPS catalog preflight. The already-published 1.0.5 with an example hostname is immutable and is NOT overwritten. See `docs/P1_092_HOSTED_CATALOG_INSPECTION_REPAIR.adoc`.
+
 
 Repairs the 0.5.46 Windows `npm test` failure with isolated TaviX contract fixtures and correct archived/current immutable release verification. No live Life activation is claimed. See `docs/P1_091_TAVIX_STAGING_WINDOWS_REPAIR.adoc`.
 

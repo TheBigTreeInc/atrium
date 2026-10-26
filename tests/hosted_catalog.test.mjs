@@ -10,19 +10,19 @@ test('public retrieval has no bearer/cookies and errors fail closed',async()=>{c
 
 test('operator HTTPS hosted catalog source must be reviewed and never accept credentials',()=>{
  assert.equal(parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:''}),'./hosted-games.json');
- const approved='https://atrium.example.org/hosted-games.json';
+ const approved='https://catalog.operator-games.net/hosted-games.json';
  assert.equal(parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:approved}),approved);
- for(const url of ['http://atrium.example.org/hosted-games.json','https://u:p@atrium.example.org/hosted-games.json','https://atrium.example.org/catalog.json','https://atrium.example.org/hosted-games.json?token=x','https://localhost/hosted-games.json'])assert.throws(()=>parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:url}));
+ for(const url of ['https://atrium.example.org/hosted-games.json','https://example.org/hosted-games.json','https://host.test/hosted-games.json','http://atrium.example.org/hosted-games.json','https://u:p@atrium.example.org/hosted-games.json','https://atrium.example.org/catalog.json','https://catalog.operator-games.net/hosted-games.json?token=x','https://localhost/hosted-games.json'])assert.throws(()=>parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:url}));
  assert.throws(()=>parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:'',authorization:'secret'}));
 });
 test('configured hosted catalogue loads public source and review without bearer',async()=>{
  const urls=[];
  const data=await fetchConfiguredHostedCatalog(async(url,opt)=>{
   urls.push({url,opt});
-  return {ok:true,json:async()=>url==='./hosted-config.json'?{schema:'atrium.hosted-source/v1',gatewayUrl:'https://atrium.example.org/hosted-games.json'}:base};
+  return {ok:true,json:async()=>url==='./hosted-config.json'?{schema:'atrium.hosted-source/v1',gatewayUrl:'https://catalog.operator-games.net/hosted-games.json'}:base};
  });
  assert.deepEqual(data.games,[]);
- assert.deepEqual(urls.map(x=>x.url),['./hosted-config.json','https://atrium.example.org/hosted-games.json']);
+ assert.deepEqual(urls.map(x=>x.url),['./hosted-config.json','https://catalog.operator-games.net/hosted-games.json']);
  assert(urls.every(x=>x.opt.credentials==='omit'&&x.opt.redirect==='error'));
 });
 test('operator-approved second hosted game can be listed without Life hardcoding',()=>{
@@ -31,4 +31,8 @@ test('operator-approved second hosted game can be listed without Life hardcoding
     launchUrl:'https://games.example.org/chess/index.html'};
  assert.deepEqual(validateHostedCatalog({...base,games:[game,other]}).games.map(g=>g.gameId),['life.loop','example.chess']);
  assert.throws(()=>validateHostedCatalog({...base,games:[{...other,apiBaseUrl:game.apiBaseUrl}]}));
+});
+
+test('offline preview configuration explicitly says not connected rather than zero published games',async()=>{
+ await assert.rejects(()=>fetchConfiguredHostedCatalog(async()=>({ok:true,json:async()=>({schema:'atrium.hosted-source/v1',gatewayUrl:''})})),/ATRIUM_HOSTED_NOT_CONFIGURED/);
 });

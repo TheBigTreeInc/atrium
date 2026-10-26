@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.47",
+    "version": "0.5.49",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261026-047",
+    "id": "ATR-P1-20261026-049",
     "kind": "source_update",
     "created_at": "2026-10-26T09:23:00+01:00",
-    "summary": "Repair 0.5.46 Windows ZipRunner npm-test failure: TaviX release tests use disposable repositories and staging distinguishes archived immutable 1.0.4 from indexed 1.0.5 without a version rollback; no live activation claimed."
+    "summary": "Repair Windows ZipRunner 0.5.48 failure from stale spec release assertion; assert against package release dynamically, with source and package consistency tests. Source only: no live hosted catalog activation."
   },
   "planned_work": [
     {
@@ -210,7 +210,7 @@
       "id": "ATR-146-HOSTED-CATALOG-RELEASE",
       "title": "Safely stage hosted Life catalog in separate immutable TaviX release",
       "priority": "high",
-      "acceptance_criteria": "Automatically configure approved gateway before stage; preserve default 1.0.4 bytes, release 1.0.5 only when exact secure endpoint is present; no speculative production endpoint or automatic Git publication."
+      "acceptance_criteria": "Automatically configure approved gateway before stage; preserve default 1.0.4 bytes, release 1.0.6 only after real anonymous public preflight; no speculative production endpoint or automatic Git publication."
     },
     {
       "id": "ATR-146-LIVE-OPERATOR-ACCEPTANCE",
@@ -223,6 +223,18 @@
       "title": "Fix Windows TaviX staging regression and test isolation",
       "priority": "high",
       "acceptance_criteria": "Windows npm tests never stage into the live sibling TaviX repository, historical 1.0.4 survives catalog promotion to 1.0.5, higher staged versions still require correct catalog indexing."
+    },
+    {
+      "id": "ATR-148-HOSTED-HEALTH-RELEASE-GATE",
+      "title": "Fix broken Tavi hosted catalog presentation and release gate",
+      "priority": "critical",
+      "acceptance_criteria": "Fail closed for blank, reserved and unreachable public source; show explicit status for disconnected or fetch-failed catalogs; ensure a verified live, nonempty trusted projection is required before staging new immutable 1.0.6."
+    },
+    {
+      "id": "ATR-149-SPEC-RELEASE-VERSION-LOCK",
+      "title": "Remove stale Python spec release pin breaking Windows ZipRunner",
+      "priority": "high",
+      "acceptance_criteria": "Verify composed LoopRD release against package.json dynamically; 0.5.49 exact source passes spec tests and remains release-manifest consistent."
     }
   ],
   "done_work": [
@@ -913,6 +925,63 @@
           "description": "Windows incident, isolation and operator verification guide"
         }
       ]
+    },
+    {
+      "id": "ATR-148-HOSTED-HEALTH-RELEASE-GATE",
+      "summary": "Added explicit UI status and strict public gateway preflight before any hosted TaviX 1.0.6 stage, preserving published 1.0.5 immutable; no live operator activation claimed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "Discover and My Games show catalog failure status distinct from zero games"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/configure_hosted_catalog.mjs",
+          "description": "Live anonymous gateway preflight before compilation and staging"
+        },
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/hosted-release.json",
+          "description": "Next hosted immutable release reserved at 1.0.6"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavix-stage.test.mjs",
+          "description": "Isolated gateway fixture and staging checks"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/catalog_ui_status.test.mjs",
+          "description": "Failure/empty distinctions in UI"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_092_HOSTED_CATALOG_INSPECTION_REPAIR.adoc",
+          "description": "Desktop inspection and operator activation gates"
+        }
+      ]
+    },
+    {
+      "id": "ATR-149-SPEC-RELEASE-VERSION-LOCK",
+      "summary": "Replaced hard-coded 0.5.47 assertion with package-driven release check, synchronized 0.5.49 release metadata and added Windows operator acceptance gate.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tests/test_spec_validation.py",
+          "description": "Expected version read from package.json on every run"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Full cross-file release consistency contract"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_093_SPEC_RELEASE_WINDOWS_REPAIR.adoc",
+          "description": "0.5.48 failure and 0.5.49 repair"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -949,7 +1018,7 @@
     {
       "id": "ATR-146-LIVE-OPERATOR-ACCEPTANCE",
       "status": "blocked",
-      "next_action": "Run trusted deployment inspection and public TLS gateway activation using approved private operator access, then build/stage 1.0.5 with real endpoint and run two-account acceptance.",
+      "next_action": "Run trusted deployment inspection and public TLS gateway activation using approved private operator access, then build/stage 1.0.6 with real endpoint and run two-account acceptance.",
       "blockers": [
         "Live apps:approve authorization and source-of-truth launchOrigins values are not present in source ZIP",
         "Operator-owned HTTPS gateway and active registry SQLite access not available in source environment"

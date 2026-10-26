@@ -1,0 +1,23 @@
+= Atrium P1-093 — Windows 0.5.48 spec version assertion repair
+
+Date: 2026-10-26
+Release: Atrium 0.5.49
+
+== ZipRunner failure from exact operator log
+
+The Windows 0.5.48 ZipRunner build ran 337 Python tests with one failure:
+`tests.test_spec_validation.SpecValidationTests.test_actual_spec_is_one_component` compared the composed `looprd.yaml` release `0.5.48` against a stale hard-coded `0.5.47`. This blocked the build before the JavaScript stage. It does not show any Life/LoopRD runtime failure.
+
+== Source fix
+
+The assertion now reads `package.json` and checks the composed spec release against that authoritative source, while the existing `tests/test_release_pipeline.py` independently validates the version across LoopRD, the package name, CI, ZipRunner manifest, workboard and verification plan. Bump source release metadata to 0.5.49 and rehash `ziprunner.looprd.json`. Do not modify existing 1.0.4 and 1.0.5 immutable TaviX release files. Hosted TaviX 1.0.6 remains reserved and gated behind a real reachable public HTTPS catalog.
+
+== Required validation
+
+* `python -m unittest tests.test_spec_validation tests.test_release_pipeline -v`
+* `python -m unittest discover -s tests -q` (uses installed PyYAML; Windows ZipRunner also tests isolated `.venv`)
+* `npm test`
+* `npm run build` and `npm run verify` (Windows must stage to approved sibling TaviX checkout)
+* `python tools/package_zip.py`; inspect resulting ZIP for secret/runtime exclusions
+
+Operator acceptance: Import 0.5.49. Exact Windows Python 3.13 build, sibling TaviX stage and deployed Life discovery remain pending until operator-run validation. Do not copy `.env`, state, `dist`, or other runtime/private material into the source ZIP.

@@ -1,4 +1,7 @@
 = P1-090 — Atrium activation of registered Life in hosted TaviX catalog
+
+IMPORTANT: This is the historical 1.0.5 activation plan. Desktop inspection 2026-10-26 established 1.0.5 was published with a reserved example hostname. Do not overwrite it or follow its version-specific release steps; use P1_092 for new immutable 1.0.6.
+
 :revdate: 2026-10-26
 :toc:
 

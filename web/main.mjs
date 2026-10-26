@@ -55,10 +55,36 @@ function makeReviewedCard(app){
  actions.append(button);body.append(meta,heading,details,actions);card.append(cover,body);return card;
 }
 
-function syncLibraryMirror(){
+/** Neither a failed transport nor an unconfigured gateway is an empty registry. */
+function catalogIssue(kind, error){
+ const msg=String(error?.message||'');
+ if(kind==='hosted' && msg.includes('ATRIUM_HOSTED_NOT_CONFIGURED')){
+  return {title:'Hosted games not connected',detail:'Atrium does not have a configured public LoopRD game catalog. This is a connection/setup issue, not a statement that no games are registered.'};
+ }
+ return kind==='hosted'
+  ? {title:'Hosted game catalog unavailable',detail:'Atrium could not load the trusted LoopRD game catalog. Check the public catalog URL and HTTPS connection; registered games cannot be shown until it recovers.'}
+  : {title:'Reviewed game catalog unavailable',detail:'Atrium could not load its reviewed app catalog. Check the configured source; availability is currently unknown.'};
+}
+function emptyState(title, detail){
+ const box=document.createElement('div');box.className='emptyState';
+ const heading=document.createElement('h3');heading.textContent=title;
+ const para=document.createElement('p');para.textContent=detail;
+ box.append(heading,para);return box;
+}
+function issuePanel(issue){
+ const node=emptyState(issue.title,issue.detail);
+ node.dataset.catalogIssue='true';node.setAttribute('role','status');return node;
+}
+function syncLibraryMirror(issues=[]){
  libraryMirror.replaceChildren();
  const cards=[...area.querySelectorAll('.game-card')];
- if(!cards.length){libraryMirror.innerHTML='<div class="emptyState"><h3>No games yet</h3><p>When a trusted LoopRD game is active it will appear here automatically.</p></div>';return;}
+ // Show problems alongside any available games. The mirror must never silently
+ // represent a network error as a legitimate zero-game library.
+ for(const issue of issues)libraryMirror.append(issuePanel(issue));
+ if(!cards.length){
+  if(!issues.length)libraryMirror.append(emptyState('No games yet','The connected catalogs returned no published games.'));
+  return;
+ }
  for(const card of cards){
   const clone=card.cloneNode(true);
   clone.querySelectorAll('button,input').forEach(el=>el.remove());
@@ -71,15 +97,30 @@ function syncLibraryMirror(){
 async function refreshCatalog(){
  if(refreshInFlight)return;refreshInFlight=true;
  try{
-  const catalog=await freshCatalog();if(activeApp&&!isStillPublished(catalog,activeApp))revokeOpenApp();area.replaceChildren();
-  let count=0;
-  try{count+=await mountHostedLife({area});}catch(error){const status=document.createElement('div');status.className='emptyState';status.innerHTML=`<h3>LoopRD game catalog unavailable</h3><p>${error.message}</p>`;area.append(status);}
-  for(const app of catalog.apps){area.append(makeReviewedCard(app));count++;}
-  catalogStatus.textContent=`${count} ${count===1?'game':'games'} available`;
-  if(!count){area.innerHTML='<div class="emptyState"><h3>Your Atrium is ready</h3><p>No active game registrations are available yet. Add a valid <code>atriumd.yaml</code> to a trusted LoopRD game and it will appear here without a second approval step.</p></div>';}
-  syncLibraryMirror();
- }catch(error){area.replaceChildren();catalogStatus.textContent='Library unavailable';revokeOpenApp('Game library unavailable: '+error.message);area.innerHTML=`<div class="emptyState"><h3>Game library unavailable</h3><p>${error.message}</p></div>`;syncLibraryMirror();}
- finally{refreshInFlight=false;}
+  const issues=[];
+  let count=0, catalog=null;
+  try{
+   catalog=await freshCatalog();
+   if(activeApp&&!isStillPublished(catalog,activeApp))revokeOpenApp();
+  }catch(error){
+   issues.push(catalogIssue('reviewed',error));
+   // A failed catalog cannot authorize a still-open app.
+   revokeOpenApp('Game library unavailable.');
+  }
+  area.replaceChildren();
+  try{count+=await mountHostedLife({area});}
+  catch(error){issues.push(catalogIssue('hosted',error));}
+  if(catalog){for(const app of catalog.apps){area.append(makeReviewedCard(app));count++;}}
+  if(issues.length){
+   catalogStatus.textContent=count?`${count} available · Catalog connection problem`:'Catalog not connected';
+   // Keep the issue visible even if another source has cards.
+   for(const issue of issues)area.prepend(issuePanel(issue));
+  }else{
+   catalogStatus.textContent=`${count} ${count===1?'game':'games'} available`;
+   if(!count)area.append(emptyState('No published games','Both connected catalog sources responded successfully, but no games are currently published.'));
+  }
+  syncLibraryMirror(issues);
+ }finally{refreshInFlight=false;}
 }
 
 mountMultiplayerPreview(document.querySelector('#multiplayerLab'));

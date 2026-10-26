@@ -1,0 +1,23 @@
+{
+  "schema": "atrium.tavix.immutable-lock/v1",
+  "version": "1.0.4",
+  "files": {
+    "manifest.json": "e063a1e329175a04410bee572027459d9b18353cd5d3be3f545a9112d40fce3a",
+    "ui/catalog-config.json": "4332933243e7d50cc51f29d65baa77b4bfbfd0fb2b2903f1d7ad0457f906bd04",
+    "ui/catalog.json": "36622109f1a7354e617d41af0338c67cba44cb460f731d07bd124673379ada65",
+    "ui/extension-bridge.mjs": "728ea99df3e919065f3c44f5cee54f48e93f7ec267e6162c2c4f99ada78707aa",
+    "ui/hosted-config.json": "3b1fa99e1d0100c1db1b603edbfaa86b0ac9fd99d7399459caf6b55a33faa267",
+    "ui/hosted-games.json": "078064abdafbbeb72d3f3eab3ebf05e6ea282e8a340b845ce910450c3a20c2a4",
+    "ui/index.html": "f68da093b2681a973900fde79e40a8e3879659739a9686f0143cecc3ceb55c31",
+    "ui/main.mjs": "7f3d7b314b5d4529259c95ff64fed21e8a4d24edd99684014a979380cfdd2593",
+    "ui/src/apphost.mjs": "f3caac3d8e892d3bb1a8e11b58979fd7739b42ebba88a06ec077416dedc89148",
+    "ui/src/catalog_client.mjs": "a433445c3cc2e6c90c7181f34d0d4665c1dbca468117d5eb60245c008497b129",
+    "ui/src/hosted_cards.mjs": "43c827292f9ffc7fcc1da9eb1e365a2895be442ff7ebcc0e5a191d8fe0cc2aac",
+    "ui/src/hosted_catalog.mjs": "c23dd0398ea96ab27aae5cd3b9368c8d3a7207de61965b6de69072a95fa4bd87",
+    "ui/src/hosted_life.mjs": "52c6c4998fff3385c330d849104e6e35b5be180b1a59a3e80511b3f831665e1a",
+    "ui/src/mock_life_api.mjs": "2fe9336a44b06dfdff31b9d15d4455c9c1c4728d263cba19914b760fe533501f",
+    "ui/src/multiplayer_lobby.mjs": "5b32e871be486f88b14feb581ea830a186df639f2df2c29c82b22853050ad029",
+    "ui/src/multiplayer_preview_ui.mjs": "b759eebbc8639410b85c2db6aab3df2b949c8a4499f6be94ee661c7b655a9837",
+    "ui/tavix-sdk.mjs": "4258fdc34cfc887b05b445a8ae35ed16f659787f7e0fed446857af97117c108c"
+  }
+}

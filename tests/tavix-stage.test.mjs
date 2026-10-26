@@ -136,37 +136,51 @@ test('configuration is ordered before compilation and version selection is sourc
  assert(configureAt>=0 && configureAt<compileAt && compileAt<stageAt);
  const release=JSON.parse(await readFile(path.join(root,'extensions/tavi/hosted-release.json'),'utf8'));
  assert.equal(release.schema,'atrium.tavix.hosted-release/v1');
- assert.equal(release.version,'1.0.5');
+ assert.equal(release.version,'1.0.6');
  const builder=await readFile(path.join(root,'tools/build_tavi_extension.mjs'),'utf8');
  assert.match(builder,/hosted-release\.json/);
  assert.match(builder,/parseHostedCatalogSource/);
  assert.match(builder,/extensionManifest=\{\.\.\.baseManifest,version:release.version\}/);
 });
 
-test('approved HTTPS hosted gateway creates separate 1.0.5, never mutates offline 1.0.4',async()=>{
+test('approved HTTPS hosted gateway creates separate 1.0.6, never mutates offline 1.0.4',async()=>{
  const base=await mkdtemp(path.join(tmpdir(),'atrium-hosted-stage-'));
  const repo=await fakeTavixRepository(base);
  const cmd=process.platform==='win32'?'npm.cmd':'npm';
- const url='https://atrium.example.org/hosted-games.json';
+ const url='https://catalog.operator-games.net/hosted-games.json';
+ const preload=path.join(base,'public-preflight.cjs');
+ await writeFile(preload,`globalThis.fetch=async(url,options)=>{
+  if(url!==${JSON.stringify(url)})throw Error('unexpected preflight URL');
+  if(options.credentials!=='omit'||options.redirect!=='error'||options.cache!=='no-store')throw Error('unsafe preflight');
+  return {ok:true,status:200,headers:{get(name){return {'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'*'}[name]||null;}},json:async()=>({schema:'atrium.hosted-games/v1',games:[{
+   gameId:'life.loop',title:'Life',publisherId:'thebigtreeinc',deploymentId:'verified-life',component:'the-life-loop',
+   launchUrl:'https://thebigtreeinc.github.io/life/',apiBaseUrl:'https://api.trusted-games.net/looprd/the-life-loop/v1',sourceRevision:'${'a'.repeat(40)}',approved:true,status:'published',embedAllowed:false
+  }]})};
+ };`);
  const opts={cwd:root,encoding:'utf8',shell:process.platform==='win32',timeout:40000};
  // On Windows the required flag cannot be disabled. Every command here stages
  // solely in the temporary TaviX fixture. Tests never change C:\...\tavix.
  const env={...process.env,TAVIX_REPOSITORY_DIR:repo,TAVIX_PYTHON:process.execPath,TAVIX_STAGE_REQUIRED:'1'};
+ const testEnv={...env,NODE_OPTIONS:[env.NODE_OPTIONS||'',`--require=${preload}`].filter(Boolean).join(' ')};
  try {
   const missing=spawnSync(cmd,['run','build'],{...opts,env:{...env,ATRIUM_PUBLIC_HOSTED_CATALOG_URL:'',ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG:'1'}});
-  assert.notEqual(missing.status,0,'must not stage an empty 1.0.5 release');
+  assert.notEqual(missing.status,0,'must not stage an empty 1.0.6 release');
   assert.match(missing.stdout+missing.stderr,/ATRIUM_PUBLIC_HOSTED_CATALOG_URL is required/);
   const unsafe=spawnSync(cmd,['run','build'],{...opts,env:{...env,ATRIUM_PUBLIC_HOSTED_CATALOG_URL:'https://example.org/hosted-games.json?token=unsafe',ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG:'1'}});
   assert.notEqual(unsafe.status,0,'must reject credential-bearing gateway URL');
-  const good=spawnSync(cmd,['run','build'],{...opts,env:{...env,ATRIUM_PUBLIC_HOSTED_CATALOG_URL:url,ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG:'1'}});
+  const good=spawnSync(cmd,['run','build'],{...opts,env:{...testEnv,ATRIUM_PUBLIC_HOSTED_CATALOG_URL:url,ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG:'1'}});
   assert.equal(good.status,0,`approved hosted build failed: ${good.stderr}\n${good.stdout}`);
+  assert.match(good.stdout,/Verified live anonymous hosted catalog/);
+  const reserved=spawnSync(cmd,['run','build'],{...opts,env:{...testEnv,ATRIUM_PUBLIC_HOSTED_CATALOG_URL:'https://atrium.example.org/hosted-games.json',ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG:'1'}});
+  assert.notEqual(reserved.status,0,'reserved documentation hostname cannot stage');
+  assert.match(reserved.stdout+reserved.stderr,/Unapproved hosted catalog gateway URL/);
   const cfg=JSON.parse(await readFile(path.join(root,'dist-tavi/ui/hosted-config.json'),'utf8'));
   const live=JSON.parse(await readFile(path.join(root,'dist-tavi/manifest.json'),'utf8'));
   assert.equal(cfg.gatewayUrl,url);
-  assert.equal(live.version,'1.0.5');
-  assert.match(good.stdout,/TaviX 1\.0\.5/);
+  assert.equal(live.version,'1.0.6');
+  assert.match(good.stdout,/TaviX 1\.0\.6/);
   assert.match(good.stdout,/TAVIX_STAGE_READY/);
-  const archived105=path.join(repo,'extensions',live.id,'1.0.5',`${live.id}-1.0.5.tavix`);
+  const archived105=path.join(repo,'extensions',live.id,'1.0.6',`${live.id}-1.0.6.tavix`);
   const before=digest(await readFile(archived105));
   const normal=spawnSync(cmd,['run','build'],{...opts,env:{...env,ATRIUM_PUBLIC_HOSTED_CATALOG_URL:'',ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG:'0'}});
   assert.equal(normal.status,0,`default build failed: ${normal.stderr}\n${normal.stdout}`);
@@ -176,8 +190,8 @@ test('approved HTTPS hosted gateway creates separate 1.0.5, never mutates offlin
   assert.equal(original.version,'1.0.4');
   assert.match(normal.stdout,/TAVIX_STAGE_ARCHIVED/, 'older immutable release is not the catalog current version');
   const current=JSON.parse(await readFile(path.join(repo,'tavi.repository.json'),'utf8'));
-  assert.equal(current.extensions[0].manifest.version,'1.0.5','offline rebuild must not downgrade the hosted catalog');
-  assert.equal(digest(await readFile(archived105)),before,'hosted 1.0.5 archive must remain immutable');
+  assert.equal(current.extensions[0].manifest.version,'1.0.6','offline rebuild must not downgrade the hosted catalog');
+  assert.equal(digest(await readFile(archived105)),before,'hosted 1.0.6 archive must remain immutable');
  } finally { await rm(base,{recursive:true,force:true}); }
 });
 
@@ -193,11 +207,11 @@ test('stage verification rejects an index older than the requested release',asyn
   // dist or dist-tavi output, nor any operator's TaviX Git checkout.
   await mkdir(path.dirname(tempTool),{recursive:true});
   await writeFile(tempTool,await readFile(path.join(root,'tools','stage_tavix.mjs')));
-  const src={...JSON.parse(await readFile(path.join(root,'extensions/tavi/manifest.json'),'utf8')),version:'1.0.5'};
+  const src={...JSON.parse(await readFile(path.join(root,'extensions/tavi/manifest.json'),'utf8')),version:'1.0.6'};
   const dist=path.join(tempRoot,'dist-tavi');await mkdir(dist,{recursive:true});
   await writeFile(path.join(dist,'manifest.json'),JSON.stringify(src));
   // Simulate a repository implementation falsely exiting success without
-  // updating its index. The staged 1.0.5 archive exists but 1.0.4 is current.
+  // updating its index. The staged 1.0.6 archive exists but 1.0.4 is current.
   const dir=path.join(repo,'extensions',src.id,src.version);await mkdir(dir,{recursive:true});
   await writeFile(path.join(dir,'manifest.json'),JSON.stringify(src));
   await writeFile(path.join(dir,src.id+'-'+src.version+'.tavix'),'fixture');
@@ -208,4 +222,16 @@ test('stage verification rejects an index older than the requested release',asyn
   assert.notEqual(stage.status,0,'stale TaviX catalog must fail closed');
   assert.match(stage.stdout+stage.stderr,/index points to an older release/);
  }finally{await rm(base,{recursive:true,force:true});}
+});
+
+test('offline 1.0.4 assets are checksum-pinned and never regenerated from changing shared UI',async()=>{
+ const lock=JSON.parse(await readFile(path.join(root,'extensions/tavi/immutable-1.0.4.lock.json'),'utf8'));
+ assert.equal(lock.version,'1.0.4');
+ assert.equal(Object.keys(lock.files).length,17);
+ for(const [name,hash] of Object.entries(lock.files)){
+  assert.equal(digest(await readFile(path.join(root,'extensions/tavi/immutable-1.0.4',name))),hash);
+ }
+ const script=await readFile(path.join(root,'tools/build_tavi_extension.mjs'),'utf8');
+ assert.match(script,/copied pinned immutable offline release/);
+ assert.match(script,/Frozen TaviX file checksum changed/);
 });
