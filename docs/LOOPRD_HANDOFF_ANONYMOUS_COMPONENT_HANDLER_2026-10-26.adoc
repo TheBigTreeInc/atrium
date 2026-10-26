@@ -1,0 +1,66 @@
+= LoopRD handoff — Generic anonymous GET handler in database-auth components
+:revdate: 2026-10-26
+:toc:
+
+== Why LoopRD needs work
+
+Atrium 0.5.50 generates the safe trusted-game projection at `GET /looprd/atrium/v1/catalog/hosted-games` as an inline `kind: python` handler with `scopes: [apps:read]`. The current pinned LoopRD/DAPI contract (commit `c2b486bc7f526e71d8c26d77cb56bff9270d3347`) says database mode requires nonempty permission scopes for every custom handler. Thus this endpoint is authenticated, and an anonymous TaviX or browser cannot read it. The existing separate loopback gateway was a workaround, not the desired architecture.
+
+Please implement *generic*, opt-in **anonymous-read-handler.v1** capability in LoopRD. Keep Atrium and any game names out of the LoopRD runtime.
+
+== Proposed specification and compatibility
+
+[source,yaml]
+----
+apiVersion: looprd/v1
+component: atrium
+release: NEXT_ATRIUM_RELEASE
+requires:
+  - auth.anonymous-read-handler.v1
+auth:
+  mode: database
+  scopes: [apps:read, apps:approve, apps:discover]
+handlers:
+  - path: /catalog/hosted-games
+    method: GET
+    kind: python
+    access: anonymous
+    # No scopes on this specific endpoint.
+    source: |
+      async def handle(ctx):
+          return {"schema":"atrium.hosted-games/v1","games":[]}
+  - path: /registry/discovery/v2/manage
+    method: POST
+    kind: python
+    scopes: [apps:approve]
+    source: |
+      async def handle(ctx):
+          return {"error":"example only"}
+----
+
+This YAML is a **contract proposal**, not the current Atrium source or a runtime-valid drop-in. Select stable field/capability names with the LoopRD maintainer before shipping and document the final schema. Old LoopRD must reject the new `requires` capability; it must never silently interpret an opt-in anonymous handler as broadly public. The component's database auth remains unchanged, including management, CRUD, custom write handlers, WebSockets and API keys.
+
+== Mandatory security behavior
+
+. Only an explicit `access: anonymous` on an exact custom `GET` route can bypass **that route's** component database-key check. Other methods and paths are not implicitly anonymous. Require an absent scopes list or empty list on anonymous entries; do not accept conflicting scopes, `POST`, wildcard paths or CRUD/WebSocket declarations. Reject duplicate method/path and ambiguous route overlaps.
+. `ctx.session_factory` remains the owning component's real storage; Python inline handlers still require the operator's existing trusted-code configuration. `ctx.principal` must be clearly anonymous (None or an explicit anonymous principal) and must not impersonate a real user, operator, service or publisher. No implicit cross-component access, automatic key issue, or new credentials.
+. The existing scoped routes MUST still return 401 on no/invalid key and 403 on insufficient scope; `/_looprd` management routes, internal registration readers, WebSocket tickets, job triggers and other components remain unchanged. The public route must not grant `apps:read` scope to the caller.
+. Anonymous success and failure responses must be `Cache-Control: no-store, max-age=0`, JSON `Content-Type`, `X-Content-Type-Options: nosniff`; the anonymous catalog route must support `Access-Control-Allow-Origin: *` with *no* `Access-Control-Allow-Credentials` and a bounded, side-effect-free OPTIONS preflight. Scoped/private routes continue using their existing exact component CORS policy; never enable wildcard credentialed CORS globally. No URL tokens.
+. Missing storage or a handler exception must return sanitized 503 JSON, never a remembered snapshot. Disabled/withdrawn registrations disappear on the next request; do not cache authoritative public results. Reject oversized response bodies (Atrium's projection limits itself to 100 games/256 KiB). Existing LoopRD trusted Python compilation, lifecycle, generation reload and rollback rules continue unchanged.
+. Advertise the feature through normal LoopRD capabilities so Atrium can require it explicitly. Include generated OpenAPI annotations distinguishing anonymous vs bearer-scoped operations without leaking keys or private endpoint metadata.
+
+== Acceptance tests required in LoopRD
+
+* Positive: activate a disposable database-auth component with one anonymous GET and one scoped GET and one scoped POST. Anonymous GET 200 without credentials, correct cache/CORS, safe JSON; valid bearer also allowed but is not forwarded to a public catalog client.
+* Negative: unauthenticated scoped GET/POST 401; wrong-scope key 403; missing/unknown route 404; no implicit anonymous HEAD/POST; unknown/malformed `access` declaration and conflicting scopes fail validation without replacing current working generation.
+* Lifecycle: reload with anonymous route removed; anonymous caller immediately loses access. Restart and disable component: no stale public route. Schema, exact mounting, nested subcomponent prefix, CORS and proxy preservation are tested on the existing Traefik route with no new proxy service.
+* Isolation: scope administration and `_looprd` routes unchanged; no user principal or service identity injected; original server's authenticated API/OpenAPI and WS protections remain intact.
+* Operator-host behavior: verify actual TLS, proxy cache bypass, preflight for TaviX/Pages, and exact running LoopRD SHA before Atrium switches off the legacy gateway.
+
+== Atrium follow-up after runtime release
+
+In `tools/build_registry_spec.py`, change **only** the generated `/catalog/hosted-games` handler from `scopes: [apps:read]` to `access: anonymous` (using the final supported spelling). Add the capability to `looprd.yaml` `requires`, adjust `tools/check_specs.py` assertions, regenerate `modules/registry/looprd.yaml`, update the pinned DAPI revision and specification hash and run Python/Node/pinned semantic CI. Run anonymous GET with no token to the actual operator-owned HTTPS LoopRD endpoint. Only after it passes should Atrium's `ATRIUM_PUBLIC_HOSTED_CATALOG_URL` point to the LoopRD-native path and TaviX 1.0.6 be staged/published.
+
+== Existing boundaries
+
+Do not move game rules, Life seats, Social authentication, Tavi navigation, or private trusted registration reader keys into LoopRD's new anonymous feature. Do not expose all Atrium APIs as `auth.mode: public`, grant a visitor an `apps:read` bearer, hard-code another HTTPS host, create a second service database, or rewrite TaviX 1.0.5.

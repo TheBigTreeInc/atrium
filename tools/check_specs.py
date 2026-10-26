@@ -100,7 +100,11 @@ def verify():
     assert set(s["models"]) == {"App", "RegisteredEndpoint", "Publisher", "AppSubmission", "AppRelease", "AtriumDiscoveryCandidate", "AtriumDiscoveryBinding", "PublisherOriginProof", "Lounge", "GameTable", "GameRecord", "MatchSnapshot", "AtriumTrustedDeployment", "AtriumTrustedInstance", "AtriumTrustedReceipt"}
     routes = [(h["path"], h.get("method", "GET")) for h in s["handlers"]]
     assert len(routes) == len(set(routes)), "duplicate handler method/path"
-    assert len(s["handlers"]) == 23
+    assert len(s["handlers"]) == 24
+    catalog_handler = next(h for h in s["handlers"] if h["path"] == "/catalog/hosted-games")
+    assert catalog_handler["method"] == "GET" and catalog_handler["kind"] == "python"
+    assert catalog_handler["scopes"] == ["apps:read"], "public endpoint cannot bypass current LoopRD auth"
+    assert "project_hosted_games(rows)" in catalog_handler["source"]
     for resource in s["resources"].values():
         assert resource["model"] in s["models"]
         for scopes in resource.get("permissions", {}).values():
@@ -116,7 +120,7 @@ def verify():
     assert s["resources"]["apps"]["operations"] == ["list", "get"]
     assert s["resources"]["endpoints"]["operations"] == ["list", "get"]
     assert all(h.get("scopes") for h in s["handlers"]), "all scoped handlers require permissions"
-    print("Atrium composition: one component, 6 resources, 15 models, 23 handlers (source lint)")
+    print("Atrium composition: one component, 6 resources, 15 models, 24 handlers (source lint)")
     return s
 
 

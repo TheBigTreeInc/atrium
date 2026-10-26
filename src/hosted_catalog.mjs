@@ -25,7 +25,9 @@ export function parseHostedCatalogSource(config){
  if(!config||config.schema!=='atrium.hosted-source/v1'||Object.keys(config).some(k=>!['schema','gatewayUrl'].includes(k))||typeof config.gatewayUrl!=='string')throw Error('Invalid hosted catalog source configuration');
  if(!config.gatewayUrl)return './hosted-games.json';
  const url=config.gatewayUrl;
- if(HTTPS(url)!==url||RESERVED_GATEWAY_HOST.test(new URL(url).hostname)||new URL(url).pathname!=='/hosted-games.json')throw Error('Unapproved hosted catalog gateway URL');
+ const route=new URL(url).pathname;
+ const looprdRoute=route==='/looprd/atrium/v1/catalog/hosted-games';
+ if(HTTPS(url)!==url||RESERVED_GATEWAY_HOST.test(new URL(url).hostname)||(route!=='/hosted-games.json'&&!looprdRoute))throw Error('Unapproved hosted catalog gateway URL');
  return url;
 }
 export async function loadHostedEndpoint(fetcher=fetch, configUrl='./hosted-config.json'){

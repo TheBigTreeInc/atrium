@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.49",
-  "summary": "0.5.49 repairs the stale Python spec assertion which blocked ZipRunner 0.5.48, while retaining hosted catalog visibility, gateway release gate and TaviX immutable 1.0.6 activation requirements.",
+  "version": "0.5.50",
+  "summary": "0.5.50 adds protected LoopRD-native hosted catalog projection with a shared sanitized validator and a generic runtime anonymous GET feature handoff; public launch, installed Tavi and all existing operator gates remain pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -323,6 +323,17 @@
         "Confirm the complete isolated Python suite, npm test, staging and release/manifest validation pass without changing TaviX 1.0.4 or 1.0.5 compiled bytes.",
         "Confirm 1.0.6 remains gated by real hosted catalog preflight; do not claim the live LoopRD gateway or installed Tavi client is connected."
       ]
+    },
+    {
+      "id": "ATR-150-LOOPRD-CATALOG-HANDLER",
+      "title": "Generate safe LoopRD-native hosted-game catalog handler",
+      "summary": "Generate a bounded, protected GET /catalog/hosted-games inline handler using the Atrium-owned LoopRD session and shared trusted-game projection. Preserves existing database auth; runtime guest access awaits generic LoopRD capability.",
+      "priority": "high",
+      "operator_checks": [
+        "Install the exact 0.5.50 ZIP and confirm the protected LoopRD GET returns validated trusted games only with an apps:read key.",
+        "Verify withdrawn/disabled games disappear, malformed trusted source fails closed, and other Atrium management paths remain authenticated.",
+        "Do not publish TaviX 1.0.6 until the generic LoopRD anonymous handler feature and public HTTPS/CORS/no-store acceptance are verified."
+      ]
     }
   ],
   "remaining": [
@@ -420,6 +431,17 @@
         "Inspect all currently configured launchOrigins values and atomically update without removing unrelated originRefs.",
         "Ensure public hosted-games.json is no-store, anonymous, contains exactly reviewed Life with correct immutable revision and disables immediately after authorized withdrawal.",
         "Run two-account live TaviX generic-surface and Life seat-grant, offline/restart/turn-ready notification tests."
+      ]
+    },
+    {
+      "id": "ATR-151-LOOPRD-ANONYMOUS-READ",
+      "title": "Activate LoopRD public-read catalog without exposing Atrium management",
+      "summary": "LoopRD/DAPI must provide a generic, explicit anonymous GET custom-handler capability within database-auth components; update Atrium handler declaration only after the runtime is pinned and security-tested.",
+      "priority": "high",
+      "operator_checks": [
+        "Implement and test generic LoopRD per-handler anonymous GET support; reject other methods and preserve DB scopes and management isolation.",
+        "Pin tested runtime capability, change only Atrium catalog handler to public with no-store/CORS, verify no-token HTTPS request and withdrawals.",
+        "Build immutable TaviX 1.0.6 against the real approved LoopRD URL, review/push separately and perform two-account acceptance."
       ]
     }
   ]

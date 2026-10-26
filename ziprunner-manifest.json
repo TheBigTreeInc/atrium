@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.49",
+    "version": "0.5.50",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261026-049",
+    "id": "ATR-P1-20261026-050",
     "kind": "source_update",
     "created_at": "2026-10-26T09:23:00+01:00",
-    "summary": "Repair Windows ZipRunner 0.5.48 failure from stale spec release assertion; assert against package release dynamically, with source and package consistency tests. Source only: no live hosted catalog activation."
+    "summary": "Integrate safe trusted hosted-game projection inside Atrium LoopRD component as protected GET /catalog/hosted-games; preserve current database-scoped authorization until a generic LoopRD anonymous-GET capability is implemented. No production activation or TaviX publication."
   },
   "planned_work": [
     {
@@ -235,6 +235,18 @@
       "title": "Remove stale Python spec release pin breaking Windows ZipRunner",
       "priority": "high",
       "acceptance_criteria": "Verify composed LoopRD release against package.json dynamically; 0.5.49 exact source passes spec tests and remains release-manifest consistent."
+    },
+    {
+      "id": "ATR-150-LOOPRD-CATALOG-HANDLER",
+      "title": "Generate safe LoopRD-native hosted-game catalog handler",
+      "priority": "high",
+      "acceptance_criteria": "Generate bounded authenticated inline LoopRD hosted-game projection sharing old gateway logic, verify protected route and fail-closed withdrawal in disposable SQLite; operator installation unverified."
+    },
+    {
+      "id": "ATR-151-LOOPRD-ANONYMOUS-READ",
+      "title": "Activate LoopRD public-read catalog without exposing Atrium management",
+      "priority": "high",
+      "acceptance_criteria": "Test generic LoopRD anonymous GET-handler capability with scoped parent APIs unaffected, no-store/CORS and real public HTTPS before TaviX activation."
     }
   ],
   "done_work": [
@@ -982,6 +994,32 @@
           "description": "0.5.48 failure and 0.5.49 repair"
         }
       ]
+    },
+    {
+      "id": "ATR-150-LOOPRD-CATALOG-HANDLER",
+      "summary": "Generate a bounded, protected GET /catalog/hosted-games inline handler using the Atrium-owned LoopRD session and shared trusted-game projection. Preserves existing database auth; runtime guest access awaits generic LoopRD capability.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/hosted_catalog_projection.py",
+          "description": "Single-source trusted-game projection used by native handler and legacy gateway"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/build_registry_spec.py",
+          "description": "Versioned LoopRD inline handler staged with required apps:read"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_looprd_hosted_catalog.py",
+          "description": "Database-backed handler parity, withdrawal and fail-closed regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_094_LOOPRD_NATIVE_HOSTED_CATALOG.adoc",
+          "description": "Runtime security gates and adoption sequence"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1022,6 +1060,15 @@
       "blockers": [
         "Live apps:approve authorization and source-of-truth launchOrigins values are not present in source ZIP",
         "Operator-owned HTTPS gateway and active registry SQLite access not available in source environment"
+      ]
+    },
+    {
+      "id": "ATR-151-LOOPRD-ANONYMOUS-READ",
+      "status": "blocked",
+      "next_action": "Implement generic explicit anonymous GET handler in LoopRD, pin capability, regenerate Atrium descriptor and verify browser-safe no-token response before publishing TaviX 1.0.6.",
+      "blockers": [
+        "Pinned LoopRD/DAPI database-auth custom routes require nonempty scopes; generic per-handler anonymous access does not exist.",
+        "Live operator-bound game-web/atrium-web launch origins and HTTPS public acceptance still require operator access."
       ]
     }
   ],

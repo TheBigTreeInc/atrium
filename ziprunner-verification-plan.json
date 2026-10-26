@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.49",
+  "version": "0.5.50",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -674,6 +674,27 @@
           "mode": "manual",
           "checks": [
             "ATR-149-SPEC-RELEASE-VERSION-LOCK-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-150-LOOPRD-CATALOG-HANDLER",
+      "criteria": [
+        {
+          "id": "ATR-150-LOOPRD-CATALOG-HANDLER-AC-SOURCE",
+          "description": "Generated LoopRD handler shares trusted projection and responds to fresh database changes without publishing private data.",
+          "mode": "automated",
+          "checks": [
+            "ATR-150-LOOPRD-CATALOG-HANDLER-T1"
+          ]
+        },
+        {
+          "id": "ATR-150-LOOPRD-CATALOG-HANDLER-AC-OPERATOR",
+          "description": "Operator checks installed protected route before new runtime anonymous feature is activated.",
+          "mode": "manual",
+          "checks": [
+            "ATR-150-LOOPRD-CATALOG-HANDLER-M1"
           ]
         }
       ]
@@ -1407,6 +1428,27 @@
       "stage": "acceptance",
       "description": "Run exact imported 0.5.49 on Windows ZipRunner",
       "instructions": "Check Python 3.13 isolated tests, Node tests, TaviX stage and ZipRunner release plan; verify existing releases remain byte-identical. Production gateway activation remains separate."
+    },
+    {
+      "id": "ATR-150-LOOPRD-CATALOG-HANDLER-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "LoopRD hosted catalog handler contract, code generation and DB failure regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_looprd_hosted_catalog.py",
+      "assertions": [
+        "Generated /catalog/hosted-games is GET, kind python and apps:read protected",
+        "Live query agrees with safe legacy projection for Life",
+        "Revocation, invalid origin and missing DB fail closed, without stale content",
+        "Generated registry source is deterministic"
+      ]
+    },
+    {
+      "id": "ATR-150-LOOPRD-CATALOG-HANDLER-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator verifies protected LoopRD catalog and separate anonymous runtime development gate",
+      "instructions": "Import exact 0.5.50 ZIP in Windows ZipRunner, verify Python/Node, check GET with apps:read key; ensure anonymous GET remains 401 pending LoopRD capability, inspect game mappings, preserve historical TaviX. Then follow LoopRD handoff independently."
     }
   ]
 }

@@ -12,7 +12,9 @@ test('operator HTTPS hosted catalog source must be reviewed and never accept cre
  assert.equal(parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:''}),'./hosted-games.json');
  const approved='https://catalog.operator-games.net/hosted-games.json';
  assert.equal(parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:approved}),approved);
- for(const url of ['https://atrium.example.org/hosted-games.json','https://example.org/hosted-games.json','https://host.test/hosted-games.json','http://atrium.example.org/hosted-games.json','https://u:p@atrium.example.org/hosted-games.json','https://atrium.example.org/catalog.json','https://catalog.operator-games.net/hosted-games.json?token=x','https://localhost/hosted-games.json'])assert.throws(()=>parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:url}));
+ const looprd='https://api.operator-games.net/looprd/atrium/v1/catalog/hosted-games';
+ assert.equal(parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:looprd}),looprd);
+ for(const url of ['https://atrium.example.org/hosted-games.json','https://example.org/hosted-games.json','https://host.test/hosted-games.json','http://atrium.example.org/hosted-games.json','https://u:p@atrium.example.org/hosted-games.json','https://atrium.example.org/catalog.json','https://catalog.operator-games.net/hosted-games.json?token=x','https://api.operator-games.net/looprd/atrium/v1/registry/discovery/v2/catalog','https://api.operator-games.net/looprd/atrium/v1/catalog/hosted-games?token=x','https://localhost/hosted-games.json'])assert.throws(()=>parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:url}));
  assert.throws(()=>parseHostedCatalogSource({schema:'atrium.hosted-source/v1',gatewayUrl:'',authorization:'secret'}));
 });
 test('configured hosted catalogue loads public source and review without bearer',async()=>{

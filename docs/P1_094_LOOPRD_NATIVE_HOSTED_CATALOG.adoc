@@ -1,0 +1,35 @@
+= Atrium P1-094 — Host trusted game catalog in LoopRD
+:revnumber: 0.5.50
+:revdate: 2026-10-26
+:toc:
+
+== Decision
+
+Atrium owns the game's public *marketplace projection*; generic LoopRD owns the lifecycle, registered game observations, routing, component database and HTTPS ingress. Do not run a second bespoke catalog HTTP service as a permanent architectural requirement. A game's portable `looprd.yaml` + optional `atriumd.yaml` remain free of deployment URLs. Tavi is messenger-first and consumes the public Atrium endpoint via TaviX, not through a privileged Social reader.
+
+== Source delivered in Atrium 0.5.50
+
+* The generated registry specification now contains `GET /catalog/hosted-games` under the owning Atrium component. Its full current route is `/looprd/atrium/v1/catalog/hosted-games` (and the LoopRD `/dapi` alias where supported).
+* This `kind: python` handler reads the *same* component database using `ctx.session_factory`; there is no filesystem secret, independently managed server, second catalog database or game hardcoding. `src/hosted_catalog_projection.py` is canonical shared logic for this handler and the existing loopback migration fallback `tools/live_hosted_games.py`.
+* Each request re-queries only active trusted deployments/instances, verifies the `atriumd` game identity and publisher binding, requires an immutable Git SHA, trusted HTTPS API and launch origins, checks the hosted-web relative HTML entrypoint and emits bounded `atrium.hosted-games/v1` JSON. It never publishes bearer tokens, Social identifiers or underlying trusted-row metadata. Bad records fail closed rather than serving stale success.
+* `src/hosted_catalog.mjs` now also accepts this exact LoopRD-native HTTPS path as an operator-configurable public source, alongside the historical `/hosted-games.json` migration path; unrelated LoopRD routes and query-string tokens remain forbidden. TaviX 1.0.6 is *not* published by this ZIP.
+* The pinned LoopRD runtime's `auth.mode: database` requires a bearer/scope on **every handler**. Therefore **this route is currently protected with `apps:read`**, not yet an anonymous public catalog. Do not put an `apps:read` token in the browser or set Atrium's root `auth.mode: public`.
+
+== LoopRD task / dependency
+
+Follow the separately supplied `LOOPRD_HANDOFF_ANONYMOUS_COMPONENT_HANDLER_2026-10-26.adoc`. This is a *generic* runtime feature, not an Atrium-specific hard-coded route: allow explicitly opted-in, GET-only anonymous handlers within database-auth components, while retaining scopes on every other handler/resource and the operator/management routes. Include an explicit advertised runtime capability and strict fail-closed parsing on old runtimes.
+
+After that LoopRD capability exists, in a new Atrium version select an explicitly anonymous handler declaration and add the new runtime capability in `requires`. Rebuild the checked-in generated YAML, run the semantic validator against the updated pinned LoopRD SHA, update `ziprunner.looprd.json`, and exercise real anonymous GET/CORS/503 tests. Do not flip the declaration prematurely: older runtimes reject unknown fields or missing scoped requirements.
+
+== Operator acceptance and deployment
+
+. First verify 0.5.50 Windows ZipRunner install, exact GitHub Actions commit, fresh test evidence and handler's protected response using *an authorized, non-browser* `apps:read` key. Do not mistake a 401 response for an empty catalog.
+. Confirm the real Atrium trusted deployment has proper `game-web` and `atrium-web` launchOrigins. Preserve the entire existing map when using the protected set-origins management action. Inspect actual Life source revision and entrypoint; a trusted instance without a launch origin is not browser-publishable.
+. After the generic LoopRD anonymous-handler feature has passed its own security tests and Atrium has enabled it in source, read `GET https://<operator-owned-api-host>/looprd/atrium/v1/catalog/hosted-games` **without** Authorization or cookies. Expect JSON, `Cache-Control: no-store`, public CORS, no management fields and no redirects.
+. Check Life and Market Grove publication and authenticated gameplay separately. Withdraw one trusted instance or disable its deployment; the following public GET must omit it. An unavailable DB or malformed active source must yield 503, not stale success.
+. Only then set `ATRIUM_PUBLIC_HOSTED_CATALOG_URL` to the inspected HTTPS LoopRD route and `ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG=1` for TaviX 1.0.6 immutable staging. Its preflight must read a nonempty anonymous projection with no-store/CORS before the extension is compiled; operator still reviews/pushes/releases TaviX separately.
+. Verify Tavi Discover and My Games, withdrawal on foreground refresh, Tavi home navigation, then separately verify Social challenge → Atrium durable lobby → Life authoritative seats/offline resume/turn-ready notification with two accounts. No catalog result alone proves multiplayer functionality.
+
+== Rollout and rollback
+
+`tools/live_hosted_games.py` remains a temporary migration fallback. Do not remove it or override an operator's existing HTTPS routing until the replacement LoopRD endpoint is operator-accepted. No private configuration, token, database, local runtime file or TLS key belongs in the ZIP. Existing TaviX 1.0.4 and 1.0.5 immutable historical releases remain unchanged. Without the new LoopRD capability, 0.5.50 is a **protected-handler integration candidate**, not completed live public activation.

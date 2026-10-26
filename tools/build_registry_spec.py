@@ -25,6 +25,7 @@ ENDPOINTS=[
  ('/registry/discovery/v2/observations','POST','apps:discover','trusted_discovery_observation'),
  ('/registry/discovery/v2/manage','POST','apps:approve','manage_trusted_deployments'),
  ('/registry/discovery/v2/catalog','GET','apps:read','trusted_discovery_catalog'),
+ ('/catalog/hosted-games','GET','apps:read','hosted_games_from_looprd'),
 ]
 
 class Literal(str): pass
@@ -33,8 +34,10 @@ def render():
     spec=yaml.safe_load(BASE.read_text(encoding='utf-8'))
     library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/catalog.py','src/atriumd_contract.py','src/registry_runtime.py','src/discovery_runtime.py','src/discovery_delivery.py','src/publisher_proof.py'))
     v2_library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/atriumd_contract.py','src/discovery_v2.py'))
+    hosted_library='\n'.join((ROOT/x).read_text(encoding='utf-8') for x in ('src/hosted_catalog_projection.py','src/hosted_catalog_looprd.py'))
     for path,method,scope,fn in ENDPOINTS:
-        source=(v2_library if '/discovery/v2/' in path else library)+f'\n\nasync def handle(ctx):\n    return await {fn}(ctx)\n'
+        code = hosted_library if path == '/catalog/hosted-games' else (v2_library if '/discovery/v2/' in path else library)
+        source=code+f'\n\nasync def handle(ctx):\n    return await {fn}(ctx)\n'
         spec['handlers'].append({'path':path,'method':method,'kind':'python','scopes':[scope], 'source':Literal(source)})
     dumper_class=type('LiteralDumper',(yaml.SafeDumper,),{})
     dumper_class.add_representer(Literal,lambda dumper,data:dumper.represent_scalar('tag:yaml.org,2002:str',str(data),style='|'))

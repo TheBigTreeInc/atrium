@@ -1,4 +1,6 @@
-= Atrium 0.5.49 — Windows ZipRunner spec assertion repair
+NOTE: This release adds protected LoopRD GET /catalog/hosted-games. The generic LoopRD anonymous GET feature is **not yet available**, so do not connect Tavi or publish TaviX 1.0.6 until LoopRD integration has been reviewed. See docs/P1_094_LOOPRD_NATIVE_HOSTED_CATALOG.adoc and docs/LOOPRD_HANDOFF_ANONYMOUS_COMPONENT_HANDLER_2026-10-26.adoc. Historical notes below describe earlier releases.
+
+= Atrium 0.5.50 — LoopRD-native catalog handler
 
 The 0.5.48 build failed only because `tests/test_spec_validation.py` expected `0.5.47` while the LoopRD release was `0.5.48`. The assertion now derives its expected release from `package.json`, maintaining the version mismatch protection without static stale pins. Source is rebased onto exact 0.5.48 ZIP. See `docs/P1_093_SPEC_RELEASE_WINDOWS_REPAIR.adoc`. Live hosted catalog and TaviX 1.0.6 activation remain separate.
 
