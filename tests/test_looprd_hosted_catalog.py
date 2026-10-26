@@ -1,4 +1,4 @@
-"""LoopRD-owned catalog projection regression, prior to public handler runtime support."""
+"""LoopRD 0.5 anonymous catalog projection and private-route security regression."""
 import asyncio
 import json
 from pathlib import Path
@@ -45,12 +45,22 @@ class LoopRDHostedCatalogTests(unittest.TestCase):
             session_factory = self.factory
         return asyncio.run(namespace['handle'](Ctx()))
 
-    def test_compiled_route_is_scoped_and_not_anonymous(self):
+    def test_exact_public_route_and_isolated_private_handlers(self):
         self.assertEqual(self.handler['method'], 'GET')
-        self.assertEqual(self.handler['scopes'], ['apps:read'])
-        self.assertNotIn('public',self.handler)
-        self.assertNotIn('anonymous',self.handler)
+        self.assertEqual(self.handler.get('access'), 'anonymous')
+        self.assertNotIn('scopes', self.handler)
+        self.assertNotIn('contract', self.handler)
+        self.assertEqual(self.handler.get('status', 200), 200)
         self.assertEqual(self.handler['kind'], 'python')
+        spec = compose(ROOT/'looprd.yaml')
+        self.assertIn('auth.anonymous-read-handler.v1',spec['requires'])
+        self.assertEqual(spec['auth']['mode'], 'database')
+        self.assertEqual(spec['database']['schemaVersion'], 6)
+        private = [h for h in spec['handlers'] if h is not self.handler and h['path'] != '/catalog/hosted-games']
+        self.assertEqual(len(private), len(spec['handlers'])-1)
+        self.assertTrue(all(h.get('access','component')=='component' and h.get('scopes') for h in private))
+        self.assertTrue(any(h['path']=='/registry/discovery/v2/manage' and 'apps:approve' in h['scopes'] for h in private))
+        self.assertTrue(any(h['path']=='/registry/discovery/v2/observations' and 'apps:discover' in h['scopes'] for h in private))
 
     def test_same_safe_projection_as_existing_gateway(self):
         result = self.call()

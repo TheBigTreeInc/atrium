@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.50",
+  "version": "0.5.51",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -695,6 +695,27 @@
           "mode": "manual",
           "checks": [
             "ATR-150-LOOPRD-CATALOG-HANDLER-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-152-LOOPRD-ANONYMOUS-CATALOG-SOURCE",
+      "criteria": [
+        {
+          "id": "ATR-152-AC-SOURCE",
+          "description": "Only catalog GET is public under explicitly required LoopRD 0.5.0 capability; all other handlers remain private.",
+          "mode": "automated",
+          "checks": [
+            "ATR-152-T1"
+          ]
+        },
+        {
+          "id": "ATR-152-AC-LIVE",
+          "description": "Deployed LoopRD exact pinned runtime returns anonymous real trusted game projection through operator TLS, with private management and revoked-game checks; TaviX requires manual release.",
+          "mode": "manual",
+          "checks": [
+            "ATR-152-M1"
           ]
         }
       ]
@@ -1437,7 +1458,7 @@
       "runner_ref": "atrium-python-tests",
       "test_ref": "tests/test_looprd_hosted_catalog.py",
       "assertions": [
-        "Generated /catalog/hosted-games is GET, kind python and apps:read protected",
+        "Generated /catalog/hosted-games is GET, kind python and is now explicitly anonymous under 0.5.51",
         "Live query agrees with safe legacy projection for Life",
         "Revocation, invalid origin and missing DB fail closed, without stale content",
         "Generated registry source is deterministic"
@@ -1448,7 +1469,28 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Operator verifies protected LoopRD catalog and separate anonymous runtime development gate",
-      "instructions": "Import exact 0.5.50 ZIP in Windows ZipRunner, verify Python/Node, check GET with apps:read key; ensure anonymous GET remains 401 pending LoopRD capability, inspect game mappings, preserve historical TaviX. Then follow LoopRD handoff independently."
+      "instructions": "Import exact 0.5.51 ZIP in Windows ZipRunner, verify Python/Node, check GET with apps:read key; ensure anonymous GET remains 401 pending LoopRD capability, inspect game mappings, preserve historical TaviX. Then follow LoopRD handoff independently."
+    },
+    {
+      "id": "ATR-152-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Pin new LoopRD contract; test exact public handler/private neighbors/revocation",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_looprd_hosted_catalog.py",
+      "assertions": [
+        "Only /catalog/hosted-games is access: anonymous and has no scopes",
+        "LoopRD auth.mode database and other routes retain scopes",
+        "New generic capability is required and generator reproducible",
+        "Life catalog agrees with gateway; revocations and malformed active rows fail closed"
+      ]
+    },
+    {
+      "id": "ATR-152-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator verifies installed LoopRD 0.5.0 and Atrium live anonymous HTTPS catalog",
+      "instructions": "Verify exact 0.5.51 source ZIP and LoopRD 0.5.0 commit abaf03fc2e97858508963cee23ba54fb5a041738; test public GET/CORS/no-store, private writes/management, active Life/Market Grove launch mappings, 503 on unavailable DB, withdrawal and TaviX 1.0.6 gated publication. No private tokens in client."
     }
   ]
 }

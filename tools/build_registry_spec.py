@@ -25,7 +25,7 @@ ENDPOINTS=[
  ('/registry/discovery/v2/observations','POST','apps:discover','trusted_discovery_observation'),
  ('/registry/discovery/v2/manage','POST','apps:approve','manage_trusted_deployments'),
  ('/registry/discovery/v2/catalog','GET','apps:read','trusted_discovery_catalog'),
- ('/catalog/hosted-games','GET','apps:read','hosted_games_from_looprd'),
+ ('/catalog/hosted-games','GET',None,'hosted_games_from_looprd'),
 ]
 
 class Literal(str): pass
@@ -38,7 +38,13 @@ def render():
     for path,method,scope,fn in ENDPOINTS:
         code = hosted_library if path == '/catalog/hosted-games' else (v2_library if '/discovery/v2/' in path else library)
         source=code+f'\n\nasync def handle(ctx):\n    return await {fn}(ctx)\n'
-        spec['handlers'].append({'path':path,'method':method,'kind':'python','scopes':[scope], 'source':Literal(source)})
+        entry = {'path':path,'method':method,'kind':'python','source':Literal(source)}
+        if path == '/catalog/hosted-games':
+            # Looprd 0.5.0 opt-in: exact anonymous GET, no scopes or service contract.
+            entry['access'] = 'anonymous'
+        else:
+            entry['scopes'] = [scope]
+        spec['handlers'].append(entry)
     dumper_class=type('LiteralDumper',(yaml.SafeDumper,),{})
     dumper_class.add_representer(Literal,lambda dumper,data:dumper.represent_scalar('tag:yaml.org,2002:str',str(data),style='|'))
     return yaml.dump(spec,Dumper=dumper_class,sort_keys=False,allow_unicode=True)

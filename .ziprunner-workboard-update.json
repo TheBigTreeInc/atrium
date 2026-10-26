@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.50",
-  "summary": "0.5.50 adds protected LoopRD-native hosted catalog projection with a shared sanitized validator and a generic runtime anonymous GET feature handoff; public launch, installed Tavi and all existing operator gates remain pending.",
+  "version": "0.5.51",
+  "summary": "0.5.51 opts only Atrium hosted-game LoopRD handler into generic anonymous GET, pins LoopRD 0.5.0 source and keeps all other API permissions; live TLS and game launch bindings remain operator gates.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -330,9 +330,20 @@
       "summary": "Generate a bounded, protected GET /catalog/hosted-games inline handler using the Atrium-owned LoopRD session and shared trusted-game projection. Preserves existing database auth; runtime guest access awaits generic LoopRD capability.",
       "priority": "high",
       "operator_checks": [
-        "Install the exact 0.5.50 ZIP and confirm the protected LoopRD GET returns validated trusted games only with an apps:read key.",
+        "Install the exact 0.5.51 ZIP and confirm the protected LoopRD GET returns validated trusted games only with an apps:read key.",
         "Verify withdrawn/disabled games disappear, malformed trusted source fails closed, and other Atrium management paths remain authenticated.",
         "Do not publish TaviX 1.0.6 until the generic LoopRD anonymous handler feature and public HTTPS/CORS/no-store acceptance are verified."
+      ]
+    },
+    {
+      "id": "ATR-152-LOOPRD-ANONYMOUS-CATALOG-SOURCE",
+      "title": "Enable LoopRD 0.5.0 anonymous hosted catalog without broadening Atrium auth",
+      "summary": "Pin generic LoopRD 0.5.0 anonymous GET capability and change only generated /catalog/hosted-games to access: anonymous; preserve database auth, private handler scopes, and immutable TaviX releases. Source implementation, not live publication.",
+      "priority": "high",
+      "operator_checks": [
+        "Import 0.5.51 on Windows ZipRunner; run all Python/Node and pinned LoopRD semantic source checks.",
+        "Verify anonymous GET and OPTIONS return bounded JSON no-store/CORS without any token; POST, management, other handler and WebSocket remain restricted.",
+        "Verify Life and Market Grove appear only after trusted launch bindings and actual LoopRD 0.5.0 runtime deployment are active; withdrawal propagates; publish TaviX 1.0.6 separately."
       ]
     }
   ],
@@ -436,12 +447,12 @@
     {
       "id": "ATR-151-LOOPRD-ANONYMOUS-READ",
       "title": "Activate LoopRD public-read catalog without exposing Atrium management",
-      "summary": "LoopRD/DAPI must provide a generic, explicit anonymous GET custom-handler capability within database-auth components; update Atrium handler declaration only after the runtime is pinned and security-tested.",
+      "summary": "Generic LoopRD 0.5.0 capability and Atrium 0.5.51 source handler are implemented; still requires pinned runtime deployment, real trusted launch origins, public HTTPS acceptance and gated immutable TaviX release.",
       "priority": "high",
       "operator_checks": [
-        "Implement and test generic LoopRD per-handler anonymous GET support; reject other methods and preserve DB scopes and management isolation.",
-        "Pin tested runtime capability, change only Atrium catalog handler to public with no-store/CORS, verify no-token HTTPS request and withdrawals.",
-        "Build immutable TaviX 1.0.6 against the real approved LoopRD URL, review/push separately and perform two-account acceptance."
+        "Verify LoopRD 0.5.0 commit abaf03fc2e97858508963cee23ba54fb5a041738 is the deployed runtime and Atrium 0.5.51 passes actual DAPI semantic validation.",
+        "Verify public unauthenticated GET/OPTIONS at the real operator TLS origin and private API/management denial, no-store, limits and revocation.",
+        "Preserve and configure real trusted game-web and atrium-web launch maps; only then stage and separately review/publish immutable TaviX 1.0.6."
       ]
     }
   ]

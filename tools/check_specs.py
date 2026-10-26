@@ -87,6 +87,7 @@ def verify():
     s = compose(ROOT / "looprd.yaml")
     assert s["component"] == "atrium", "root Atrium identity required"
     assert "spec.subcomponents" in s["requires"], "LoopRD 0.4 subcomponents required"
+    assert "auth.anonymous-read-handler.v1" in s["requires"], "LoopRD 0.5 anonymous handler capability required"
     assert s["subcomponents"] == [{"source": "games/market-grove/looprd.yaml"}], "independent child declaration required"
     child = parse((ROOT / "games/market-grove/looprd.yaml").read_text(encoding="utf-8"))
     assert child["component"] == "market-grove" and child["database"]["backend"] == "sqlite"
@@ -103,7 +104,9 @@ def verify():
     assert len(s["handlers"]) == 24
     catalog_handler = next(h for h in s["handlers"] if h["path"] == "/catalog/hosted-games")
     assert catalog_handler["method"] == "GET" and catalog_handler["kind"] == "python"
-    assert catalog_handler["scopes"] == ["apps:read"], "public endpoint cannot bypass current LoopRD auth"
+    assert catalog_handler.get("access") == "anonymous", "hosted catalog alone must opt in to public read"
+    assert not catalog_handler.get("scopes"), "public catalog must not take component scopes"
+    assert catalog_handler.get("status", 200) == 200, "anonymous GET must return HTTP 200"
     assert "project_hosted_games(rows)" in catalog_handler["source"]
     for resource in s["resources"].values():
         assert resource["model"] in s["models"]
@@ -119,7 +122,10 @@ def verify():
     assert s["realtime"]["delivery"] == "durable"
     assert s["resources"]["apps"]["operations"] == ["list", "get"]
     assert s["resources"]["endpoints"]["operations"] == ["list", "get"]
-    assert all(h.get("scopes") for h in s["handlers"]), "all scoped handlers require permissions"
+    anonymous_handlers = [h for h in s["handlers"] if h.get("access") == "anonymous"]
+    assert len(anonymous_handlers) == 1 and anonymous_handlers[0] is catalog_handler, "only hosted catalog may be anonymous"
+    assert all(h.get("scopes") for h in s["handlers"] if h is not catalog_handler), "all private handlers require permissions"
+    assert all(h.get("access", "component") == "component" for h in s["handlers"] if h is not catalog_handler), "other handlers stay private"
     print("Atrium composition: one component, 6 resources, 15 models, 24 handlers (source lint)")
     return s
 

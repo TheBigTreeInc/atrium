@@ -1,6 +1,8 @@
+Atrium 0.5.51: LoopRD 0.5.0 generic anonymous hosted-catalog GET is source-enabled; live activation and 1.0.6 TaviX are operator-gated. See docs/P1_095_LOOPRD_ANONYMOUS_CATALOG_051.adoc.
+
 NOTE: This release adds protected LoopRD GET /catalog/hosted-games. The generic LoopRD anonymous GET feature is **not yet available**, so do not connect Tavi or publish TaviX 1.0.6 until LoopRD integration has been reviewed. See docs/P1_094_LOOPRD_NATIVE_HOSTED_CATALOG.adoc and docs/LOOPRD_HANDOFF_ANONYMOUS_COMPONENT_HANDLER_2026-10-26.adoc. Historical notes below describe earlier releases.
 
-= Atrium 0.5.50 — LoopRD-native catalog source handoff
+= Atrium 0.5.51 — LoopRD-native catalog source handoff
 
 Source-only repair from exact 0.5.48 ZIP; `tests/test_spec_validation.py` no longer hardcodes prior 0.5.47 release, checking `package.json` instead. Version metadata and LoopRD SHA are synchronized. No private config, runtime state, generated outputs, or existing immutable TaviX 1.0.4/1.0.5 changes are included. Re-run Windows Python/Node and staging checks. Full details: `docs/P1_093_SPEC_RELEASE_WINDOWS_REPAIR.adoc`. This ZIP does not activate any remote hosted catalog.
 

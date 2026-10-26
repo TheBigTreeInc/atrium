@@ -468,8 +468,6 @@ handlers:
 - path: /registry/publishers
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -1552,11 +1550,11 @@ handlers:
 
     async def handle(ctx):
         return await register_publisher(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/publishers/status
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -2639,11 +2637,11 @@ handlers:
 
     async def handle(ctx):
         return await change_publisher_status(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/publishers/proofs
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -3726,11 +3724,11 @@ handlers:
 
     async def handle(ctx):
         return await issue_publisher_proof(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/publishers/proofs/verify
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -4813,11 +4811,11 @@ handlers:
 
     async def handle(ctx):
         return await verify_publisher_proof(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/publishers/proofs
   method: GET
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -5900,11 +5898,11 @@ handlers:
 
     async def handle(ctx):
         return await list_publisher_proofs(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/submissions
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -6987,11 +6985,11 @@ handlers:
 
     async def handle(ctx):
         return await submit(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/reviews
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -8074,11 +8072,11 @@ handlers:
 
     async def handle(ctx):
         return await review(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/disable
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -9161,11 +9159,11 @@ handlers:
 
     async def handle(ctx):
         return await disable(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/catalog
   method: GET
   kind: python
-  scopes:
-  - apps:read
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -10248,11 +10246,11 @@ handlers:
 
     async def handle(ctx):
         return await catalog(ctx)
+  scopes:
+  - apps:read
 - path: /registry/submissions
   method: GET
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -11335,11 +11333,11 @@ handlers:
 
     async def handle(ctx):
         return await submissions(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/discovery/candidates
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -12422,11 +12420,11 @@ handlers:
 
     async def handle(ctx):
         return await record_discovery(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/discovery/candidates
   method: GET
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -13509,11 +13507,11 @@ handlers:
 
     async def handle(ctx):
         return await list_discoveries(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/discovery/manage
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -14596,11 +14594,11 @@ handlers:
 
     async def handle(ctx):
         return await manage_discovery(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/discovery/observations
   method: POST
   kind: python
-  scopes:
-  - apps:discover
   source: |
     """Strict, immutable application manifest contract for trusted review.
 
@@ -15683,11 +15681,11 @@ handlers:
 
     async def handle(ctx):
         return await receive_discovery_observation(ctx)
+  scopes:
+  - apps:discover
 - path: /registry/discovery/v2/capabilities
   method: GET
   kind: python
-  scopes:
-  - apps:discover
   source: |
     """Portable Atrium sidecar validator shared by source CLI and trusted registry handler.
 
@@ -16148,11 +16146,11 @@ handlers:
 
     async def handle(ctx):
         return await trusted_discovery_capabilities(ctx)
+  scopes:
+  - apps:discover
 - path: /registry/discovery/v2/observations
   method: POST
   kind: python
-  scopes:
-  - apps:discover
   source: |
     """Portable Atrium sidecar validator shared by source CLI and trusted registry handler.
 
@@ -16613,11 +16611,11 @@ handlers:
 
     async def handle(ctx):
         return await trusted_discovery_observation(ctx)
+  scopes:
+  - apps:discover
 - path: /registry/discovery/v2/manage
   method: POST
   kind: python
-  scopes:
-  - apps:approve
   source: |
     """Portable Atrium sidecar validator shared by source CLI and trusted registry handler.
 
@@ -17078,11 +17076,11 @@ handlers:
 
     async def handle(ctx):
         return await manage_trusted_deployments(ctx)
+  scopes:
+  - apps:approve
 - path: /registry/discovery/v2/catalog
   method: GET
   kind: python
-  scopes:
-  - apps:read
   source: |
     """Portable Atrium sidecar validator shared by source CLI and trusted registry handler.
 
@@ -17543,11 +17541,11 @@ handlers:
 
     async def handle(ctx):
         return await trusted_discovery_catalog(ctx)
+  scopes:
+  - apps:read
 - path: /catalog/hosted-games
   method: GET
   kind: python
-  scopes:
-  - apps:read
   source: |
     """Safe generic public hosted-game projection shared by LoopRD and legacy gateway.
 
@@ -17696,3 +17694,4 @@ handlers:
 
     async def handle(ctx):
         return await hosted_games_from_looprd(ctx)
+  access: anonymous

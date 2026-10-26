@@ -1,6 +1,6 @@
 apiVersion: looprd/v1
 component: atrium
-release: 0.5.50
+release: 0.5.51
 api:
   version: v1
 auth:
@@ -78,6 +78,7 @@ database:
       JSON NOT NULL, UNIQUE("deploymentId", "component", "operationId"), UNIQUE("deploymentId",
       "component", "sequence"))
 requires:
+- auth.anonymous-read-handler.v1
 - spec.includes
 - spec.subcomponents
 - events.transactional

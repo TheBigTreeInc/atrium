@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pac-labs/dapi
-          ref: c2b486bc7f526e71d8c26d77cb56bff9270d3347
+          ref: abaf03fc2e97858508963cee23ba54fb5a041738
           path: _upstream/dapi
           persist-credentials: false
       - name: Fetch pinned ZipRunner interchange validator
@@ -76,7 +76,7 @@ jobs:
       - name: Build and validate ZipRunner source ZIP
         run: |
           python tools/package_zip.py
-          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.50-ziprunner.zip --expected-project atrium --require-verification-plan
+          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.51-ziprunner.zip --expected-project atrium --require-verification-plan
           python _upstream/ziprunner-spec/tools/validate.py looprd ziprunner.looprd.json --root . --expected-project atrium
       - name: Upload Tavi extension build from same source SHA (no auto-deploy)
         uses: actions/upload-artifact@v4
@@ -87,8 +87,8 @@ jobs:
       - name: Upload source ZIP for operator review (no auto-deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: atrium-0.5.50-ziprunner
-          path: dist/atrium-0.5.50-ziprunner.zip
+          name: atrium-0.5.51-ziprunner
+          path: dist/atrium-0.5.51-ziprunner.zip
           if-no-files-found: error
 
   windows-ziprunner-build:

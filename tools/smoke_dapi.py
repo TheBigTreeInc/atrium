@@ -185,7 +185,22 @@ def main():
                               headers=read).json()['games']==[]
             assert client.get('/looprd/atrium/v1/registry/discovery/v2/capabilities',
                               headers=machine).json()['deploymentId']=='pi-one'
-    print('DAPI disposable Atrium+Market Grove smoke passed (isolated nested child, schema v6, scoped discovery/publishing)')
+            # LoopRD 0.5.0: the exact hosted catalog is anonymous, while
+            # publishing/discovery and unrelated handlers remain scoped.
+            catalog_url = endpoint + '/catalog/hosted-games'
+            guest = client.get(catalog_url)
+            assert guest.status_code == 200, guest.text
+            assert guest.json() == {'schema':'atrium.hosted-games/v1','games':[]}
+            assert 'no-store' in guest.headers.get('cache-control','')
+            assert guest.headers.get('access-control-allow-origin') == '*'
+            assert 'set-cookie' not in guest.headers
+            preflight = client.options(catalog_url, headers={
+                'Origin':'https://client.example.org',
+                'Access-Control-Request-Method':'GET'})
+            assert preflight.status_code == 200, preflight.text
+            assert preflight.headers.get('access-control-allow-origin') == '*'
+            assert client.get(endpoint+'/registry/discovery/v2/catalog').status_code == 401
+    print('DAPI disposable Atrium+Market Grove smoke passed (isolated nested child, schema v6, scoped discovery/publishing, isolated anonymous catalog)')
 
 
 if __name__ == '__main__':

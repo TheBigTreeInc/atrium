@@ -39,7 +39,7 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn('working-directory: _upstream/dapi', workflow)
         self.assertIn('npm ci --ignore-scripts', workflow)
         self.assertIn('python -m pip install -e _upstream/dapi', workflow)
-        self.assertIn('ref: c2b486bc7f526e71d8c26d77cb56bff9270d3347', workflow)
+        self.assertIn('ref: abaf03fc2e97858508963cee23ba54fb5a041738', workflow)
 
     def test_disposable_dapi_smoke_phases_respect_runtime_rate_limit(self):
         """Regression for exact push 3df644cd: 429 obscured the required 403."""
@@ -55,6 +55,9 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn('requestsPerMinute: 120', spec)
         self.assertIn('assert response.status_code==403, response.text', smoke)
         self.assertIn('A further fresh server must read committed DB state', smoke)
+        self.assertIn("catalog_url = endpoint + '/catalog/hosted-games'", smoke)
+        self.assertIn("guest = client.get(catalog_url)", smoke)
+        self.assertIn("client.get(endpoint+'/registry/discovery/v2/catalog').status_code == 401", smoke)
 
     def test_ci_artifacts_use_current_source_version(self):
         version=json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']

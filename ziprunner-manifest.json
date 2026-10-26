@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.50",
+    "version": "0.5.51",
     "base_version": "0.5.19",
     "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
   },
   "update": {
-    "id": "ATR-P1-20261026-050",
+    "id": "ATR-P1-20261026-051",
     "kind": "source_update",
     "created_at": "2026-10-26T09:23:00+01:00",
-    "summary": "Integrate safe trusted hosted-game projection inside Atrium LoopRD component as protected GET /catalog/hosted-games; preserve current database-scoped authorization until a generic LoopRD anonymous-GET capability is implemented. No production activation or TaviX publication."
+    "summary": "Enable only LoopRD-hosted catalog GET as opt-in anonymous on pinned LoopRD 0.5.0; retain private Atrium API and operator live rollout gates."
   },
   "planned_work": [
     {
@@ -247,6 +247,12 @@
       "title": "Activate LoopRD public-read catalog without exposing Atrium management",
       "priority": "high",
       "acceptance_criteria": "Test generic LoopRD anonymous GET-handler capability with scoped parent APIs unaffected, no-store/CORS and real public HTTPS before TaviX activation."
+    },
+    {
+      "id": "ATR-152-LOOPRD-ANONYMOUS-CATALOG-SOURCE",
+      "title": "Enable LoopRD 0.5.0 anonymous hosted catalog without broadening Atrium auth",
+      "priority": "high",
+      "acceptance_criteria": "Pin exact generic LoopRD anonymous read feature, expose only /catalog/hosted-games without scopes, maintain every other private handler, run source regressions and gate public deployment/TaviX release on operator acceptance."
     }
   ],
   "done_work": [
@@ -1020,6 +1026,32 @@
           "description": "Runtime security gates and adoption sequence"
         }
       ]
+    },
+    {
+      "id": "ATR-152-LOOPRD-ANONYMOUS-CATALOG-SOURCE",
+      "summary": "Source-only integration: new capability pin, exact anonymous catalog handler, complete private-scope preservation, trusted projection regressions and operator rollout handoff. Not deployed or accepted.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "looprd.yaml",
+          "description": "Opt-in runtime capability"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/build_registry_spec.py",
+          "description": "Only catalog handler marked anonymous"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_looprd_hosted_catalog.py",
+          "description": "Private auth and publication guards"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_095_LOOPRD_ANONYMOUS_CATALOG_051.adoc",
+          "description": "Operator deployment and verification handoff"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1065,10 +1097,11 @@
     {
       "id": "ATR-151-LOOPRD-ANONYMOUS-READ",
       "status": "blocked",
-      "next_action": "Implement generic explicit anonymous GET handler in LoopRD, pin capability, regenerate Atrium descriptor and verify browser-safe no-token response before publishing TaviX 1.0.6.",
+      "next_action": "Runtime now implements generic feature; deploy LoopRD 0.5.0 and Atrium 0.5.51, verify real anonymous HTTPS/CORS, trusted Life/Market Grove launch origins and withdrawal; then stage/publish TaviX 1.0.6 with real URL.",
       "blockers": [
-        "Pinned LoopRD/DAPI database-auth custom routes require nonempty scopes; generic per-handler anonymous access does not exist.",
-        "Live operator-bound game-web/atrium-web launch origins and HTTPS public acceptance still require operator access."
+        "LoopRD 0.5.0 runtime not independently confirmed deployed on operator host",
+        "Real trusted launchOrigins and publicly reachable TLS origin not available from source ZIP",
+        "Immutable TaviX 1.0.6 release still must pass live catalog preflight and separate operator approval"
       ]
     }
   ],
