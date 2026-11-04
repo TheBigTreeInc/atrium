@@ -1,0 +1,22 @@
+= Atrium Checkers M1: trusted match transport contract (0.5.56)
+:toc:
+
+== Ownership
+
+Atrium's Checkers engine and match authority own every rule, turn, revision and persisted match. `CheckersTrustedHost` requires verified issuer/subject/audience and an accepted Checkers lobby from server-side callbacks. This pass adds `src/checkers_trusted_routes.py`: a strict route dispatcher that accepts an *opaque trusted-context object*, never a user-supplied identity. The server hosting the actual HTTP endpoint remains responsible for authentication, CSRF, TLS, rate limits and audit trail.
+
+No public LoopRD handler is installed. The current `modules/games/checkers/looprd.yaml` advertises `persistentMatchesEnabled: false`. No real Social session verifier, accepted challenge service, browser session or Tavi UI is provided by this source ZIP. The disposable `tests/support/checkers_trusted_http.py` is intentionally **not deployable**: its fake bearer aliases select two in-memory fixture contexts and are not Social tokens.
+
+== Proposed host routes (not activated)
+
+`POST /games/checkers/matches` receives *only* `{"lobbyRef":"..."}` and returns status 201 plus the initial server-owned match. Host callbacks validate the accepted lobby and identity; the request cannot carry player IDs.
+
+`GET /games/checkers/matches/{matchId}` returns the authorized match; `POST .../{matchId}/join` returns the seat/resume state with no request body; `GET .../{matchId}/legal-actions` returns turn-scoped legal actions; `POST .../{matchId}/moves` receives exactly `{revision,requestId,path}`. The engine enforces legal American Checkers moves and persists revisions idempotently. All operations require a host-authenticated context, never a role or seat from a client.
+
+Host HTTP implementation must preserve exact path parsing, reject unexpected claims/parameters, validate bounded JSON, forbid CORS to unauthorized origins, protect cookie-authenticated writes with CSRF, and constrain trusted-server identities to the Social audience and active challenge. TLS secrets, Social callback credentials and private deployment base URL must remain host-owned.
+
+== Tests and acceptance
+
+The exact-source runner `python tools/checkers_group_qa.py --package atrium-0.5.56-ziprunner.zip --report state/qa/checkers/current.json` verifies the input ZIP SHA then extracts and runs 24 groups. The new six exercise independently connected HTTP clients, creation from accepted lobby, unauthorized actors, changed payload/seat claims, unexpected paths, replay after restart, and a deterministic 53-move victory. These are disposable local tests only and **not real Tavi/browser multiplayer certification**.
+
+The next implementation pass requires explicit, reviewed Social session verification and accepted challenge/lobby evidence, deployed LoopRD match routes and live two-account Tavi/browser gameplay. Windows ZipRunner acceptance, release approval, and operator Workboard decisions are independent gates. No automatic Git push, stage or publish is authorized by this source ZIP.

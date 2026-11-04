@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.55",
+  "version": "0.5.56",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -800,6 +800,27 @@
           "mode": "manual",
           "checks": [
             "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-157-CHECKERS-TRUSTED-ROUTES",
+      "criteria": [
+        {
+          "id": "ATR-157-CHECKERS-TRUSTED-ROUTES-AC-SOURCE",
+          "description": "Source-only match route dispatcher accepts only opaque host-owned identity contexts, strict operation paths and move/lobby envelopes; a separate test-only HTTP listener checks two sessions, unauthorized/spoofed actions, SQLite restart/replay and full 53-move victory. 24 group tests. No public LoopRD handler or production Social session authentication.",
+          "mode": "automated",
+          "checks": [
+            "ATR-157-CHECKERS-TRUSTED-ROUTES-T1"
+          ]
+        },
+        {
+          "id": "ATR-157-CHECKERS-TRUSTED-ROUTES-AC-OPERATOR",
+          "description": "Operator checks source-only transport and exact installed Windows acceptance; no live route or Tavi match claimed.",
+          "mode": "manual",
+          "checks": [
+            "ATR-157-CHECKERS-TRUSTED-ROUTES-M1"
           ]
         }
       ]
@@ -1657,6 +1678,27 @@
       "stage": "acceptance",
       "description": "Operator checks exact 0.5.55 ZIP on Windows and no active hosted match API",
       "instructions": "Run exact 0.5.55 ZIP and 18/18 group QA through installed ZipRunner, inspect SHA-specific report, fresh Windows checks and pending human decision. Check that fixture callbacks do not masquerade as live Social issuer verification; live Tavi/browser and release remain blocked."
+    },
+    {
+      "id": "ATR-157-CHECKERS-TRUSTED-ROUTES-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Host-bound source-only router and real disposable HTTP tests",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_checkers_trusted_routes.py",
+      "assertions": [
+        "24 source/exact ZIP test groups, six new trusted route tests",
+        "Issuer/audience-bound canonical server subject; no client-supplied identity or approved lobby",
+        "Real 53-move match, two distinct fixture sessions, replay, restart, negative path/seat tests",
+        "No public LoopRD/Tavi binding or live Social credentials"
+      ]
+    },
+    {
+      "id": "ATR-157-CHECKERS-TRUSTED-ROUTES-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Confirm source package 0.5.56 and unactivated match transport",
+      "instructions": "Run fresh exact-source Windows ZipRunner checks and QA evidence. Verify no live Tavi or Social login integration, no public LoopRD match endpoints, no user acceptance or release inferred from unit/network tests."
     }
   ]
 }

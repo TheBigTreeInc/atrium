@@ -3,15 +3,16 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.55",
-    "base_version": "0.5.54",
-    "source_revision": "efb3c7bda751e7a3b4883a35760ddddd26471924"
+    "version": "0.5.56",
+    "base_version": "0.5.55",
+    "source_revision": "dd64a2f3751bd7ca8d4b535b72ace07b9d324f95"
   },
   "update": {
-    "id": "ATR-P1-20261104-055",
+    "id": "ATR-P1-20261104-056",
     "kind": "source_update",
-    "created_at": "2026-11-04T17:48:37+01:00",
-    "summary": "Trusted-host-only Checkers identity and accepted-lobby admission port; no public Social/LoopRD route; 18 QA groups including 53-move two-fixture-client match."
+    "created_at": "2026-11-04T22:19:00+01:00",
+    "summary": "Strict source-only Checkers trusted route dispatcher plus 24 disposable network/host QA groups; no live Social integration or public LoopRD deployment.",
+    "version": "0.5.56"
   },
   "planned_work": [
     {
@@ -277,6 +278,12 @@
       "title": "Host-bound Checkers canonical identity and approved-lobby admission",
       "priority": "critical",
       "acceptance_criteria": "Trusted caller-injected account and accepted-lobby approval only, audience+issuer check, server-owned match/seat IDs, negative spoof tests, 18 exact-package group QA; no active HTTP/LoopRD/Tavi integration claimed."
+    },
+    {
+      "id": "ATR-157-CHECKERS-TRUSTED-ROUTES",
+      "title": "Strict trusted-transport Checkers match route contract and network QA",
+      "priority": "critical",
+      "acceptance_criteria": "Source-only match route dispatcher accepts only opaque host-owned identity contexts, strict operation paths and move/lobby envelopes; a separate test-only HTTP listener checks two sessions, unauthorized/spoofed actions, SQLite restart/replay and full 53-move victory. 24 group tests. No public LoopRD handler or production Social session authentication."
     }
   ],
   "done_work": [
@@ -1165,6 +1172,27 @@
           "description": "Trust boundaries, source-only proof and operator gates"
         }
       ]
+    },
+    {
+      "id": "ATR-157-CHECKERS-TRUSTED-ROUTES",
+      "summary": "Source-only match route dispatcher accepts only opaque host-owned identity contexts, strict operation paths and move/lobby envelopes; a separate test-only HTTP listener checks two sessions, unauthorized/spoofed actions, SQLite restart/replay and full 53-move victory. 24 group tests. No public LoopRD handler or production Social session authentication.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/checkers_trusted_routes.py",
+          "description": "Fail-closed trusted host operation routing; HTTP listener not registered"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_checkers_trusted_routes.py",
+          "description": "Six new disposable trusted HTTP route tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_100_CHECKERS_TRUSTED_TRANSPORT_056.adoc",
+          "description": "Transport, authentication and live-operation boundaries"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1370,7 +1398,7 @@
     ]
   },
   "handover": {
-    "next_pass": "One-game DGN Checkers M1: production Social verified-session/accepted-lobby integration, LoopRD game-owned authenticated match operations, then Tavi-to-browser live complete match; operator gates independent.",
+    "next_pass": "DGN Checkers M1: bind exact trusted Social session and accepted-lobby status to LoopRD deployed match routes, build actual browser and Tavi clients; complete an authenticated two-real-client match and independent Windows operator acceptance.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -1378,7 +1406,8 @@
       "An already-running/background browser is not instantaneously revoked; current foreground interval is 60 seconds. Game authorization must remain authoritative server-side.",
       "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
       "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified.",
-      "Mock Life matches are deliberately tab-memory only; an unlocked static UI does not prove Social auth, persistent 60-hour games, Life engine fairness, OpenClaw game actions or deployed API compatibility."
+      "Mock Life matches are deliberately tab-memory only; an unlocked static UI does not prove Social auth, persistent 60-hour games, Life engine fairness, OpenClaw game actions or deployed API compatibility.",
+      "0.5.56 routes are source-only and the fixture HTTP listener is NOT production authentication. LoopRD game info still announces persistentMatchesEnabled:false. Never expose transport without an independently reviewed Social session verifier, accepted challenge contract, CSRF/TLS, and operator permission gates."
     ],
     "blockers": [
       "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",

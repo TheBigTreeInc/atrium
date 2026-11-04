@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.55",
-  "summary": "0.5.55 follows exact-commit 0.5.54 successful Linux/Windows CI and adds a fail-closed Checkers host boundary: trusted issuer/subject audience mapping, approved-lobby creation and isolated subject-bound match methods. 18 disposable QA groups; no public Social/LoopRD/Tavi route or operator acceptance.",
+  "version": "0.5.56",
+  "summary": "0.5.56 follows verified exact-commit 0.5.55 Linux/Windows CI and adds source-only strict Checkers match route dispatch behind the existing trusted host. 24 exact-package QA groups including six new independently connected HTTP tests; no public LoopRD route, real Social binding, Tavi gameplay acceptance or operator release.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -388,6 +388,18 @@
         "Run exact 0.5.55 ZIP through ZipRunner with 18/18 source/extracted test groups and fresh Windows checks; confirm CI for exact new push after authorization.",
         "Confirm client JSON cannot supply a principal or lobby approval; rejected cross-audience, cross-issuer, declined, duplicate, outsider and forged contexts; verify no public LoopRD route was activated.",
         "Require live Social-owned session and accepted challenge verification plus native LoopRD authenticated match API and real Tavi/browser acceptance before any production/release claim."
+      ]
+    },
+    {
+      "id": "ATR-157-CHECKERS-TRUSTED-ROUTES",
+      "title": "Strict trusted-transport Checkers match route contract and network QA",
+      "summary": "Source-only match route dispatcher accepts only opaque host-owned identity contexts, strict operation paths and move/lobby envelopes; a separate test-only HTTP listener checks two sessions, unauthorized/spoofed actions, SQLite restart/replay and full 53-move victory. 24 group tests. No public LoopRD handler or production Social session authentication.",
+      "priority": "critical",
+      "operator_checks": [
+        "On exact 0.5.56 source ZIP, run the packaged Checkers runner and confirm all 24 groups succeed with the SHA-specific JSON evidence.",
+        "Review the source-owned transport contract: untrusted JSON and headers cannot supply issuer, subject, accepted lobby or seats; only a host callback provides trusted identities and lobby approval.",
+        "Confirm the looprd.yaml game module still declares persistentMatchesEnabled: false, public match endpoints are not active, and Windows installed/operator acceptance remains unapproved.",
+        "Next: implement real Social session/challenge verification and mount behind trusted LoopRD with CSRF/TLS/permissions, then prove a complete Tavi/browser match."
       ]
     }
   ],

@@ -1,3 +1,7 @@
+# Atrium 0.5.56 source candidate (not a release)
+
+Built on 0.5.55 exact-commit successful CI (https://github.com/TheBigTreeInc/atrium/actions/runs/41914857759). Adds `src/checkers_trusted_routes.py` (host-only strict operations), test-only `tests/support/checkers_trusted_http.py` and six network tests. The route is **not** registered with LoopRD, and fixture tokens do not provide real Social authentication. Independent operator acceptance and 0.5.56 CI remain pending. See docs/P1_100_CHECKERS_TRUSTED_TRANSPORT_056.adoc.
+
 Atrium 0.5.55: trusted-host Checkers boundary and 18 source/exact-ZIP QA groups. Requires real Social service attestation and LoopRD activation separately. Baseline 0.5.54 CI passed at https://github.com/TheBigTreeInc/atrium/actions/runs/41887702820. No operator acceptance, release or live Tavi-to-browser match.
 
 Atrium 0.5.54: server-owned turn-scoped legal actions and a complete 53-move two-fixture-client Checkers match via disposable HTTP in exact-ZIP QA. 0.5.53 GitHub push 2c418195942eeb5d4cdee724aaed8b7cdea43fa7 passed on Linux/Windows in run 41869522063. 0.5.54 CI, installed Windows, operator and release gates remain open. No production multiplayer endpoints or real Tavi-to-browser match. See docs/P1_098_CHECKERS_M1_FULL_NETWORK_GAME_054.adoc.
