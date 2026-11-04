@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.51",
-  "summary": "0.5.51 opts only Atrium hosted-game LoopRD handler into generic anonymous GET, pins LoopRD 0.5.0 source and keeps all other API permissions; live TLS and game launch bindings remain operator gates.",
+  "version": "0.5.52",
+  "summary": "0.5.52 retains 0.5.51 hosted-catalog gate and adds isolated network/SQLite Checkers QA and exact-package CLI. Existing DGN Checkers milestone remains suggested, pending production integration and operator two-client acceptance.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -344,6 +344,17 @@
         "Import 0.5.51 on Windows ZipRunner; run all Python/Node and pinned LoopRD semantic source checks.",
         "Verify anonymous GET and OPTIONS return bounded JSON no-store/CORS without any token; POST, management, other handler and WebSocket remain restricted.",
         "Verify Life and Market Grove appear only after trusted launch bindings and actual LoopRD 0.5.0 runtime deployment are active; withdrawal propagates; publish TaviX 1.0.6 separately."
+      ]
+    },
+    {
+      "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE",
+      "title": "Disposable exact-package Checkers multiplayer group QA source",
+      "summary": "Added opt-in exact-ZIP extraction runner and bounded JSON group-test report, asserting two authenticated simulated loopback HTTP clients, SQL turn revisions, captures, victory, retry/replay, unauthorized requests and server restart. No public server or Social/Tavi/LoopRD activation; DGN milestone and live acceptance remain open.",
+      "priority": "critical",
+      "operator_checks": [
+        "Import exact Atrium 0.5.52 ZIP through ZipRunner; run fresh Windows Python, Node and post-update checks against installed source SHA.",
+        "Run python tools/checkers_group_qa.py --package <exact downloaded atrium-0.5.52-ziprunner.zip> and inspect report scope EXACT_PACKAGE_EXTRACTED, input_zip_sha256 and 7 bounded assertions.",
+        "Confirm fixture-only bearer map is never deployed as a production identity provider or public LoopRD/Tavi handler. DGN-CHECKERS-M1-AUTOMATED-QA-001 remains suggested until live gateway/real Tavi-to-browser verification and acceptance."
       ]
     }
   ],

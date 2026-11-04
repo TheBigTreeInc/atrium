@@ -1,0 +1,36 @@
+= Atrium 0.5.52 — disposable Checkers group QA from exact ZIP
+:revdate: 2026-11-04
+
+== Source evidence and gates
+
+The previous v0.5.51 commit `4d29ecc656201818e30224404308c7ff8c2eb546` had successful GitHub Actions run `40370535025` on both the Linux pinned DAPI/ZipRunner and Windows recipe jobs. This was *source CI for 0.5.51*, not approval of the installed ZIP nor CI for this 0.5.52 candidate.
+
+This pass implements `ATR-153-CHECKERS-GROUP-QA-SOURCE` without closing the separately operator-owned suggested ticket `DGN-CHECKERS-M1-AUTOMATED-QA-001`. No hosted Checkers game API, Social authorization exchange, Tavi-to-browser match or public LoopRD game authority has been activated.
+
+== Test boundaries
+
+* `tests/support/checkers_disposable.py` runs a loopback-only HTTP server on `127.0.0.1:0`. It uses a temporary SQLite file and delegates all American Checkers rules to `src.checkers_adapter.CheckersEngine` and `src.checkers`, the same files included in the ZIP. An injected *fixture-only* bearer-token map simulates two distinct verified subjects. No Social tokens, service credentials, network deployment or real identity integration exist here.
+* `tests/test_checkers_group_qa.py` opens separate HTTP connections for red and black, validates sequential moves, mandatory chained captures, king promotion and victory, wrong-turn, unauthorized identity, duplicate changed payload, stale revision, illegal moves, and server restart with durable state and exactly-once retry response.
+* Neither generic Atrium lobby nor catalog implements game rules. The `modules/games/checkers/looprd.yaml` current stateless rules-oracle is unchanged; the new test server is deliberately *not* linked into root `looprd.yaml`, Tavi, or any public API. Generic LoopRD/DAPI validation and the game module's real deployment are separate future acceptance steps.
+* Report uses bounded test-group assertions, deterministic initial-state fixture SHA-256, version and a composite hash of exact tested rules/QA files. A skipped, missing or failed test makes the report fail; source-tree mode is never reported as exact-ZIP mode.
+
+== Commands
+
+[source,powershell]
+----
+# ZipRunner-installed source: independent source-tree integration check
+python tools/checkers_group_qa.py
+
+# Exact ZIP bytes: SHA-256 before extraction; disposable group suite runs
+# using the engine/tests/runner INSIDE that supplied archive.
+python tools/checkers_group_qa.py --package C:\path\to\atrium-0.5.52-ziprunner.zip
+----
+
+Reports are written to unique, protected `state/qa/checkers/` JSON files unless `--report` is supplied. The exact-package report uses `scope=EXACT_PACKAGE_EXTRACTED`, includes `input_zip_sha256`, a tested-files composite hash, and seven bounded test results. CI also uploads one report per Linux/Windows source run; those have `scope=SOURCE_TREE`, not exact ZIP.
+
+== Operator checks
+
+. Check the handoff download ZIP SHA against `input_zip_sha256`; never confuse the CI artifact blob digest with this ZIP digest.
+. Import exact v0.5.52 via ZipRunner without altering `.zr` configuration or existing protected databases, state or operator decisions. Perform fresh Windows build and post-update checks and separately record operator acceptance.
+. Verify v0.5.52 pushed commit *if and when authorized* with both GitHub Actions jobs; v0.5.51 success does not cover these changed bytes.
+. Do not expose the fixture on LAN or use it to claim two real authenticated Tavi/browser clients. The critical DGN milestone still requires production-owned game API, trusted Social identity integration, two physical/independent clients, offline/restart and live operator acceptance.

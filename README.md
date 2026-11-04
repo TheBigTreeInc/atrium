@@ -1,3 +1,5 @@
+**0.5.52 source-only QA:** disposable Checkers network/SQLite two-client tests and exact-ZIP SHA-aware runner. No public multiplayer activation; full DGN milestone and operator acceptance remain open. See docs/P1_096_CHECKERS_EXACT_PACKAGE_GROUP_QA.adoc.
+
 Atrium 0.5.51: LoopRD 0.5.0 generic anonymous hosted-catalog GET is source-enabled; live activation and 1.0.6 TaviX are operator-gated. See docs/P1_095_LOOPRD_ANONYMOUS_CATALOG_051.adoc.
 
 NOTE: This release adds protected LoopRD GET /catalog/hosted-games. The generic LoopRD anonymous GET feature is **not yet available**, so do not connect Tavi or publish TaviX 1.0.6 until LoopRD integration has been reviewed. See docs/P1_094_LOOPRD_NATIVE_HOSTED_CATALOG.adoc and docs/LOOPRD_HANDOFF_ANONYMOUS_COMPONENT_HANDLER_2026-10-26.adoc. Historical notes below describe earlier releases.

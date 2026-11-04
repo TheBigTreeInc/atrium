@@ -1,6 +1,6 @@
 {
   "schema": "ziprunner.post-update-tests.v1",
-  "version": "0.5.51",
+  "version": "0.5.52",
   "tests": [
     {
       "kind": "command",
@@ -17,6 +17,15 @@
       "definition_revision": "1",
       "rerun_policy": "every_update",
       "command": "npm test",
+      "attention_on_failure": true,
+      "gating": false
+    },
+    {
+      "kind": "command",
+      "semantic_id": "atrium-checkers-disposable-group-qa",
+      "definition_revision": "1",
+      "rerun_policy": "every_update",
+      "command": "python tools/checkers_group_qa.py",
       "attention_on_failure": true,
       "gating": false
     }

@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.51",
-    "base_version": "0.5.19",
-    "source_revision": "2137d03db431f49d5f07aaef22786941c4ca77ee"
+    "version": "0.5.52",
+    "base_version": "0.5.51",
+    "source_revision": "4d29ecc656201818e30224404308c7ff8c2eb546"
   },
   "update": {
-    "id": "ATR-P1-20261026-051",
+    "id": "ATR-P1-20261104-052",
     "kind": "source_update",
-    "created_at": "2026-10-26T09:23:00+01:00",
-    "summary": "Enable only LoopRD-hosted catalog GET as opt-in anonymous on pinned LoopRD 0.5.0; retain private Atrium API and operator live rollout gates."
+    "created_at": "2026-11-04T16:02:00+01:00",
+    "summary": "Add disposable Checkers two-client HTTP/SQLite group QA with a verified exact-input-ZIP extraction adapter; no public runtime, Social credential exchange or release."
   },
   "planned_work": [
     {
@@ -253,6 +253,12 @@
       "title": "Enable LoopRD 0.5.0 anonymous hosted catalog without broadening Atrium auth",
       "priority": "high",
       "acceptance_criteria": "Pin exact generic LoopRD anonymous read feature, expose only /catalog/hosted-games without scopes, maintain every other private handler, run source regressions and gate public deployment/TaviX release on operator acceptance."
+    },
+    {
+      "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE",
+      "title": "Disposable exact-package Checkers multiplayer group QA source",
+      "priority": "critical",
+      "acceptance_criteria": "Versioned exact-ZIP CLI provides bounded, fail-closed report of real loopback HTTP two-client tests of the packaged Checkers rules adapter including state persistence/retry/negative cases, with no production game server or fake Tavi acceptance."
     }
   ],
   "done_work": [
@@ -1050,6 +1056,32 @@
           "kind": "documentation",
           "ref": "docs/P1_095_LOOPRD_ANONYMOUS_CATALOG_051.adoc",
           "description": "Operator deployment and verification handoff"
+        }
+      ]
+    },
+    {
+      "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE",
+      "summary": "Added opt-in exact-ZIP extraction runner and bounded JSON group-test report, asserting two authenticated simulated loopback HTTP clients, SQL turn revisions, captures, victory, retry/replay, unauthorized requests and server restart. No public server or Social/Tavi/LoopRD activation; DGN milestone and live acceptance remain open.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tests/support/checkers_disposable.py",
+          "description": "Disposable loopback HTTP/SQLite match fixture; no public route or real credentials"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/checkers_group_qa.py",
+          "description": "Exact ZIP SHA extraction and bounded assertion report with separated source-tree mode"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_checkers_group_qa.py",
+          "description": "Seven two-client and rules/network/restart/security tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_096_CHECKERS_EXACT_PACKAGE_GROUP_QA.adoc",
+          "description": "Explicit limits, commands and operator gates"
         }
       ]
     }

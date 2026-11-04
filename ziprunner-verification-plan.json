@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.51",
+  "version": "0.5.52",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -716,6 +716,27 @@
           "mode": "manual",
           "checks": [
             "ATR-152-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE",
+      "criteria": [
+        {
+          "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE-AC-TEST",
+          "description": "Disposable exact-package Checkers group test runs with two independent clients, durable state, rejected hostile actions and bounded JSON results.",
+          "mode": "automated",
+          "checks": [
+            "ATR-153-CHECKERS-GROUP-QA-SOURCE-T1"
+          ]
+        },
+        {
+          "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE-AC-OPERATOR",
+          "description": "ZipRunner operator verifies the real installed ZIP hash and accepts or defers; production DGN milestone remains open.",
+          "mode": "manual",
+          "checks": [
+            "ATR-153-CHECKERS-GROUP-QA-SOURCE-M1"
           ]
         }
       ]
@@ -1491,6 +1512,27 @@
       "stage": "acceptance",
       "description": "Operator verifies installed LoopRD 0.5.0 and Atrium live anonymous HTTPS catalog",
       "instructions": "Verify exact 0.5.51 source ZIP and LoopRD 0.5.0 commit abaf03fc2e97858508963cee23ba54fb5a041738; test public GET/CORS/no-store, private writes/management, active Life/Market Grove launch mappings, 503 on unavailable DB, withdrawal and TaviX 1.0.6 gated publication. No private tokens in client."
+    },
+    {
+      "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Run source-built disposable two-client group tests and exact-package extraction adapter",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_checkers_group_qa.py",
+      "assertions": [
+        "Two distinct authenticated simulated HTTP clients share a server-authoritative SQLite match; cannot edit opponent state",
+        "Mandatory multi-capture, legal turn, victory and terminal-state invariants enforce existing Checkers engine",
+        "Reject unauthenticated, unknown subject, wrong seat, stale revision, duplicate mutated request and illegal path",
+        "Persist match revisions and idempotency across server shutdown/restart; check SHA fixture and no production authority is activated"
+      ]
+    },
+    {
+      "id": "ATR-153-CHECKERS-GROUP-QA-SOURCE-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator accepts exact archived ZIP and denies any claim of production two-account game proof",
+      "instructions": "On Windows use ZipRunner to install the exact source ZIP; after full build and fresh post-update checks use python tools/checkers_group_qa.py --package <exact ZIP path>, compare report input_zip_sha256 to handoff SHA, ensure 7 passed and no skipped, review no test secrets leave loopback, and manually accept/reject. Do not mark DGN live or full automated QA Done."
     }
   ]
 }

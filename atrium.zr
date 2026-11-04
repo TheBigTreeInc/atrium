@@ -11,6 +11,7 @@
   "build": [
     "python tools/setup_build_env.py",
     "python tools/run_python_checks.py",
+    "python tools/checkers_group_qa.py",
     "npm test",
     "npm run build",
     "npm run verify"

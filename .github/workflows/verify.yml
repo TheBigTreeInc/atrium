@@ -32,6 +32,7 @@ jobs:
           python tools/check_specs.py
           python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop
           python -m unittest discover -s tests -v
+          python tools/checkers_group_qa.py --report state/qa/checkers/linux.json
       - name: Node tests and deterministic web build
         run: |
           npm test
@@ -76,8 +77,14 @@ jobs:
       - name: Build and validate ZipRunner source ZIP
         run: |
           python tools/package_zip.py
-          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.51-ziprunner.zip --expected-project atrium --require-verification-plan
+          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.52-ziprunner.zip --expected-project atrium --require-verification-plan
           python _upstream/ziprunner-spec/tools/validate.py looprd ziprunner.looprd.json --root . --expected-project atrium
+      - name: Upload disposable Checkers group QA evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: atrium-checkers-group-qa-linux
+          path: state/qa/checkers/linux.json
+          if-no-files-found: error
       - name: Upload Tavi extension build from same source SHA (no auto-deploy)
         uses: actions/upload-artifact@v4
         with:
@@ -87,8 +94,8 @@ jobs:
       - name: Upload source ZIP for operator review (no auto-deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: atrium-0.5.51-ziprunner
-          path: dist/atrium-0.5.51-ziprunner.zip
+          name: atrium-0.5.52-ziprunner
+          path: dist/atrium-0.5.52-ziprunner.zip
           if-no-files-found: error
 
   windows-ziprunner-build:
@@ -107,6 +114,8 @@ jobs:
         run: python tools/setup_build_env.py
       - name: Run source checks under venv Python
         run: python tools/run_python_checks.py
+      - name: Disposable Checkers two-client group QA
+        run: python tools/checkers_group_qa.py --report state/qa/checkers/windows.json
       - name: Verify ZipRunner registered isolated Python recipe
         run: python tools/run_python_checks.py
       - name: Check JavaScript build
@@ -117,3 +126,9 @@ jobs:
           # TaviX extension is built by npm run build (no duplicate staging).
       - name: Check protected artifact exclusions
         run: python tools/package_zip.py
+      - name: Upload Windows disposable Checkers group QA evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: atrium-checkers-group-qa-windows
+          path: state/qa/checkers/windows.json
+          if-no-files-found: error
