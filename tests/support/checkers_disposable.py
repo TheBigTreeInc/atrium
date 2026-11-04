@@ -54,6 +54,8 @@ def _make_handler(authority, identities):
             try:
                 if method == 'GET' and len(segments) == 2:
                     answer = authority.inspect(match_id, subject)
+                elif method == 'GET' and len(segments) == 3 and segments[2] == 'legal-actions':
+                    answer = authority.legal_actions(match_id, subject)
                 elif method == 'POST' and len(segments) == 3 and segments[2] == 'join':
                     answer = authority.join(match_id, subject)
                 elif method == 'POST' and len(segments) == 3 and segments[2] == 'moves':

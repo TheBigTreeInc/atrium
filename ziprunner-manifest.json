@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.53",
-    "base_version": "0.5.52",
-    "source_revision": "0753195b84eec65d3dbef98e48308b680d8d7659"
+    "version": "0.5.54",
+    "base_version": "0.5.53",
+    "source_revision": "2c418195942eeb5d4cdee724aaed8b7cdea43fa7"
   },
   "update": {
-    "id": "ATR-P1-20261104-053",
+    "id": "ATR-P1-20261104-054",
     "kind": "source_update",
-    "created_at": "2026-11-04T17:03:30+01:00",
-    "summary": "Module-owned durable American Checkers match authority source, independent-connection revision races and 12 exact-ZIP disposable test groups; no public game host or release."
+    "created_at": "2026-11-04T17:48:37+01:00",
+    "summary": "Server-owned legal actions and 53-move initial-to-victory two-client disposable Checkers game, SHA-pinned transcript and 14 exact-source network QA groups; no public hosted multiplayer route."
   },
   "planned_work": [
     {
@@ -265,6 +265,12 @@
       "title": "Module-owned durable Checkers match authority source and group QA",
       "priority": "critical",
       "acceptance_criteria": "Core game-owned durable matches, authenticated-host-only subject and participants, SQLite atomic revisions and retry, 12 exact-package group assertions; separately operator accepts Windows ZIP and live integration remains open."
+    },
+    {
+      "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA",
+      "title": "Source Checkers turn-scoped legal-actions and full simulated network match",
+      "priority": "critical",
+      "acceptance_criteria": "Fourteen complete exact-ZIP fixture HTTP group tests including 53-turn game and read-only authorized legal actions, without client rules or production-host activation."
     }
   ],
   "done_work": [
@@ -1109,6 +1115,27 @@
           "kind": "documentation",
           "ref": "docs/P1_097_CHECKERS_SOURCE_MATCH_AUTHORITY_053.adoc",
           "description": "Boundaries, exact-commit prior CI, current acceptance gates"
+        }
+      ]
+    },
+    {
+      "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA",
+      "summary": "Implemented isolated game-owned legal-actions source and 53-move full fixture-client network QA. Not approved by operator or published.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/checkers_match_authority.py",
+          "description": "Read-only, game-owned, authenticated-subject turn-scoped paths"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_checkers_group_qa.py",
+          "description": "Full deterministic initial-state 53-move terminal game with fixture clients, SHA transcript; 14 group tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_098_CHECKERS_M1_FULL_NETWORK_GAME_054.adoc",
+          "description": "Exact source API and boundaries"
         }
       ]
     }

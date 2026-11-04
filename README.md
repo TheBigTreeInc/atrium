@@ -1,3 +1,5 @@
+**0.5.54 source-only Checkers full-match QA:** source-owned authorized legal actions, 14 network groups, complete 53-turn fixture-client HTTP game from initial state to victory with state/transcript SHA; no deployed LoopRD/Social/Tavi route or operator approval. 0.5.53 exact push CI passed at https://github.com/TheBigTreeInc/atrium/actions/runs/41869522063. See docs/P1_098_CHECKERS_M1_FULL_NETWORK_GAME_054.adoc.
+
 **0.5.53 source-only match authority:** extracted module-owned durable Checkers state, host-supplied participant IDs and SQLite atomic revisions; 12 network group test cases run against the exact ZIP. 0.5.52 push CI succeeded at GitHub run 41856240674; 0.5.53 CI/Windows/operator acceptance still pending. See docs/P1_097_CHECKERS_SOURCE_MATCH_AUTHORITY_053.adoc.
 
 **0.5.52 source-only QA:** disposable Checkers network/SQLite two-client tests and exact-ZIP SHA-aware runner. No public multiplayer activation; full DGN milestone and operator acceptance remain open. See docs/P1_096_CHECKERS_EXACT_PACKAGE_GROUP_QA.adoc.

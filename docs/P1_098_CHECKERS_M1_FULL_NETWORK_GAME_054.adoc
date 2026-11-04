@@ -1,0 +1,36 @@
+= Atrium 0.5.54 — full simulated Checkers match and game-owned legal actions
+:revdate: 2026-11-04
+
+== Exact 0.5.53 prerequisite
+
+GitHub Actions run https://github.com/TheBigTreeInc/atrium/actions/runs/41869522063 is a completed successful *push* run for the precise baseline commit `2c418195942eeb5d4cdee724aaed8b7cdea43fa7` on both `Source, pinned DAPI and ZipRunner contracts` and `Windows ZipRunner build recipe smoke`. These checks do not approve a 0.5.54 build or installed operator acceptance.
+
+== New game-owned method
+
+`src.checkers_match_authority.CheckersMatchAuthority.legal_actions(match_id, canonical_subject)` exposes *only* this game's server-owned legal paths to the actor whose turn it is. Return fields are exactly `protocol=atrium.checkers.actions/v1`, `matchId`, `revision`, `seat`, `turn`, and `actions` (array of complete paths). The authenticated nonmoving participant gets an empty list; an unknown/outside subject gets a 404/403 error. No participant identifiers, fixture tokens, database handles or opponent actions are exposed.
+
+The method delegates exclusively to the module-owned `CheckersEngine`, protects the read with the authority lock, and does not mutate SQLite. The method accepts canonical, already authenticated identities from a **trusted host only**: no browser body/query parameter may supply its `subject` or create a match. `create_match` remains privileged and requires two distinct host-approved subjects. Requests must retain the exact `revision` and unique `requestId` for idempotent move retries.
+
+== Disposable HTTP verification contract (not a deployed API)
+
+`tests/support/checkers_disposable.py` offers read-only `GET /matches/{matchId}/legal-actions` (and existing inspect/join/move routes) on loopback with test-only bearer-token mapping. It is not included in the production `looprd.yaml` as a handler. Simulated clients request legal paths from the authority and submit moves; they do not import or execute rules.
+
+`tests.test_checkers_group_qa` adds:
+
+* Turn-scoped legal-actions and privacy checks for both real HTTP connections; unauthorized access denied and read operations cannot increase revision.
+* One complete deterministic networked match from the standard initial position, with two independently authenticated **fixture** clients, reconnect on move 20, and 53 validated moves to red victory. Final state SHA-256: `8ac91352e834aba7bb1ec469caf83ea74fb7b2ab5baf6186fa419c17b042f9ad`; path transcript SHA-256: `4bde7e4ec0a0f5737e6439ddeae2a2bd4a795a0aff75e1ab05048289bf4b3ab7`.
+* All prior negative tests: stale/duplicate moves, wrong identity, wrong turn, mandatory captures, king moves, terminal state, SQLite restart and concurrent revisions.
+
+The group runner now requires at least **14 passing test groups**, zero failures/skips and records SOURCE_TREE vs EXACT_PACKAGE_EXTRACTED with actual ZIP SHA and a composite source digest.
+
+[source,powershell]
+----
+# Source-tree QA (not a claim of exact ZIP testing)
+python tools/checkers_group_qa.py
+# Exact candidate QA, after obtaining the source ZIP
+python tools/checkers_group_qa.py --package C:\path\atrium-0.5.54-ziprunner.zip
+----
+
+== Remaining critical acceptance
+
+This is **not** a successful Tavi-to-browser real match. The existing production `modules/games/checkers/looprd.yaml` still offers a stateless rules oracle; no trusted Social login exchange, LoopRD persisted-match endpoints, production HTTP adapter, Tavi or standalone authenticated browser client has been deployed. These integrations require separate implementation and exact-build/operator approval. The DGN critical Workboard IDs and statuses remain untouched; this addition is offered for operator review as `ATR-155-CHECKERS-LEGAL-FULL-GAME-QA`.

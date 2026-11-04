@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.53",
+  "version": "0.5.54",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -758,6 +758,27 @@
           "mode": "manual",
           "checks": [
             "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA",
+      "criteria": [
+        {
+          "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA-AC-SOURCE",
+          "description": "Exact-source game-owned authorized legal action reads and a deterministic complete Checkers game over two independent fixture clients, with no browser/game-rule authority or production host activation.",
+          "mode": "automated",
+          "checks": [
+            "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA-T1"
+          ]
+        },
+        {
+          "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA-AC-OPERATOR",
+          "description": "Operator verifies exact 0.5.54 ZIP, native Windows installed checks, SHA and source-vs-production boundary before approving release.",
+          "mode": "manual",
+          "checks": [
+            "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA-M1"
           ]
         }
       ]
@@ -1574,6 +1595,26 @@
       "stage": "acceptance",
       "description": "Operator reviews exact 0.5.53 ZIP, 12 group tests and confirms non-activation of public authority",
       "instructions": "Build and verify exact 0.5.53 source in installed Windows ZipRunner, run fresh post-update checks and exact ZIP checkers_group_qa.py --package, inspect digest and 12 passed groups, verify no fixture auth moved into source or deployed endpoints. Record operator acceptance separately; do not close full DGN milestone."
+    },
+    {
+      "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Exact-package source and disposable HTTP full Checkers match test",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_checkers_group_qa.py",
+      "assertions": [
+        "Fourteen passing network group tests with no skip, including two independent fixture authenticated HTTP clients from the initial Checkers position to a final red victory in 53 turns.",
+        "The game-owned legal-actions response has no opponent/subject identity, is turn- and seat-scoped, rejects unknown identities, and never mutates match revision.",
+        "Full-game state and action transcript SHA are pinned; preexisting unauthorized, duplicate, stale, capture, restart and cross-connection race negatives remain passing."
+      ]
+    },
+    {
+      "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator validates exact 0.5.54 Windows source ZIP and no deployed game route",
+      "instructions": "Rebuild/run exact 0.5.54 ZIP in local Windows ZipRunner; run all fresh post-update gates and exact-package Checkers QA; verify GitHub CI for 0.5.54 *separately*, then manually approve or defer. No public LoopRD route, Social auth or Tavi game match yet."
     }
   ]
 }

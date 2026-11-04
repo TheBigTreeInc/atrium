@@ -111,6 +111,24 @@ class CheckersMatchAuthority:
             return {'seat': 'red' if row[0] == subject else 'black',
                     'match': self._snapshot(match_id, row)}
 
+    def legal_actions(self, match_id, subject):
+        """Return authoritative legal paths only for the authenticated actor's turn.
+
+        This game-owned read operation is safe for an untrusted *client* only
+        after a trusted host has resolved its canonical subject. The opponent
+        gets an empty action list; public identifiers and other seats never
+        appear in the response. Reading does not mutate the match or revision.
+        """
+        with self.lock:
+            red, black, document, revision = self._row(match_id, subject)
+            state = self.engine.deserialize(json.loads(document))
+            seat = 'red' if subject == red else 'black'
+            side = 'r' if seat == 'red' else 'b'
+            actions = self.engine.legal_actions(state) if state['turn'] == side else []
+            return {'protocol': 'atrium.checkers.actions/v1',
+                    'matchId': match_id, 'revision': revision,
+                    'seat': seat, 'turn': state['turn'], 'actions': actions}
+
     def move(self, match_id, subject, payload):
         if not isinstance(payload, dict) or set(payload) != {'revision', 'requestId', 'path'}:
             raise MatchFailure('invalid_envelope', 422)

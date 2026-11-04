@@ -1,3 +1,5 @@
+Atrium 0.5.54: server-owned turn-scoped legal actions and a complete 53-move two-fixture-client Checkers match via disposable HTTP in exact-ZIP QA. 0.5.53 GitHub push 2c418195942eeb5d4cdee724aaed8b7cdea43fa7 passed on Linux/Windows in run 41869522063. 0.5.54 CI, installed Windows, operator and release gates remain open. No production multiplayer endpoints or real Tavi-to-browser match. See docs/P1_098_CHECKERS_M1_FULL_NETWORK_GAME_054.adoc.
+
 Atrium 0.5.53: Durable module-owned Checkers match core and stricter simulated network exact-ZIP QA; 0.5.52 exact GitHub Actions run 41856240674 succeeded on Linux/Windows. 0.5.53 target Windows operator and CI acceptance remain unverified. No Social/Tavi public host activated. See docs/P1_097_CHECKERS_SOURCE_MATCH_AUTHORITY_053.adoc.
 
 Atrium 0.5.52: Exact-archive disposable Checkers multiplayer group QA source; v0.5.51 exact GitHub Actions run 40370535025 succeeded, but v0.5.52 CI/Windows ZipRunner and operator acceptance remain unverified. See docs/P1_096_CHECKERS_EXACT_PACKAGE_GROUP_QA.adoc.

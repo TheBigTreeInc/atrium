@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.53",
-  "summary": "0.5.53 follows exact-commit 0.5.52 GitHub Actions success and adds module-owned source Checkers match authority with stronger exact-package QA; production/Tavi/browser/operator gates remain open.",
+  "version": "0.5.54",
+  "summary": "0.5.54 follows verified 0.5.53 exact-commit Linux/Windows CI and adds source-owned legal actions and a complete two-client disposable Checkers game from opening to terminal outcome. No live production/Tavi/browser match or operator acceptance claimed.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -366,6 +366,17 @@
         "Import exact 0.5.53 ZIP through ZipRunner; verify native Windows build and fresh post-update checks, including 12/12 disposable tests and source/evidence SHA.",
         "Confirm source CheckersMatchAuthority accepts subjects only from a trusted host, with no public HTTP credentials or LoopRD route; real Social/Tavi integration remains separate and unapproved.",
         "Run independent-sessions revision race/replay, restart, unauthorized join/move and king/capture fixtures on the original ZIP, then record explicit human acceptance or defer."
+      ]
+    },
+    {
+      "id": "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA",
+      "title": "Game-owned legal actions and full initial-to-victory two-client Checkers QA",
+      "priority": "critical",
+      "summary": "Added turn-scoped game-owned legal-actions response and two deterministic fixture-client HTTP tests; 14 network groups, including a complete 53-move match with final state and transcript digests. Source-only; no live LoopRD/Social/Tavi integration.",
+      "operator_checks": [
+        "Run ZipRunner build/post-update checks on exact 0.5.54 ZIP; check that group QA reports 14/14 from the original archive SHA. Revalidate GitHub source CI for the exact 0.5.54 commit after an approved push.",
+        "Inspect both authenticated fixture clients playing through a complete opening-to-victory 53-move match; confirm red winner, no client rules, full match SHA and transcript SHA, reconnect, and no revisions from read-only actions.",
+        "Confirm `legal_actions` is accessible only through a trusted host subject; fixture-token HTTP listener remains test-only, and actual LoopRD/Social/Tavi/browser integration and human approval remain open."
       ]
     }
   ],

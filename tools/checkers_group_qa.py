@@ -136,7 +136,7 @@ def main():
     result = unittest.TextTestRunner(verbosity=0, resultclass=Records).run(suite)
     assert isinstance(result, Records)
     # A skipped/uncollected integration test is never claimed as a pass.
-    good = result.wasSuccessful() and result.testsRun >= 12 and len(result.records) == result.testsRun \
+    good = result.wasSuccessful() and result.testsRun >= 14 and len(result.records) == result.testsRun \
         and all(item['status'] == 'passed' for item in result.records)
     version = json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']
     data = {'schema': 'atrium.checkers-group-test/v1', 'project': 'atrium',

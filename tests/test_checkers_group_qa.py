@@ -5,6 +5,7 @@ Tavi integration or a production hostless service follows from this suite.
 """
 import hashlib
 import json
+import random
 from pathlib import Path
 import tempfile
 import unittest
@@ -24,7 +25,7 @@ class SimulatedClient:
         self.base, self.bearer = base, bearer
 
     def call(self, match='match1', *, method='GET', payload=None, action='moves'):
-        endpoint = self.base + '/matches/' + match + ('/' + action if method == 'POST' else '')
+        endpoint = self.base + '/matches/' + match + ('/' + action if method == 'POST' or action != 'moves' else '')
         content = None if payload is None else json.dumps(payload).encode('utf-8')
         request = Request(endpoint, data=content, method=method,
                           headers={'Authorization': 'Bearer ' + self.bearer,
@@ -38,6 +39,9 @@ class SimulatedClient:
 
     def join(self, match='match1'):
         return self.call(match, method='POST', action='join')
+
+    def legal_actions(self, match='match1'):
+        return self.call(match, method='GET', action='legal-actions')
 
     def move(self, revision, path, request_id, match='match1'):
         return self.call(match, method='POST',
@@ -231,6 +235,83 @@ class CheckersNetworkGroupQA(unittest.TestCase):
                              ['stale_revision'])
         finally:
             other.close()
+
+    def test_legal_actions_are_server_owned_turn_scoped_and_authorized(self):
+        # Independent clients receive game-owned choices; no client rules required.
+        status, red = self.red.legal_actions()
+        self.assertEqual(status, 200)
+        self.assertEqual(set(red), {'protocol', 'matchId', 'revision', 'seat', 'turn', 'actions'})
+        self.assertEqual(red['protocol'], 'atrium.checkers.actions/v1')
+        self.assertEqual(red['revision'], 0)
+        self.assertEqual(red['turn'], 'r')
+        self.assertEqual(red['seat'], 'red')
+        self.assertTrue(red['actions'])
+        self.assertEqual(self.black.legal_actions()[1]['actions'], [])
+        self.assertEqual(self.outsider.legal_actions(), (403, {'error': 'not_a_participant'}))
+        self.assertEqual(SimulatedClient(self.base, 'unknown').legal_actions()[0], 401)
+        self.assertEqual(self.red.legal_actions('missing')[0], 404)
+        self.assertEqual(self.red.call()[1]['revision'], 0)
+        code, moved = self.red.move(0, red['actions'][0], 'legal-scoped-1')
+        self.assertEqual(code, 200)
+        self.assertEqual(moved['revision'], 1)
+        self.assertEqual(self.red.legal_actions()[1]['actions'], [])
+        black = self.black.legal_actions()[1]
+        self.assertEqual(black['revision'], 1)
+        self.assertEqual(black['turn'], 'b')
+        self.assertTrue(black['actions'])
+        self.assertNotIn('actor-red', json.dumps(black))
+        self.assertNotIn('actor-black', json.dumps(black))
+
+    def test_full_match_from_initial_board_to_victory_over_two_network_clients(self):
+        # This is a complete server-authoritative game, not a synthetic win fixture.
+        # Both client objects only request legal actions and submit selected paths.
+        # With a pinned RNG seed, the match is reproducible across platforms.
+        rng = random.Random(0)
+        status, current = self.red.call()
+        self.assertEqual(status, 200)
+        self.assertEqual(current['state']['board'], initial_board())
+        move_count = 0
+        selected_paths = []
+        for move_count in range(1, 201):
+            if current['status'] == 'finished':
+                break
+            active = self.red if current['state']['turn'] == 'r' else self.black
+            inactive = self.black if active is self.red else self.red
+            acode, legal = active.legal_actions()
+            self.assertEqual(acode, 200)
+            self.assertEqual(legal['revision'], current['revision'])
+            self.assertEqual(legal['turn'], current['state']['turn'])
+            self.assertTrue(legal['actions'])
+            self.assertEqual(inactive.legal_actions()[1]['actions'], [])
+            selected = rng.choice(legal['actions'])
+            selected_paths.append(selected)
+            code, next_state = active.move(current['revision'], selected,
+                                           'complete-%03d' % move_count)
+            self.assertEqual(code, 200)
+            self.assertEqual(next_state['revision'], move_count)
+            self.assertEqual(inactive.call()[1], next_state)
+            current = next_state
+            # Reconnect each seat through fresh HTTP client objects mid-game.
+            if move_count == 20:
+                self.red = SimulatedClient(self.base, 'fixture-red-only')
+                self.black = SimulatedClient(self.base, 'fixture-black-only')
+                self.assertEqual(self.red.join()[1]['match'], current)
+                self.assertEqual(self.black.join()[1]['match'], current)
+        self.assertEqual(current['status'], 'finished', 'deterministic match never completed')
+        self.assertEqual(current['revision'], 53)
+        self.assertEqual(current['state']['winner'], 'r')
+        self.assertEqual(move_count, 54)  # last iteration sees the terminal state
+        encoded = json.dumps(current['state'], sort_keys=True, separators=(',', ':')).encode('utf-8')
+        trace = json.dumps(selected_paths, sort_keys=True, separators=(',', ':')).encode('utf-8')
+        self.assertEqual(hashlib.sha256(encoded).hexdigest(),
+                         '8ac91352e834aba7bb1ec469caf83ea74fb7b2ab5baf6186fa419c17b042f9ad')
+        self.assertEqual(hashlib.sha256(trace).hexdigest(),
+                         '4bde7e4ec0a0f5737e6439ddeae2a2bd4a795a0aff75e1ab05048289bf4b3ab7')
+        self.assertEqual(self.red.legal_actions()[1]['actions'], [])
+        self.assertEqual(self.black.legal_actions()[1]['actions'], [])
+        self.assertEqual(self.red.call()[1], self.black.call()[1])
+        self.assertNotIn('actor-red', json.dumps(current))
+        self.assertNotIn('actor-black', json.dumps(current))
 
     def test_source_boundaries_and_deterministic_fixture_digest(self):
         root = Path(__file__).resolve().parents[1]
