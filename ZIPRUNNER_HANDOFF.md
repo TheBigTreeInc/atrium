@@ -1,3 +1,5 @@
+Atrium 0.5.53: Durable module-owned Checkers match core and stricter simulated network exact-ZIP QA; 0.5.52 exact GitHub Actions run 41856240674 succeeded on Linux/Windows. 0.5.53 target Windows operator and CI acceptance remain unverified. No Social/Tavi public host activated. See docs/P1_097_CHECKERS_SOURCE_MATCH_AUTHORITY_053.adoc.
+
 Atrium 0.5.52: Exact-archive disposable Checkers multiplayer group QA source; v0.5.51 exact GitHub Actions run 40370535025 succeeded, but v0.5.52 CI/Windows ZipRunner and operator acceptance remain unverified. See docs/P1_096_CHECKERS_EXACT_PACKAGE_GROUP_QA.adoc.
 
 Atrium 0.5.51: LoopRD 0.5.0 generic anonymous hosted-catalog GET is source-enabled; live activation and 1.0.6 TaviX are operator-gated. See docs/P1_095_LOOPRD_ANONYMOUS_CATALOG_051.adoc.

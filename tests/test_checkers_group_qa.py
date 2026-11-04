@@ -8,10 +8,12 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 from src.checkers_adapter import CheckersEngine
+from src.checkers_match_authority import CheckersMatchAuthority, MatchFailure
 from src.checkers import initial_board, legal_moves
 from tests.support.checkers_disposable import DisposableCheckersAuthority, disposable_server
 
@@ -21,8 +23,8 @@ class SimulatedClient:
     def __init__(self, base, bearer):
         self.base, self.bearer = base, bearer
 
-    def call(self, match='match1', *, method='GET', payload=None):
-        endpoint = self.base + '/matches/' + match + ('/moves' if method == 'POST' else '')
+    def call(self, match='match1', *, method='GET', payload=None, action='moves'):
+        endpoint = self.base + '/matches/' + match + ('/' + action if method == 'POST' else '')
         content = None if payload is None else json.dumps(payload).encode('utf-8')
         request = Request(endpoint, data=content, method=method,
                           headers={'Authorization': 'Bearer ' + self.bearer,
@@ -33,6 +35,9 @@ class SimulatedClient:
         except HTTPError as exc:
             with exc:
                 return exc.code, json.loads(exc.read())
+
+    def join(self, match='match1'):
+        return self.call(match, method='POST', action='join')
 
     def move(self, revision, path, request_id, match='match1'):
         return self.call(match, method='POST',
@@ -143,12 +148,102 @@ class CheckersNetworkGroupQA(unittest.TestCase):
         next_move = legal_moves(accepted['state']['board'], 'b')[0]
         self.assertEqual(self.black.move(1, next_move, 'after-restart')[1]['revision'], 2)
 
+    def test_join_requires_correct_authenticated_identity_and_returns_seat(self):
+        status, joined = self.red.join()
+        self.assertEqual(status, 200)
+        self.assertEqual(joined['seat'], 'red')
+        self.assertEqual(joined['match'], self.red.call()[1])
+        self.assertEqual(self.black.join()[1]['seat'], 'black')
+        self.assertEqual(self.red.join(), (status, joined))  # hostless resume is idempotent
+        self.assertEqual(self.outsider.join(), (403, {'error': 'not_a_participant'}))
+        self.assertEqual(SimulatedClient(self.base, 'untrusted').join()[0], 401)
+        self.assertEqual(self.outsider.join('nonexistent')[0], 404)
+        self.assertEqual(self.red.call()[1]['revision'], 0)
+
+    def test_network_crowning_and_king_backward_capture(self):
+        # American men crown and stop on reaching the last row during a jump.
+        board = board_with((5, 0, 'r'), (6, 1, 'b'), (6, 3, 'b'), (1, 2, 'b'))
+        self.authority.seed('crown', 'actor-red', 'actor-black',
+                            state={'board': board, 'turn': 'r', 'winner': None})
+        code, promoted = self.red.move(0, [[5, 0], [7, 2]], 'crown-1', 'crown')
+        self.assertEqual(code, 200)
+        self.assertEqual(promoted['state']['board'][7][2], 'R')
+        self.assertEqual(promoted['state']['turn'], 'b')
+        # Kings can capture backwards on a later turn; no forced backward man capture.
+        king = board_with((5, 4, 'R'), (4, 3, 'b'), (0, 1, 'b'))
+        self.authority.seed('king', 'actor-red', 'actor-black',
+                            state={'board': king, 'turn': 'r', 'winner': None})
+        code, moved = self.red.move(0, [[5, 4], [3, 2]], 'king-back', 'king')
+        self.assertEqual(code, 200)
+        self.assertEqual(moved['state']['board'][3][2], 'R')
+        self.assertEqual(moved['state']['board'][4][3], '.')
+
+    def test_network_validates_malformed_envelopes_and_does_not_mutate_state(self):
+        invalid = (
+            {'revision': True, 'requestId': 'a', 'path': [[2, 1], [3, 0]]},
+            {'revision': 0, 'requestId': 'a', 'path': [[2, 1], [9, 0]]},
+            {'revision': 0, 'requestId': 'a', 'path': [[2, 1]]},
+            {'revision': 0, 'requestId': 'a', 'path': [[2, 1], [3, 0]], 'seat': 'red'},
+            {'revision': -1, 'requestId': 'a', 'path': [[2, 1], [3, 0]]},
+        )
+        for case in invalid:
+            with self.subTest(case=case):
+                self.assertEqual(self.red.call(method='POST', payload=case)[0], 422)
+                self.assertEqual(self.red.call()[1]['revision'], 0)
+
+    def test_production_authority_creation_requires_distinct_host_confirmed_seats(self):
+        # Core API carries no browser bearer, token map or HTTP listener.
+        with tempfile.TemporaryDirectory() as folder:
+            store = CheckersMatchAuthority(Path(folder) / 'production-core-test.sqlite')
+            try:
+                with self.assertRaises(ValueError):
+                    store.create_match('bad', 'red', 'red')
+                created = store.create_match('trusted-game', 'signed-red', 'signed-black')
+                self.assertEqual(created['state'], CheckersEngine().initial_state())
+                self.assertEqual(store.join('trusted-game', 'signed-black')['seat'], 'black')
+                with self.assertRaises(MatchFailure) as cm:
+                    store.inspect('trusted-game', 'not-a-seat')
+                self.assertEqual(cm.exception.http_status, 403)
+            finally:
+                store.close()
+
+    def test_cross_connection_atomic_revision_and_retry(self):
+        # Two independent source-authority connections share the same SQLite file.
+        # Exactly one different request at revision 0 may succeed.
+        other = CheckersMatchAuthority(self.database)
+        try:
+            path = legal_moves(initial_board(), 'r')[0]
+            gate = __import__('threading').Barrier(2)
+            def race(authority, req_id):
+                gate.wait(timeout=4)
+                try:
+                    return 200, authority.move('match1', 'actor-red',
+                                               {'revision': 0, 'requestId': req_id, 'path': path})
+                except MatchFailure as exc:
+                    return exc.http_status, exc.code
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                a = pool.submit(race, self.authority, 'race-a')
+                b = pool.submit(race, other, 'race-b')
+                results = [a.result(timeout=8), b.result(timeout=8)]
+            self.assertEqual(sorted(code for code, _ in results), [200, 409])
+            self.assertEqual(self.black.call()[1]['revision'], 1)
+            self.assertEqual([payload for code, payload in results if code == 409],
+                             ['stale_revision'])
+        finally:
+            other.close()
+
     def test_source_boundaries_and_deterministic_fixture_digest(self):
         root = Path(__file__).resolve().parents[1]
-        module_text = (root / 'tests/support/checkers_disposable.py').read_text(encoding='utf-8')
+        module_text = (root / 'src/checkers_match_authority.py').read_text(encoding='utf-8')
+        fixture_text = (root / 'tests/support/checkers_disposable.py').read_text(encoding='utf-8')
         looprd_text = (root / 'looprd.yaml').read_text(encoding='utf-8')
         tavi_text = (root / 'src/apphost.mjs').read_text(encoding='utf-8')
         self.assertIn('from src.checkers_adapter import CheckersEngine', module_text)
+        self.assertIn('from src.checkers_match_authority import CheckersMatchAuthority', fixture_text)
+        self.assertNotIn('ThreadingHTTPServer', module_text)
+        self.assertNotIn('Bearer', module_text)
+        self.assertNotIn('from src.checkers import', looprd_text)
+        self.assertNotIn('from src.checkers import', tavi_text)
         self.assertNotIn('tests/support/checkers_disposable', looprd_text)
         self.assertNotIn('tests/support/checkers_disposable', tavi_text)
         self.assertNotIn('fixture-red-only', looprd_text)

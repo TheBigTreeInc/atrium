@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.52",
+  "version": "0.5.53",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -737,6 +737,27 @@
           "mode": "manual",
           "checks": [
             "ATR-153-CHECKERS-GROUP-QA-SOURCE-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE",
+      "criteria": [
+        {
+          "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE-AC-SOURCE",
+          "description": "Checkers source-owned durable authority used by exact-package loopback group QA, two SQLite connections, host-supplied identities and bounded assertions; no deployed HTTP route.",
+          "mode": "automated",
+          "checks": [
+            "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE-T1"
+          ]
+        },
+        {
+          "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE-AC-OPERATOR",
+          "description": "Operator verifies target Windows source ZIP/QA and records acceptance independently of GitHub and any live Tavi account.",
+          "mode": "manual",
+          "checks": [
+            "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE-M1"
           ]
         }
       ]
@@ -1533,6 +1554,26 @@
       "stage": "acceptance",
       "description": "Operator accepts exact archived ZIP and denies any claim of production two-account game proof",
       "instructions": "On Windows use ZipRunner to install the exact source ZIP; after full build and fresh post-update checks use python tools/checkers_group_qa.py --package <exact ZIP path>, compare report input_zip_sha256 to handoff SHA, ensure 7 passed and no skipped, review no test secrets leave loopback, and manually accept/reject. Do not mark DGN live or full automated QA Done."
+    },
+    {
+      "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Source and exact-package CheckersMatchAuthority group QA exercises game rules and persistence across two SQLite connections",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_checkers_group_qa.py",
+      "assertions": [
+        "Production core CheckersMatchAuthority owns durable matches and delegates all game rules to CheckersEngine; disposable test-only HTTP/token shim is separate.",
+        "A 12-test two-client suite proves unauthorized join/inspect/move, negative envelopes, crowning and king capture, deterministic SHA, restart and changed duplicate replay.",
+        "Two independent connections racing different requests for revision zero yield exactly one success and one stale conflict."
+      ]
+    },
+    {
+      "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator reviews exact 0.5.53 ZIP, 12 group tests and confirms non-activation of public authority",
+      "instructions": "Build and verify exact 0.5.53 source in installed Windows ZipRunner, run fresh post-update checks and exact ZIP checkers_group_qa.py --package, inspect digest and 12 passed groups, verify no fixture auth moved into source or deployed endpoints. Record operator acceptance separately; do not close full DGN milestone."
     }
   ]
 }

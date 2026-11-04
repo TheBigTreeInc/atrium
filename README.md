@@ -1,3 +1,5 @@
+**0.5.53 source-only match authority:** extracted module-owned durable Checkers state, host-supplied participant IDs and SQLite atomic revisions; 12 network group test cases run against the exact ZIP. 0.5.52 push CI succeeded at GitHub run 41856240674; 0.5.53 CI/Windows/operator acceptance still pending. See docs/P1_097_CHECKERS_SOURCE_MATCH_AUTHORITY_053.adoc.
+
 **0.5.52 source-only QA:** disposable Checkers network/SQLite two-client tests and exact-ZIP SHA-aware runner. No public multiplayer activation; full DGN milestone and operator acceptance remain open. See docs/P1_096_CHECKERS_EXACT_PACKAGE_GROUP_QA.adoc.
 
 Atrium 0.5.51: LoopRD 0.5.0 generic anonymous hosted-catalog GET is source-enabled; live activation and 1.0.6 TaviX are operator-gated. See docs/P1_095_LOOPRD_ANONYMOUS_CATALOG_051.adoc.

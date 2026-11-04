@@ -1,0 +1,39 @@
+= Atrium 0.5.53 — source-owned Checkers match persistence and stricter exact-ZIP network QA
+:revdate: 2026-11-04
+
+== Verified input
+
+* Exact v0.5.52 source ZIP SHA-256: `8d83f1c86255957b92b9cf28746fb1e0f4b3630643762b5d27e4e4dc85c18c2d`.
+* Exact v0.5.52 pushed commit: `0753195b84eec65d3dbef98e48308b680d8d7659`.
+* GitHub Actions push workflow *Verify Atrium source* run 41856240674 completed *success* on 2026-11-04; both `Source, pinned DAPI and ZipRunner contracts` and `Windows ZipRunner build recipe smoke` completed *success*. https://github.com/TheBigTreeInc/atrium/actions/runs/41856240674[Review exact-commit CI].
+* That CI verifies v0.5.52 source; it is not v0.5.53 CI nor Windows ZipRunner operator acceptance.
+
+== Source change
+
+`src/checkers_match_authority.py` now owns the reusable persistent Checkers match core, delegating every rule to `src/checkers_adapter.CheckersEngine`. It accepts only trusted canonical subject IDs from a separately authenticated host. The host must authorize both seats and a lobby before calling privileged `create_match`. This source class has *no credential verifier, HTTP route, public listener or active LoopRD registration*. A fixture-only `seed` override is kept in `tests/support/checkers_disposable.py`, not on the production core creation API.
+
+The authority stores match snapshot, monotonic revision and idempotency receipt in SQLite, with `BEGIN IMMEDIATE` transactions to prevent concurrent different-request moves from both succeeding against the same revision across two database connections. `join` is an idempotent seat inspection/resume, not a separate ongoing presence lease. A turn does not depend on either player remaining online.
+
+`tests/support/checkers_disposable.py` is now just a local `127.0.0.1` HTTP transport and fixture identity map over that source authority. Network suite runs 12 groups covering unauthorized join/inspect/move, distinct clients, turn/revision races, replay and changed duplicate, move envelopes, mandatory chained captures, crowning, backward king capture, victory, restart and source-boundary checks. Deterministic fixture SHA and tested-source composite SHA are recorded; a skipped group cannot be counted as passed.
+
+== Deliberately not done
+
+* No production Social-issued token checking, original challenge lookup, accepted friendship or user identity exchange.
+* No public LoopRD Checkers persistence handler, real HTTPS, live Tavi extension updates or Tavi/browser game UI integration.
+* No game publication, Wallet interactions, migration of existing production matches, Git push or release.
+* `DGN-CHECKERS-M1-AUTOMATED-QA-001`, `DGN-CHECKERS-M1-ENGINE-001` and `DGN-CHECKERS-M1-LIVE-QA-001` remain open until full contract/production integration and real two-client acceptance.
+
+== Source/ZIP checks
+
+[source,powershell]
+----
+python tools/checkers_group_qa.py
+python tools/checkers_group_qa.py --package C:\path\to\atrium-0.5.53-ziprunner.zip
+python -m unittest tests.test_checkers_group_qa -v
+npm test
+npm run build
+npm run verify
+python tools/package_zip.py
+----
+
+ZipRunner must import the exact ZIP and run the configured isolated Python, Node and fresh post-update checks; compare `EXACT_PACKAGE_EXTRACTED` report digest to the actual ZIP and independently capture operator decision. Its preexisting config/state/workboard approval gates are not modified by this source package. Verify new push workflow and Windows acceptance independently before further development/release claims.

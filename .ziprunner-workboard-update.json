@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.52",
-  "summary": "0.5.52 retains 0.5.51 hosted-catalog gate and adds isolated network/SQLite Checkers QA and exact-package CLI. Existing DGN Checkers milestone remains suggested, pending production integration and operator two-client acceptance.",
+  "version": "0.5.53",
+  "summary": "0.5.53 follows exact-commit 0.5.52 GitHub Actions success and adds module-owned source Checkers match authority with stronger exact-package QA; production/Tavi/browser/operator gates remain open.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -355,6 +355,17 @@
         "Import exact Atrium 0.5.52 ZIP through ZipRunner; run fresh Windows Python, Node and post-update checks against installed source SHA.",
         "Run python tools/checkers_group_qa.py --package <exact downloaded atrium-0.5.52-ziprunner.zip> and inspect report scope EXACT_PACKAGE_EXTRACTED, input_zip_sha256 and 7 bounded assertions.",
         "Confirm fixture-only bearer map is never deployed as a production identity provider or public LoopRD/Tavi handler. DGN-CHECKERS-M1-AUTOMATED-QA-001 remains suggested until live gateway/real Tavi-to-browser verification and acceptance."
+      ]
+    },
+    {
+      "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE",
+      "title": "Module-owned durable Checkers match authority source and contract-boundary QA",
+      "summary": "Extracted a reusable durable CheckersMatchAuthority from disposable HTTP tests; verified game-owned engine, privileged match creation, authorized seat resume, SQLite atomic revisions and replay. Strengthened source/exact-ZIP simulated multiplayer QA to 12 tests. No live Social/Tavi/LoopRD route.",
+      "priority": "critical",
+      "operator_checks": [
+        "Import exact 0.5.53 ZIP through ZipRunner; verify native Windows build and fresh post-update checks, including 12/12 disposable tests and source/evidence SHA.",
+        "Confirm source CheckersMatchAuthority accepts subjects only from a trusted host, with no public HTTP credentials or LoopRD route; real Social/Tavi integration remains separate and unapproved.",
+        "Run independent-sessions revision race/replay, restart, unauthorized join/move and king/capture fixtures on the original ZIP, then record explicit human acceptance or defer."
       ]
     }
   ],

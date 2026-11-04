@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.52",
-    "base_version": "0.5.51",
-    "source_revision": "4d29ecc656201818e30224404308c7ff8c2eb546"
+    "version": "0.5.53",
+    "base_version": "0.5.52",
+    "source_revision": "0753195b84eec65d3dbef98e48308b680d8d7659"
   },
   "update": {
-    "id": "ATR-P1-20261104-052",
+    "id": "ATR-P1-20261104-053",
     "kind": "source_update",
-    "created_at": "2026-11-04T16:02:00+01:00",
-    "summary": "Add disposable Checkers two-client HTTP/SQLite group QA with a verified exact-input-ZIP extraction adapter; no public runtime, Social credential exchange or release."
+    "created_at": "2026-11-04T17:03:30+01:00",
+    "summary": "Module-owned durable American Checkers match authority source, independent-connection revision races and 12 exact-ZIP disposable test groups; no public game host or release."
   },
   "planned_work": [
     {
@@ -259,6 +259,12 @@
       "title": "Disposable exact-package Checkers multiplayer group QA source",
       "priority": "critical",
       "acceptance_criteria": "Versioned exact-ZIP CLI provides bounded, fail-closed report of real loopback HTTP two-client tests of the packaged Checkers rules adapter including state persistence/retry/negative cases, with no production game server or fake Tavi acceptance."
+    },
+    {
+      "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE",
+      "title": "Module-owned durable Checkers match authority source and group QA",
+      "priority": "critical",
+      "acceptance_criteria": "Core game-owned durable matches, authenticated-host-only subject and participants, SQLite atomic revisions and retry, 12 exact-package group assertions; separately operator accepts Windows ZIP and live integration remains open."
     }
   ],
   "done_work": [
@@ -1082,6 +1088,27 @@
           "kind": "documentation",
           "ref": "docs/P1_096_CHECKERS_EXACT_PACKAGE_GROUP_QA.adoc",
           "description": "Explicit limits, commands and operator gates"
+        }
+      ]
+    },
+    {
+      "id": "ATR-154-CHECKERS-MATCH-AUTHORITY-SOURCE",
+      "summary": "Extracted a reusable durable CheckersMatchAuthority from disposable HTTP tests; verified game-owned engine, privileged match creation, authorized seat resume, SQLite atomic revisions and replay. Strengthened source/exact-ZIP simulated multiplayer QA to 12 tests. No live Social/Tavi/LoopRD route.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/checkers_match_authority.py",
+          "description": "Reusable trusted-host-only durable Checkers match engine; no network authentication/listener"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_checkers_group_qa.py",
+          "description": "Twelve isolated HTTP/revision/fixture contract groups"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_097_CHECKERS_SOURCE_MATCH_AUTHORITY_053.adoc",
+          "description": "Boundaries, exact-commit prior CI, current acceptance gates"
         }
       ]
     }
