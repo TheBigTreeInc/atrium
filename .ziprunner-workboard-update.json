@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.54",
-  "summary": "0.5.54 follows verified 0.5.53 exact-commit Linux/Windows CI and adds source-owned legal actions and a complete two-client disposable Checkers game from opening to terminal outcome. No live production/Tavi/browser match or operator acceptance claimed.",
+  "version": "0.5.55",
+  "summary": "0.5.55 follows exact-commit 0.5.54 successful Linux/Windows CI and adds a fail-closed Checkers host boundary: trusted issuer/subject audience mapping, approved-lobby creation and isolated subject-bound match methods. 18 disposable QA groups; no public Social/LoopRD/Tavi route or operator acceptance.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -377,6 +377,17 @@
         "Run ZipRunner build/post-update checks on exact 0.5.54 ZIP; check that group QA reports 14/14 from the original archive SHA. Revalidate GitHub source CI for the exact 0.5.54 commit after an approved push.",
         "Inspect both authenticated fixture clients playing through a complete opening-to-victory 53-move match; confirm red winner, no client rules, full match SHA and transcript SHA, reconnect, and no revisions from read-only actions.",
         "Confirm `legal_actions` is accessible only through a trusted host subject; fixture-token HTTP listener remains test-only, and actual LoopRD/Social/Tavi/browser integration and human approval remain open."
+      ]
+    },
+    {
+      "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY",
+      "title": "Trusted-host identity and accepted-lobby contract boundary for Checkers",
+      "summary": "Source-only CheckersTrustedHost requires two server-owned callables, typed audience- and issuer-verified account and approved accepted game lobby before creation; issuer-separated SHA seat keys, 4 negative/positive boundary tests and 18 group QA tests. No browser identity proof, public LoopRD route or live game deployment.",
+      "priority": "critical",
+      "operator_checks": [
+        "Run exact 0.5.55 ZIP through ZipRunner with 18/18 source/extracted test groups and fresh Windows checks; confirm CI for exact new push after authorization.",
+        "Confirm client JSON cannot supply a principal or lobby approval; rejected cross-audience, cross-issuer, declined, duplicate, outsider and forged contexts; verify no public LoopRD route was activated.",
+        "Require live Social-owned session and accepted challenge verification plus native LoopRD authenticated match API and real Tavi/browser acceptance before any production/release claim."
       ]
     }
   ],

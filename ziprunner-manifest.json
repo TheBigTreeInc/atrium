@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.54",
-    "base_version": "0.5.53",
-    "source_revision": "2c418195942eeb5d4cdee724aaed8b7cdea43fa7"
+    "version": "0.5.55",
+    "base_version": "0.5.54",
+    "source_revision": "efb3c7bda751e7a3b4883a35760ddddd26471924"
   },
   "update": {
-    "id": "ATR-P1-20261104-054",
+    "id": "ATR-P1-20261104-055",
     "kind": "source_update",
     "created_at": "2026-11-04T17:48:37+01:00",
-    "summary": "Server-owned legal actions and 53-move initial-to-victory two-client disposable Checkers game, SHA-pinned transcript and 14 exact-source network QA groups; no public hosted multiplayer route."
+    "summary": "Trusted-host-only Checkers identity and accepted-lobby admission port; no public Social/LoopRD route; 18 QA groups including 53-move two-fixture-client match."
   },
   "planned_work": [
     {
@@ -271,6 +271,12 @@
       "title": "Source Checkers turn-scoped legal-actions and full simulated network match",
       "priority": "critical",
       "acceptance_criteria": "Fourteen complete exact-ZIP fixture HTTP group tests including 53-turn game and read-only authorized legal actions, without client rules or production-host activation."
+    },
+    {
+      "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY",
+      "title": "Host-bound Checkers canonical identity and approved-lobby admission",
+      "priority": "critical",
+      "acceptance_criteria": "Trusted caller-injected account and accepted-lobby approval only, audience+issuer check, server-owned match/seat IDs, negative spoof tests, 18 exact-package group QA; no active HTTP/LoopRD/Tavi integration claimed."
     }
   ],
   "done_work": [
@@ -1138,6 +1144,27 @@
           "description": "Exact source API and boundaries"
         }
       ]
+    },
+    {
+      "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY",
+      "summary": "Implemented source-only typed identity and accepted-lobby admission boundary for existing persistent Checkers authority, with 18 source/exact-ZIP QA groups. No real Social credential verifier, LoopRD public API or Tavi/browser runtime.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/checkers_trusted_host.py",
+          "description": "Host-only typed issuer/audience and approved-lobby checks, derived canonical seat IDs"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_checkers_trusted_host.py",
+          "description": "Four positive and negative host boundary tests; combined with existing fourteen network groups"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_099_CHECKERS_TRUSTED_HOST_BOUNDARY_055.adoc",
+          "description": "Trust boundaries, source-only proof and operator gates"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1343,7 +1370,7 @@
     ]
   },
   "handover": {
-    "next_pass": "Operator-review LoopRD 0.4 nested host activation and reader reconciliation, device tests, then Wallet integration.",
+    "next_pass": "One-game DGN Checkers M1: production Social verified-session/accepted-lobby integration, LoopRD game-owned authenticated match operations, then Tavi-to-browser live complete match; operator gates independent.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -1356,7 +1383,8 @@
     "blockers": [
       "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",
       "Life internal AtriumLifeLaunch currently does not expose the proposed public /play/info envelope or authenticated /play routes; API contract alignment, trust and endpoint deployment remain independent owner gates.",
-      "Looprd 0.3.0 registration.readers.v1 host and separate reader credential are not provisioned by this Atrium source ZIP; no live host-wire interoperability claim."
+      "Looprd 0.3.0 registration.readers.v1 host and separate reader credential are not provisioned by this Atrium source ZIP; no live host-wire interoperability claim.",
+      "CheckersTrustedHost is source-only; real Social issuer verification and accepted lobby proof are not bound, and no production LoopRD route or Tavi/browser client exists."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",

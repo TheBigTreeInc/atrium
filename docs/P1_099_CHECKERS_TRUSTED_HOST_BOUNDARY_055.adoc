@@ -1,0 +1,31 @@
+= Atrium 0.5.55 — Checkers trusted-host boundary (source candidate)
+:revdate: 2026-11-04
+
+== Exact 0.5.54 source-CI prerequisite
+
+GitHub push commit `efb3c7bda751e7a3b4883a35760ddddd26471924` had completed `success` on both Linux source/DAPI/ZipRunner and Windows recipe jobs in https://github.com/TheBigTreeInc/atrium/actions/runs/41887702820[Verify Atrium source]. This is source CI for **0.5.54**, not CI or local operator acceptance of 0.5.55. The original 0.5.54 source ZIP SHA-256 was `03967cfa175090a2c2baa7505cb7122205e5b8881cc1c65deecd0e94f0f5dc2b`.
+
+== New module-owned host port
+
+`src/checkers_trusted_host.py` adds the *non-networked* `CheckersTrustedHost` boundary around the existing durable `CheckersMatchAuthority`. It uses two required **server-owned** callables:
+
+* `resolve_account(trusted_context)` must validate a real Social-owned account session and return a typed `VerifiedAccount(issuer, subject, audience)` with audience exactly `atrium.checkers/v1`. A user-supplied JSON subject/profile/seat is not such a callback.
+* `approve_lobby(trusted_context, lobby_ref)` must query current original/accepted Social challenge/lobby authority and return `ApprovedLobby(match_id, game_id='checkers', status='accepted', red, black)`. A user-supplied acceptance flag, raw HTTP ticket or arbitrary client-approved lobby is never valid.
+
+Issuer is configured by the host. The adapter validates issuer and audience on actor and both seats; requires actor to be an approved participant; and derives an internal SHA-256 seat key from the verified `(issuer, subject)` pair to avoid cross-issuer UUID collisions. **Hashes are lookup keys, not session credentials.** Match ID comes from the approved-lobby response, not a client-supplied participant or arbitrary requested match ID. Invalid binding, changed identity, declined/pending/cross-game lobby, outsider and duplicate creation fail closed.
+
+After admission the port offers `inspect`, `join`, `legal_actions` and `move` with authenticated context, while the game-owned authority remains the only rules/revision/persistence component. The port does not create an HTTP listener, validate Social tokens itself, register a LoopRD handler or allow client-provided identity. A trusted operator must implement secure `resolve_account` and `approve_lobby`, including signature/audience/expiry/nonce/revocation checks and original accepted challenge verification, before activation.
+
+== QA and operator acceptance
+
+`tests/test_checkers_trusted_host.py` adds four source-level contract tests for the server-verified host boundary. `tools/checkers_group_qa.py` includes them alongside fourteen existing network groups and refuses to label skipped/failed/missing tests as success. `--package` extracts the **original exact 0.5.55 ZIP** into an isolated directory, runs its included source/tests, and reports the input ZIP SHA. The simulated fixture-only bearer map in `tests/support/checkers_disposable.py` still proves network mechanics only, not real Social authentication.
+
+[source,powershell]
+----
+python tools/checkers_group_qa.py --package C:\path\to\atrium-0.5.55-ziprunner.zip
+python tools/run_python_checks.py
+npm test
+npm run build
+----
+
+The full DGN milestone is **still open**. No live Social session verifier/accepted challenge adapter, persisted LoopRD Checkers endpoints, independently authenticated browser UI, Tavi connection, real-client 53-move match, or live operator acceptance has been demonstrated. Keep `DGN-CHECKERS-M1-AUTOMATED-QA-001`, `DGN-CHECKERS-M1-CONTRACT-001`, `DGN-CHECKERS-M1-ENGINE-001` and `DGN-CHECKERS-M1-LIVE-QA-001` at their existing status until separately accepted. Do not push, auto-publish, tag, replace production settings or release this ZIP without explicit operator approval.

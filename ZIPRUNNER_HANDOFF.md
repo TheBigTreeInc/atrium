@@ -1,3 +1,5 @@
+Atrium 0.5.55: trusted-host Checkers boundary and 18 source/exact-ZIP QA groups. Requires real Social service attestation and LoopRD activation separately. Baseline 0.5.54 CI passed at https://github.com/TheBigTreeInc/atrium/actions/runs/41887702820. No operator acceptance, release or live Tavi-to-browser match.
+
 Atrium 0.5.54: server-owned turn-scoped legal actions and a complete 53-move two-fixture-client Checkers match via disposable HTTP in exact-ZIP QA. 0.5.53 GitHub push 2c418195942eeb5d4cdee724aaed8b7cdea43fa7 passed on Linux/Windows in run 41869522063. 0.5.54 CI, installed Windows, operator and release gates remain open. No production multiplayer endpoints or real Tavi-to-browser match. See docs/P1_098_CHECKERS_M1_FULL_NETWORK_GAME_054.adoc.
 
 Atrium 0.5.53: Durable module-owned Checkers match core and stricter simulated network exact-ZIP QA; 0.5.52 exact GitHub Actions run 41856240674 succeeded on Linux/Windows. 0.5.53 target Windows operator and CI acceptance remain unverified. No Social/Tavi public host activated. See docs/P1_097_CHECKERS_SOURCE_MATCH_AUTHORITY_053.adoc.

@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.54",
+  "version": "0.5.55",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -779,6 +779,27 @@
           "mode": "manual",
           "checks": [
             "ATR-155-CHECKERS-LEGAL-FULL-GAME-QA-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY",
+      "criteria": [
+        {
+          "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY-AC-SOURCE",
+          "description": "Source-only trusted Checkers operations require a typed server-resolved identity and accepted lobby; forged actor claims never create seats or move.",
+          "mode": "automated",
+          "checks": [
+            "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY-T1"
+          ]
+        },
+        {
+          "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY-AC-OPERATOR",
+          "description": "Operator reviews exact-package QA and confirms public game route and Social verifier still unimplemented.",
+          "mode": "manual",
+          "checks": [
+            "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY-M1"
           ]
         }
       ]
@@ -1615,6 +1636,27 @@
       "stage": "acceptance",
       "description": "Operator validates exact 0.5.54 Windows source ZIP and no deployed game route",
       "instructions": "Rebuild/run exact 0.5.54 ZIP in local Windows ZipRunner; run all fresh post-update gates and exact-package Checkers QA; verify GitHub CI for 0.5.54 *separately*, then manually approve or defer. No public LoopRD route, Social auth or Tavi game match yet."
+    },
+    {
+      "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Host-bound Checkers identity/lobby contract negative and positive tests",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_checkers_trusted_host.py",
+      "assertions": [
+        "18 source/exact-package group tests including four host boundary tests and the prior complete fixture HTTP game",
+        "Host callback resolves trusted issuer/subject/audience; SHA namespacing avoids cross-issuer identity collisions",
+        "Wrong issuer, wrong audience, pending lobby, unrelated game, outsider, changed duplicate and forged claim are rejected",
+        "No HTTP listener or production LoopRD route is registered by the host port"
+      ]
+    },
+    {
+      "id": "ATR-156-CHECKERS-TRUSTED-HOST-BOUNDARY-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator checks exact 0.5.55 ZIP on Windows and no active hosted match API",
+      "instructions": "Run exact 0.5.55 ZIP and 18/18 group QA through installed ZipRunner, inspect SHA-specific report, fresh Windows checks and pending human decision. Check that fixture callbacks do not masquerade as live Social issuer verification; live Tavi/browser and release remain blocked."
     }
   ]
 }
