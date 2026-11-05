@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.57",
+  "version": "0.5.58",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -842,6 +842,27 @@
           "mode": "manual",
           "checks": [
             "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA",
+      "criteria": [
+        {
+          "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA-AC-SOURCE",
+          "description": "Valid pinned verification-plan stage and check field set, packaging preflight rejecting invalid stage, and source regression on exact package metadata.",
+          "mode": "automated",
+          "checks": [
+            "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA-T1"
+          ]
+        },
+        {
+          "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA-AC-OPERATOR",
+          "description": "Separate official pinned CI validator, installed Windows checks and human acceptance verification.",
+          "mode": "manual",
+          "checks": [
+            "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA-M1"
           ]
         }
       ]
@@ -1724,7 +1745,7 @@
     {
       "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-T1",
       "kind": "automated",
-      "stage": "test",
+      "stage": "unit",
       "description": "Pinned ZipRunner update schema field allowlist regression",
       "runner_ref": "atrium-python-tests",
       "test_ref": "tests/test_release_pipeline.py",
@@ -1739,6 +1760,26 @@
       "stage": "acceptance",
       "description": "Check actual pinned validator on 0.5.57 and Windows intake",
       "instructions": "Verify 0.5.57 exact SHA GitHub CI build/package validator passes after approved push. Run installed ZipRunner fresh per-package post-update checks and human acceptance; no live Social/LoopRD or release implied."
+    },
+    {
+      "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Pinned ZipRunner verification check stage/field allowlist preflight regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_release_pipeline.py",
+      "assertions": [
+        "Verification check stage belongs to pinned enum",
+        "All verification check keys are supported",
+        "Package preflight fails before ZIP creation for unsupported stage"
+      ]
+    },
+    {
+      "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Official ZipRunner package validation and operator review for repaired 0.5.58 archive",
+      "instructions": "Confirm exact-commit GitHub Linux and Windows CI results and official pinned ZipRunner package validator pass, then run fresh installed Windows ZipRunner tests, record operator decision and do not auto-release."
     }
   ]
 }

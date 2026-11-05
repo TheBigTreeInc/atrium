@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.57",
-    "base_version": "0.5.56",
-    "source_revision": "aba619b3d27db1243e98344f0caf6f4ae4d46f18"
+    "version": "0.5.58",
+    "base_version": "0.5.57",
+    "source_revision": "b4cd64a04ebaef41934d702b7f82fae5d011384f"
   },
   "update": {
-    "id": "ATR-P1-20261104-057",
+    "id": "ATR-P1-20261105-058",
     "kind": "source_update",
-    "created_at": "2026-11-04T22:50:00+01:00",
-    "summary": "Repair official pinned ZipRunner validator failure on 0.5.56: remove unsupported update.version, add regression on supported update and project keys; Checkers transport unchanged and not publicly activated."
+    "created_at": "2026-11-05T08:50:00+01:00",
+    "summary": "Repair 0.5.57 official pinned ZipRunner verification-plan stage enum rejection; enforce allowed check stages and keys at package build, retain Checkers functionality and operator release gates."
   },
   "planned_work": [
     {
@@ -289,6 +289,12 @@
       "title": "Repair pinned ZipRunner update metadata and prevent unsupported fields",
       "priority": "critical",
       "acceptance_criteria": "CI pinned ZipRunner validator accepts exact 0.5.57 source ZIP; no unsupported update.version remains; regression fails on any unexpected update/project keys; complete source tests, Windows fresh checks, operator acceptance and release remain separate."
+    },
+    {
+      "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA",
+      "title": "Repair pinned ZipRunner verification check stage contract",
+      "priority": "critical",
+      "acceptance_criteria": "Official pinned ZipRunner validator accepts 0.5.58 checks including index 84; source and packaging preflight reject unsupported stage/fields; exact-commit CI, installed Windows QA and operator acceptance tracked independently."
     }
   ],
   "done_work": [
@@ -1219,6 +1225,27 @@
           "description": "Observed 0.5.56 CI failure, corrected contract and handoff gates"
         }
       ]
+    },
+    {
+      "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA",
+      "summary": "Repair the exact 0.5.57 GitHub CI rejection of verification-plan checks[84].stage=test by selecting the pinned supported unit stage. Add packaging-time verification-plan stage/field validation and isolated regression; keep Checkers 24-group fixture coverage and all release gates unchanged.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/package_zip.py",
+          "description": "Check-stage and key allowlist preflight runs before producing ZIP"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Negative stage and unsupported-field regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_102_ZIPRUNNER_STAGE_SCHEMA_058.adoc",
+          "description": "Pinned stage contract, CI error and operator gates"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1423,14 +1450,33 @@
       },
       {
         "id": "ATR-158-EXACT-PUSH-CI-0556",
-        "description": "Exact 0.5.56 GitHub Actions run 41919291687: Windows success, Linux failed in pinned ZipRunner ZIP validator: $.update unsupported field version; this 0.5.57 repair is not yet pushed or CI validated.",
+        "description": "Exact 0.5.56 GitHub Actions run 41919291687: Windows succeeded, Linux failed pinned validator at $.update unsupported field version. The 0.5.57 repair then encountered a distinct check-stage enum failure in exact GitHub run 41986602716.",
         "status": "not_run",
-        "reason": "0.5.57 CI requires a separately approved push; do not treat local source tests as official validator pass."
+        "reason": "0.5.56 and 0.5.57 exact pushes both failed the official package validator. The 0.5.58 candidate needs independent exact-commit CI."
+      },
+      {
+        "id": "ATR-159-EXACT-PUSH-CI-057",
+        "status": "failed",
+        "description": "0.5.57 exact GitHub push b4cd64a04ebaef41934d702b7f82fae5d011384f: Windows smoke success, Linux pinned ZIP validator failed at $.checks[84].stage=test (run 41986602716).",
+        "reason": "Unsupported stage value in verification-plan; permitted values: unit, integration, functional, runtime, acceptance."
+      },
+      {
+        "id": "ATR-159-LOCAL-058",
+        "status": "passed",
+        "description": "Local 0.5.58 full Python regression (368 tests), Node regression (66 tests), source Checkers QA (24 groups), extracted exact-package QA (24 groups), static build, package preflight and deterministic ZIP.",
+        "command": "python -m unittest discover -s tests -q && npm test && npm run build && npm run verify && python tools/checkers_group_qa.py --package dist/atrium-0.5.58-ziprunner.zip",
+        "environment": "Local container Linux, Python 3.11, Node 22.16.0; no production Social/LoopRD identities."
+      },
+      {
+        "id": "ATR-159-EXACT-CI-058",
+        "status": "not_run",
+        "description": "0.5.58 exact-commit official pinned ZipRunner validator and Linux/Windows GitHub Actions after operator-approved push.",
+        "reason": "Not claimed by local schema preflight or local full regression; requires approved Git push and successful workflow."
       }
     ]
   },
   "handover": {
-    "next_pass": "Verify exact-commit 0.5.57 CI pinned ZipRunner package validator, fresh Windows ZipRunner checks and operator acceptance. Only then resume DGN Checkers M1 trusted Social/LoopRD integration; real Tavi/browser match remains outstanding.",
+    "next_pass": "Run exact-commit 0.5.58 GitHub Actions and the official pinned ZipRunner ZIP validator, then fresh installed Windows ZipRunner post-update QA and operator acceptance. Only after these independent gates resume trusted Social/LoopRD Checkers M1 integration and real Tavi-to-browser acceptance; do not auto-release.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",

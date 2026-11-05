@@ -1,0 +1,24 @@
+= P1_102 — Atrium 0.5.58 ZipRunner verification-plan stage schema repair
+:toc:
+
+== Observed exact-commit failure
+
+Atrium 0.5.57 source commit `b4cd64a04ebaef41934d702b7f82fae5d011384f`, GitHub Actions run https://github.com/TheBigTreeInc/atrium/actions/runs/41986602716, failed Linux "Build and validate ZipRunner source ZIP":
+
+----
+ERROR: $.checks[84].stage: must be one of ['unit', 'integration', 'functional', 'runtime', 'acceptance']
+FAIL: 1 issue(s)
+----
+
+Windows ZipRunner build recipe smoke succeeded; Linux Python, JavaScript, DAPI and generated-source checks succeeded. This does not establish that the complete release passed.
+
+== Repair
+
+* Preserve the verification check ID `ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-T1` and reclassify its unsupported `test` stage as pinned allowed `unit`.
+* Add ATR-159 source review item and automated unit test for every verification check's pinned stage and supported field names.
+* Make `python tools/package_zip.py` validate the plan metadata before creating the archive, rejecting invalid stage and unsupported keys with useful paths.
+* Version manifest, Workboard, post-update plan, LoopRD release and its source digest, CI artifact name and README together at 0.5.58.
+
+== Scope and acceptance
+
+The original 24 Checkers group QA cases are unchanged. No production Social verification, public LoopRD match routes, Tavi integration, operator acceptance, or release is claimed. Official pinned ZipRunner interchange validation is proven only by a successful exact-commit GitHub Linux CI run. Native installed Windows post-update checks and operator decisions remain separate. The Workboard's existing ticket statuses and approvals must not be inferred from an automated pass.

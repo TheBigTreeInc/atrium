@@ -9,7 +9,7 @@ from pathlib import Path
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.57-ziprunner.zip'
+NAME = 'atrium-0.5.58-ziprunner.zip'
 SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'dist-tavi', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
@@ -34,9 +34,56 @@ def source_files():
     return sorted(files, key=lambda p: p.relative_to(ROOT).as_posix())
 
 
+# Pinned pac-labs/ziprunner-spec (commit 341005206094862853435ad68801be7ff28c4490)
+# schemas/verification-plan.schema.json. Local preflight is fail-fast only;
+# the official upstream validator still runs in exact-commit GitHub CI.
+ALLOWED_CHECK_STAGES = frozenset({'unit', 'integration', 'functional', 'runtime', 'acceptance'})
+ALLOWED_CHECK_FIELDS = frozenset({
+    'id', 'kind', 'stage', 'description', 'runner_ref', 'assertions',
+    'instructions', 'test_ref',
+})
+
+
+def validate_verification_checks(plan):
+    """Reject schema-invalid verification check metadata before ZIP creation."""
+    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.58':
+        raise ValueError('verification-plan project/version does not match package')
+    checks = plan.get('checks')
+    if not isinstance(checks, list) or not checks:
+        raise ValueError('verification-plan checks must be a non-empty array')
+    if len(checks) > 200:
+        raise ValueError('verification-plan checks exceed pinned 200 item limit')
+    seen = set()
+    for index, item in enumerate(checks):
+        where = f'$.checks[{index}]'
+        if not isinstance(item, dict):
+            raise ValueError(f'{where}: must be an object')
+        extra = set(item) - ALLOWED_CHECK_FIELDS
+        if extra:
+            raise ValueError(f'{where}: unsupported fields {sorted(extra)}')
+        for field in ('id', 'kind', 'stage', 'description'):
+            value = item.get(field)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f'{where}.{field}: required non-empty string')
+        if item['id'] in seen:
+            raise ValueError(f'{where}.id: duplicate check identifier')
+        seen.add(item['id'])
+        if item['stage'] not in ALLOWED_CHECK_STAGES:
+            raise ValueError(f'{where}.stage: unsupported {item["stage"]!r}; allowed {sorted(ALLOWED_CHECK_STAGES)}')
+        if item['kind'] not in ('automated', 'manual'):
+            raise ValueError(f'{where}.kind: unsupported {item["kind"]!r}')
+        if item['kind'] == 'automated' and (not item.get('runner_ref') or not item.get('test_ref') or not item.get('assertions')):
+            raise ValueError(f'{where}: automated check requires runner_ref, test_ref and assertions')
+        if item['kind'] == 'manual' and not item.get('instructions'):
+            raise ValueError(f'{where}: manual check requires instructions')
+    return len(seen)
+
+
 def main():
+    plan = json.loads((ROOT/'ziprunner-verification-plan.json').read_text(encoding='utf-8'))
+    validate_verification_checks(plan)
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.57'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.58'
     # ZipRunner validates both sections before it overlays any files. Fail the
     # source build at the same boundary, instead of distributing a broken ZIP.
     for section in ('implemented', 'remaining'):

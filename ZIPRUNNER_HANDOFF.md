@@ -1,3 +1,7 @@
+# Atrium 0.5.58 verification-plan stage schema repair (not a release)
+
+The official pinned ZipRunner validator rejected 0.5.57 exact GitHub commit `b4cd64a04ebaef41934d702b7f82fae5d011384f` at `$.checks[84].stage: test` (run 41986602716). Windows CI passed and Linux source/DAPI tests passed; the Linux package validation failed. This package uses the supported `unit` stage and preflights all check fields/stages before writing the ZIP, with regression tests. Source-only Checkers fixture tests unchanged (24 groups), no real Social/LoopRD handler or Tavi-to-browser acceptance. Fresh 0.5.58 CI, installed Windows operator QA, and release authorization pending.
+
 # Atrium 0.5.57 CI package-schema repair (not a release)
 
 0.5.56 exact GitHub push `aba619b3d27db1243e98344f0caf6f4ae4d46f18` failed Linux source ZIP validation at `$.update: unsupported field version` (run 41919291687). Windows CI succeeded. The pinned official schema allows `version` only under `project`, not `update`. The new candidate drops the invalid field, guards it with Python tests, and otherwise keeps Checkers functionality unchanged (24 group QA cases). 0.5.57 exact-commit CI, Windows post-update checks, operator acceptance and release are unverified.

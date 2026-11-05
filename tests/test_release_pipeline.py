@@ -104,6 +104,27 @@ class P0ReleaseTests(unittest.TestCase):
                          json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version'])
         self.assertNotIn('version', manifest['update'])
 
+    def test_pinned_ziprunner_verification_check_stages_and_fields(self):
+        """GitHub 41986602716: official pinned validator refused $.checks[84].stage=test."""
+        from copy import deepcopy
+        from tools.package_zip import validate_verification_checks, ALLOWED_CHECK_STAGES
+        plan=json.loads((ROOT/'ziprunner-verification-plan.json').read_text(encoding='utf-8'))
+        self.assertEqual(validate_verification_checks(plan), len(plan['checks']))
+        self.assertEqual(ALLOWED_CHECK_STAGES,
+                         frozenset({'unit', 'integration', 'functional', 'runtime', 'acceptance'}))
+        self.assertTrue(all(check['stage'] in ALLOWED_CHECK_STAGES for check in plan['checks']))
+        fixed=next(check for check in plan['checks']
+                   if check['id']=='ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-T1')
+        self.assertEqual(fixed['stage'], 'unit')
+        bad=deepcopy(plan)
+        bad['checks'][84]['stage']='test'
+        with self.assertRaisesRegex(ValueError, r'\$\.checks\[84\]\.stage'):
+            validate_verification_checks(bad)
+        bad=deepcopy(plan)
+        bad['checks'][84]['invented_field']=True
+        with self.assertRaisesRegex(ValueError, r'\$\.checks\[84\].*unsupported fields'):
+            validate_verification_checks(bad)
+
     def test_official_ziprunner_manifest_todo_contract(self):
         manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
         planned={t['id'] for t in manifest['planned_work']}
