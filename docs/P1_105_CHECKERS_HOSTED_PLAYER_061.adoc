@@ -1,0 +1,34 @@
+= Atrium 0.5.61: Hosted Checkers player, not a published game
+:toc:
+
+== Purpose
+
+Provide one reusable web game surface for a standalone browser or a Tavi-reviewed embedded surface. Both should communicate with *one* existing, persistent Atrium Checkers match authority via the hosting service, not compute rules or authenticate players inside the client. This source pass narrows the browser/Tavi gap without claiming that the production Social and LoopRD interfaces have been activated.
+
+== Implemented source
+
+* `web/games/checkers-remote.html`, `.css`, and `.mjs`: a keyboard/button accessible game launcher that accepts a match identifier. A match ID is a selector, never an access credential.
+* `src/checkers_remote_entry.mjs`: mounts the existing `CheckersRemoteClient` and `mountRemoteCheckers`, uses same-origin `fetch` with no redirects, lets the server identify its player/seat, polls visible state and stops polling on destruction. Bad match IDs are rejected before any request; unauthorized joins fail closed and do not start a guest game.
+* `tools/build.mjs` and `tools/verify_web.mjs`: compile and assert exact web files using relative Pages-safe import paths. Do not insert this page in the reviewed public catalog. TaviX 1.0.4 remains immutable and unchanged.
+* `tests/checkers_remote_entry.test.mjs`: five deterministic launcher, move, denied session, poll and authority-isolation tests.
+* `tests/test_checkers_boundary_contract.py`: two source-level tests ensuring generic lobby/catalog and Tavi extension files do not import or implement Checkers game authority.
+
+== Transport contract
+
+For a hosted deployment the page and API must share the same trusted HTTPS origin, with authenticated and CSRF-protected POST requests. The host must supply its own user session and accepted Social challenge/seat verifier to `CheckersTrustedHost`, then expose authorized operations from `CheckersTrustedRoutes` at `/games/checkers/matches/{id}` and its approved subroutes. That deployment work is *not implemented* in this package and must be completed only after the Social/LoopRD owners approve the actual credential and challenge contract.
+
+A literal match identifier, including one copied into a browser, is **never** authentication or proof of a seat. The client never reads, constructs, transmits or persists a Social bearer, user ID, seat selection or server secret. It renders only server-returned state and legal action paths. When Social sessions or protected routes do not exist, requests fail and the player does not silently launch an offline fallback. The Pages portal does not advertise this unreviewed player.
+
+== QA and limits
+
+Existing source Checkers QA groups exercise a 53-move complete game with two fixture network sessions, persistent SQLite, replay, restart and security denial. These are *not* two real accounts. Tests here additionally prove UI transport behavior and the absence of game-rule imports outside the game authority.
+
+Required after this source pass:
+
+. Pin and verify exact 0.5.61 GitHub CI, including the official ZipRunner package validator and independent Windows build.
+. Refresh installed Windows ZipRunner post-update checks; record human decisions separately.
+. Implement and review trusted Social session and accepted-challenge lookup in the owning Social service, and bind it into LoopRD's real transport with TLS, CSRF, rate limits and bounded requests. No user ID is a substitute for a verified session.
+. Serve the player on the authenticated match host's HTTPS origin; obtain two actual accounts, one Tavi embedded client and one standalone browser, and complete/resume a game in both.
+. Only after explicit operator acceptance and approvals, register/publish the reviewed game in the Atrium catalog and TaviX. No git push, tag, Pages publication or release is implied by `npm run build`.
+
+Current TaviX bundled release remains the pinned 1.0.4 source; this artifact does not overwrite a later installed TaviX or expose unapproved auth capabilities.

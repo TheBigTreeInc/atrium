@@ -17,4 +17,15 @@ for(const [source,target] of [
  ['web/games/market-grove-app.js','market-grove-app.js'],
  ['web/games/market-grove-style.css','market-grove-style.css'],
 ]) await copyFile(path.join(root,source),path.join(out,'games','market-grove',target));
+// Source-only hosted multiplayer player: deliberately NOT entered into catalog.json.
+// The actual host must configure Social session verification and LoopRD match routes.
+await mkdir(path.join(out,'games'),{recursive:true});
+for(const [source,target] of [
+ ['web/games/checkers-remote.html','games/checkers-remote.html'],
+ ['web/games/checkers-remote.css','games/checkers-remote.css'],
+ ['web/games/checkers-remote.mjs','games/checkers-remote.mjs'],
+ ['src/checkers_remote_client.mjs','src/checkers_remote_client.mjs'],
+ ['src/checkers_remote_view.mjs','src/checkers_remote_view.mjs'],
+ ['src/checkers_remote_entry.mjs','src/checkers_remote_entry.mjs'],
+]) await copyFile(path.join(root,source),path.join(out,target));
 console.log('static web output at dist/ (not deployed)');

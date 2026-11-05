@@ -32,6 +32,17 @@ if (catalog.apps.length) {
   assert.equal(createHash('sha256').update(asset).digest('hex'),app.sha256,'staged HTML must match catalog digest');
 }
 
+// Hosted Checkers page is a non-cataloged player, not a claim of live auth.
+const playerPage=await readFile(path.join(dist,'games/checkers-remote.html'),'utf8');
+const playerEntry=await readFile(path.join(dist,'games/checkers-remote.mjs'),'utf8');
+const player=await readFile(path.join(dist,'src/checkers_remote_entry.mjs'),'utf8');
+await stat(path.join(dist,'games/checkers-remote.css'));
+for(const file of ['checkers_remote_client.mjs','checkers_remote_view.mjs'])
+ await stat(path.join(dist,'src',file));
+assert(playerPage.includes('./checkers-remote.mjs') && playerEntry.includes("'../src/checkers_remote_entry.mjs'"));
+assert(player.includes('sameOriginMatchTransport') && player.includes('Match unavailable or access denied'));
+assert(!playerPage.includes('Bearer ') && !playerEntry.includes('Authorization'));
+assert(!catalog.apps.some(app=>app.id==='atrium.checkers.hosted'));
 const index=await readFile(path.join(dist,'index.html'),'utf8');
 assert(index.includes('src="./main.mjs"'),'Pages must use subpath-safe relative JS');
 assert(index.includes('id="multiplayerLab"'),'UI preview must remain reachable with an empty catalog');

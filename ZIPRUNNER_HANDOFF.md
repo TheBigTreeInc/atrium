@@ -1,3 +1,7 @@
+# Atrium 0.5.61 source-only Checkers hosted player
+
+Built on exact 0.5.60 CI success: https://github.com/TheBigTreeInc/atrium/actions/runs/42037625554. Adds `web/games/checkers-remote.html`, its secure same-origin entry and five browser tests plus two generic/Tavi rule-ownership checks. The hosted player is not registered in a public catalog or activated in LoopRD and contains no guest or Social credentials. 0.5.61 exact CI, native Windows/operator acceptance, Social accepted-lobby admission and the real Tavi/browser match remain open. See `docs/P1_105_CHECKERS_HOSTED_PLAYER_061.adoc`.
+
 # Atrium 0.5.60 remote Checkers client and board (source-only)
 
 Builds on 0.5.59 exact successful CI run 42029745669. Adds server-authoritative remote match client and shared, rules-free board surface with retry-safe revisions. No live Social login, LoopRD route activation, Tavi/browser match or operator approval. Workboard operator decisions unchanged.

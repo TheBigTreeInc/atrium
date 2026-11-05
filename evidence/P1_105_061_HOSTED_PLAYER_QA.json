@@ -1,0 +1,62 @@
+{
+  "schema": "atrium.source-qa-evidence/v1",
+  "project": "atrium",
+  "version": "0.5.61",
+  "scope": "source-only-hosted-player-not-production",
+  "source_sha256": "8c8256c7b757854152567df63e169c3d6b71a1669bc8f13f43b10e9b156adfbe",
+  "base_ci": {
+    "sha": "0d406ecac575ecad5d96706f804cc0328aa9a60c",
+    "run": "https://github.com/TheBigTreeInc/atrium/actions/runs/42037625554",
+    "linux": "success",
+    "windows": "success"
+  },
+  "observed": {
+    "hosted_player_node": {
+      "passed": 5,
+      "failed": 0
+    },
+    "generic_tavi_boundary_python": {
+      "passed": 2,
+      "failed": 0
+    },
+    "full_python_unittest_discover": {
+      "passed": 371,
+      "failed": 0,
+      "log": "evidence/P1_105_061_PYTHON_TESTS.txt"
+    },
+    "full_node_test": {
+      "passed": 80,
+      "failed": 0,
+      "log": "evidence/P1_105_061_NODE_TESTS.txt"
+    },
+    "checkers_disposable_group_qa": {
+      "passed": 24,
+      "failed": 0,
+      "evidence": "evidence/P1_105_061_CHECKERS_GROUP_QA.json"
+    },
+    "static_web_build": {
+      "status": "passed",
+      "log": "evidence/P1_105_061_WEB_BUILD.txt"
+    },
+    "static_web_verify": {
+      "status": "passed",
+      "log": "evidence/P1_105_061_WEB_VERIFY.txt"
+    },
+    "tavix_immutable_manifest_sha_unchanged": true,
+    "package_release_contracts": {
+      "passed": 15,
+      "failed": 0,
+      "note": "Source targeted suite; additional 2 Checkers contract tests passed"
+    }
+  },
+  "remaining": [
+    "0.5.61 official pinned ZipRunner validator and exact-commit GitHub CI",
+    "Fresh installed Windows post-update QA and human acceptance",
+    "Real Social session/challenge proof",
+    "Production LoopRD game API",
+    "Tavi and browser live two-account match",
+    "Operator-approved release"
+  ],
+  "operator_accepted": false,
+  "release_authorized": false
+}

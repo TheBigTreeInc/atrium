@@ -1,0 +1,5 @@
+
+> atrium@0.5.61 verify
+> node tools/verify_web.mjs
+
+Verified Pages-safe static portal assets (publication is operator-triggered)

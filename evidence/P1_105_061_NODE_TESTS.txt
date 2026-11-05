@@ -1,0 +1,494 @@
+
+> atrium@0.5.61 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: accept approved immutable origin
+ok 1 - accept approved immutable origin
+  ---
+  duration_ms: 1.052102
+  type: 'test'
+  ...
+# Subtest: deny unknown origin
+ok 2 - deny unknown origin
+  ---
+  duration_ms: 0.421378
+  type: 'test'
+  ...
+# Subtest: deny URL query and fragments
+ok 3 - deny URL query and fragments
+  ---
+  duration_ms: 1.196371
+  type: 'test'
+  ...
+# Subtest: deny HTTP except explicit localhost mode
+ok 4 - deny HTTP except explicit localhost mode
+  ---
+  duration_ms: 0.225672
+  type: 'test'
+  ...
+# Subtest: requires SHA256 integrity metadata
+ok 5 - requires SHA256 integrity metadata
+  ---
+  duration_ms: 0.188886
+  type: 'test'
+  ...
+# Subtest: pre-mount approval guard prevents any iframe from rendering on revocation
+ok 6 - pre-mount approval guard prevents any iframe from rendering on revocation
+  ---
+  duration_ms: 6.982448
+  type: 'test'
+  ...
+# Subtest: public snapshot accepted with no API secrets
+ok 7 - public snapshot accepted with no API secrets
+  ---
+  duration_ms: 1.196881
+  type: 'test'
+  ...
+# Subtest: reject malformed snapshot and unsafe app entries
+ok 8 - reject malformed snapshot and unsafe app entries
+  ---
+  duration_ms: 0.642012
+  type: 'test'
+  ...
+# Subtest: fetch only sends anonymous no-store request
+ok 9 - fetch only sends anonymous no-store request
+  ---
+  duration_ms: 0.366896
+  type: 'test'
+  ...
+# Subtest: configured live HTTPS catalog source is public and fail closed
+ok 10 - configured live HTTPS catalog source is public and fail closed
+  ---
+  duration_ms: 0.702073
+  type: 'test'
+  ...
+# Subtest: source config fetched anonymously and an unavailable config never silently falls back
+ok 11 - source config fetched anonymously and an unavailable config never silently falls back
+  ---
+  duration_ms: 0.716855
+  type: 'test'
+  ...
+# Subtest: revocation detects missing or replaced release identities
+ok 12 - revocation detects missing or replaced release identities
+  ---
+  duration_ms: 0.247775
+  type: 'test'
+  ...
+# Subtest: catalog transport failures stay visible on Discover and My Games
+ok 13 - catalog transport failures stay visible on Discover and My Games
+  ---
+  duration_ms: 0.936478
+  type: 'test'
+  ...
+# Subtest: initial board and deterministic Staff match baseline American checkers
+ok 14 - initial board and deterministic Staff match baseline American checkers
+  ---
+  duration_ms: 1.963542
+  type: 'test'
+  ...
+# Subtest: captures mandatory, complete chain required, and legal jump applied
+ok 15 - captures mandatory, complete chain required, and legal jump applied
+  ---
+  duration_ms: 0.630193
+  type: 'test'
+  ...
+# Subtest: crown stops capture chain and upper-case king can move backwards
+ok 16 - crown stops capture chain and upper-case king can move backwards
+  ---
+  duration_ms: 0.305242
+  type: 'test'
+  ...
+# Subtest: invalid board rejected and no privileged runtime bridge is in preview UI
+ok 17 - invalid board rejected and no privileged runtime bridge is in preview UI
+  ---
+  duration_ms: 4.237443
+  type: 'test'
+  ...
+# Subtest: staging is explicitly scoped to static Pages, content hashed, repeatable and verifiable
+ok 18 - staging is explicitly scoped to static Pages, content hashed, repeatable and verifiable
+  ---
+  duration_ms: 27.148821
+  type: 'test'
+  ...
+# Subtest: bundler requires known source placeholders
+ok 19 - bundler requires known source placeholders
+  ---
+  duration_ms: 0.222647
+  type: 'test'
+  ...
+# Subtest: two separate thin clients observe authoritative revisions; no local move evaluation
+ok 20 - two separate thin clients observe authoritative revisions; no local move evaluation
+  ---
+  duration_ms: 3.034934
+  type: 'test'
+  ...
+# Subtest: after uncertain network delivery, retry uses identical request ID and payload
+ok 21 - after uncertain network delivery, retry uses identical request ID and payload
+  ---
+  duration_ms: 0.677876
+  type: 'test'
+  ...
+# Subtest: stale conflict clears pending, preserves last good state and permits resync
+ok 22 - stale conflict clears pending, preserves last good state and permits resync
+  ---
+  duration_ms: 0.348898
+  type: 'test'
+  ...
+# Subtest: IDs and response structure fail closed; stale legal-actions requires refresh
+ok 23 - IDs and response structure fail closed; stale legal-actions requires refresh
+  ---
+  duration_ms: 0.387616
+  type: 'test'
+  ...
+# Subtest: same-origin adapter sends only relative path, no identity, and no redirects
+ok 24 - same-origin adapter sends only relative path, no identity, and no redirects
+  ---
+  duration_ms: 0.549172
+  type: 'test'
+  ...
+# Subtest: browser match client contains no rules engine, Tavi session token, or local persistent authority
+ok 25 - browser match client contains no rules engine, Tavi session token, or local persistent authority
+  ---
+  duration_ms: 0.424693
+  type: 'test'
+  ...
+# Subtest: hosted board joins a verified same-origin match and sends server-authorized moves
+ok 26 - hosted board joins a verified same-origin match and sends server-authorized moves
+  ---
+  duration_ms: 4.46652
+  type: 'test'
+  ...
+# Subtest: match ID is a selector, not a grant; rejects malformed IDs before network calls
+ok 27 - match ID is a selector, not a grant; rejects malformed IDs before network calls
+  ---
+  duration_ms: 0.289087
+  type: 'test'
+  ...
+# Subtest: failed Social-hosted session does not mount a guest board or start polling
+ok 28 - failed Social-hosted session does not mount a guest board or start polling
+  ---
+  duration_ms: 0.397651
+  type: 'test'
+  ...
+# Subtest: polling refreshes server state only when active and visible, and stops on destroy
+ok 29 - polling refreshes server state only when active and visible, and stops on destroy
+  ---
+  duration_ms: 4.323143
+  type: 'test'
+  ...
+# Subtest: built player is isolated from local Checkers engine and is not advertised as a reviewed release
+ok 30 - built player is isolated from local Checkers engine and is not advertised as a reviewed release
+  ---
+  duration_ms: 0.564705
+  type: 'test'
+  ...
+# Subtest: board follows only server-provided full capture paths
+ok 31 - board follows only server-provided full capture paths
+  ---
+  duration_ms: 4.159095
+  type: 'test'
+  ...
+# Subtest: remote board surface cannot calculate or persist authoritative moves
+ok 32 - remote board surface cannot calculate or persist authoritative moves
+  ---
+  duration_ms: 1.326287
+  type: 'test'
+  ...
+# Subtest: reusable board view renders 64 cells and submits only a server-advertised full path
+ok 33 - reusable board view renders 64 cells and submits only a server-advertised full path
+  ---
+  duration_ms: 1.502735
+  type: 'test'
+  ...
+# Subtest: hide duplicate return only for authenticated host-info shape
+ok 34 - hide duplicate return only for authenticated host-info shape
+  ---
+  duration_ms: 4.705582
+  type: 'test'
+  ...
+# Subtest: default source publishes NO games
+ok 35 - default source publishes NO games
+  ---
+  duration_ms: 1.080545
+  type: 'test'
+  ...
+# Subtest: only explicit reviewed and bound Life record can appear
+ok 36 - only explicit reviewed and bound Life record can appear
+  ---
+  duration_ms: 1.603597
+  type: 'test'
+  ...
+# Subtest: reject duplicate deployments, extra fields and cred-containing redirects
+ok 37 - reject duplicate deployments, extra fields and cred-containing redirects
+  ---
+  duration_ms: 0.282127
+  type: 'test'
+  ...
+# Subtest: public retrieval has no bearer/cookies and errors fail closed
+ok 38 - public retrieval has no bearer/cookies and errors fail closed
+  ---
+  duration_ms: 0.319443
+  type: 'test'
+  ...
+# Subtest: operator HTTPS hosted catalog source must be reviewed and never accept credentials
+ok 39 - operator HTTPS hosted catalog source must be reviewed and never accept credentials
+  ---
+  duration_ms: 0.695633
+  type: 'test'
+  ...
+# Subtest: configured hosted catalogue loads public source and review without bearer
+ok 40 - configured hosted catalogue loads public source and review without bearer
+  ---
+  duration_ms: 0.394918
+  type: 'test'
+  ...
+# Subtest: operator-approved second hosted game can be listed without Life hardcoding
+ok 41 - operator-approved second hosted game can be listed without Life hardcoding
+  ---
+  duration_ms: 0.255446
+  type: 'test'
+  ...
+# Subtest: offline preview configuration explicitly says not connected rather than zero published games
+ok 42 - offline preview configuration explicitly says not connected rather than zero published games
+  ---
+  duration_ms: 0.293765
+  type: 'test'
+  ...
+# Subtest: exact approved deployment and route required
+ok 43 - exact approved deployment and route required
+  ---
+  duration_ms: 2.691895
+  type: 'test'
+  ...
+# Subtest: Life transport requires audience-bound token and never navigates via it
+ok 44 - Life transport requires audience-bound token and never navigates via it
+  ---
+  duration_ms: 0.775243
+  type: 'test'
+  ...
+# Subtest: internal-only Life capabilities cannot authorize live lobby
+ok 45 - internal-only Life capabilities cannot authorize live lobby
+  ---
+  duration_ms: 0.673078
+  type: 'test'
+  ...
+# Subtest: resume launch is opaque and external by default; no challenge-created match
+ok 46 - resume launch is opaque and external by default; no challenge-created match
+  ---
+  duration_ms: 1.474542
+  type: 'test'
+  ...
+# Subtest: Life 0.5.95 public info is reachable without a game bearer; POST requires it
+ok 47 - Life 0.5.95 public info is reachable without a game bearer; POST requires it
+  ---
+  duration_ms: 1.319227
+  type: 'test'
+  ...
+# Subtest: Life gateway errors are never treated as valid lobby replies
+ok 48 - Life gateway errors are never treated as valid lobby replies
+  ---
+  duration_ms: 0.367155
+  type: 'test'
+  ...
+# Subtest: strict Atrium contract rejects invented live capabilities and malformed envelopes
+ok 49 - strict Atrium contract rejects invented live capabilities and malformed envelopes
+  ---
+  duration_ms: 2.824104
+  type: 'test'
+  ...
+# Subtest: match projection discards game-injected URLs/hidden secrets and rejects invalid deadlines
+ok 50 - match projection discards game-injected URLs/hidden secrets and rejects invalid deadlines
+  ---
+  duration_ms: 1.284194
+  type: 'test'
+  ...
+# Subtest: mock Life allows create / invite / one-use join / resume without browsers or Social
+ok 51 - mock Life allows create / invite / one-use join / resume without browsers or Social
+  ---
+  duration_ms: 2.423538
+  type: 'test'
+  ...
+# Subtest: preview has a 60h policy and a no-deadline alternative, never a 48h room TTL
+ok 52 - preview has a 60h policy and a no-deadline alternative, never a 48h room TTL
+  ---
+  duration_ms: 0.693269
+  type: 'test'
+  ...
+# Subtest: mock is locally isolated and source includes no credential forwarding or network calls
+ok 53 - mock is locally isolated and source includes no credential forwarding or network calls
+  ---
+  duration_ms: 0.763616
+  type: 'test'
+  ...
+# Subtest: Atrium is a phone-first game store and lobby
+ok 54 - Atrium is a phone-first game store and lobby
+  ---
+  duration_ms: 0.799581
+  type: 'test'
+  ...
+# Subtest: trusted LoopRD catalog is the hosted-game source
+ok 55 - trusted LoopRD catalog is the hosted-game source
+  ---
+  duration_ms: 0.293024
+  type: 'test'
+  ...
+# Subtest: TaviX extension uses immutable 1.0.4 and only panel permission
+ok 56 - TaviX extension uses immutable 1.0.4 and only panel permission
+  ---
+  duration_ms: 1.5067
+  type: 'test'
+  ...
+# Subtest: TaviX SDK is used for scoped navigation, not a private host broker
+ok 57 - TaviX SDK is used for scoped navigation, not a private host broker
+  ---
+  duration_ms: 0.473798
+  type: 'test'
+  ...
+# Subtest: one shared Atrium web source, with SDK packaged as extension-only asset
+ok 58 - one shared Atrium web source, with SDK packaged as extension-only asset
+  ---
+  duration_ms: 1.719302
+  type: 'test'
+  ...
+# Subtest: TaviX advertised surface first, Life-only opt-in legacy fallback
+ok 59 - TaviX advertised surface first, Life-only opt-in legacy fallback
+  ---
+  duration_ms: 1.140636
+  type: 'test'
+  ...
+# Subtest: hosted game refreshes publication before Tavi surface or browser
+ok 60 - hosted game refreshes publication before Tavi surface or browser
+  ---
+  duration_ms: 0.230179
+  type: 'test'
+  ...
+# Subtest: no bearer tokens or popup privilege in TaviX bridge
+ok 61 - no bearer tokens or popup privilege in TaviX bridge
+  ---
+  duration_ms: 0.155575
+  type: 'test'
+  ...
+# Subtest: Atrium builds once and stages only after the verified build
+ok 62 - Atrium builds once and stages only after the verified build
+  ---
+  duration_ms: 7.044396
+  type: 'test'
+  ...
+# Subtest: Windows ZipRunner checkout requires the adjacent TaviX Git repository
+ok 63 - Windows ZipRunner checkout requires the adjacent TaviX Git repository
+  ---
+  duration_ms: 0.408088
+  type: 'test'
+  ...
+# Subtest: Explicit TaviX path override honored without allowing Windows skip
+ok 64 - Explicit TaviX path override honored without allowing Windows skip
+  ---
+  duration_ms: 0.178199
+  type: 'test'
+  ...
+# Subtest: GitHub-hosted Windows CI may skip while operator Windows stays mandatory
+ok 65 - GitHub-hosted Windows CI may skip while operator Windows stays mandatory
+  ---
+  duration_ms: 0.232391
+  type: 'test'
+  ...
+# Subtest: Standalone Linux CI may skip, but explicit required flag remains binding
+ok 66 - Standalone Linux CI may skip, but explicit required flag remains binding
+  ---
+  duration_ms: 0.121934
+  type: 'test'
+  ...
+# Subtest: npm run build cannot report success when required TaviX staging is absent
+ok 67 - npm run build cannot report success when required TaviX staging is absent
+  ---
+  duration_ms: 313.746516
+  type: 'test'
+  ...
+# Subtest: npm run build invokes staging and verifies the output release and index
+ok 68 - npm run build invokes staging and verifies the output release and index
+  ---
+  duration_ms: 341.986057
+  type: 'test'
+  ...
+# Subtest: configuration is ordered before compilation and version selection is source controlled
+ok 69 - configuration is ordered before compilation and version selection is source controlled
+  ---
+  duration_ms: 1.476665
+  type: 'test'
+  ...
+# Subtest: approved HTTPS hosted gateway creates separate 1.0.6, never mutates offline 1.0.4
+ok 70 - approved HTTPS hosted gateway creates separate 1.0.6, never mutates offline 1.0.4
+  ---
+  duration_ms: 1590.484437
+  type: 'test'
+  ...
+# Subtest: stage verification rejects an index older than the requested release
+ok 71 - stage verification rejects an index older than the requested release
+  ---
+  duration_ms: 66.525118
+  type: 'test'
+  ...
+# Subtest: offline 1.0.4 assets are checksum-pinned and never regenerated from changing shared UI
+ok 72 - offline 1.0.4 assets are checksum-pinned and never regenerated from changing shared UI
+  ---
+  duration_ms: 6.288157
+  type: 'test'
+  ...
+# Subtest: feature-advertised TaviX host opens generic surface without player credentials
+ok 73 - feature-advertised TaviX host opens generic surface without player credentials
+  ---
+  duration_ms: 1.877511
+  type: 'test'
+  ...
+# Subtest: TaviX accepts optional existing match context without passing identity
+ok 74 - TaviX accepts optional existing match context without passing identity
+  ---
+  duration_ms: 0.38353
+  type: 'test'
+  ...
+# Subtest: older Tavi supports negotiated Life resume only
+ok 75 - older Tavi supports negotiated Life resume only
+  ---
+  duration_ms: 0.97784
+  type: 'test'
+  ...
+# Subtest: host without capability requires explicit browser choice rather than fake success
+ok 76 - host without capability requires explicit browser choice rather than fake success
+  ---
+  duration_ms: 0.228546
+  type: 'test'
+  ...
+# Subtest: reject bad surface targets and match IDs before any host request
+ok 77 - reject bad surface targets and match IDs before any host request
+  ---
+  duration_ms: 0.42318
+  type: 'test'
+  ...
+# Subtest: Return to Tavi uses TaviX navigation.close when host advertises the standard
+ok 78 - Return to Tavi uses TaviX navigation.close when host advertises the standard
+  ---
+  duration_ms: 0.247504
+  type: 'test'
+  ...
+# Subtest: reviewed surface revalidates the exact currently published deployment and launch target
+ok 79 - reviewed surface revalidates the exact currently published deployment and launch target
+  ---
+  duration_ms: 2.231717
+  type: 'test'
+  ...
+# Subtest: TaviX requested match selector contains no credential or browser query
+ok 80 - TaviX requested match selector contains no credential or browser query
+  ---
+  duration_ms: 0.269858
+  type: 'test'
+  ...
+1..80
+# tests 80
+# suites 0
+# pass 80
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2727.862738

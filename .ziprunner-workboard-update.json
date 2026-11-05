@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.60",
-  "summary": "0.5.60 Checkers remote thin client and board added for review; existing decisions unchanged, live Social/LoopRD and operator approval pending.",
+  "version": "0.5.61",
+  "summary": "0.5.61 host-neutral, non-cataloged Checkers player with same-origin session-bound transport, server legal actions and polling; live Social/LoopRD/Tavi activation and all operator decisions remain open.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -444,6 +444,17 @@
         "Confirm browser and Tavi bindings use trusted host-authenticated transports, not client-submitted identity or a local authoritative game engine.",
         "Run exact-ZIP Node tests and Checkers disposable network QA; verify official pinned ZipRunner and DAPI checks on the exact new commit.",
         "Verify real Social session/challenge authority, deployed LoopRD routes, two real Tavi/browser accounts, Windows post-update checks and human release approval separately."
+      ]
+    },
+    {
+      "id": "ATR-162-CHECKERS-HOSTED-PLAYER",
+      "title": "Host-neutral Checkers player page and strict game-ownership boundary QA",
+      "summary": "Provide a no-login, rules-free browser/Tavi-compatible player page that requires server-side Social session authorization on the same origin. Fail closed on denied joins, use only authorized server legal paths, poll while visible, and do not publish/register the game or modify immutable TaviX bytes.",
+      "priority": "high",
+      "operator_checks": [
+        "Review built checkers-remote.html + modules: no client identity token, local game engine, implicit guest login, match authority or advertised catalog entry.",
+        "Verify 5 hosted-player Node QA and 2 structural module-ownership tests with source and extracted-ZIP runs; confirm the static web build and immutable TaviX bytes.",
+        "Real Social session, accepted challenge, protected LoopRD /games/checkers/matches routes, two real clients, installed Windows acceptance and publication remain separately operator-gated."
       ]
     }
   ],

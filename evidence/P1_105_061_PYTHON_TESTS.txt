@@ -1,0 +1,31 @@
+[build-env] Reusing verified isolated .venv
+[atrium-tests] Legacy ZipRunner Python: using ABI-matched project .venv dependencies
+[atrium-tests] Legacy recipe detected; bootstrapping isolated .venv
+[atrium-tests] Legacy ZipRunner Python: using ABI-matched project .venv dependencies
+[atrium-tests] Legacy ZipRunner Python: using ABI-matched project .venv dependencies
+[atrium-python] /mnt/data/atrium_work_061/.venv/bin/python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop
+[atrium-python] /mnt/data/atrium_work_061/.venv/bin/python tools/build_registry_spec.py --check
+[atrium-python] /mnt/data/atrium_work_061/.venv/bin/python tools/build_registration_spec.py --check
+[atrium-python] /mnt/data/atrium_work_061/.venv/bin/python tools/build_spec.py --check
+[atrium-python] /mnt/data/atrium_work_061/.venv/bin/python tools/check_specs.py
+[atrium-python] /mnt/data/atrium_work_061/.venv/bin/python -m unittest discover -s tests -v
+[atrium-python] All Python source checks passed
+127.0.0.1 - - [05/Nov/2026 13:50:21] "GET /catalog.json HTTP/1.1" 200 -
+127.0.0.1 - - [05/Nov/2026 13:50:21] "OPTIONS /catalog.json HTTP/1.1" 204 -
+127.0.0.1 - - [05/Nov/2026 13:50:21] "OPTIONS /catalog.json HTTP/1.1" 403 -
+127.0.0.1 - - [05/Nov/2026 13:50:21] "GET /registry/publishers HTTP/1.1" 404 -
+127.0.0.1 - - [05/Nov/2026 13:50:21] "GET /catalog.json?token=secret HTTP/1.1" 404 -
+127.0.0.1 - - [05/Nov/2026 13:50:21] "HEAD /catalog.json HTTP/1.1" 405 -
+127.0.0.1 - - [05/Nov/2026 13:50:22] "GET /catalog.json HTTP/1.1" 200 -
+127.0.0.1 - - [05/Nov/2026 13:50:22] "GET /catalog.json HTTP/1.1" 503 -
+127.0.0.1 - - [05/Nov/2026 13:50:24] "GET /catalog.json HTTP/1.1" 200 -
+127.0.0.1 - - [05/Nov/2026 13:50:24] "GET /catalog.json HTTP/1.1" 200 -
+127.0.0.1 - - [05/Nov/2026 13:50:24] "GET /catalog.json HTTP/1.1" 200 -
+127.0.0.1 - - [05/Nov/2026 13:50:25] "GET /catalog.json HTTP/1.1" 200 -
+127.0.0.1 - - [05/Nov/2026 13:50:25] "GET /catalog.json HTTP/1.1" 503 -
+----------------------------------------------------------------------
+Ran 371 tests in 64.294s
+
+OK
+Atrium composition: one component, 6 resources, 15 models, 24 handlers (source lint)
+Atrium composition: one component, 6 resources, 15 models, 24 handlers (source lint)

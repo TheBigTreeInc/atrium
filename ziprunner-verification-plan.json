@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.60",
+  "version": "0.5.61",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -905,6 +905,27 @@
           "mode": "manual",
           "checks": [
             "ATR-161-CHECKERS-REMOTE-THIN-CLIENT-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-162-CHECKERS-HOSTED-PLAYER",
+      "criteria": [
+        {
+          "id": "ATR-162-CHECKERS-HOSTED-PLAYER-AC-SOURCE",
+          "description": "Hosted player joins only server-authorized existing matches, uses server legal-action paths and same-origin transport, fails closed on unauthorized session and does not register production/public catalog.",
+          "mode": "automated",
+          "checks": [
+            "ATR-162-CHECKERS-HOSTED-PLAYER-T1"
+          ]
+        },
+        {
+          "id": "ATR-162-CHECKERS-HOSTED-PLAYER-AC-OPERATOR",
+          "description": "Review live Social/LoopRD host session verification, Tavi/browser embedding, exact-version Windows QA and human approval independently.",
+          "mode": "manual",
+          "checks": [
+            "ATR-162-CHECKERS-HOSTED-PLAYER-M1"
           ]
         }
       ]
@@ -1862,6 +1883,26 @@
       "stage": "acceptance",
       "description": "Review live Social/LoopRD and real Tavi/browser multiplayer separately",
       "instructions": "Verify production Social session and accepted challenge trust, operator-hosted secured Checkers routes, two real accounts and full Tavi-to-browser game; do not infer live acceptance from fixtures."
+    },
+    {
+      "id": "ATR-162-CHECKERS-HOSTED-PLAYER-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Checkers hosted-player source ownership, session-denial and server-legal paths",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/checkers_remote_entry.test.mjs",
+      "assertions": [
+        "Server-owned legal path and revision only; no local rules or identity",
+        "Authenticated same-origin join denies a missing or invalid session",
+        "Unpublished static page available without changing reviewed catalog"
+      ]
+    },
+    {
+      "id": "ATR-162-CHECKERS-HOSTED-PLAYER-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Approve live Social-authenticated LoopRD and Tavi/browser host separately",
+      "instructions": "Prove real two-account Tavi/browser game over deployed authorized LoopRD routes, accepted Social challenge, fresh native Windows QA, operator and release approval. A standalone Pages page is not a live match."
     }
   ]
 }
