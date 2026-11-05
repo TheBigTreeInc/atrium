@@ -1,0 +1,25 @@
+= Atrium 0.5.60: rules-free Checkers remote client and shared board surface
+:revdate: 2026-11-05
+:toc:
+
+== Evidence and scope
+
+The exact 0.5.59 GitHub push `6c9ff6c08d2f8ba2ed46a513c1f72ed18e7260af` completed the Linux pinned DAPI + ZipRunner validator and Windows recipe jobs successfully: https://github.com/TheBigTreeInc/atrium/actions/runs/42029745669 . This clears the source-CI dependency, not 0.5.59 human operator acceptance.
+
+This 0.5.60 candidate adds a _shared client_ and _board view_ for one Checkers match. Neither module creates a game server, authenticates an account, evaluates legal moves or stores match state persistently. The existing server-owned `CheckersMatchAuthority`, `CheckersTrustedHost`, and `CheckersTrustedRoutes` remain the only source authority for turns, captures and winner.
+
+== Host and client contract
+
+`src/checkers_remote_client.mjs` exports `CheckersRemoteClient({transport, matchId, requestIdFactory})`. The host injects an authenticated `transport({method,path,body}) -> {status,body}`. The client never supplies seat, subject, issuer, profile, bearer, cookie, login grant or CSRF token. The operator's real Social/LoopRD host MUST separately validate the real account session, accepted original challenge, authorization, TLS/CSRF/CORS and rate limits. This source module cannot supply these services.
+
+Operations are limited to `POST /games/checkers/matches/{id}/join`, `GET /games/checkers/matches/{id}`, `GET /games/checkers/matches/{id}/legal-actions`, and `POST /games/checkers/matches/{id}/moves`. No unsafe unbounded URLs or extraneous client identity fields. `sameOriginMatchTransport(fetch)` is a same-origin browser convenience: HTTPS deployment and a server-managed authenticated session must already be in place. A cross-origin Tavi app MUST use a separately reviewed, host-owned transport. The API returns server-owned revisions, board, turn, winner, and legal paths.
+
+`move()` uses one unique request ID for each attempted move. If the response is lost after the server commits the turn, the client retains the **same** ID and body and allows an explicit `retryPending()`. Confirmed server rejections clear the pending move, and revision conflicts require a fresh authoritative read. A delayed status refresh cannot roll back a newer observed revision. No local rule evaluation or client-side winner calculation is performed.
+
+`src/checkers_remote_view.mjs` provides `mountRemoteCheckers(root,client)` and `selectServerPath(actions,selection,square)`. It renders the server board and lets the user follow only returned legal-action paths. It supplies manual refresh and explicit uncertain-delivery retry controls. It is intentionally a library, not a published Pages game or active TaviX extension. Game rules remain on the server.
+
+== Verification and outstanding deployment gates
+
+New Node tests cover two independent client objects observing server-owned revisions, retry idempotency, stale revision resync, invalid response/identifier rejection, same-origin no-identity transport, server-supplied full captures, and thin-client rule-boundary regression. Existing disposable Python network tests still execute a complete fixture-only Checkers match, including 53 server-controlled moves. These are **not** live Tavi/Social session tests.
+
+Remaining: review and install the real Social account verifier and accepted challenge provider; mount authenticated Match routes in an operator-controlled LoopRD deployment; bind a verified transport in a standalone browser; bind the same contract in Tavi's approved game surface; perform two real-account full-match acceptance, restart and network-error QA. Preserve exact installed ZIP post-update checks, human acceptance, Workboard statuses and release authorization independently. No automatic Git push, publication, TaviX overwrite or server activation is authorized.

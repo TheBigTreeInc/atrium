@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.59",
-  "summary": "0.5.59 pinned ZipRunner evidence_ref schema repair after 0.5.58 Linux CI failure; preserve all previous decisions and no gameplay/public activation.",
+  "version": "0.5.60",
+  "summary": "0.5.60 Checkers remote thin client and board added for review; existing decisions unchanged, live Social/LoopRD and operator approval pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -433,6 +433,17 @@
         "Check exact 0.5.59 ZIP includes the original source-QA evidence artifact, every passed manifest check resolves to packaged evidence, and negative metadata regressions fail before packaging.",
         "Verify exact 0.5.59 GitHub CI including official pinned package validator and independent Windows job before further development; do not infer CI from local tests.",
         "Run Windows ZipRunner fresh checks and record human acceptance and release authorization separately; do not activate public Checkers or Tavi integrations."
+      ]
+    },
+    {
+      "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT",
+      "title": "Reusable rules-free remote Checkers client and shared board",
+      "summary": "Add transport-injected match client and reusable board, using server-owned revisions/legal-action paths only. Handle uncertain turn responses by retrying exactly one request ID, reject malformed responses and unsafe paths, and keep production Social/Tavi authentication and LoopRD routes unactivated.",
+      "priority": "high",
+      "operator_checks": [
+        "Confirm browser and Tavi bindings use trusted host-authenticated transports, not client-submitted identity or a local authoritative game engine.",
+        "Run exact-ZIP Node tests and Checkers disposable network QA; verify official pinned ZipRunner and DAPI checks on the exact new commit.",
+        "Verify real Social session/challenge authority, deployed LoopRD routes, two real Tavi/browser accounts, Windows post-update checks and human release approval separately."
       ]
     }
   ],

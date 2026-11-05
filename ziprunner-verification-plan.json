@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.59",
+  "version": "0.5.60",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -884,6 +884,27 @@
           "mode": "manual",
           "checks": [
             "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT",
+      "criteria": [
+        {
+          "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT-AC-SOURCE",
+          "description": "Thin client/view consume only server-returned state and legal paths, preserve idempotent move IDs and reject unauthorized/invalid transport responses.",
+          "mode": "automated",
+          "checks": [
+            "ATR-161-CHECKERS-REMOTE-THIN-CLIENT-T1"
+          ]
+        },
+        {
+          "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT-AC-OPERATOR",
+          "description": "Confirm real Social/LoopRD and Tavi/browser deployments, independently authenticated accounts and operator approval.",
+          "mode": "manual",
+          "checks": [
+            "ATR-161-CHECKERS-REMOTE-THIN-CLIENT-M1"
           ]
         }
       ]
@@ -1821,6 +1842,26 @@
       "stage": "acceptance",
       "description": "0.5.59 pinned official package validation and installed operator checks",
       "instructions": "Confirm approved 0.5.59 GitHub exact push passes Linux pinned ZipRunner validator and Windows, then run fresh installed ZipRunner checks and obtain operator acceptance before any release."
+    },
+    {
+      "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Rules-free Checkers remote client and board contracts",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/checkers_remote_client.test.mjs",
+      "assertions": [
+        "No local authoritative rules or client-controlled identity in remote client/view",
+        "Network-error retry reuses exact request ID and payload",
+        "Server legal paths, revisions and invalid replies are enforced by the thin client"
+      ]
+    },
+    {
+      "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Review live Social/LoopRD and real Tavi/browser multiplayer separately",
+      "instructions": "Verify production Social session and accepted challenge trust, operator-hosted secured Checkers routes, two real accounts and full Tavi-to-browser game; do not infer live acceptance from fixtures."
     }
   ]
 }

@@ -1,3 +1,7 @@
+# Atrium 0.5.60 remote Checkers client and board (source-only)
+
+Builds on 0.5.59 exact successful CI run 42029745669. Adds server-authoritative remote match client and shared, rules-free board surface with retry-safe revisions. No live Social login, LoopRD route activation, Tavi/browser match or operator approval. Workboard operator decisions unchanged.
+
 # Atrium 0.5.59 ZipRunner passed-evidence contract repair (not a release)
 
 0.5.58 exact GitHub push `0baf1f230bafa7259ea2b2f1b2cf8239f79e1bfc` CI run 42023076428 failed the official pinned package validator at `validation.checks[23] passed requires evidence_ref`; Windows CI passed. This package includes the original bounded 0.5.58 local QA summary and adds package-time checks and negative source regressions. It preserves all fixture-only Checkers behavior. No active Social/LoopRD game API, real Tavi/browser match, Windows operator acceptance or release authorization.

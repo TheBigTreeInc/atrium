@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.59",
-    "base_version": "0.5.58",
-    "source_revision": "0baf1f230bafa7259ea2b2f1b2cf8239f79e1bfc"
+    "version": "0.5.60",
+    "base_version": "0.5.59",
+    "source_revision": "6c9ff6c08d2f8ba2ed46a513c1f72ed18e7260af"
   },
   "update": {
-    "id": "ATR-P1-20261105-059",
+    "id": "ATR-P1-20261105-060",
     "kind": "source_update",
-    "created_at": "2026-11-05T13:25:00+01:00",
-    "summary": "Repair 0.5.58 official pinned ZipRunner validator missing passed-check evidence_ref; package prior 0.5.58 QA evidence and add package-time evidence-ref checks with negative regressions. No Checkers production activation or operator approval."
+    "created_at": "2026-11-05T13:57:07+01:00",
+    "summary": "Provide rules-free Checkers network client and reusable board for authenticated browser/Tavi embedding, with retry-safe move submissions and server legal-actions only; preserve all operator gates."
   },
   "planned_work": [
     {
@@ -301,6 +301,12 @@
       "title": "Enforce pinned ZipRunner passed-check evidence references before packaging",
       "priority": "critical",
       "acceptance_criteria": "Pinned ZipRunner validator accepts 0.5.59 package validation checks; a passed check always references packaged evidence or valid HTTPS. Package preflight and source regressions reject missing/unsafe/absent evidence. Existing Checkers, CI gates, source fidelity and operator approval remain separate."
+    },
+    {
+      "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT",
+      "title": "Reusable rules-free remote Checkers client and shared board",
+      "priority": "high",
+      "acceptance_criteria": "Network-driven Checkers board with server-owned legal action paths, revisions and idempotent retries; two-client simulations and boundary checks pass, while real Social/LoopRD and Tavi deployment require separate acceptance."
     }
   ],
   "done_work": [
@@ -1278,6 +1284,37 @@
           "description": "Original 0.5.58 local QA report, matched to 0.5.58 archive SHA; no 0.5.59 success implied"
         }
       ]
+    },
+    {
+      "id": "ATR-161-CHECKERS-REMOTE-THIN-CLIENT",
+      "summary": "Implemented source-only transport-injected Checkers remote client plus board renderer without independent rules authority; added 8 Node tests for retry, stale, identity omission and server legal paths. Operator live game and release remain open.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/checkers_remote_client.mjs",
+          "description": "Transport and server-state client"
+        },
+        {
+          "kind": "source",
+          "ref": "src/checkers_remote_view.mjs",
+          "description": "Board follows server legal paths only"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/checkers_remote_client.test.mjs",
+          "description": "Thin-client transport and revision tests"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/checkers_remote_view.test.mjs",
+          "description": "Server-path selection and no-local-rules tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_104_CHECKERS_REMOTE_THIN_CLIENT_060.adoc",
+          "description": "Owner split and pending live acceptance"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1516,21 +1553,35 @@
       },
       {
         "id": "ATR-160-EXACT-CI-059",
+        "status": "passed",
+        "description": "Exact 0.5.59 push 6c9ff6c08d2f8ba2ed46a513c1f72ed18e7260af: official pinned ZipRunner validator and both Linux/Windows jobs succeeded in run 42029745669.",
+        "evidence_ref": "https://github.com/TheBigTreeInc/atrium/actions/runs/42029745669"
+      },
+      {
+        "id": "ATR-161-LOCAL-060",
+        "status": "passed",
+        "description": "0.5.60 source suite: 369 Python, 75 Node, 24 disposable Checkers groups, web build/verify, 19 release-contract checks; remote client source SHA in bounded packaged QA record. No live identity/route acceptance.",
+        "evidence_ref": "evidence/P1_104_060_REMOTE_CLIENT_QA.json",
+        "command": "python -m unittest discover -s tests -q && npm test && npm run build && npm run verify && python tools/checkers_group_qa.py",
+        "environment": "Local source Linux, Python 3.13, Node 22; no production Social credentials or Tavi/browser clients."
+      },
+      {
+        "id": "ATR-161-EXACT-CI-060",
         "status": "not_run",
-        "description": "0.5.59 official pinned ZipRunner validator and exact-commit Linux/Windows GitHub Actions after approved push.",
-        "reason": "No 0.5.59 push and official validator run yet; installed Windows and operator acceptance separate."
+        "description": "Official pinned validator and exact-commit 0.5.60 Linux/Windows CI after approved ZipRunner push.",
+        "reason": "No 0.5.60 push, Windows operator approval or official CI at this source creation step."
       }
     ]
   },
   "handover": {
-    "next_pass": "Verify 0.5.59 official pinned package validator and exact-commit CI after approved push; then prioritize trusted Social/LoopRD Checkers activation and real Tavi-to-browser acceptance.",
+    "next_pass": "Verify 0.5.60 exact-commit CI and fresh Windows checks, then bind real Social session/challenge verification and deployed LoopRD Checkers routes; prove a real Tavi-to-browser complete match.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
       "A broken reverse proxy or intermediary ignoring no-store can serve stale data; verify no-store and TLS at public edge.",
       "An already-running/background browser is not instantaneously revoked; current foreground interval is 60 seconds. Game authorization must remain authoritative server-side.",
       "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
-      "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified.",
+      "Real publisher HTTPS origin challenge and v3\u2192v4 production migration remain separately operator-unverified.",
       "Mock Life matches are deliberately tab-memory only; an unlocked static UI does not prove Social auth, persistent 60-hour games, Life engine fairness, OpenClaw game actions or deployed API compatibility.",
       "0.5.56 routes are source-only and the fixture HTTP listener is NOT production authentication. LoopRD game info still announces persistentMatchesEnabled:false. Never expose transport without an independently reviewed Social session verifier, accepted challenge contract, CSRF/TLS, and operator permission gates."
     ],
@@ -1539,7 +1590,8 @@
       "Life internal AtriumLifeLaunch currently does not expose the proposed public /play/info envelope or authenticated /play routes; API contract alignment, trust and endpoint deployment remain independent owner gates.",
       "Looprd 0.3.0 registration.readers.v1 host and separate reader credential are not provisioned by this Atrium source ZIP; no live host-wire interoperability claim.",
       "CheckersTrustedHost is source-only; real Social issuer verification and accepted lobby proof are not bound, and no production LoopRD route or Tavi/browser client exists.",
-      "0.5.58 exact GitHub CI run 42023076428 failed pinned package validation (missing passed-check evidence_ref); 0.5.59 requires independent CI."
+      "0.5.58 exact GitHub CI run 42023076428 failed pinned package validation (missing passed-check evidence_ref); 0.5.59 requires independent CI.",
+      "0.5.60 remote client and view remain source-only; authenticated Social/LoopRD transport and Tavi/browser deployment are not connected or operator-accepted."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
@@ -1549,7 +1601,8 @@
       "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field.",
       "v0.5.14 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy.",
       "v0.5.16 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled.",
-      "v0.5.34 adds opt-in local reader with per-deployment pull authority. Existing v2 push and public GitHub workflow registration are preserved; discovery is not publication."
+      "v0.5.34 adds opt-in local reader with per-deployment pull authority. Existing v2 push and public GitHub workflow registration are preserved; discovery is not publication.",
+      "0.5.59 exact-commit CI run 42029745669 passed Linux pinned validator and Windows smoke; does not approve 0.5.60 or live release."
     ]
   },
   "operator_actions": [

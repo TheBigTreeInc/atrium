@@ -1,0 +1,51 @@
+{
+  "schema": "atrium.source-qa/v1",
+  "project": "atrium",
+  "version": "0.5.60",
+  "base_version": "0.5.59",
+  "scope": "source-tree; no live Social identity, deployed LoopRD routes, Tavi/browser authentication or operator acceptance",
+  "observed": {
+    "python_unittest_discover": {
+      "status": "passed",
+      "count": 369,
+      "command": "python -u -m unittest discover -s tests -q"
+    },
+    "javascript_node_test": {
+      "status": "passed",
+      "count": 75,
+      "command": "npm test"
+    },
+    "checkers_disposable_source_qa": {
+      "status": "passed",
+      "count": 24,
+      "command": "python tools/checkers_group_qa.py --report /mnt/data/atrium060_checkers_source_qa.json"
+    },
+    "static_web_build": {
+      "status": "passed",
+      "command": "npm run build"
+    },
+    "static_web_verify": {
+      "status": "passed",
+      "command": "npm run verify"
+    },
+    "release_contract_focus": {
+      "status": "passed",
+      "count": 19,
+      "command": "python -m unittest tests.test_ci_integrations tests.test_release_pipeline -q"
+    }
+  },
+  "source_sha256": {
+    "src/checkers_remote_client.mjs": "c1d8f6be3c4174d8c6426f60bac3b1f5f4d0e0948bb6aaa727cdf18e21c7a28f",
+    "src/checkers_remote_view.mjs": "a36d2bf268e5945640f11220477ef94ec10eb101250224cf599c9f73a361774b",
+    "tests/checkers_remote_client.test.mjs": "ef0bfbf3c80d3dcc7a530750ed413c77c26f3f6bb6426b4b4ea99accff676a54",
+    "tests/checkers_remote_view.test.mjs": "135d6fba2dbcffda789122ca27919ec34fed38d9f7fac93d958717be4891d698"
+  },
+  "baseline_exact_commit_ci": {
+    "commit": "6c9ff6c08d2f8ba2ed46a513c1f72ed18e7260af",
+    "workflow": "https://github.com/TheBigTreeInc/atrium/actions/runs/42029745669",
+    "conclusion": "success"
+  },
+  "target_ci": "not_run_for_0.5.60",
+  "windows_operator_acceptance": "pending",
+  "release": "not_authorized"
+}
