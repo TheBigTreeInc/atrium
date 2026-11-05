@@ -1,0 +1,20 @@
+
+> atrium@0.5.59 build
+> node tools/build.mjs && node tools/verify_web.mjs && node tools/post_build_tavix.mjs
+
+static web output at dist/ (not deployed)
+Verified Pages-safe static portal assets (publication is operator-triggered)
+[atrium-post-build] TAVIX_REPOSITORY_DIR=/mnt/data/tavix
+[atrium-post-build] TAVIX_STAGE_REQUIRED=0
+[atrium-post-build] node tools/configure_hosted_catalog.mjs
+Hosted-game catalog disabled (reviewed-only preview)
+[atrium-post-build] node tools/build_tavi_extension.mjs
+Atrium TaviX 1.0.4: copied pinned immutable offline release; no shared UI rebuild
+[atrium-post-build] node tools/stage_tavix.mjs
+TAVIX_STAGE_SKIPPED: optional TaviX repository checkout not found; standalone Atrium build remains valid
+[atrium-post-build] TaviX post-build completed. A source build is not a Git publication; review/push TaviX separately.
+
+> atrium@0.5.59 verify
+> node tools/verify_web.mjs
+
+Verified Pages-safe static portal assets (publication is operator-triggered)

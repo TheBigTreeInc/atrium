@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.58",
-    "base_version": "0.5.57",
-    "source_revision": "b4cd64a04ebaef41934d702b7f82fae5d011384f"
+    "version": "0.5.59",
+    "base_version": "0.5.58",
+    "source_revision": "0baf1f230bafa7259ea2b2f1b2cf8239f79e1bfc"
   },
   "update": {
-    "id": "ATR-P1-20261105-058",
+    "id": "ATR-P1-20261105-059",
     "kind": "source_update",
-    "created_at": "2026-11-05T08:50:00+01:00",
-    "summary": "Repair 0.5.57 official pinned ZipRunner verification-plan stage enum rejection; enforce allowed check stages and keys at package build, retain Checkers functionality and operator release gates."
+    "created_at": "2026-11-05T13:25:00+01:00",
+    "summary": "Repair 0.5.58 official pinned ZipRunner validator missing passed-check evidence_ref; package prior 0.5.58 QA evidence and add package-time evidence-ref checks with negative regressions. No Checkers production activation or operator approval."
   },
   "planned_work": [
     {
@@ -295,6 +295,12 @@
       "title": "Repair pinned ZipRunner verification check stage contract",
       "priority": "critical",
       "acceptance_criteria": "Official pinned ZipRunner validator accepts 0.5.58 checks including index 84; source and packaging preflight reject unsupported stage/fields; exact-commit CI, installed Windows QA and operator acceptance tracked independently."
+    },
+    {
+      "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT",
+      "title": "Enforce pinned ZipRunner passed-check evidence references before packaging",
+      "priority": "critical",
+      "acceptance_criteria": "Pinned ZipRunner validator accepts 0.5.59 package validation checks; a passed check always references packaged evidence or valid HTTPS. Package preflight and source regressions reject missing/unsafe/absent evidence. Existing Checkers, CI gates, source fidelity and operator approval remain separate."
     }
   ],
   "done_work": [
@@ -1246,6 +1252,32 @@
           "description": "Pinned stage contract, CI error and operator gates"
         }
       ]
+    },
+    {
+      "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT",
+      "summary": "Repair official 0.5.58 push CI rejection validation.checks[23] passed requires evidence_ref. Package the original 0.5.58 source QA summary as bounded evidence, require valid packaged or HTTPS evidence_refs for every passed check, add missing/invalid-reference negative tests and preserve Windows/operator gates. No public Checkers endpoint or live acceptance.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/package_zip.py",
+          "description": "Bounded pinned semantic metadata preflight before source ZIP creation"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Negative missing/unsafe/missing-file evidence refs; pinned manifest check invariants"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_103_ZIPRUNNER_EVIDENCE_REF_059.adoc",
+          "description": "Identified CI failure, contract and operator-gated follow-up"
+        },
+        {
+          "kind": "documentation",
+          "ref": "evidence/P1_102_058_QA_SUMMARY.json",
+          "description": "Original 0.5.58 local QA report, matched to 0.5.58 archive SHA; no 0.5.59 success implied"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1465,18 +1497,33 @@
         "status": "passed",
         "description": "Local 0.5.58 full Python regression (368 tests), Node regression (66 tests), source Checkers QA (24 groups), extracted exact-package QA (24 groups), static build, package preflight and deterministic ZIP.",
         "command": "python -m unittest discover -s tests -q && npm test && npm run build && npm run verify && python tools/checkers_group_qa.py --package dist/atrium-0.5.58-ziprunner.zip",
-        "environment": "Local container Linux, Python 3.11, Node 22.16.0; no production Social/LoopRD identities."
+        "environment": "Local container Linux, Python 3.11, Node 22.16.0; no production Social/LoopRD identities.",
+        "evidence_ref": "evidence/P1_102_058_QA_SUMMARY.json"
       },
       {
         "id": "ATR-159-EXACT-CI-058",
+        "status": "failed",
+        "description": "Exact 0.5.58 push 0baf1f230bafa7259ea2b2f1b2cf8239f79e1bfc CI run 42023076428: Windows smoke succeeded; Linux failed pinned ZIP validator because validation.checks[23] passed lacked evidence_ref.",
+        "reason": "Pinned validator rejected the package; do not infer successful CI, operator acceptance or release."
+      },
+      {
+        "id": "ATR-160-LOCAL-059",
+        "status": "passed",
+        "description": "0.5.59 local full Python 369 passed, JS 66 passed, static web build/verify passed; bounded logs packaged; no official pinned validator run locally.",
+        "evidence_ref": "evidence/P1_103_059_QA_SOURCE.json",
+        "command": "python -u -m unittest discover -s tests -v && npm test && npm run build && npm run verify",
+        "environment": "Isolated Linux source checkout, Python 3.13, Node 22; fixture-only Checkers, no real Social/Tavi clients."
+      },
+      {
+        "id": "ATR-160-EXACT-CI-059",
         "status": "not_run",
-        "description": "0.5.58 exact-commit official pinned ZipRunner validator and Linux/Windows GitHub Actions after operator-approved push.",
-        "reason": "Not claimed by local schema preflight or local full regression; requires approved Git push and successful workflow."
+        "description": "0.5.59 official pinned ZipRunner validator and exact-commit Linux/Windows GitHub Actions after approved push.",
+        "reason": "No 0.5.59 push and official validator run yet; installed Windows and operator acceptance separate."
       }
     ]
   },
   "handover": {
-    "next_pass": "Run exact-commit 0.5.58 GitHub Actions and the official pinned ZipRunner ZIP validator, then fresh installed Windows ZipRunner post-update QA and operator acceptance. Only after these independent gates resume trusted Social/LoopRD Checkers M1 integration and real Tavi-to-browser acceptance; do not auto-release.",
+    "next_pass": "Verify 0.5.59 official pinned package validator and exact-commit CI after approved push; then prioritize trusted Social/LoopRD Checkers activation and real Tavi-to-browser acceptance.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -1491,7 +1538,8 @@
       "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",
       "Life internal AtriumLifeLaunch currently does not expose the proposed public /play/info envelope or authenticated /play routes; API contract alignment, trust and endpoint deployment remain independent owner gates.",
       "Looprd 0.3.0 registration.readers.v1 host and separate reader credential are not provisioned by this Atrium source ZIP; no live host-wire interoperability claim.",
-      "CheckersTrustedHost is source-only; real Social issuer verification and accepted lobby proof are not bound, and no production LoopRD route or Tavi/browser client exists."
+      "CheckersTrustedHost is source-only; real Social issuer verification and accepted lobby proof are not bound, and no production LoopRD route or Tavi/browser client exists.",
+      "0.5.58 exact GitHub CI run 42023076428 failed pinned package validation (missing passed-check evidence_ref); 0.5.59 requires independent CI."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",

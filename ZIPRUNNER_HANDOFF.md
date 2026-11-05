@@ -1,3 +1,7 @@
+# Atrium 0.5.59 ZipRunner passed-evidence contract repair (not a release)
+
+0.5.58 exact GitHub push `0baf1f230bafa7259ea2b2f1b2cf8239f79e1bfc` CI run 42023076428 failed the official pinned package validator at `validation.checks[23] passed requires evidence_ref`; Windows CI passed. This package includes the original bounded 0.5.58 local QA summary and adds package-time checks and negative source regressions. It preserves all fixture-only Checkers behavior. No active Social/LoopRD game API, real Tavi/browser match, Windows operator acceptance or release authorization.
+
 # Atrium 0.5.58 verification-plan stage schema repair (not a release)
 
 The official pinned ZipRunner validator rejected 0.5.57 exact GitHub commit `b4cd64a04ebaef41934d702b7f82fae5d011384f` at `$.checks[84].stage: test` (run 41986602716). Windows CI passed and Linux source/DAPI tests passed; the Linux package validation failed. This package uses the supported `unit` stage and preflights all check fields/stages before writing the ZIP, with regression tests. Source-only Checkers fixture tests unchanged (24 groups), no real Social/LoopRD handler or Tavi-to-browser acceptance. Fresh 0.5.58 CI, installed Windows operator QA, and release authorization pending.

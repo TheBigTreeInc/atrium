@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.58",
-  "summary": "0.5.58: fix the exact 0.5.57 official CI ZipRunner validator failure on $.checks[84].stage=test (supported stage: unit). The strict preflight and regression prevent recurrence; no Checkers gameplay/routes changed. Existing operator decisions and pending release/Windows gates remain untouched.",
+  "version": "0.5.59",
+  "summary": "0.5.59 pinned ZipRunner evidence_ref schema repair after 0.5.58 Linux CI failure; preserve all previous decisions and no gameplay/public activation.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -422,6 +422,17 @@
         "Inspect the exact 0.5.58 source ZIP: all verification-plan checks use one of unit/integration/functional/runtime/acceptance and have pinned supported fields.",
         "Verify official pinned ZipRunner validator passes on 0.5.58 exact-commit CI; do not conflate local validation with GitHub CI.",
         "Run fresh installed Windows ZipRunner post-update tests and record operator acceptance separately; no production LoopRD routes or Tavi match claimed."
+      ]
+    },
+    {
+      "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT",
+      "title": "Enforce pinned ZipRunner passed-check evidence references before packaging",
+      "summary": "Repair official 0.5.58 push CI rejection validation.checks[23] passed requires evidence_ref. Package the original 0.5.58 source QA summary as bounded evidence, require valid packaged or HTTPS evidence_refs for every passed check, add missing/invalid-reference negative tests and preserve Windows/operator gates. No public Checkers endpoint or live acceptance.",
+      "priority": "critical",
+      "operator_checks": [
+        "Check exact 0.5.59 ZIP includes the original source-QA evidence artifact, every passed manifest check resolves to packaged evidence, and negative metadata regressions fail before packaging.",
+        "Verify exact 0.5.59 GitHub CI including official pinned package validator and independent Windows job before further development; do not infer CI from local tests.",
+        "Run Windows ZipRunner fresh checks and record human acceptance and release authorization separately; do not activate public Checkers or Tavi integrations."
       ]
     }
   ],

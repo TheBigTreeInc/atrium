@@ -1,0 +1,90 @@
+{
+  "schema": "atrium.source-qa-summary/v1",
+  "project": "atrium",
+  "canonical_project_id": "f5e1704f-2684-49bc-ae87-9d6de77034e5",
+  "version": "0.5.58",
+  "base_version": "0.5.57",
+  "file": "atrium-0.5.58-ziprunner.zip",
+  "bytes": 884153,
+  "sha256": "2edb83a10f72210ebc890da6400cff5664c2c7ac79a8f0a80a7a7aedcda080fa",
+  "archive_entries": 334,
+  "github_baseline": {
+    "sha": "b4cd64a04ebaef41934d702b7f82fae5d011384f",
+    "run": "https://github.com/TheBigTreeInc/atrium/actions/runs/41986602716",
+    "conclusion": "failure",
+    "failed_job": "Source, pinned DAPI and ZipRunner contracts",
+    "failed_step": "Build and validate ZipRunner source ZIP",
+    "failure": "$.checks[84].stage unsupported test",
+    "windows_ci_job": "success"
+  },
+  "implemented": [
+    {
+      "id": "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA",
+      "fix": "verification-plan checks[84].stage test -> unit",
+      "preflight": "tools/package_zip.py",
+      "regression": "tests/test_release_pipeline.py"
+    }
+  ],
+  "tests": {
+    "local_source_python_full": {
+      "result": "passed",
+      "count": 368,
+      "exit_code": 0
+    },
+    "local_checkers": {
+      "result": "passed",
+      "count": 24
+    },
+    "exact_zip_checkers": {
+      "result": "passed",
+      "count": 24,
+      "scope": "EXACT_PACKAGE_EXTRACTED"
+    },
+    "exact_zip_release_contracts": {
+      "result": "passed",
+      "count": 14
+    },
+    "exact_zip_javascript": {
+      "result": "passed",
+      "count": 66
+    },
+    "exact_zip_web_build": {
+      "result": "passed"
+    },
+    "exact_zip_web_verify": {
+      "result": "passed"
+    },
+    "source_looprd_spec_lint": {
+      "result": "passed"
+    },
+    "archive_integrity": {
+      "result": "passed"
+    },
+    "reproducible_archive_sha": {
+      "result": "passed",
+      "sha256": "2edb83a10f72210ebc890da6400cff5664c2c7ac79a8f0a80a7a7aedcda080fa"
+    },
+    "official_pinned_ziprunner_validator": {
+      "result": "not_run_locally"
+    },
+    "windows_installed_ziprunner": {
+      "result": "not_run_for_0.5.58"
+    },
+    "operator_acceptance": {
+      "result": "pending"
+    }
+  },
+  "workboard": {
+    "implemented_entries": 39,
+    "remaining_entries": 16,
+    "existing_operator_statuses_changed": false
+  },
+  "production_activated": false,
+  "release_authorized": false,
+  "highest_priority_remaining": [
+    "Verify exact 0.5.58 GitHub Actions including official pinned ZipRunner package validator",
+    "Fresh installed Windows ZipRunner post-update and operator acceptance",
+    "Connect real Social trusted session and accepted lobby to LoopRD Checkers",
+    "Complete actual Tavi-to-browser Checkers match"
+  ]
+}

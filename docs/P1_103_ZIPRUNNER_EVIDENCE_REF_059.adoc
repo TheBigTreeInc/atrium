@@ -1,0 +1,22 @@
+= Atrium 0.5.59 — Pinned ZipRunner passed-check evidence references
+
+== Trigger
+
+The exact 0.5.58 GitHub push `0baf1f230bafa7259ea2b2f1b2cf8239f79e1bfc` ran GitHub Actions `42023076428`. Windows build smoke succeeded. The Linux source, DAPI and Python/Node tests passed, but the official pinned ZipRunner package validator failed with:
+
+[source,text]
+----
+ERROR: validation.checks[23] passed requires evidence_ref
+FAIL: 1 issue(s)
+----
+
+== Repair scope
+
+* Retain the 0.5.58 `ATR-159-LOCAL-058` successful local check status, add `evidence_ref: evidence/P1_102_058_QA_SUMMARY.json` and package the original source QA artifact with its exact original source ZIP SHA. This evidence is local QA only, not official CI proof.
+* Fail packaging before writing a ZIP if any manifest validation check marked passed lacks an evidence reference or references a nonexistent / unsafe packaged file. External evidence must use HTTPS without credentials. A check marked `not_run` or `blocked` requires a reason. A failed check cannot coexist with a globally passed model report.
+* Add positive and negative source tests. Do not use invented test results or claim official ZipRunner validator ran locally.
+* Version and Workboard metadata move to 0.5.59; existing ticket statuses and operator decisions remain unchanged.
+
+== Boundary and follow-up
+
+The upstream pinned package validator remains authoritative. Validate the 0.5.59 exact commit on GitHub CI, then run fresh Windows ZipRunner and human acceptance separately. No public LoopRD Checkers operation, real Social token binding, Tavi client release or production release occurs in this repair.

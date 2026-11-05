@@ -1,0 +1,49 @@
+{
+  "schema": "atrium.package-source-test-evidence/v1",
+  "version": "0.5.59",
+  "scope": "local_source_prepackaging",
+  "source_sha": "source_tree_not_a_git_push",
+  "tests": {
+    "python_full": {
+      "command": "python -u -m unittest discover -s tests -v",
+      "passed": 369,
+      "exit_code": 0
+    },
+    "javascript": {
+      "command": "npm test",
+      "passed": 66,
+      "exit_code": 0
+    },
+    "web_build": {
+      "command": "npm run build && npm run verify",
+      "status": "passed",
+      "exit_code": 0
+    }
+  },
+  "artifacts": {
+    "source_python_log": {
+      "file": "evidence/P1_103_059_full_python.txt",
+      "sha256": "ace6f1554cec189136e93a77673bf33ee7bba196832e235e63bdf55376d0902a",
+      "bytes": 56979
+    },
+    "source_node_log": {
+      "file": "evidence/P1_103_059_node_test.txt",
+      "sha256": "c94bb12ff518f198cdb5ee3a563b1531e0ecd75ff7c8eea1f47258791b4700ce",
+      "bytes": 13475
+    },
+    "source_web_build_log": {
+      "file": "evidence/P1_103_059_web_build.txt",
+      "sha256": "e2c6c3e15c7b96d2e6f320de81869ec4d77f054fe2c43cdc1e335a473dfc641e",
+      "bytes": 982
+    }
+  },
+  "exclusions": {
+    "official_ziprunner_validator": "not_run_locally",
+    "production_social_identity": "not_connected",
+    "public_looprd_checkers": "not_activated",
+    "real_tavi_browser_match": "not_run",
+    "installed_windows_ziprunner": "not_run",
+    "operator_acceptance": "pending",
+    "release": "not_authorized"
+  }
+}

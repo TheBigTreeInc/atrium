@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.58",
+  "version": "0.5.59",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -863,6 +863,27 @@
           "mode": "manual",
           "checks": [
             "ATR-159-ZIPRUNNER-VERIFICATION-STAGE-SCHEMA-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT",
+      "criteria": [
+        {
+          "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT-AC-SOURCE",
+          "description": "Every passed check references concrete local evidence present in the package or permitted HTTPS; package preflight rejects malformed/missing refs.",
+          "mode": "automated",
+          "checks": [
+            "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT-T1"
+          ]
+        },
+        {
+          "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT-AC-OPERATOR",
+          "description": "Official pinned validator, installed Windows checks, operator and release gates remain independently verified.",
+          "mode": "manual",
+          "checks": [
+            "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT-M1"
           ]
         }
       ]
@@ -1780,6 +1801,26 @@
       "stage": "acceptance",
       "description": "Official ZipRunner package validation and operator review for repaired 0.5.58 archive",
       "instructions": "Confirm exact-commit GitHub Linux and Windows CI results and official pinned ZipRunner package validator pass, then run fresh installed Windows ZipRunner tests, record operator decision and do not auto-release."
+    },
+    {
+      "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Pinned passed-check evidence-ref and package-reference preflight regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_release_pipeline.py",
+      "assertions": [
+        "A passed check without evidence_ref is rejected before building ZIP",
+        "Nonexistent or unsafe local evidence_ref is rejected",
+        "Original 0.5.58 passed check points to archived 0.5.58 QA report and new source tests pass"
+      ]
+    },
+    {
+      "id": "ATR-160-ZIPRUNNER-EVIDENCE-REFERENCE-CONTRACT-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "0.5.59 pinned official package validation and installed operator checks",
+      "instructions": "Confirm approved 0.5.59 GitHub exact push passes Linux pinned ZipRunner validator and Windows, then run fresh installed ZipRunner checks and obtain operator acceptance before any release."
     }
   ]
 }

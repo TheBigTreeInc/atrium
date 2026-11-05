@@ -6,10 +6,11 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from urllib.parse import urlsplit
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.58-ziprunner.zip'
+NAME = 'atrium-0.5.59-ziprunner.zip'
 SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'dist-tavi', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
@@ -46,7 +47,7 @@ ALLOWED_CHECK_FIELDS = frozenset({
 
 def validate_verification_checks(plan):
     """Reject schema-invalid verification check metadata before ZIP creation."""
-    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.58':
+    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.59':
         raise ValueError('verification-plan project/version does not match package')
     checks = plan.get('checks')
     if not isinstance(checks, list) or not checks:
@@ -79,11 +80,62 @@ def validate_verification_checks(plan):
     return len(seen)
 
 
+
+def validate_manifest_evidence_checks(manifest, available):
+    """Match pinned ZipRunner v2.3 validation.checks semantic requirements.
+
+    Critical regression: a successful *source* test without a packaged reference
+    is not evidence for the official package validator (CI run 42023076428).
+    Treat the upstream validator, not this fail-fast guard, as authoritative.
+    """
+    validations = manifest.get('validation')
+    if not isinstance(validations, dict):
+        raise ValueError('validation: required object')
+    checks = validations.get('checks')
+    if not isinstance(checks, list):
+        raise ValueError('validation.checks: must be an array')
+    allowed = frozenset({'passed', 'failed', 'not_run', 'blocked'})
+    fields = frozenset({'id', 'status', 'description', 'command', 'environment', 'evidence_ref', 'reason'})
+    for i, check in enumerate(checks):
+        where = f'validation.checks[{i}]'
+        if not isinstance(check, dict):
+            raise ValueError(f'{where}: required object')
+        extra = set(check) - fields
+        if extra:
+            raise ValueError(f'{where}: unsupported fields {sorted(extra)}')
+        status = check.get('status')
+        if status not in allowed:
+            raise ValueError(f'{where}.status: unsupported {status!r}')
+        for field in ('id', 'description'):
+            if not isinstance(check.get(field), str) or not check[field].strip():
+                raise ValueError(f'{where}.{field}: required nonempty text')
+        if status in ('blocked', 'not_run') and not check.get('reason'):
+            raise ValueError(f'{where}: {status} requires reason')
+        if status == 'passed' and not check.get('evidence_ref'):
+            raise ValueError(f'{where}: passed requires evidence_ref')
+        ref = check.get('evidence_ref')
+        if ref:
+            if not isinstance(ref, str):
+                raise ValueError(f'{where}.evidence_ref: must be a string')
+            url = urlsplit(ref)
+            if url.scheme:
+                if url.scheme != 'https' or not url.netloc or url.username or url.password:
+                    raise ValueError(f'{where}.evidence_ref: external evidence requires HTTPS without credentials')
+            elif (ref.startswith('/') or '\\' in ref or ref not in available
+                  or any(part in ('', '.', '..') for part in ref.split('/'))):
+                raise ValueError(f'{where}.evidence_ref: local evidence file must be packaged')
+    if any(item.get('status') == 'failed' for item in checks) and validations.get('model_reported') == 'passed':
+        raise ValueError('validation.model_reported: cannot be passed with failed checks')
+    return len(checks)
+
 def main():
     plan = json.loads((ROOT/'ziprunner-verification-plan.json').read_text(encoding='utf-8'))
     validate_verification_checks(plan)
+    manifest = json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+    validate_manifest_evidence_checks(
+        manifest, {p.relative_to(ROOT).as_posix() for p in source_files()})
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.58'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.59'
     # ZipRunner validates both sections before it overlays any files. Fail the
     # source build at the same boundary, instead of distributing a broken ZIP.
     for section in ('implemented', 'remaining'):

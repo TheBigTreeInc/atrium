@@ -125,6 +125,40 @@ class P0ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r'\$\.checks\[84\].*unsupported fields'):
             validate_verification_checks(bad)
 
+    def test_pinned_ziprunner_passed_check_evidence_ref_contract(self):
+        """GitHub 42023076428: passed checks must point to real packaged evidence."""
+        from copy import deepcopy
+        from tools.package_zip import validate_manifest_evidence_checks
+        manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+        available={item.relative_to(ROOT).as_posix() for item in source_files()}
+        checks=manifest['validation']['checks']
+        self.assertEqual(validate_manifest_evidence_checks(manifest, available),len(checks))
+        old=next(item for item in checks if item['id']=='ATR-159-LOCAL-058')
+        self.assertEqual(old['evidence_ref'],'evidence/P1_102_058_QA_SUMMARY.json')
+        previous=json.loads((ROOT/old['evidence_ref']).read_text(encoding='utf-8'))
+        self.assertEqual(previous['version'],'0.5.58')
+        self.assertEqual(previous['sha256'],
+                         '2edb83a10f72210ebc890da6400cff5664c2c7ac79a8f0a80a7a7aedcda080fa')
+        index=checks.index(old)
+        bad=deepcopy(manifest)
+        del bad['validation']['checks'][index]['evidence_ref']
+        with self.assertRaisesRegex(ValueError,'passed requires evidence_ref'):
+            validate_manifest_evidence_checks(bad,available)
+        for invalid in ('evidence/nonexistent.json','../secrets/password',
+                        'http://example.com/evidence.json','https://user:password@example.com/report.json'):
+            bad=deepcopy(manifest)
+            bad['validation']['checks'][index]['evidence_ref']=invalid
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(ValueError,'evidence_ref'):
+                validate_manifest_evidence_checks(bad,available)
+        bad=deepcopy(manifest)
+        bad['validation']['checks'][-1]['reason']=''
+        with self.assertRaisesRegex(ValueError,'requires reason'):
+            validate_manifest_evidence_checks(bad,available)
+        bad=deepcopy(manifest)
+        bad['validation']['model_reported']='passed'
+        with self.assertRaisesRegex(ValueError,'cannot be passed with failed checks'):
+            validate_manifest_evidence_checks(bad,available)
+
     def test_official_ziprunner_manifest_todo_contract(self):
         manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
         planned={t['id'] for t in manifest['planned_work']}
