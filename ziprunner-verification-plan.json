@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.56",
+  "version": "0.5.57",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -821,6 +821,27 @@
           "mode": "manual",
           "checks": [
             "ATR-157-CHECKERS-TRUSTED-ROUTES-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA",
+      "criteria": [
+        {
+          "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-AC-SOURCE",
+          "description": "Only allowed pinned update/project keys, no $.update.version; version remains in project.version.",
+          "mode": "automated",
+          "checks": [
+            "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-T1"
+          ]
+        },
+        {
+          "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-AC-OPERATOR",
+          "description": "Review exact-commit CI validator and installed Windows operator gates independently of local checks.",
+          "mode": "manual",
+          "checks": [
+            "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-M1"
           ]
         }
       ]
@@ -1699,6 +1720,25 @@
       "stage": "acceptance",
       "description": "Confirm source package 0.5.56 and unactivated match transport",
       "instructions": "Run fresh exact-source Windows ZipRunner checks and QA evidence. Verify no live Tavi or Social login integration, no public LoopRD match endpoints, no user acceptance or release inferred from unit/network tests."
+    },
+    {
+      "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-T1",
+      "kind": "automated",
+      "stage": "test",
+      "description": "Pinned ZipRunner update schema field allowlist regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_release_pipeline.py",
+      "assertions": [
+        "Manifest update fields exactly id/kind/created_at/summary; no update.version",
+        "Manifest project fields exactly key/version/base_version/source_revision, version matches package.json"
+      ]
+    },
+    {
+      "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Check actual pinned validator on 0.5.57 and Windows intake",
+      "instructions": "Verify 0.5.57 exact SHA GitHub CI build/package validator passes after approved push. Run installed ZipRunner fresh per-package post-update checks and human acceptance; no live Social/LoopRD or release implied."
     }
   ]
 }

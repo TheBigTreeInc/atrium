@@ -3,16 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.56",
-    "base_version": "0.5.55",
-    "source_revision": "dd64a2f3751bd7ca8d4b535b72ace07b9d324f95"
+    "version": "0.5.57",
+    "base_version": "0.5.56",
+    "source_revision": "aba619b3d27db1243e98344f0caf6f4ae4d46f18"
   },
   "update": {
-    "id": "ATR-P1-20261104-056",
+    "id": "ATR-P1-20261104-057",
     "kind": "source_update",
-    "created_at": "2026-11-04T22:19:00+01:00",
-    "summary": "Strict source-only Checkers trusted route dispatcher plus 24 disposable network/host QA groups; no live Social integration or public LoopRD deployment.",
-    "version": "0.5.56"
+    "created_at": "2026-11-04T22:50:00+01:00",
+    "summary": "Repair official pinned ZipRunner validator failure on 0.5.56: remove unsupported update.version, add regression on supported update and project keys; Checkers transport unchanged and not publicly activated."
   },
   "planned_work": [
     {
@@ -284,6 +283,12 @@
       "title": "Strict trusted-transport Checkers match route contract and network QA",
       "priority": "critical",
       "acceptance_criteria": "Source-only match route dispatcher accepts only opaque host-owned identity contexts, strict operation paths and move/lobby envelopes; a separate test-only HTTP listener checks two sessions, unauthorized/spoofed actions, SQLite restart/replay and full 53-move victory. 24 group tests. No public LoopRD handler or production Social session authentication."
+    },
+    {
+      "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA",
+      "title": "Repair pinned ZipRunner update metadata and prevent unsupported fields",
+      "priority": "critical",
+      "acceptance_criteria": "CI pinned ZipRunner validator accepts exact 0.5.57 source ZIP; no unsupported update.version remains; regression fails on any unexpected update/project keys; complete source tests, Windows fresh checks, operator acceptance and release remain separate."
     }
   ],
   "done_work": [
@@ -1193,6 +1198,27 @@
           "description": "Transport, authentication and live-operation boundaries"
         }
       ]
+    },
+    {
+      "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA",
+      "summary": "Remove unsupported update.version from official ZipRunner update-manifest/v1; version remains exclusively under project.version. Add a source regression enforcing pinned project/update field allowlists; CI 0.5.56 proved the failure while Windows/source tests passed. No Checkers gameplay or public route change.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "ziprunner-manifest.json",
+          "description": "Only documented pinned update keys, project.version is authoritative"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Regression enforcing pinned update/project schema key allowlists"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_101_ZIPRUNNER_UPDATE_SCHEMA_057.adoc",
+          "description": "Observed 0.5.56 CI failure, corrected contract and handoff gates"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1394,11 +1420,17 @@
         "status": "not_run",
         "description": "Disposable live Looprd 0.3 host and two-key end-to-end reader/receiver acceptance",
         "reason": "Requires operator-deployed Looprd 0.3 with private service reader and independently-scoped sender"
+      },
+      {
+        "id": "ATR-158-EXACT-PUSH-CI-0556",
+        "description": "Exact 0.5.56 GitHub Actions run 41919291687: Windows success, Linux failed in pinned ZipRunner ZIP validator: $.update unsupported field version; this 0.5.57 repair is not yet pushed or CI validated.",
+        "status": "not_run",
+        "reason": "0.5.57 CI requires a separately approved push; do not treat local source tests as official validator pass."
       }
     ]
   },
   "handover": {
-    "next_pass": "DGN Checkers M1: bind exact trusted Social session and accepted-lobby status to LoopRD deployed match routes, build actual browser and Tavi clients; complete an authenticated two-real-client match and independent Windows operator acceptance.",
+    "next_pass": "Verify exact-commit 0.5.57 CI pinned ZipRunner package validator, fresh Windows ZipRunner checks and operator acceptance. Only then resume DGN Checkers M1 trusted Social/LoopRD integration; real Tavi/browser match remains outstanding.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",

@@ -1,0 +1,16 @@
+= Atrium 0.5.57 — pinned ZipRunner update metadata repair
+:toc:
+
+== Failure evidence
+
+Exact 0.5.56 commit `aba619b3d27db1243e98344f0caf6f4ae4d46f18`, Actions run https://github.com/TheBigTreeInc/atrium/actions/runs/41919291687[41919291687]: Windows build recipe smoke succeeded, Linux passed source tests, generated specs, pinned DAPI smoke and failed at the official pinned ZipRunner source ZIP validation with `ERROR: $.update: unsupported field version`.
+
+== Repair
+
+The pinned `pac-labs/ziprunner-spec` revision `341005206094862853435ad68801be7ff28c4490` `schemas/ziprunner-manifest.schema.json` defines `update` with only `id`, `kind`, `created_at`, and `summary` (`additionalProperties: false`). `project.version` is the sole authoritative package version. Remove the newly introduced unsupported `update.version` key; preserve all Workboard IDs, release gates, and existing Checkers source code.
+
+`tests/test_release_pipeline.py::P0ReleaseTests.test_pinned_ziprunner_update_schema_allowlist` enforces allowed update/project keys and the package version consistency. Future schema changes require verification against the pinned upstream spec, not local ad-hoc fields.
+
+== Exact-package evidence and gates
+
+Source QA may prove local package consistency and 24 disposable Checkers group scenarios, but only the separately approved Git push can establish passing official pinned Linux validator and Windows CI for this specific 0.5.57 candidate. Installed ZipRunner fresh post-update tests and operator acceptance remain independent and pending. No public LoopRD Checkers API, live Social identity, real Tavi/browser acceptance or release is claimed.

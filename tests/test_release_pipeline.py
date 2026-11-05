@@ -91,6 +91,19 @@ class P0ReleaseTests(unittest.TestCase):
         # An update summary belongs under `update`, not under `project`.
         self.assertIn('summary', manifest['update'])
 
+    def test_pinned_ziprunner_update_schema_allowlist(self):
+        """GitHub 41919291687 failed: $.update: unsupported field version.
+
+        Pinned pac-labs/ziprunner-spec revision 341005206094862853435ad68801be7ff28c4490,
+        schemas/ziprunner-manifest.schema.json (update and project additionalProperties:false).
+        """
+        manifest = json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+        self.assertEqual(set(manifest['update']), {'id', 'kind', 'created_at', 'summary'})
+        self.assertEqual(set(manifest['project']), {'key', 'version', 'base_version', 'source_revision'})
+        self.assertEqual(manifest['project']['version'],
+                         json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version'])
+        self.assertNotIn('version', manifest['update'])
+
     def test_official_ziprunner_manifest_todo_contract(self):
         manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
         planned={t['id'] for t in manifest['planned_work']}

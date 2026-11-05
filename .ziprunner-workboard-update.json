@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.56",
-  "summary": "0.5.56 follows verified exact-commit 0.5.55 Linux/Windows CI and adds source-only strict Checkers match route dispatch behind the existing trusted host. 24 exact-package QA groups including six new independently connected HTTP tests; no public LoopRD route, real Social binding, Tavi gameplay acceptance or operator release.",
+  "version": "0.5.57",
+  "summary": "0.5.57 repairs 0.5.56 GitHub Linux CI failure in official ZipRunner validator (unsupported $.update.version), adds pinned-schema regression; no gameplay changes. Exact 0.5.56 push failed only its package-validation step while Windows job passed. Preserve all existing operator decisions; fresh CI and Windows gates apply to 0.5.57.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -400,6 +400,17 @@
         "Review the source-owned transport contract: untrusted JSON and headers cannot supply issuer, subject, accepted lobby or seats; only a host callback provides trusted identities and lobby approval.",
         "Confirm the looprd.yaml game module still declares persistentMatchesEnabled: false, public match endpoints are not active, and Windows installed/operator acceptance remains unapproved.",
         "Next: implement real Social session/challenge verification and mount behind trusted LoopRD with CSRF/TLS/permissions, then prove a complete Tavi/browser match."
+      ]
+    },
+    {
+      "id": "ATR-158-ZIPRUNNER-UPDATE-METADATA-SCHEMA",
+      "title": "Repair pinned ZipRunner update metadata and prevent unsupported fields",
+      "summary": "Remove unsupported update.version from official ZipRunner update-manifest/v1; version remains exclusively under project.version. Add a source regression enforcing pinned project/update field allowlists; CI 0.5.56 proved the failure while Windows/source tests passed. No Checkers gameplay or public route change.",
+      "priority": "critical",
+      "operator_checks": [
+        "Import exact 0.5.57 source ZIP through installed Windows ZipRunner and confirm fresh per-ZIP post-update checks, independent operator review and no release authorization.",
+        "Push only through the existing approved Git workflow; verify exact-commit GitHub Linux job runs pinned package validator successfully and Windows job succeeds.",
+        "Confirm all 24 Checkers group tests still pass without any new public LoopRD match handler or live Social/Tavi claims."
       ]
     }
   ],

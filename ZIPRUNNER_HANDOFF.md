@@ -1,3 +1,7 @@
+# Atrium 0.5.57 CI package-schema repair (not a release)
+
+0.5.56 exact GitHub push `aba619b3d27db1243e98344f0caf6f4ae4d46f18` failed Linux source ZIP validation at `$.update: unsupported field version` (run 41919291687). Windows CI succeeded. The pinned official schema allows `version` only under `project`, not `update`. The new candidate drops the invalid field, guards it with Python tests, and otherwise keeps Checkers functionality unchanged (24 group QA cases). 0.5.57 exact-commit CI, Windows post-update checks, operator acceptance and release are unverified.
+
 # Atrium 0.5.56 source candidate (not a release)
 
 Built on 0.5.55 exact-commit successful CI (https://github.com/TheBigTreeInc/atrium/actions/runs/41914857759). Adds `src/checkers_trusted_routes.py` (host-only strict operations), test-only `tests/support/checkers_trusted_http.py` and six network tests. The route is **not** registered with LoopRD, and fixture tokens do not provide real Social authentication. Independent operator acceptance and 0.5.56 CI remain pending. See docs/P1_100_CHECKERS_TRUSTED_TRANSPORT_056.adoc.
