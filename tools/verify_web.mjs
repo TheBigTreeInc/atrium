@@ -5,7 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dist=path.join(root,'dist');
-for (const name of ['index.html','main.mjs','catalog.json','catalog-config.json','hosted-config.json','hosted-games.json','registration-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','src/hosted_life.mjs','.nojekyll']) {
+for (const name of ['index.html','material-theme.css','main.mjs','catalog.json','catalog-config.json','hosted-config.json','hosted-games.json','registration-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','src/hosted_life.mjs','.nojekyll']) {
  const file=path.join(dist,name);
  const info=await stat(file);
  assert(info.isFile() && (info.size>0 || name==='.nojekyll'),`missing build asset: ${name}`);
@@ -45,6 +45,7 @@ assert(!playerPage.includes('Bearer ') && !playerEntry.includes('Authorization')
 assert(!catalog.apps.some(app=>app.id==='atrium.checkers.hosted'));
 const index=await readFile(path.join(dist,'index.html'),'utf8');
 assert(index.includes('src="./main.mjs"'),'Pages must use subpath-safe relative JS');
+assert(index.includes('href="./material-theme.css"'),'Pages must use relative material UI asset');
 assert(index.includes('id="multiplayerLab"'),'UI preview must remain reachable with an empty catalog');
 assert(index.includes('No live game sessions'),'sandbox cannot masquerade as real multiplayer');
 assert(!index.includes('src="/main.mjs"'),'Pages must not use origin-root assets');

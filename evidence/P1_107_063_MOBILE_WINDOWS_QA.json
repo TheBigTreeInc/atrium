@@ -1,0 +1,28 @@
+{
+  "schema": "atrium.qa-evidence/v1",
+  "project": "atrium",
+  "version": "0.5.63",
+  "scope": "LOCAL_SOURCE_ONLY",
+  "windows_build": "not_run",
+  "operator_acceptance": "pending",
+  "release": "not_authorized",
+  "checks": {
+    "social_admission_py_test": "9 passed (source, Linux)",
+    "mobile_catalog_node_focused": "4 passed (source, Node)",
+    "web_static_build": "passed (source)",
+    "source_python_full": "380 passed (Linux source test discovery, exit 0)",
+    "source_node_full": "83 passed (Node test runner, exit 0)",
+    "future_tavix_preview_build": "1.0.6 preview compiled; no publish",
+    "immutable_tavix_lock": "1.0.4 SHA-256 all pinned entries unchanged",
+    "source_looprd_spec_checks": "passed",
+    "source_web_build_verify": "passed"
+  },
+  "limitations": [
+    "Immutable TaviX 1.0.4 unchanged; future hosted UI not deployed",
+    "No verified live hosted LoopRD catalog or current production game registration",
+    "Actual Windows Python 3.13 full build and real two-client match not performed"
+  ],
+  "source_logs": [
+    "Logs observed during local build; no private/runtime data included in source ZIP"
+  ]
+}

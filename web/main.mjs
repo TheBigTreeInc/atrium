@@ -9,11 +9,15 @@ const gameTools=document.querySelector('#gameTools');
 const closeGame=document.querySelector('#closeGame');
 const catalogStatus=document.querySelector('#catalogStatus');
 const libraryMirror=document.querySelector('#libraryMirror');
-let refreshInFlight=false,activeApp=null,generation=0,endpoint=null;
+const categoryChips=document.querySelector('.chips');
+let refreshInFlight=false,activeApp=null,generation=0,endpoint=null,activeFilter="all";
 
 function showView(name){
  document.querySelectorAll('[data-view-panel]').forEach(panel=>{panel.hidden=panel.dataset.viewPanel!==name;});
- document.querySelectorAll('[data-view]').forEach(button=>button.classList.toggle('active',button.dataset.view===name));
+ document.querySelectorAll('[data-view]').forEach(button=>{
+  const current=button.dataset.view===name;button.classList.toggle('active',current);
+  if(current)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');
+ });
  if(name!=='discover'&&activeApp) revokeOpenApp('');
  window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -59,7 +63,7 @@ function makeReviewedCard(app){
 function catalogIssue(kind, error){
  const msg=String(error?.message||'');
  if(kind==='hosted' && msg.includes('ATRIUM_HOSTED_NOT_CONFIGURED')){
-  return {title:'Hosted games not connected',detail:'Atrium does not have a configured public LoopRD game catalog. This is a connection/setup issue, not a statement that no games are registered.'};
+  return {title:'Hosted games not connected',detail:'The trusted LoopRD catalog is not connected to this Atrium extension yet. Games are not uploaded to Tavi individually; the operator needs to activate the public catalog and publish a refreshed TaviX extension.'};
  }
  return kind==='hosted'
   ? {title:'Hosted game catalog unavailable',detail:'Atrium could not load the trusted LoopRD game catalog. Check the public catalog URL and HTTPS connection; registered games cannot be shown until it recovers.'}
@@ -67,14 +71,41 @@ function catalogIssue(kind, error){
 }
 function emptyState(title, detail){
  const box=document.createElement('div');box.className='emptyState';
+ const symbol=document.createElement('span');symbol.className='state-icon';symbol.setAttribute('aria-hidden','true');symbol.textContent='◇';
  const heading=document.createElement('h3');heading.textContent=title;
  const para=document.createElement('p');para.textContent=detail;
- box.append(heading,para);return box;
+ box.append(symbol,heading,para);return box;
 }
 function issuePanel(issue){
  const node=emptyState(issue.title,issue.detail);
- node.dataset.catalogIssue='true';node.setAttribute('role','status');return node;
+ node.dataset.catalogIssue='true';node.setAttribute('role','status');
+ const icon=node.querySelector('.state-icon');if(icon)icon.textContent='!';
+ const retry=document.createElement('button');retry.type='button';retry.className='btn tonal retry-btn';
+ retry.textContent='Retry connection';retry.addEventListener('click',()=>void refreshCatalog());
+ node.append(retry);return node;
 }
+/** Filters are based only on actual publication sources, not invented genres. */
+function applyCategoryFilter(){
+ const cards=[...area.querySelectorAll('.game-card')];
+ let shown=0;
+ for(const card of cards){
+  card.hidden=activeFilter!=='all'&&card.dataset.source!==activeFilter;
+  if(!card.hidden)shown++;
+ }
+ area.querySelector('[data-filter-empty]')?.remove();
+ if(cards.length&&!shown){
+  const node=emptyState('No games from this source','Try All games to browse the other trusted catalog.');
+  node.dataset.filterEmpty='true';area.append(node);
+ }
+}
+document.querySelectorAll('.chip[data-filter]').forEach(chip=>chip.addEventListener('click',()=>{
+ activeFilter=chip.dataset.filter;
+ document.querySelectorAll('.chip[data-filter]').forEach(button=>{
+  const selected=button===chip;button.classList.toggle('active',selected);
+  button.setAttribute('aria-pressed',String(selected));
+ });
+ applyCategoryFilter();
+}));
 function syncLibraryMirror(issues=[]){
  libraryMirror.replaceChildren();
  const cards=[...area.querySelectorAll('.game-card')];
@@ -86,7 +117,7 @@ function syncLibraryMirror(issues=[]){
   return;
  }
  for(const card of cards){
-  const clone=card.cloneNode(true);
+  const clone=card.cloneNode(true);clone.hidden=false;
   clone.querySelectorAll('button,input').forEach(el=>el.remove());
   const actions=document.createElement('div');actions.className='card-actions';
   const open=document.createElement('button');open.className='btn tonal';open.textContent='Open in Discover';open.addEventListener('click',()=>{showView('discover');const original=area.querySelector(`[data-game-id="${CSS.escape(card.dataset.gameId)}"]`);original?.scrollIntoView({behavior:'smooth',block:'center'});});
@@ -112,13 +143,17 @@ async function refreshCatalog(){
   catch(error){issues.push(catalogIssue('hosted',error));}
   if(catalog){for(const app of catalog.apps){area.append(makeReviewedCard(app));count++;}}
   if(issues.length){
-   catalogStatus.textContent=count?`${count} available · Catalog connection problem`:'Catalog not connected';
+   catalogStatus.textContent=count?`${count} available · Source unavailable`:'Catalog not connected';
+   catalogStatus.dataset.state='disconnected';
    // Keep the issue visible even if another source has cards.
    for(const issue of issues)area.prepend(issuePanel(issue));
   }else{
    catalogStatus.textContent=`${count} ${count===1?'game':'games'} available`;
+   catalogStatus.dataset.state=count?'ready':'empty';
    if(!count)area.append(emptyState('No published games','Both connected catalog sources responded successfully, but no games are currently published.'));
   }
+  if(categoryChips)categoryChips.hidden=count===0;
+  applyCategoryFilter();
   syncLibraryMirror(issues);
  }finally{refreshInFlight=false;}
 }

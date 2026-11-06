@@ -20,24 +20,63 @@
 @media(max-width:650px){.topbar{height:64px}.topbar-inner{padding:0 max(14px,env(safe-area-inset-right)) 0 max(14px,env(safe-area-inset-left))}.logo{width:40px;height:40px}.brand p{display:none}.layout{display:block;padding:14px max(12px,env(safe-area-inset-right)) calc(92px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}.rail{display:none}.hero{min-height:230px;border-radius:26px;padding:22px}.hero h2{font-size:34px}.hero:after{font-size:135px}.grid{grid-template-columns:1fr;gap:12px}.cover{height:118px}.game-card p{min-height:0}.section{margin-top:24px}.section-head{align-items:flex-start}.bottom-nav{position:fixed;z-index:30;display:grid;grid-template-columns:repeat(4,1fr);left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));background:#1b2823ee;backdrop-filter:blur(20px);border:1px solid #40564d;border-radius:24px;padding:6px;box-shadow:0 10px 30px #0008}.bottom-nav .nav-btn{display:grid;place-items:center;gap:2px;border-radius:18px;padding:7px 3px;font-size:10px}.bottom-nav .mi{font-size:19px}.bottom-nav .nav-label{display:block}#gameTools{top:72px}#gameTools .btn{width:100%}#stage iframe{min-height:380px;height:calc(100dvh - 145px);border-radius:18px}.multiplayerCard{padding:15px}.lobbyControls{display:grid;grid-template-columns:1fr}.lobbyControls button{width:100%}.lobbyActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:360px){.top-actions{display:none}.hero h2{font-size:30px}.lobbyActions{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-</style></head><body><div class="shell">
-<header class="topbar"><div class="topbar-inner"><div class="logo" aria-hidden="true">A</div><div class="brand"><h1>Atrium</h1><p>Games, lobbies &amp; adventures</p></div><div class="top-actions"><button class="icon-btn" title="Search games" aria-label="Search games">⌕</button><button class="icon-btn" title="Activity" aria-label="Activity">●</button></div></div></header>
+
+/* Atrium 0.5.63 mobile refresh: density and Tavi-aligned contrast.
+   This styles the *next* reviewed TaviX build; pinned 1.0.4 stays unchanged. */
+@media (max-width:650px){
+ :root{color-scheme:light;--bg:#f1f6f2;--surface:#fff;--surface2:#e8f1ea;--surface3:#dceae0;--line:#d1e1d6;--primary:#246d4b;--primary2:#357d59;--onPrimary:#fff;--text:#173e2b;--muted:#5b7264;--shadow:0 5px 18px #1d513418;--radius:18px}
+ body{background:var(--bg);color:var(--text)}
+ .topbar{background:#f6faf6;box-shadow:0 2px 10px #1b4e2710;border-bottom:1px solid var(--line)}
+ .topbar .icon-btn{color:var(--text)}
+ .hero{min-height:185px;border-radius:22px;padding:20px}
+ .hero .eyebrow,.hero h2,.hero p{color:#effff4}
+ .hero h2{font-size:28px}
+ .section{margin-top:15px}.section-head{align-items:flex-start;flex-direction:column;gap:6px}
+ .section-head h2{font-size:21px}.section-head p{font-size:12px;line-height:1.45}
+ .status{font-size:12px;line-height:1.4;font-weight:700;color:#336e50}
+ .chips{overflow:visible;flex-wrap:wrap;gap:7px;padding:0}
+ .chips[hidden]{display:none!important}
+ .chip{white-space:normal;padding:7px 10px;font-size:12px;border-color:var(--line);color:var(--muted)}
+ .chip.active{background:#e0f0e5;color:#1b5c3b;border-color:#a8d2b8}
+ .game-card,.panel{background:var(--surface);border-color:var(--line);box-shadow:var(--shadow);border-radius:20px}
+ .game-card:hover{background:var(--surface)}
+ .emptyState{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+ .emptyState h3{font-size:17px;color:var(--text);line-height:1.3}.emptyState p{font-size:13px;line-height:1.55;color:var(--muted)}
+ .panel{padding:14px}.content{padding-bottom:88px}
+ .bottom-nav{background:#fff;border:1px solid var(--line);box-shadow:0 4px 20px #13412b22}
+ .bottom-nav .nav-btn{color:#537262}.bottom-nav .nav-btn.active{background:#e2f0e7;color:#1b6041}
+ .footnote{font-size:11px;line-height:1.45;color:#64796c}
+ .btn.tonal{background:#dceee3;color:#175c3b}
+ .btn.outline{border-color:#b5d1c0;color:#1f5c40}
+}
+@media (max-width:650px) and (prefers-color-scheme:dark){
+ :root{color-scheme:dark;--bg:#101b16;--surface:#1a2920;--surface2:#23382b;--surface3:#2b4635;--line:#3c5846;--primary:#98dfad;--onPrimary:#0e2b1b;--text:#eef8ee;--muted:#baccc0;--shadow:0 6px 22px #0005}
+ .topbar{background:#14251b;border-color:var(--line)}
+ .chip.active{background:#27513a;color:#e2faea;border-color:#518369}
+ .status{color:#a7eac0}.bottom-nav{background:#192b21;border-color:var(--line)}
+ .bottom-nav .nav-btn{color:#b4cfc0}.bottom-nav .nav-btn.active{background:#2c523d;color:#d7f4df}
+ .btn.tonal{background:#30533e;color:#e6f9eb}.btn.outline{border-color:var(--line);color:var(--text)}
+}
+</style>
+<link rel="stylesheet" href="./material-theme.css">
+</head><body><div class="shell">
+<header class="topbar"><div class="topbar-inner"><div class="logo" aria-hidden="true">A</div><div class="brand"><h1>Atrium</h1><p>Games, lobbies &amp; adventures</p></div></div></header>
 <div class="layout"><aside class="rail" aria-label="Atrium navigation"><nav class="nav">
-<button class="nav-btn active" data-view="discover"><span class="mi">⌂</span><span class="nav-label">Discover</span></button>
-<button class="nav-btn" data-view="library"><span class="mi">▦</span><span class="nav-label">My games</span></button>
-<button class="nav-btn" data-view="lobbies"><span class="mi">♟</span><span class="nav-label">Lobbies</span></button>
-<button class="nav-btn" data-view="activity"><span class="mi">◷</span><span class="nav-label">Activity</span></button>
+<button class="nav-btn active" data-view="discover" aria-current="page" aria-label="Discover"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7V21H4V10.5"/><path d="M9 21v-7h6v7"/></svg></span><span class="nav-label">Discover</span></button>
+<button class="nav-btn" data-view="library" aria-label="Games"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-label">My games</span></button>
+<button class="nav-btn" data-view="lobbies" aria-label="Lobbies"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-2.3a5.5 5.5 0 0 1 11 0V20zM17 5.5a3 3 0 0 1 0 5.7M18 14a4.5 4.5 0 0 1 2.5 4V20"/></svg></span><span class="nav-label">Lobbies</span></button>
+<button class="nav-btn" data-view="activity" aria-label="Activity"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l3.7 2.1"/></svg></span><span class="nav-label">Activity</span></button>
 </nav><div class="operator-note"><strong>LoopRD native</strong><br>Games hosted by an operator-trusted LoopRD deployment are discovered and published automatically after contract validation.</div></aside>
 <main class="content">
 <section class="view" data-view-panel="discover"><div class="hero"><div class="hero-copy"><span class="eyebrow">✦ Featured library</span><h2>Pick up a game.<br>Bring your people.</h2><p>Atrium is your game store and lobby for LoopRD-powered games. Play on desktop or phone, resume asynchronous matches and keep Tavi one tap away.</p><div class="hero-actions"><button class="btn primary" data-jump-library>Browse games</button><button class="btn tonal" data-view-target="lobbies">Open lobbies</button></div></div></div>
-<div class="section"><div class="section-head"><div><h2>Featured games</h2><p>Playable games from your trusted LoopRD deployments.</p></div><span class="status" id="catalogStatus">Checking game library…</span></div><div class="chips"><button class="chip active">For you</button><button class="chip">Multiplayer</button><button class="chip">Strategy</button><button class="chip">Casual</button></div><div class="grid" id="apps" style="margin-top:14px"><article class="game-card"><div class="card-body"><h3>Loading library…</h3></div></article></div></div>
+<div class="section"><div class="section-head"><div><h2>Featured games</h2><p>Playable games from your trusted LoopRD deployments.</p></div><span class="status" id="catalogStatus">Checking game library…</span></div><div class="chips" aria-label="Game source filters"><button class="chip active" type="button" data-filter="all" aria-pressed="true">All games</button><button class="chip" type="button" data-filter="looprd" aria-pressed="false">LoopRD</button><button class="chip" type="button" data-filter="release" aria-pressed="false">Reviewed</button></div><div class="grid" id="apps" style="margin-top:14px"><article class="game-card"><div class="card-body"><h3>Loading library…</h3></div></article></div></div>
 <div id="gameTools" hidden><button class="btn tonal" id="closeGame" type="button" aria-label="Close game and return to Atrium">← Back to Atrium</button></div><section id="stage" aria-live="polite" aria-label="Game viewport" tabindex="-1"></section>
 </section>
 <section class="view" data-view-panel="library" hidden><div class="section-head"><div><h2>My games</h2><p>Your playable library and recently discovered games.</p></div></div><div class="panel"><div id="libraryMirror" class="grid"><div class="emptyState"><h3>Your library is syncing</h3><p>Games from active trusted LoopRD deployments appear here automatically.</p></div></div></div></section>
-<section class="view" data-view-panel="lobbies" hidden><div class="section-head"><div><h2>Game lobbies</h2><p>Create a room, continue a match or invite someone from Tavi.</p></div></div><div class="panel"><div class="lobby-list"><div class="lobby-row"><div class="avatar">L</div><div class="grow"><strong>The Life Loop</strong><small>Asynchronous matches · up to 60 hour turns</small></div><button class="btn tonal" data-jump-library>Find game</button></div></div></div>
+<section class="view" data-view-panel="lobbies" hidden><div class="section-head"><div><h2>Game lobbies</h2><p>Create a room, continue a match or invite someone from Tavi.</p></div></div><div class="panel"><div class="emptyState"><span class="state-icon" aria-hidden="true">◷</span><h3>No active lobbies yet</h3><p>Lobbies appear when a trusted game provides a verified multiplayer session. Browse published games to start one.</p><button class="btn tonal" data-jump-library type="button">Browse games</button></div></div>
 <div class="section" id="mockLobbySection"><div class="section-head"><div><h2>Lobby sandbox</h2><p>No live game sessions — this remains the isolated contract preview used by Atrium tests.</p></div></div><div id="multiplayerLab" class="multiplayerCard"><p>Preparing offline mock lobby…</p></div></div></section>
 <section class="view" data-view-panel="activity" hidden><div class="section-head"><div><h2>Activity</h2><p>Turns, invitations and game events will collect here.</p></div></div><div class="panel"><div class="emptyState"><h3>Nothing needs your attention</h3><p>When Life or another game sends a turn notification through LoopRD, Atrium can surface it here while Tavi handles the messenger notification.</p></div></div></section>
 <p class="footnote">Browser games launch only from active operator-trusted LoopRD records and verified HTTPS bindings. Game state, sessions and credentials remain owned by the game. Atrium never forwards operator keys into a game.</p>
 </main></div>
-<nav class="bottom-nav" aria-label="Atrium mobile navigation"><button class="nav-btn active" data-view="discover"><span class="mi">⌂</span><span class="nav-label">Discover</span></button><button class="nav-btn" data-view="library"><span class="mi">▦</span><span class="nav-label">Games</span></button><button class="nav-btn" data-view="lobbies"><span class="mi">♟</span><span class="nav-label">Lobbies</span></button><button class="nav-btn" data-view="activity"><span class="mi">◷</span><span class="nav-label">Activity</span></button></nav>
+<nav class="bottom-nav" aria-label="Atrium mobile navigation"><button class="nav-btn active" data-view="discover" aria-current="page" aria-label="Discover"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10.5 8.5-7 8.5 7V21H4V10.5"/><path d="M9 21v-7h6v7"/></svg></span><span class="nav-label">Discover</span></button><button class="nav-btn" data-view="library" aria-label="Games"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-label">Games</span></button><button class="nav-btn" data-view="lobbies" aria-label="Lobbies"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-2.3a5.5 5.5 0 0 1 11 0V20zM17 5.5a3 3 0 0 1 0 5.7M18 14a4.5 4.5 0 0 1 2.5 4V20"/></svg></span><span class="nav-label">Lobbies</span></button><button class="nav-btn" data-view="activity" aria-label="Activity"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 6.5V12l3.7 2.1"/></svg></span><span class="nav-label">Activity</span></button></nav>
 </div><script type="module" src="./main.mjs"></script></body></html>

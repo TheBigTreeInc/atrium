@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.61",
-  "summary": "0.5.61 host-neutral, non-cataloged Checkers player with same-origin session-bound transport, server legal actions and polling; live Social/LoopRD/Tavi activation and all operator decisions remain open.",
+  "version": "0.5.64",
+  "summary": "0.5.64 Material 3-inspired phone-first styling, working source filters, accessible states, and future TaviX top tabs; no live catalog, TaviX release, configuration or approval change.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -455,6 +455,46 @@
         "Review built checkers-remote.html + modules: no client identity token, local game engine, implicit guest login, match authority or advertised catalog entry.",
         "Verify 5 hosted-player Node QA and 2 structural module-ownership tests with source and extracted-ZIP runs; confirm the static web build and immutable TaviX bytes.",
         "Real Social session, accepted challenge, protected LoopRD /games/checkers/matches routes, two real clients, installed Windows acceptance and publication remain separately operator-gated."
+      ]
+    },
+    {
+      "id": "ATR-163-CHECKERS-SOCIAL-CHALLENGE-ADMISSION",
+      "title": "Source-only Social accepted challenge to server-authoritative Checkers match",
+      "priority": "high",
+      "summary": "Bind the existing CheckersTrustedHost to independently verified original Social game challenges, accepted friendship and host-authenticated account sessions. Namespaced stable match selectors, typed fail-closed rejection, two network clients and persistent resume are covered in source QA; no real Social service connection or public LoopRD route is enabled.",
+      "operator_checks": [
+        "Review src/checkers_social_admission.py: lookup_original_challenge must retrieve the original game_challenge_send interaction from trusted Social storage, never client JSON or the separate reply event.",
+        "Run tests.test_checkers_social_admission and tools/checkers_group_qa.py on exact ZIP; verify accepted challenge, wrong game/state/identity, friendship, retry and restart.",
+        "Supply a reviewed Social active-session verifier, service-owned challenge lookup/contact contract and TLS/CSRF/rate limit proxy; separately approve LoopRD host route, Tavi/standalone browser live match, Windows post-update checks, and release. No status Done from simulated QA."
+      ]
+    },
+    {
+      "id": "ATR-164-WINDOWS-SOCIAL-SQLITE-CLEANUP",
+      "title": "Fix Windows SQLite lock after Checkers Social restart fixture",
+      "summary": "Source fixture registers late-bound SQLite close and explicitly proves reopened connection closed before temporary directory deletion; WinError 32 regression. Native Windows ZipRunner rerun required.",
+      "operator_checks": [
+        "Import this exact 0.5.63 ZIP into Windows ZipRunner with preserved .venv/config; full 380-test Python suite and Social admission restart scenario must pass without WinError 32.",
+        "Verify no production match.sqlite, private config or runtime state is overwritten or packaged."
+      ]
+    },
+    {
+      "id": "ATR-165-TAVI-MOBILE-CATALOG-UX",
+      "title": "Improve Atrium mobile UI and distinguish unconnected catalog from zero published games",
+      "summary": "Polished source mobile UI, hides filters in empty catalog, surfaces unconnected LoopRD status, and positions internal Atrium navigation as top tabs only in future configured hosted TaviX; 1.0.4 unchanged.",
+      "operator_checks": [
+        "When reviewed next hosted TaviX is installed under Tavi, compare 355x630 light/dark modes; no nested bottom navigation or sideways scrolling.",
+        "Verify empty public catalog is never interpreted as evidence that no registrations exist; check hosted catalog connection error and game launch only for actual published trusted entries.",
+        "Require real HTTPS catalog preflight and separate TaviX review before release; do not mutate archived TaviX 1.0.4."
+      ]
+    },
+    {
+      "id": "ATR-166-MATERIAL3-ATRIUM-SURFACE",
+      "title": "Material 3-inspired Atrium and future hosted TaviX surface",
+      "summary": "Introduced shared semantic light/dark Material-inspired theme, local vector icons, useful source filters, retryable catalog status, truthful empty lobbies and distinct Tavi-hosted secondary top tabs. Historical TaviX 1.0.4 remains unchanged and live gateway not activated.",
+      "operator_checks": [
+        "On reviewed hosted TaviX, inspect 355x630 light and dark modes with Tavi owning the app header/footer; verify one local tab row and no horizontal overflow.",
+        "Verify All/LoopRD/Reviewed filters operate only on actual registered apps; retry offers an actual fetch without inventing playable games or user identity.",
+        "Approve gateway URL and hosted TaviX 1.0.6 separately after native Windows ZipRunner and exact-commit CI; preserve the immutable TaviX 1.0.4 bytes."
       ]
     }
   ],

@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.61",
-    "base_version": "0.5.60",
-    "source_revision": "0d406ecac575ecad5d96706f804cc0328aa9a60c"
+    "version": "0.5.64",
+    "base_version": "0.5.63",
+    "source_revision": "ea111728ca9280a403709f423039abf91ff1ed05"
   },
   "update": {
-    "id": "ATR-P1-20261105-061",
+    "id": "ATR-P1-20261106-064",
     "kind": "source_update",
-    "created_at": "2026-11-05T13:48:21Z",
-    "summary": "Add host-neutral source-only Checkers player page and stricter generic-lobby/Tavi authority boundaries; preserve Live Social/LoopRD authentication and release gates."
+    "created_at": "2026-11-06T07:57:00+01:00",
+    "summary": "Material 3-inspired Atrium UI source redesign and future hosted TaviX top tabs, with real source filters and accurate retryable catalog states. Historical TaviX 1.0.4 and release/operator gates unchanged."
   },
   "planned_work": [
     {
@@ -313,6 +313,30 @@
       "title": "Add rules-free hosted Checkers player for Tavi/browser hosting",
       "priority": "high",
       "acceptance_criteria": "Built host-neutral player uses same-origin verified session, server-owned legal paths/turn revision only, visible-state polling, fail-closed denied sessions, no duplicate login or public catalog registration; two real Social accounts and Tavi/LoopRD activation require separate acceptance."
+    },
+    {
+      "id": "ATR-163-CHECKERS-SOCIAL-CHALLENGE-ADMISSION",
+      "title": "Bind original Social accepted challenge to Checkers match ownership",
+      "priority": "high",
+      "acceptance_criteria": "Trusted Social host callback resolves verified current session, original accepted Checkers challenge and accepted friendship; two account seats share persistent module-owned authority, all malformed/spoofed/unsupported inputs fail closed; no public route until reviewed Social service and operator approval."
+    },
+    {
+      "id": "ATR-164-WINDOWS-SOCIAL-SQLITE-CLEANUP",
+      "title": "Fix Windows SQLite lock after Checkers Social restart fixture",
+      "priority": "high",
+      "acceptance_criteria": "Fixture cleanup closes the latest reopened SQLite authority before the temporary database is deleted, under Windows Python 3.13 and Linux; no production schema or runtime changes."
+    },
+    {
+      "id": "ATR-165-TAVI-MOBILE-CATALOG-UX",
+      "title": "Improve Atrium mobile UI and distinguish unconnected catalog from zero published games",
+      "priority": "high",
+      "acceptance_criteria": "Responsive light/dark layout, wrapped category filters, no inactive filters on an empty library, accurate catalog connection message; future reviewed TaviX places internal tabs under Tavi header, never double bottom nav, and pinned 1.0.4 remains unchanged."
+    },
+    {
+      "id": "ATR-166-MATERIAL3-ATRIUM-SURFACE",
+      "title": "Material 3-inspired Atrium and future hosted TaviX surface",
+      "priority": "high",
+      "acceptance_criteria": "Local CSS tokens, accessible SVG icon nav, working source filters and connection retry, honest empty catalog and lobbies; hosted top tabs replace duplicated internal footer; immutable TaviX lock untouched; reviewed operator acceptance before deployment."
     }
   ],
   "done_work": [
@@ -1352,6 +1376,110 @@
           "description": "Hosted session and rollout gates"
         }
       ]
+    },
+    {
+      "id": "ATR-163-CHECKERS-SOCIAL-CHALLENGE-ADMISSION",
+      "summary": "Added source-only CheckersSocialAdmission provider with typed Social original-challenge acceptance, identity/friend validation, hashed match selector, typed-denial propagation, and 8 disposable tests; no live Social/LoopRD endpoint or operator release.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/checkers_social_admission.py",
+          "description": "Server-owned accepted original Social challenge admission provider"
+        },
+        {
+          "kind": "source",
+          "ref": "src/checkers_trusted_host.py",
+          "description": "Preserves typed identity/challenge denials while failing unexpected provider errors closed"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_checkers_social_admission.py",
+          "description": "Eight source tests including two HTTP fixture clients and server restart"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_106_CHECKERS_SOCIAL_ACCEPTANCE_062.adoc",
+          "description": "Operator trust boundaries and live acceptance dependencies"
+        },
+        {
+          "kind": "test",
+          "ref": "evidence/P1_106_062_SOCIAL_ADMISSION_QA.json",
+          "description": "Packaged local source QA evidence; not a real Social/LoopRD proof"
+        }
+      ]
+    },
+    {
+      "id": "ATR-164-WINDOWS-SOCIAL-SQLITE-CLEANUP",
+      "summary": "Replaced prematurely captured cleanup with late-bound authority close after fixture restart; added cross-OS regression that asserts the replacement SQLite handle is closed before temp cleanup. Native Windows operator rerun still pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tests/test_checkers_social_admission.py",
+          "description": "Late-bound connection cleanup in Social admission fixture and restart regression"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_107_CATALOG_MOBILE_AND_WINDOWS_063.adoc",
+          "description": "Windows WinError 32 analysis and gate"
+        }
+      ]
+    },
+    {
+      "id": "ATR-165-TAVI-MOBILE-CATALOG-UX",
+      "summary": "Refined responsive source UI and future hosted TaviX navigation only; clarified unconfigured catalog, preserved immutable 1.0.4 and all publication gates.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "web/index.html",
+          "description": "Responsive light/dark mobile UI styling"
+        },
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "Accurate missing-connection state and filter visibility"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/build_tavi_extension.mjs",
+          "description": "Future hosted TaviX tabs move under host header; pinned historical release unaffected"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/atrium_mobile_catalog.test.mjs",
+          "description": "Mobile shell, no-false-zero, immutable-release tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_107_CATALOG_MOBILE_AND_WINDOWS_063.adoc",
+          "description": "Trusted catalog setup and staging gates"
+        }
+      ]
+    },
+    {
+      "id": "ATR-166-MATERIAL3-ATRIUM-SURFACE",
+      "summary": "Material 3-inspired UI source, behavior, static web asset and future TaviX layout; no publisher/game registration or live release action.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "web/material-theme.css",
+          "description": "Local light/dark Material semantic palette, components and host tabs"
+        },
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "Actual catalog source filters, retry and ARIA state"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/atrium_material3_shell.test.mjs",
+          "description": "Design surface and Tavi ownership regression tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_108_MATERIAL3_ATRIUM_064.adoc",
+          "description": "Scope, validation and manual acceptance gates"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1605,27 +1733,77 @@
       {
         "id": "ATR-161-EXACT-CI-060",
         "status": "passed",
-        "description": "0.5.60 exact push 0d406ecac575ecad5d96706f804cc0328aa9a60c completed pinned Linux ZipRunner/DAPI validation and Windows smoke successfully in run 42037625554; does not approve 0.5.61.",
+        "description": "0.5.60 exact push 0d406ecac575ecad5d96706f804cc0328aa9a60c completed pinned Linux ZipRunner/DAPI validation and Windows smoke successfully in run 42037625554; does not approve 0.5.63.",
         "evidence_ref": "https://github.com/TheBigTreeInc/atrium/actions/runs/42037625554"
       },
       {
         "id": "ATR-162-LOCAL-061",
         "status": "passed",
-        "description": "0.5.61 standalone Checkers player, network, web-build and source/ownership tests pass on local source tree; official 0.5.61 pinned validator and installed Windows acceptance not run locally.",
+        "description": "0.5.63 standalone Checkers player, network, web-build and source/ownership tests pass on local source tree; official 0.5.63 pinned validator and installed Windows acceptance not run locally.",
         "evidence_ref": "evidence/P1_105_061_HOSTED_PLAYER_QA.json",
         "command": "python -m unittest discover -s tests -q && npm test && npm run build && npm run verify && python tools/checkers_group_qa.py",
         "environment": "Local Linux source checkout; verified fixture-only network match. No real Social host, production LoopRD route or Tavi client."
       },
       {
         "id": "ATR-162-EXACT-CI-061",
+        "status": "passed",
+        "description": "0.5.61 exact push ea111728ca9280a403709f423039abf91ff1ed05 passed pinned Linux/DAPI/ZipRunner source and Windows smoke in GitHub run 42051680353; not native operator acceptance.",
+        "evidence_ref": "https://github.com/TheBigTreeInc/atrium/actions/runs/42051680353"
+      },
+      {
+        "id": "ATR-163-LOCAL-SOCIAL-062",
+        "status": "passed",
+        "description": "Source-only eight typed Social challenge admission tests and existing persistent server-owned Checkers fixture network tests passed locally; not real Social integration.",
+        "evidence_ref": "evidence/P1_106_062_SOCIAL_ADMISSION_QA.json",
+        "command": "python -m unittest tests.test_checkers_social_admission -q && python tools/checkers_group_qa.py",
+        "environment": "Linux source checkout, disposable SQLite and local HTTP fixture aliases only; no Social service credentials or production endpoint."
+      },
+      {
+        "id": "ATR-163-EXACT-CI-062",
         "status": "not_run",
-        "description": "0.5.61 exact push GitHub CI and pinned ZipRunner validator, plus independent Windows/operator acceptance.",
-        "reason": "Requires subsequent approved ZipRunner Git push and human operator Windows checks."
+        "description": "0.5.63 exact commit upstream pinned ZipRunner/DAPI and Windows CI checks.",
+        "reason": "Requires approved ZipRunner intake and subsequent exact-commit push; no automatic push."
+      },
+      {
+        "id": "ATR-164-SOURCE-WINDOWS-063",
+        "status": "passed",
+        "description": "Late-bound SQLite cleanup and recreated connection closure validated in source unit tests; native Windows ZipRunner rerun still pending.",
+        "evidence_ref": "evidence/P1_107_063_MOBILE_WINDOWS_QA.json",
+        "command": "python -m unittest tests.test_checkers_social_admission -q",
+        "environment": "Linux source checkout and extracted package; Windows rerun not observed."
+      },
+      {
+        "id": "ATR-165-SOURCE-UI-063",
+        "status": "passed",
+        "description": "Mobile catalog shell, connection error visibility and future hosted TaviX navigation source assertions passed; live hosted release not published.",
+        "evidence_ref": "evidence/P1_107_063_MOBILE_WINDOWS_QA.json",
+        "command": "node --test tests/atrium_mobile_catalog.test.mjs tests/catalog_ui_status.test.mjs",
+        "environment": "Node source tests and packaged source tree. No real hosted gateway configured."
+      },
+      {
+        "id": "ATR-164-WINDOWS-OPERATOR-063",
+        "status": "not_run",
+        "description": "Windows Python 3.13 ZipRunner complete build, SQLite cleanup and actual TaviX review.",
+        "reason": "Awaiting exact ZIP application and fresh native operator acceptance; source tests are not Windows host evidence."
+      },
+      {
+        "id": "ATR-166-MATERIAL3-LOCAL-064",
+        "status": "passed",
+        "description": "Material 3 shell, source filter and future TaviX boundaries",
+        "evidence_ref": "evidence/ATR_166_MATERIAL3_064_QA.json",
+        "command": "python -m unittest discover -s tests -q && npm test && npm run build && node --test tests/atrium_material3_shell.test.mjs",
+        "environment": "Linux source and disposable hosted-preview build, no live TaviX release"
+      },
+      {
+        "id": "ATR-166-MATERIAL3-TAVI-064",
+        "status": "not_run",
+        "description": "Operator 355x630 Tavi and real hosted catalog acceptance",
+        "reason": "TaviX hosted release requires actual configured trusted gateway, Windows ZipRunner and separate human approval."
       }
     ]
   },
   "handover": {
-    "next_pass": "Verify exact 0.5.61 CI and Windows QA; bind approved Social session/challenge verification to production LoopRD match routes; host one real Tavi and one browser client and complete a match.",
+    "next_pass": "Verify 0.5.64 exact-commit CI and installed Windows build; operator-reviewed hosted TaviX 1.0.6 with real LoopRD catalog and Material 3 visual acceptance; complete real Tavi-to-browser Checkers match.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -1634,7 +1812,9 @@
       "Operator must configure and maintain read-only SQLite/asset access and an HTTPS reverse proxy; this ZIP deliberately does not deploy a service or publish Pages.",
       "Real publisher HTTPS origin challenge and v3→v4 production migration remain separately operator-unverified.",
       "Mock Life matches are deliberately tab-memory only; an unlocked static UI does not prove Social auth, persistent 60-hour games, Life engine fairness, OpenClaw game actions or deployed API compatibility.",
-      "0.5.56 routes are source-only and the fixture HTTP listener is NOT production authentication. LoopRD game info still announces persistentMatchesEnabled:false. Never expose transport without an independently reviewed Social session verifier, accepted challenge contract, CSRF/TLS, and operator permission gates."
+      "0.5.56 routes are source-only and the fixture HTTP listener is NOT production authentication. LoopRD game info still announces persistentMatchesEnabled:false. Never expose transport without an independently reviewed Social session verifier, accepted challenge contract, CSRF/TLS, and operator permission gates.",
+      "Installed TaviX 1.0.4 is immutable and cannot display the new source UX until a new operator-approved extension is installed.",
+      "Material styling is source-only: no active hosted catalog/real game registrations or TaviX 1.0.6 installation was verified. Existing TaviX 1.0.4 still renders historical dark UI."
     ],
     "blockers": [
       "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",
@@ -1643,7 +1823,9 @@
       "CheckersTrustedHost is source-only; real Social issuer verification and accepted lobby proof are not bound, and no production LoopRD route or Tavi/browser client exists.",
       "0.5.58 exact GitHub CI run 42023076428 failed pinned package validation (missing passed-check evidence_ref); 0.5.59 requires independent CI.",
       "0.5.60 remote client and view remain source-only; authenticated Social/LoopRD transport and Tavi/browser deployment are not connected or operator-accepted.",
-      "0.5.61 host-neutral player is a source/static asset only: Social login/CSRF/accepted challenge and authenticated LoopRD Match endpoints are NOT deployed or operator-approved; no real Tavi/browser gameplay demonstrated."
+      "0.5.63 host-neutral player is a source/static asset only: Social login/CSRF/accepted challenge and authenticated LoopRD Match endpoints are NOT deployed or operator-approved; no real Tavi/browser gameplay demonstrated.",
+      "0.5.63 only binds server-injected typed Social original challenge projections. Real session lookup, accepted friendship lookup, authoritative original challenge retrieval, public LoopRD handlers and deployed Tavi clients remain unimplemented and require separate operator review.",
+      "No active public hosted catalog endpoint or source-verified deployment evidence in the ZIP; cannot make games playable by inventing URLs."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
@@ -1655,7 +1837,9 @@
       "v0.5.16 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled.",
       "v0.5.34 adds opt-in local reader with per-deployment pull authority. Existing v2 push and public GitHub workflow registration are preserved; discovery is not publication.",
       "0.5.59 exact-commit CI run 42029745669 passed Linux pinned validator and Windows smoke; does not approve 0.5.60 or live release.",
-      "0.5.60 exact commit 0d406ecac575ecad5d96706f804cc0328aa9a60c passed Linux pinned ZipRunner/DAPI validator and Windows GitHub job: https://github.com/TheBigTreeInc/atrium/actions/runs/42037625554. This CI does not approve release or verify 0.5.61."
+      "0.5.60 exact commit 0d406ecac575ecad5d96706f804cc0328aa9a60c passed Linux pinned ZipRunner/DAPI validator and Windows GitHub job: https://github.com/TheBigTreeInc/atrium/actions/runs/42037625554. This CI does not approve release or verify 0.5.63.",
+      "0.5.63 source-only Social admission uses original game_challenge_send challenge ID encoded as lobbyRef social_<id>; server verifies game checkers, status accepted, current friendship and participant sessions. Deterministic match selector is not a credential. No public route is enabled.",
+      "0.5.61 exact push ea111728ca9280a403709f423039abf91ff1ed05 CI run 42051680353 passed pinned source/DAPI/ZipRunner Linux and Windows smoke; native operator QA and release still unapproved."
     ]
   },
   "operator_actions": [

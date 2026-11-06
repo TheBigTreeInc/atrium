@@ -1,0 +1,52 @@
+= Atrium 0.5.63 — Tavi catalog, mobile presentation, Windows SQLite cleanup
+
+== Reported state
+
+A Tavi embedded screen shows "Your Atrium is ready" and "0 games available". The
+immutable TaviX 1.0.4 offline bundle contains no live hosted catalog endpoint;
+`web/hosted-games.json` has `games: []`, `web/catalog.json` has `apps: []`, and
+both checked-in gateway configurations are blank. That is *not* evidence
+there are no trusted registered games on a remote deployment. The offline
+preview cannot query them without the live public catalog.
+
+The browser and future hosted-extension UI now shows a source-not-connected
+message rather than claiming that zero games are registered, hides unusable
+category filters while the library is empty, wraps category buttons at phone
+width, and uses a Tavi-aligned palette with dark mode. A future configured
+TaviX release places Atrium tabs underneath the Tavi header and does not
+add a second fixed footer. Existing 1.0.4 bytes and lock remain immutable.
+
+== Operator-owned activation sequence
+
+. Deploy and verify the required LoopRD 0.5.0 anonymous hosted catalog endpoint.
+. Confirm trusted active game deployment, portable `atriumd.yaml` registration,
+  resolved launch URL and publisher binding in the authoritative registry.
+. Query the public `GET /looprd/atrium/v1/catalog/hosted-games` or operator-
+  configured `/hosted-games.json` with no credentials. Verify nonempty valid
+  `atrium.hosted-games/v1` entries, no-store and CORS configuration.
+. Supply an operator-approved `ATRIUM_PUBLIC_HOSTED_CATALOG_URL` and set
+  `ATRIUM_REQUIRE_PUBLIC_HOSTED_CATALOG=1` to require a nonempty HTTPS preflight.
+. Build and review the *new* TaviX 1.0.6 release in the separate TaviX
+  project, then install the approved extension. Do not mutate 1.0.4 or
+  publish automatically from Atrium.
+
+Do not hard-code a deployment URL in portable `looprd.yaml` or `atriumd.yaml`.
+No sample/review/unpublished game is allowed to appear as playable.
+
+== Windows repair
+
+The 0.5.62 ZipRunner build failed under Python 3.13 with `WinError 32`
+on temporary `match.sqlite`. The unit-test fixture registered the bound
+`close()` of the first SQLite authority, then the restart test replaced the
+authority. Teardown closed the *old* connection again, leaving the new
+connection open during `TemporaryDirectory.cleanup()`. 0.5.63 registers
+late-bound cleanup (`lambda: self.authority.close()`) and adds a test proving
+the reopened connection is closed before directory deletion. No production
+DB migration or stored session data is touched.
+
+== Gates
+
+Native Windows ZipRunner clean build, exact commit GitHub CI, live catalog
+inspection, TaviX approval, two-account Checkers acceptance and release
+remain independent. This source package does not configure endpoints or
+approve any game.

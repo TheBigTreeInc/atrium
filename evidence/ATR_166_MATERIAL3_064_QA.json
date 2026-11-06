@@ -1,0 +1,61 @@
+{
+  "schema": "atrium.ui-source-qa/v1",
+  "project": "atrium",
+  "version": "0.5.64",
+  "scope": "source-tree-and-disposable-hosted-extension-preview",
+  "executions": [
+    {
+      "name": "Python regression",
+      "command": "python -m unittest discover -s tests -q",
+      "result": "passed",
+      "tests": 380,
+      "environment": "Linux Python 3.13 local dependency environment"
+    },
+    {
+      "name": "JavaScript regression",
+      "command": "npm test",
+      "result": "passed",
+      "tests": 87,
+      "environment": "Node 22"
+    },
+    {
+      "name": "Disposable Checkers group QA",
+      "command": "python tools/checkers_group_qa.py --report /mnt/data/atrium064-checkers-source.json",
+      "result": "passed",
+      "tests": 33,
+      "notes": "simulated HTTP fixture only; no live Tavi or Social credentials"
+    },
+    {
+      "name": "Material 3 UI source checks",
+      "command": "node --test tests/atrium_material3_shell.test.mjs",
+      "result": "passed",
+      "tests": 4
+    },
+    {
+      "name": "Static web build and verification",
+      "command": "npm run build",
+      "result": "passed",
+      "notes": "Actual hosted TaviX staging skipped, no TaviX checkout or live HTTPS catalog provided"
+    },
+    {
+      "name": "Synthetic configured hosted TaviX preview",
+      "command": "node tools/build_tavi_extension.mjs with disposable dist/hosted-config.json",
+      "result": "passed",
+      "notes": "Future 1.0.6 preview has material-theme.css and secondary top tabs; URL was local synthetic test input and not persisted or published"
+    },
+    {
+      "name": "Immutable TaviX 1.0.4 integrity",
+      "command": "hash files against extensions/tavi/immutable-1.0.4.lock.json",
+      "result": "passed",
+      "notes": "Original 1.0.4 immutable archive unmodified"
+    }
+  ],
+  "unverified": [
+    "Real hosted TaviX 1.0.6 deployment or install",
+    "Active LoopRD hosted game catalog",
+    "Visual manual inspection under real Tavi at 355x630",
+    "Windows ZipRunner acceptance",
+    "Exact 0.5.64 commit GitHub Actions",
+    "Release approval"
+  ]
+}

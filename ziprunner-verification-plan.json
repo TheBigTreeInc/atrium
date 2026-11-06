@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.61",
+  "version": "0.5.64",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -926,6 +926,76 @@
           "mode": "manual",
           "checks": [
             "ATR-162-CHECKERS-HOSTED-PLAYER-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-163-CHECKERS-SOCIAL-CHALLENGE-ADMISSION",
+      "criteria": [
+        {
+          "id": "ATR-163-CHECKERS-SOCIAL-ADMISSION-AC-SOURCE",
+          "description": "Only the Social server-verified original accepted Checkers challenge and current accepted friendship can admit exactly two verified session subjects to a persistent Checkers match; invalid claims, arbitrary refs, pending/rejected challenges, wrong games, spoofing and outages fail closed.",
+          "mode": "automated",
+          "checks": [
+            "ATR-163-CHECKERS-SOCIAL-ADMISSION-T1"
+          ]
+        },
+        {
+          "id": "ATR-163-CHECKERS-SOCIAL-ADMISSION-AC-LIVE",
+          "description": "Independently review real Social server-side lookups, session security, LoopRD hosting, Tavi/browser launch, and native Windows/operator release; source callbacks are not a live Social integration.",
+          "mode": "manual",
+          "checks": [
+            "ATR-163-CHECKERS-SOCIAL-ADMISSION-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-164-WINDOWS-SOCIAL-SQLITE-CLEANUP",
+      "criteria": [
+        {
+          "id": "ATR-164-SOURCE-CLEANUP",
+          "description": "New SQLite connection after authority replacement is closed before TemporaryDirectory cleanup; no Windows sqlite WinError 32.",
+          "mode": "mixed",
+          "checks": [
+            "ATR-164-CLEANUP-T1",
+            "ATR-164-CLEANUP-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-165-TAVI-MOBILE-CATALOG-UX",
+      "criteria": [
+        {
+          "id": "ATR-165-MOBILE-SHELL",
+          "description": "Source UI accurate empty gateway message, responsive compact light/dark layout; upcoming hosted TaviX has no nested bottom nav; locked historical extension unchanged.",
+          "mode": "mixed",
+          "checks": [
+            "ATR-165-MOBILE-T1",
+            "ATR-165-MOBILE-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-166-MATERIAL3-ATRIUM-SURFACE",
+      "criteria": [
+        {
+          "id": "ATR-166-MATERIAL3-AC-SOURCE",
+          "description": "Shared Material 3-inspired static theme, local SVG icons, real filters, accessible states, and dedicated Tavi host navigation without publishing.",
+          "mode": "automated",
+          "checks": [
+            "ATR-166-MATERIAL3-T1"
+          ]
+        },
+        {
+          "id": "ATR-166-MATERIAL3-AC-OPERATOR",
+          "description": "Native phone and host integration review in approved separate TaviX release.",
+          "mode": "manual",
+          "checks": [
+            "ATR-166-MATERIAL3-M1"
           ]
         }
       ]
@@ -1903,6 +1973,86 @@
       "stage": "acceptance",
       "description": "Approve live Social-authenticated LoopRD and Tavi/browser host separately",
       "instructions": "Prove real two-account Tavi/browser game over deployed authorized LoopRD routes, accepted Social challenge, fresh native Windows QA, operator and release approval. A standalone Pages page is not a live match."
+    },
+    {
+      "id": "ATR-163-CHECKERS-SOCIAL-ADMISSION-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Original Social challenge acceptance, typed deny semantics and persisted two-client match authority",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_checkers_social_admission.py",
+      "assertions": [
+        "8 source tests enforce original accepted challenge, same Social issuer, account identities and friends; no client claims",
+        "Two fixture HTTP clients share persistent match, legal actions and revision state; forged/outsider denied",
+        "Expired/pending/wrong-game/invalid refs, service failures and typed denial remain fail closed"
+      ]
+    },
+    {
+      "id": "ATR-163-CHECKERS-SOCIAL-ADMISSION-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Live Social service contract, host security and two real Tavi/browser clients require separate operator approval",
+      "instructions": "Obtain approved Social original challenge read API and active-session verifier; deploy secure LoopRD host with HTTPS, CSRF/origin, rate limits and no client-supplied subject; prove accepted challenge and complete match between Tavi and standalone browser. Validate Windows ZipRunner and explicit operator acceptance separately."
+    },
+    {
+      "id": "ATR-164-CLEANUP-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Windows restart SQLite cleanup source regression",
+      "runner_ref": "atrium-python-tests",
+      "test_ref": "tests/test_checkers_social_admission.py",
+      "assertions": [
+        "Restart test closes latest database connection, even if authority instance was replaced",
+        "TemporaryDirectory cleanup no longer attempts to unlink locked SQLite file"
+      ]
+    },
+    {
+      "id": "ATR-164-CLEANUP-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Native Windows ZipRunner full rerun and SQLite lock acceptance",
+      "instructions": "Run 0.5.63 exact ZIP on Windows Python 3.13 and verify complete 380-test Python suite, no WinError 32, preserved runtime DB/config and separate operator decision."
+    },
+    {
+      "id": "ATR-165-MOBILE-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Responsive future hosted TaviX mobile layout and honest catalog state",
+      "runner_ref": "atrium-node-tests",
+      "test_ref": "tests/atrium_mobile_catalog.test.mjs",
+      "assertions": [
+        "Responsive mobile category filters wrap and respect dark theme",
+        "Hosted catalog unconfigured is a connection state, not zero active registrations",
+        "Future hosted extension has Atrium tabs under host header without altering immutable 1.0.4"
+      ]
+    },
+    {
+      "id": "ATR-165-MOBILE-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Real Tavi UI and active trusted hosted game publication",
+      "instructions": "After operator provides verified HTTPS hosted catalog, stage independently reviewed future TaviX release; test real mobile 355x630 light/dark layout with Tavi header/footer and nonempty trusted games. No auto publish or simulated playable titles."
+    },
+    {
+      "id": "ATR-166-MATERIAL3-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Material tokens, source-filter behavior, Tavi host/navigation integration, immutable offline TaviX preservation",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/atrium_material3_shell.test.mjs",
+      "assertions": [
+        "Light/dark semantic palettes and reduced-motion styles without remote assets",
+        "Only real LoopRD and reviewed source filters, wired retries and aria-pressed/current",
+        "One embedded top tab row below Tavi global chrome; source static assets include Material CSS",
+        "Immutable TaviX 1.0.4 remains byte-identical and unmodified"
+      ]
+    },
+    {
+      "id": "ATR-166-MATERIAL3-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Compare 355x630 light/dark in real Tavi, genuine trusted catalog and host navigation",
+      "instructions": "On operator-approved hosted TaviX 1.0.6, verify source filters, offline/retry states, actual trusted games, accessible navigation, no duplicate bottom bar or horizontal scroll. Do not publish until fresh Windows/CI and explicit human approval."
     }
   ]
 }

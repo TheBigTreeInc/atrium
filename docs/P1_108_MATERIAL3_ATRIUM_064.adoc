@@ -1,0 +1,25 @@
+= Atrium 0.5.64 — Material 3-inspired visual pass (source only)
+:toc:
+
+== Scope
+
+Move the standalone Atrium portal and the *future separately reviewed hosted TaviX* experience toward Material 3 design patterns. This is a CSS and presentation-layer pass, not a Tavi client release or new catalog/identity deployment.
+
+* `web/material-theme.css`: light and dark semantic design tokens, tonal surfaces, rounded cards, outlined/selected filter chips, accessible focus rings, reduced-motion behavior, and high-legibility error/empty surfaces. No external fonts or icon network requests.
+* `web/index.html`: local, consistent SVG navigation icons, real source-based filters (All games / LoopRD / Reviewed), no fake genre claims or hardcoded Life lobby when no sessions exist.
+* `web/main.mjs`: source-based filtering with pressed and current navigation states; connection failures show a distinct state with a working Retry button. Empty successfully connected catalogs remain distinct from unreachable/unconfigured catalogs.
+* `tools/build.mjs`, `tools/verify_web.mjs`, `tools/build_tavi_extension.mjs`: copy and validate the shared stylesheet as a static build asset. Future hosted TaviX uses top *Atrium-section tabs* below Tavi's own chrome rather than adding a second bottom bar.
+
+== Design constraints
+
+* Tavi owns the messenger's global header, footer, back action, account and authentication. Atrium only owns its local sections.
+* The immutable offline TaviX 1.0.4 release and lock are byte-identical to the last reviewed source; new styling is only available after a separately approved hosted TaviX build, operator-configured HTTPS catalog and extension release.
+* The catalog remains empty without active trusted LoopRD game registrations and a real public hosted gateway. No demo catalog entries are injected to make a design appear complete.
+* On a phone-sized window (355x630) the filter chips wrap, internal Tavi tabs fit in four equal widths, and browser-only bottom navigation includes safe-area padding. Touch targets and status messages remain readable in light/dark.
+* No production LoopRD Checkers endpoints, Social credentials, release automation or operator state change are part of this pass.
+
+== Acceptance
+
+Automated source and extracted-ZIP checks: `node --test tests/atrium_material3_shell.test.mjs`, `npm test`, `npm run build`, `npm run verify`, Python regression and exact-ZIP Checkers group tests. The official pinned interchange validator and native Windows acceptance remain separate.
+
+Manual/operator review: stage the new *hosted* TaviX only with an approved real gateway. Inspect 355x630 light/dark and landscape/desktop, including source filters, error Retry, Tavi chrome integration, screen reader active tabs, and actual trusted games. Obtain explicit operator release approval before pushing TaviX or publishing Pages.

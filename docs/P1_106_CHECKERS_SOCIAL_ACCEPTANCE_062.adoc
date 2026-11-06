@@ -1,0 +1,25 @@
+= P1-106 — Checkers from verified Tavi Social challenge (Atrium 0.5.62)
+
+Status: source-only admission adapter, not a production host or release.
+
+== Scope and ownership
+
+Atrium now provides `src/checkers_social_admission.py`, integrating its already persistent `CheckersMatchAuthority` with the `VerifiedSocialChallenge` representation from the existing Tavi/Life bridge. The game module alone implements game rules and mutable match state; the generic Atrium catalog/lobby and the Tavi client remain rules-free.
+
+A trusted Social/LoopRD host must supply *all three* server-side callbacks:
+
+* `resolve_session(trusted_context)` returns a `VerifiedAccount` from an independently authenticated active Social session, with issuer matching the configured Social instance and audience `atrium.checkers/v1`; never populate from browser JSON, headers or an unverified SDK response.
+* `lookup_original_challenge(id)` reads Social's original `game_challenge_send` interaction via approved server-side storage/API (not the `game.challenge.response` interaction, a forwarded message, or a browser feed). Returns an actual `VerifiedSocialChallenge`. The original id, issuer, game `checkers`, `accepted` state, and two distinct Social `acct_<number>` actors are checked.
+* `accepted_contact(issuer,sender,recipient)` returns literal `True` only if the Social host currently attests accepted friendship. An outage, absent contract, pending/declined status or malformed reply fails closed.
+
+The untrusted request may contain `{"lobbyRef":"social_713"}`; that string is only a selector for the original challenge ID. The host-derived `matchId` is stable and namespaced; it is **not a login grant**. The host persists exact seats in the game-owned SQLite match authority. Repeated creation returns a conflict; exact request IDs allow safe retrying moves, and both real players can join the same match using their own verified sessions.
+
+== Tests and limits
+
+`python tools/checkers_group_qa.py --package dist/atrium-0.5.62-ziprunner.zip` reruns all 32 tests on the exact extracted source package. Eight added tests cover original accepted challenge, wrong issuer/game/state/identity, rejected friendship, unsupported client claims, service failure, deterministic match ID, duplicate match, two independent disposable HTTP sessions, legal moves and persisted restart resume. **All HTTP bearer aliases are local-only fixtures**.
+
+The update also repairs `CheckersTrustedHost` swallowing typed `MatchFailure` from trusted account and challenge callbacks: a real denial can remain a 401/403/422 rather than an incorrect 503; unexpected callback errors still fail closed as 503.
+
+== Operator-owned next gates
+
+No `looprd.yaml` public Checkers match route was enabled. No Social login provider was implemented, no TaviX bundle modified, and no real session/challenge service contract was fabricated. Before activation the owning Social and LoopRD projects must review their session lookup, original-challenge/accepted-contact API, issuer mapping and CSRF/origin/TLS protection, match storage and isolation. The operator must run native Windows ZipRunner checks, approve deployment, and complete a real Tavi-to-browser match between two separate accounts. Source or CI success does not constitute that approval.

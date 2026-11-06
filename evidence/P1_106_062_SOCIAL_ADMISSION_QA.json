@@ -1,0 +1,161 @@
+{
+  "ci_baseline": {
+    "commit": "ea111728ca9280a403709f423039abf91ff1ed05",
+    "linux": "success",
+    "run_url": "https://github.com/TheBigTreeInc/atrium/actions/runs/42051680353",
+    "windows": "success"
+  },
+  "fixture_sha256": "7d67ce7f27975374930d7d42f5c39c251af86b22e05c582c7308ce983726b61f",
+  "full_python_status": "passed",
+  "full_python_tests": 379,
+  "host": "fixture_context_and_loopback_only",
+  "javascript_status": "passed",
+  "javascript_tests": 80,
+  "native_windows_build": "not_run_for_0.5.62",
+  "node_test_log_sha256": "67d1c3796c43b4927b955e57dbf51f2a01b7b99d21856ede723b4e87c1835452",
+  "official_pinned_ziprunner_validator": "not_run_locally",
+  "operator_accepted": false,
+  "passed": true,
+  "production_looprd_activated": false,
+  "project": "atrium",
+  "python_test_log_sha256": "b082dc76b566cc0fe4c1d7928e7be2ee1c79b98c39bb6044ba152e8dbb4fcdfb",
+  "real_social_approved": false,
+  "records": [
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_cross_connection_atomic_revision_and_retry",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_disconnect_server_restart_and_persisted_replay",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_distinct_clients_sequential_moves_and_no_client_authority",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_full_match_from_initial_board_to_victory_over_two_network_clients",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_illegal_move_and_mandatory_multi_capture",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_join_requires_correct_authenticated_identity_and_returns_seat",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_legal_actions_are_server_owned_turn_scoped_and_authorized",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_network_crowning_and_king_backward_capture",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_network_validates_malformed_envelopes_and_does_not_mutate_state",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_network_victory_and_terminal_state",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_production_authority_creation_requires_distinct_host_confirmed_seats",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_source_boundaries_and_deterministic_fixture_digest",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_stale_revision_idempotent_retry_and_changed_duplicate",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_group_qa.CheckersNetworkGroupQA.test_unauthorized_wrong_identity_and_wrong_turn",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_host.TrustedHostBoundaryQA.test_declined_cross_game_wrong_audience_and_issuer_rejected",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_host.TrustedHostBoundaryQA.test_host_attested_lobby_creates_namespaced_private_seats",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_host.TrustedHostBoundaryQA.test_imposter_context_cannot_set_subject_or_create_a_match",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_host.TrustedHostBoundaryQA.test_server_owned_move_and_reconnect_without_identity_in_payload",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_routes.TrustedRouteNetworkQA.test_complete_match_over_host_bound_transport_with_deterministic_result",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_routes.TrustedRouteNetworkQA.test_create_join_inspect_and_server_owned_actions_over_two_sessions",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_routes.TrustedRouteNetworkQA.test_injected_client_claims_and_fake_session_cannot_grant_a_seat",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_routes.TrustedRouteNetworkQA.test_lobby_must_be_accepted_and_routes_reject_unexpected_paths",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_routes.TrustedRouteNetworkQA.test_replay_revision_conflict_and_recovery_after_server_restart",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_trusted_routes.TrustedRouteNetworkQA.test_route_contract_does_not_register_public_looprd_or_embed_credentials",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_accepted_original_challenge_creates_private_shared_match",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_contact_and_service_failures_fail_closed",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_invalid_lobby_reference_never_triggers_lookup",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_only_accepted_original_checkers_challenge_is_approved",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_service_absent_cannot_install_or_bind",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_two_independent_http_clients_use_server_verified_social_projection",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_two_session_route_join_legal_move_and_restart",
+      "status": "passed"
+    },
+    {
+      "id": "tests.test_checkers_social_admission.SocialAdmissionQA.test_wrong_actor_and_raw_browser_claims_rejected",
+      "status": "passed"
+    }
+  ],
+  "schema": "atrium.qa-checkers-social-admission/v1",
+  "scope": "SOURCE_TREE_SIMULATED",
+  "source_sha256": "b9bbce216119b30b28acb1ee65c4fdb58151fb4448ad76222bd57ac2c9a17302",
+  "test_suite": "python tools/checkers_group_qa.py",
+  "tests": 32,
+  "version": "0.5.62",
+  "web_build": "passed",
+  "web_verify": "passed"
+}

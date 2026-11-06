@@ -64,6 +64,10 @@ class CheckersTrustedHost:
     def _actor(self, trusted_context):
         try:
             account = self._resolve(trusted_context)
+        except MatchFailure:
+            # Preserve a typed denial from a trusted service adapter. A denied
+            # or expired session is not a service outage.
+            raise
         except Exception:
             raise MatchFailure('trusted_identity_unavailable', 503) from None
         return self._canonical(account)
@@ -74,6 +78,10 @@ class CheckersTrustedHost:
             raise MatchFailure('invalid_lobby_reference', 422)
         try:
             approval = self._approve(trusted_context, lobby_ref)
+        except MatchFailure:
+            # Preserve typed Social refusal (pending/declined/wrong game). Never
+            # report it as a generic service outage.
+            raise
         except Exception:
             raise MatchFailure('trusted_lobby_unavailable', 503) from None
         if type(approval) is not ApprovedLobby or approval.status != 'accepted' or approval.game_id != 'checkers':

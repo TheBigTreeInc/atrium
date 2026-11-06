@@ -1,3 +1,17 @@
+# Atrium 0.5.64 — Material 3-inspired source design
+
+This pass refreshes the standalone Atrium UI and **future hosted TaviX** surface with local semantic light/dark colors, tonal cards and buttons, consistent local SVG icons, working All/LoopRD/Reviewed filters, and an actionable catalog Retry state. A hosted TaviX gets a Material-style Atrium section tab row beneath Tavi’s own header, not a second bottom nav. Current TaviX 1.0.4 remains immutable, and no catalog games are invented. No operator-managed URLs, production endpoints, configurations, approvals, Git pushes or releases are changed. See `docs/P1_108_MATERIAL3_ATRIUM_064.adoc`.
+
+# Atrium 0.5.63 — Windows SQLite and future Tavi mobile catalog UX
+
+The 0.5.62 Windows ZipRunner build failed (`WinError 32`) because the Social admission restart test closed an obsolete bound SQLite connection but left the reopened match DB in use. The test now closes the latest connection at teardown and verifies the DB can be removed. The future *reviewed* hosted TaviX UI has mobile light/dark polish, better catalog connectivity messaging, and Atrium navigation moved to top tabs, avoiding Tavi's second bottom bar. **Historical TaviX 1.0.4 is immutable and unchanged.** Empty offline catalog files are not proof that trusted games are absent upstream; real hosted LoopRD 0.5.0 gateway and verified registration must be activated by the operator before games appear. This source ZIP changes no URL, private config, operator approval, release or hosted registry.
+
+See `docs/P1_107_CATALOG_MOBILE_AND_WINDOWS_063.adoc`.
+
+# Atrium 0.5.62 source-only Tavi Social Checkers challenge admission
+
+Adds `CheckersSocialAdmission` between the existing persistent Checkers trusted host and *server-verifiable* original Social challenges, with typed session and accepted-contact checks; eight new fixture tests and fixed typed-denial propagation. The original `game_challenge_send` ID is a selector only, not a grant. No public LoopRD match handler, production Social lookup, Tavi extension publication, operator acceptance or release. See `docs/P1_106_CHECKERS_SOCIAL_ACCEPTANCE_062.adoc`.
+
 **Atrium 0.5.61 hosted Checkers player (source-only):** Adds an unadvertised same-origin hosted match page using the 0.5.60 rules-free client; identity and moves remain server-authoritative. Existing Social/LoopRD live bindings and operator approval remain required. 0.5.60 exact CI passed: https://github.com/TheBigTreeInc/atrium/actions/runs/42037625554. See docs/P1_105_CHECKERS_HOSTED_PLAYER_061.adoc.
 
 **Atrium 0.5.60 rules-free remote Checkers client:** Adds transport-injected client and shared board rendering server state/legal paths, with same-request-ID retry on uncertain network replies. 0.5.59 exact CI passed both pinned Linux validator and Windows checks at https://github.com/TheBigTreeInc/atrium/actions/runs/42029745669 . No Social login, deployed match routes, Tavi/browser integration or operator release acceptance yet. See docs/P1_104_CHECKERS_REMOTE_THIN_CLIENT_060.adoc.

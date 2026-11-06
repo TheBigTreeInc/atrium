@@ -94,4 +94,5 @@ returnButton?.addEventListener('click',async()=>{
 });
 void tavi.info().then(info=>{
  if(hostOwnsNavigation(info)){document.body?.classList?.add('tavix-host-navigation');returnButton?.remove();}
-}).catch(()=>{});
+ else if(returnButton)returnButton.hidden=false;
+}).catch(()=>{if(returnButton)returnButton.hidden=false;});

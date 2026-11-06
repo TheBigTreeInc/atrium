@@ -25,9 +25,11 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 SOURCE_FILES = ('src/checkers.py', 'src/checkers_adapter.py', 'src/checkers_match_authority.py',
                 'src/checkers_trusted_host.py', 'src/checkers_trusted_routes.py',
+                'src/checkers_social_admission.py', 'src/social_challenge_bridge.py',
                 'tests/support/checkers_disposable.py', 'tests/test_checkers_group_qa.py',
                 'tests/test_checkers_trusted_host.py',
                 'tests/support/checkers_trusted_http.py', 'tests/test_checkers_trusted_routes.py',
+                'tests/test_checkers_social_admission.py',
                 'tools/checkers_group_qa.py')
 FIXTURE_SHA = '7d67ce7f27975374930d7d42f5c39c251af86b22e05c582c7308ce983726b61f'
 
@@ -139,11 +141,12 @@ def main():
         unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_group_qa'),
         unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_trusted_host'),
         unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_trusted_routes'),
+        unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_social_admission'),
     ])
     result = unittest.TextTestRunner(verbosity=0, resultclass=Records).run(suite)
     assert isinstance(result, Records)
     # A skipped/uncollected integration test is never claimed as a pass.
-    good = result.wasSuccessful() and result.testsRun >= 24 and len(result.records) == result.testsRun \
+    good = result.wasSuccessful() and result.testsRun >= 32 and len(result.records) == result.testsRun \
         and all(item['status'] == 'passed' for item in result.records)
     version = json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']
     data = {'schema': 'atrium.checkers-group-test/v1', 'project': 'atrium',
