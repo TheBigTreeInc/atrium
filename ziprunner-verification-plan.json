@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.64",
+  "version": "0.5.65",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -996,6 +996,27 @@
           "mode": "manual",
           "checks": [
             "ATR-166-MATERIAL3-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-167-STRUCTURIZR-C4-BASELINE",
+      "criteria": [
+        {
+          "id": "ATR-167-C4-SOURCE-STRUCTURE",
+          "description": "Root architecture/c4 DSL and AsciiDoc document source-backed components, stable identifiers, exact runtime boundaries and required C4 views; file inclusion and regression checks run in the source package.",
+          "mode": "automated",
+          "checks": [
+            "ATR-167-C4-T1"
+          ]
+        },
+        {
+          "id": "ATR-167-C4-UPSTREAM-CLI",
+          "description": "Official Structurizr CLI must parse workspace.dsl when installed; retain separate operator CI/Windows and release gates.",
+          "mode": "manual",
+          "checks": [
+            "ATR-167-C4-M1"
           ]
         }
       ]
@@ -2053,6 +2074,27 @@
       "stage": "acceptance",
       "description": "Compare 355x630 light/dark in real Tavi, genuine trusted catalog and host navigation",
       "instructions": "On operator-approved hosted TaviX 1.0.6, verify source filters, offline/retry states, actual trusted games, accessible navigation, no duplicate bottom bar or horizontal scroll. Do not publish until fresh Windows/CI and explicit human approval."
+    },
+    {
+      "id": "ATR-167-C4-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Source-based C4 coverage, view keys, stable elements, source-only boundaries and root ZIP files",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_c4_architecture.py",
+      "assertions": [
+        "workspace.dsl defines three Level 3 component views and minimal context/containers plus relevant dynamic flows",
+        "SourceOnly elements are identified and unverified deployments omitted",
+        "Identified code evidence paths and relationship endpoints exist and source package includes architecture/c4 files",
+        "Existing TaviX and publish/operator gates are unchanged"
+      ]
+    },
+    {
+      "id": "ATR-167-C4-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Parse and inspect C4 workspace with official Structurizr CLI when available",
+      "instructions": "If Structurizr CLI is installed, execute its validate -workspace architecture/c4/workspace.dsl command, capture exact output, resolve syntax issues before accepting. Confirm actor/source-only and deployment-boundary accuracy; do not infer deployment, release or human approval from local structural tests."
     }
   ]
 }

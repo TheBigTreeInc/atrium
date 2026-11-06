@@ -1,3 +1,7 @@
+# Atrium 0.5.65 — C4 Level 3 architecture baseline (source-only)
+
+Added `architecture/c4/workspace.dsl` and `architecture/c4/README.adoc` at the ZIP root. The Structurizr DSL identifies current Atrium LoopRD, static web, TaviX, optional operator gateway, Market Grove and source-only Checkers responsibilities, with Level 1/2 context and Level 3 component views. Two dynamic views describe conditional discovery and source-only Checkers. There is **no claimed live deployment diagram**. Source-backed regression checks guard stable identifiers, evidence paths and package inclusion; the official Structurizr CLI is not available in this build environment and its parser validation remains unverified. No TaviX release, public gateway, game activation, identity credentials, operator configuration, Git push or release approval is changed. See `architecture/c4/README.adoc`.
+
 # Atrium 0.5.64 — Material 3-inspired UI source candidate
 
 Based on 0.5.63. Adds semantic Material-inspired light/dark CSS, local vector navigation, genuine source filters and retryable catalog diagnostics, and a single internal tab row when embedded in an operator-reviewed future hosted TaviX. The existing published TaviX 1.0.4 is byte-locked; no games, real Social service endpoints, launch URLs, or release approvals are fabricated or deployed. Fresh native Windows ZipRunner, CI and human operator acceptance remain independent. See `docs/P1_108_MATERIAL3_ATRIUM_064.adoc`.

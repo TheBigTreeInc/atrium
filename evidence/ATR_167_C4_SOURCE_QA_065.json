@@ -1,0 +1,22 @@
+{
+  "schema": "atrium.architecture-c4-source-qa/v1",
+  "version": "0.5.65",
+  "source_package_base": "atrium-0.5.64-ziprunner.zip",
+  "workspace": "architecture/c4/workspace.dsl",
+  "workspace_sha256": "313f9d3166589e70ea0978a72405fd33ade0ce576aaf1bfd9662c88e54480ab3",
+  "readme": "architecture/c4/README.adoc",
+  "readme_sha256": "0a1742714258ab3ad177d0a63a41edfffa4aa461913f08469e58fb6d5ec65f5f",
+  "checks": {
+    "source_c4_regression": "passed_5_of_5",
+    "model_view_count": 7,
+    "level3_views": 3,
+    "dynamic_views": 2,
+    "extracted_zip_c4": "pending"
+  },
+  "structurizr_cli": {
+    "status": "not_run",
+    "reason": "Not installed locally; no network access; Structurizr parser validation cannot be asserted."
+  },
+  "deployment": "not_verified",
+  "human_acceptance": "pending"
+}

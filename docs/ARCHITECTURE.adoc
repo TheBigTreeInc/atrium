@@ -2,6 +2,9 @@
 :revnumber: 0.3.0
 :toc: left
 
+NOTE: The current source-derived C4 architecture source of truth is `architecture/c4/workspace.dsl` with boundaries and verification status in `architecture/c4/README.adoc`. This historical document includes older implementation plans and should not supersede the maintained C4 model.
+
+
 == Product and specification boundary
 
 `Atrium` is a provisional application ecosystem product name. `looprd/v1` is a

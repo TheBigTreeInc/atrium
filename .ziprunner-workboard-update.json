@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.64",
-  "summary": "0.5.64 Material 3-inspired phone-first styling, working source filters, accessible states, and future TaviX top tabs; no live catalog, TaviX release, configuration or approval change.",
+  "version": "0.5.65",
+  "summary": "0.5.65 source-derived Structurizr C4 Level 3 baseline with minimal context/containers, verified source-boundary tests and documented unverified CLI/deployment status; no runtime or operator approval changes.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -495,6 +495,16 @@
         "On reviewed hosted TaviX, inspect 355x630 light and dark modes with Tavi owning the app header/footer; verify one local tab row and no horizontal overflow.",
         "Verify All/LoopRD/Reviewed filters operate only on actual registered apps; retry offers an actual fetch without inventing playable games or user identity.",
         "Approve gateway URL and hosted TaviX 1.0.6 separately after native Windows ZipRunner and exact-commit CI; preserve the immutable TaviX 1.0.4 bytes."
+      ]
+    },
+    {
+      "id": "ATR-167-STRUCTURIZR-C4-BASELINE",
+      "title": "Establish and maintain Atrium Structurizr C4 Level 3 architecture model",
+      "summary": "Source-derived Level 3 component definitions for Atrium LoopRD API, static portal and TaviX, plus Level 1/2, conditional discovery and source-only Checkers flows. AsciiDoc records code evidence, external boundaries, pending live activation and absence of validated topology. The architecture files are packaged at ZIP root; C4 source guard is included in Python CI.",
+      "operator_checks": [
+        "Inspect architecture/c4/workspace.dsl and architecture/c4/README.adoc for supported source relationships and stable IDs; confirm no invented external implementation or running production Checkers routes.",
+        "Run official Structurizr CLI validate -workspace architecture/c4/workspace.dsl if installed; record success/failure explicitly. The Linux build environment did not have the CLI.",
+        "Confirm native Windows ZipRunner source install, same-package Python/Node QA, pinned GitHub CI and separate operator acceptance. No automatic publication or release."
       ]
     }
   ],

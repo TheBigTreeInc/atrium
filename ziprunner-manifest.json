@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.64",
-    "base_version": "0.5.63",
+    "version": "0.5.65",
+    "base_version": "0.5.64",
     "source_revision": "ea111728ca9280a403709f423039abf91ff1ed05"
   },
   "update": {
-    "id": "ATR-P1-20261106-064",
+    "id": "ATR-P1-20261106-065",
     "kind": "source_update",
-    "created_at": "2026-11-06T07:57:00+01:00",
-    "summary": "Material 3-inspired Atrium UI source redesign and future hosted TaviX top tabs, with real source filters and accurate retryable catalog states. Historical TaviX 1.0.4 and release/operator gates unchanged."
+    "created_at": "2026-11-06T13:19:00+01:00",
+    "summary": "Initial source-derived Structurizr C4 Level 3 architecture baseline, minimal Level 1/2, conditional dynamic views and AsciiDoc evidence; no runtime activation or operator release change."
   },
   "planned_work": [
     {
@@ -337,6 +337,12 @@
       "title": "Material 3-inspired Atrium and future hosted TaviX surface",
       "priority": "high",
       "acceptance_criteria": "Local CSS tokens, accessible SVG icon nav, working source filters and connection retry, honest empty catalog and lobbies; hosted top tabs replace duplicated internal footer; immutable TaviX lock untouched; reviewed operator acceptance before deployment."
+    },
+    {
+      "id": "ATR-167-STRUCTURIZR-C4-BASELINE",
+      "title": "Maintain Atrium C4 Structurizr component architecture from source",
+      "priority": "high",
+      "acceptance_criteria": "Root architecture/c4/workspace.dsl and README.adoc, source-linked C4 L3 components, minimal context and containers, bounded dynamic flows; source tests and explicit CLI validation status; human acceptance before release."
     }
   ],
   "done_work": [
@@ -1480,6 +1486,27 @@
           "description": "Scope, validation and manual acceptance gates"
         }
       ]
+    },
+    {
+      "id": "ATR-167-STRUCTURIZR-C4-BASELINE",
+      "summary": "Source-derived C4 system/container/component/dynamic models, AsciiDoc evidence, and source regression guards; CLI and real Windows/operator acceptance intentionally remain separate.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "architecture/c4/workspace.dsl",
+          "description": "Canonical Structurizr model"
+        },
+        {
+          "kind": "documentation",
+          "ref": "architecture/c4/README.adoc",
+          "description": "Component responsibility, dependency and limitations"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_c4_architecture.py",
+          "description": "Source-based architecture regression checks"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1799,11 +1826,25 @@
         "status": "not_run",
         "description": "Operator 355x630 Tavi and real hosted catalog acceptance",
         "reason": "TaviX hosted release requires actual configured trusted gateway, Windows ZipRunner and separate human approval."
+      },
+      {
+        "id": "ATR-167-C4-LOCAL-065",
+        "status": "passed",
+        "description": "Five C4 source-backed regression checks and ZIP inclusion",
+        "command": "python -m unittest tests.test_c4_architecture -v",
+        "environment": "Linux source checkout; structural preflight, not official CLI parser",
+        "evidence_ref": "evidence/ATR_167_C4_SOURCE_QA_065.json"
+      },
+      {
+        "id": "ATR-167-C4-CLI-065",
+        "status": "not_run",
+        "description": "Official Structurizr workspace syntax validation",
+        "reason": "Structurizr CLI not installed in this container; network inaccessible; official validation pending operator/CI."
       }
     ]
   },
   "handover": {
-    "next_pass": "Verify 0.5.64 exact-commit CI and installed Windows build; operator-reviewed hosted TaviX 1.0.6 with real LoopRD catalog and Material 3 visual acceptance; complete real Tavi-to-browser Checkers match.",
+    "next_pass": "After successful exact-package and Windows/CI acceptance, run official Structurizr CLI validation when available; update C4 with future production Social/Checkers route activation and catalog topology only when verified.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",

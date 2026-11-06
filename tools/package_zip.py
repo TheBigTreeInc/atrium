@@ -10,8 +10,8 @@ from urllib.parse import urlsplit
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.64-ziprunner.zip'
-SUFFIXES = {'.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
+NAME = 'atrium-0.5.65-ziprunner.zip'
+SUFFIXES = {'.dsl', '.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'dist-tavi', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
 
@@ -47,7 +47,7 @@ ALLOWED_CHECK_FIELDS = frozenset({
 
 def validate_verification_checks(plan):
     """Reject schema-invalid verification check metadata before ZIP creation."""
-    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.64':
+    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.65':
         raise ValueError('verification-plan project/version does not match package')
     checks = plan.get('checks')
     if not isinstance(checks, list) or not checks:
@@ -135,7 +135,7 @@ def main():
     validate_manifest_evidence_checks(
         manifest, {p.relative_to(ROOT).as_posix() for p in source_files()})
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.64'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.65'
     # ZipRunner validates both sections before it overlays any files. Fail the
     # source build at the same boundary, instead of distributing a broken ZIP.
     for section in ('implemented', 'remaining'):
