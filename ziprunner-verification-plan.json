@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.65",
+  "version": "0.5.66",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1017,6 +1017,27 @@
           "mode": "manual",
           "checks": [
             "ATR-167-C4-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-168-CHECKERS-EXACT-PACKAGE-COVERAGE",
+      "criteria": [
+        {
+          "id": "ATR-168-EXACT-PACKAGE-MATRIX",
+          "description": "Prove at least 47 tests from seven required Checkers suites in the same exact extracted package with source digests and honest group outcomes, including module-owned game rules, network sessions, Social fixture and ownership boundaries.",
+          "mode": "automated",
+          "checks": [
+            "ATR-168-CHECKERS-GROUP-T1"
+          ]
+        },
+        {
+          "id": "ATR-168-OPERATOR-LIVE-ACCEPTANCE",
+          "description": "Independently verify Windows and operator gates, real Social session acceptance, LoopRD endpoint and Tavi/browser live match before closing original critical DGN tasks.",
+          "mode": "manual",
+          "checks": [
+            "ATR-168-CHECKERS-GROUP-M1"
           ]
         }
       ]
@@ -2095,6 +2116,27 @@
       "stage": "acceptance",
       "description": "Parse and inspect C4 workspace with official Structurizr CLI when available",
       "instructions": "If Structurizr CLI is installed, execute its validate -workspace architecture/c4/workspace.dsl command, capture exact output, resolve syntax issues before accepting. Confirm actor/source-only and deployment-boundary accuracy; do not infer deployment, release or human approval from local structural tests."
+    },
+    {
+      "id": "ATR-168-CHECKERS-GROUP-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Exact-source Checkers rules+transport+ownership group QA with missing/skip/duplicate guard",
+      "runner_ref": "atrium-checkers-disposable-group-qa",
+      "test_ref": "tools/checkers_group_qa.py",
+      "assertions": [
+        "Seven required modules include game rules and general game-engine contract, two independent network clients, trusted host/routes, Social fixture and ownership boundaries.",
+        "Every group meets or exceeds its expected case count and any skipped, missing, duplicate or failed record causes test failure.",
+        "Exact-package mode executes the included runner and source in the original archive and records ZIP SHA-256 and source digest.",
+        "No real Social-issued identity, activated public LoopRD match routes, Tavi host authority or release approval is claimed."
+      ]
+    },
+    {
+      "id": "ATR-168-CHECKERS-GROUP-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator verifies original critical Checkers QA and live deployment boundaries",
+      "instructions": "Verify exact ZIP source SHA and seven group breakdown. Run installed Windows ZipRunner tests, inspect source-only trust boundaries, then separately verify real Social identities and a complete Tavi-to-browser match. Only human acceptance may promote the Workboard task to Done."
     }
   ]
 }

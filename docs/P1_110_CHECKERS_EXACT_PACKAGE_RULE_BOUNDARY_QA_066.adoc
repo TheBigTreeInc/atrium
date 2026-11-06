@@ -1,0 +1,22 @@
+= Atrium 0.5.66: complete exact-source Checkers group evidence
+:revdate: 2026-11-06
+
+== Ownership and reason
+
+The highest-priority suggested ticket `DGN-CHECKERS-M1-AUTOMATED-QA-001` requires game rules, two independent disposable network clients, Social admission rejection and module boundaries to be proven against *the same ZIP bytes*. Prior group evidence covered network/host tests only, with standalone rules and boundary cases run separately by the general Python suite.
+
+This pass extends `tools/checkers_group_qa.py` to use seven required module groups: `tests.test_checkers`, `tests.test_game_contract`, `tests.test_checkers_group_qa`, `tests.test_checkers_trusted_host`, `tests.test_checkers_trusted_routes`, `tests.test_checkers_social_admission`, and `tests.test_checkers_boundary_contract`. The exact-ZIP mode first hashes and extracts the original source ZIP; the subprocess runs the *packaged* suite and modules, not a checkout outside the archive. All missing, duplicated, skipped, failing or under-collected test records fail the group outcome. The evidence includes group names, source module owner, per-group minimum and observed counts, composite source digest, exact archive hash and individual bounded records.
+
+The ownership boundary test asserts the generic Atrium lobby/catalog does not import the Checkers engine, the portable LoopRD rules oracle does not expose a mutable match host, and Tavi/browser clients contain no authoritative server implementation. This is static source coverage; it is not an attestation of running Tavi binaries or any external Social service.
+
+== Run and evidence
+
+[source,powershell]
+----
+python tools/checkers_group_qa.py --report state/qa/checkers/installed-source.json
+python tools/checkers_group_qa.py --package C:\path\to\atrium-0.5.66-ziprunner.zip --report state/qa/checkers/exact-zip.json
+----
+
+The first report is labeled `SOURCE_TREE` and the second `EXACT_PACKAGE_EXTRACTED`. A passing result cannot substitute for real operator Windows post-update approval, service-backed Social identity verification, accepted challenge lookup, production LoopRD endpoint activation, or one fully played match between a real Tavi client and standalone browser.
+
+This pass adds no architectural component or relationship. The established Structurizr model in `architecture/c4/workspace.dsl` stays unchanged; Structurizr CLI parser validation remains an explicitly outstanding independent step.

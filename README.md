@@ -1,3 +1,7 @@
+# Atrium 0.5.66 — exact package Checkers group evidence
+
+Expanded the packaged Checkers QA suite to seven required groups including all American Checkers rules, shared game engine and ownership boundary tests. Every group has a minimum and fail-closed verdict; missing, skipped or duplicate coverage cannot be claimed as passed. 0.5.65 exact CI was successful (https://github.com/TheBigTreeInc/atrium/actions/runs/42239065318). This version does not activate Social/LoopRD services, alter TaviX releases, or approve Windows/operator release. The established C4 model is unchanged because this pass only extends tests. See docs/P1_110_CHECKERS_EXACT_PACKAGE_RULE_BOUNDARY_QA_066.adoc.
+
 # Atrium 0.5.65 — C4 Level 3 architecture baseline (source-only)
 
 Added `architecture/c4/workspace.dsl` and `architecture/c4/README.adoc` at the ZIP root. The Structurizr DSL identifies current Atrium LoopRD, static web, TaviX, optional operator gateway, Market Grove and source-only Checkers responsibilities, with Level 1/2 context and Level 3 component views. Two dynamic views describe conditional discovery and source-only Checkers. There is **no claimed live deployment diagram**. Source-backed regression checks guard stable identifiers, evidence paths and package inclusion; the official Structurizr CLI is not available in this build environment and its parser validation remains unverified. No TaviX release, public gateway, game activation, identity credentials, operator configuration, Git push or release approval is changed. See `architecture/c4/README.adoc`.

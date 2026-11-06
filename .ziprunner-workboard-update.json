@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.65",
-  "summary": "0.5.65 source-derived Structurizr C4 Level 3 baseline with minimal context/containers, verified source-boundary tests and documented unverified CLI/deployment status; no runtime or operator approval changes.",
+  "version": "0.5.66",
+  "summary": "0.5.66 expands the exact-source-package Checkers group QA to rules, common game contract, disposable two-client network, trusted host/routes, verified-Social fixtures and source ownership boundaries; adds per-group fail-closed coverage without modifying production routes or the C4 model.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -505,6 +505,17 @@
         "Inspect architecture/c4/workspace.dsl and architecture/c4/README.adoc for supported source relationships and stable IDs; confirm no invented external implementation or running production Checkers routes.",
         "Run official Structurizr CLI validate -workspace architecture/c4/workspace.dsl if installed; record success/failure explicitly. The Linux build environment did not have the CLI.",
         "Confirm native Windows ZipRunner source install, same-package Python/Node QA, pinned GitHub CI and separate operator acceptance. No automatic publication or release."
+      ]
+    },
+    {
+      "id": "ATR-168-CHECKERS-EXACT-PACKAGE-COVERAGE",
+      "title": "Prove Checkers rules, transport and boundaries in one exact-ZIP group test",
+      "priority": "critical",
+      "summary": "The same original ZIP now supplies all seven required Checkers QA groups. Individual passed/skipped/error records, minimum counts and group ownership fail closed; source-only tests are never labeled as live Social/Tavi acceptance.",
+      "operator_checks": [
+        "Run the new 0.5.66 original ZIP with tools/checkers_group_qa.py --package and keep its input_zip_sha256, group breakdown, fixture hash and actual assertion records.",
+        "Review DGN-CHECKERS-M1-AUTOMATED-QA-001 acceptance separately; inspect generic lobby/catalog boundaries and confirm Tavi includes no authoritative Checkers server.",
+        "Run fresh native Windows post-update QA, review GitHub exact-commit CI and obtain human operator acceptance; a disposable HTTP source test is not a live Tavi/browser match or a release approval."
       ]
     }
   ],

@@ -23,14 +23,30 @@ from zipfile import ZipFile
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-SOURCE_FILES = ('src/checkers.py', 'src/checkers_adapter.py', 'src/checkers_match_authority.py',
+SOURCE_FILES = ('src/checkers.py', 'src/checkers_adapter.py', 'src/game_contract.py',
+                'src/checkers_match_authority.py',
                 'src/checkers_trusted_host.py', 'src/checkers_trusted_routes.py',
                 'src/checkers_social_admission.py', 'src/social_challenge_bridge.py',
                 'tests/support/checkers_disposable.py', 'tests/test_checkers_group_qa.py',
                 'tests/test_checkers_trusted_host.py',
                 'tests/support/checkers_trusted_http.py', 'tests/test_checkers_trusted_routes.py',
                 'tests/test_checkers_social_admission.py',
+                'tests/test_checkers.py', 'tests/test_game_contract.py',
+                'tests/test_checkers_boundary_contract.py',
                 'tools/checkers_group_qa.py')
+# Every entry runs from source and the original extracted ZIP. Keep minimums
+# explicit: a missing test module, silently skipped case, or weakened suite fails.
+TEST_GROUPS = (
+    ('game_rules', 'tests.test_checkers', 8),
+    ('game_contract', 'tests.test_game_contract', 4),
+    ('authority_network', 'tests.test_checkers_group_qa', 14),
+    ('trusted_host', 'tests.test_checkers_trusted_host', 4),
+    ('trusted_routes', 'tests.test_checkers_trusted_routes', 6),
+    ('social_admission', 'tests.test_checkers_social_admission', 9),
+    ('ownership_boundaries', 'tests.test_checkers_boundary_contract', 2),
+)
+MINIMUM_GROUP_CASES = sum(group[2] for group in TEST_GROUPS)
+
 FIXTURE_SHA = '7d67ce7f27975374930d7d42f5c39c251af86b22e05c582c7308ce983726b61f'
 
 
@@ -64,6 +80,26 @@ class Records(unittest.TextTestResult):
     def addSkip(self, test, reason):
         super().addSkip(test, reason)
         self.records.append({'id': test.id(), 'status': 'skipped', 'detail': reason[:240]})
+
+
+def assess_group_records(records, tests_run):
+    """Fail closed on missing, skipped, duplicated, or uncollected coverage."""
+    ids = [r.get('id') for r in records]
+    unique = len(ids) == len(set(ids))
+    groups = []
+    for name, module, minimum in TEST_GROUPS:
+        matches = [row for row in records if isinstance(row.get('id'), str)
+                   and row['id'].startswith(module + '.')]
+        passed = sum(row.get('status') == 'passed' for row in matches)
+        groups.append({'id': name, 'owner_module': module, 'minimum_cases': minimum,
+                       'executed_cases': len(matches), 'passed_cases': passed,
+                       'status': 'passed' if len(matches) >= minimum and passed == len(matches) else 'failed'})
+    good = (isinstance(tests_run, int) and tests_run >= MINIMUM_GROUP_CASES
+            and tests_run == len(records) and unique
+            and all(row.get('status') == 'passed' for row in records)
+            and all(group['status'] == 'passed' for group in groups)
+            and sum(group['executed_cases'] for group in groups) == tests_run)
+    return good, groups
 
 
 def default_report():
@@ -138,16 +174,14 @@ def main():
         packaged_run(args.package.resolve(), report)
         return
     suite = unittest.TestSuite([
-        unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_group_qa'),
-        unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_trusted_host'),
-        unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_trusted_routes'),
-        unittest.defaultTestLoader.loadTestsFromName('tests.test_checkers_social_admission'),
+        unittest.defaultTestLoader.loadTestsFromName(module)
+        for _, module, _ in TEST_GROUPS
     ])
     result = unittest.TextTestRunner(verbosity=0, resultclass=Records).run(suite)
     assert isinstance(result, Records)
-    # A skipped/uncollected integration test is never claimed as a pass.
-    good = result.wasSuccessful() and result.testsRun >= 32 and len(result.records) == result.testsRun \
-        and all(item['status'] == 'passed' for item in result.records)
+    # Every required test family must be present and fully successful.
+    complete, group_results = assess_group_records(result.records, result.testsRun)
+    good = result.wasSuccessful() and complete
     version = json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']
     data = {'schema': 'atrium.checkers-group-test/v1', 'project': 'atrium',
             'task': 'DGN-CHECKERS-M1-AUTOMATED-QA-001', 'version': version,
@@ -158,10 +192,13 @@ def main():
             'network': 'disposable_loopback_http',
             'trusted_transport': 'source_router_plus_fixture_only_network_listener',
             'identity': 'injected_test_only_tokens_NOT_SOCIAL',
+            'coverage_mode': 'rules_engine_network_social_and_ownership_boundaries',
+            'required_group_minimum_cases': MINIMUM_GROUP_CASES,
+            'groups': group_results,
             'production_activated': False, 'operator_accepted': False,
             'passed': good, 'executed': result.testsRun,
             'passed_assertion_groups': sum(item['status']=='passed' for item in result.records),
-            'assertions': result.records[:50]}
+            'assertions': result.records[:80]}
     write_report(report, data)
     print(json.dumps({'pass': good, 'scope': data['scope'], 'tests': result.testsRun,
                       'report': str(report), 'input_zip_sha256': args.from_extracted_sha},

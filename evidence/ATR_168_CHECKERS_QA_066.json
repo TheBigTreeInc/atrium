@@ -1,0 +1,74 @@
+{
+  "schema": "atrium.qa-local-evidence/v1",
+  "source_version": "0.5.66",
+  "source_checkers_test_groups": 47,
+  "source_group_names": [
+    {
+      "executed_cases": 8,
+      "id": "game_rules",
+      "minimum_cases": 8,
+      "owner_module": "tests.test_checkers",
+      "passed_cases": 8,
+      "status": "passed"
+    },
+    {
+      "executed_cases": 4,
+      "id": "game_contract",
+      "minimum_cases": 4,
+      "owner_module": "tests.test_game_contract",
+      "passed_cases": 4,
+      "status": "passed"
+    },
+    {
+      "executed_cases": 14,
+      "id": "authority_network",
+      "minimum_cases": 14,
+      "owner_module": "tests.test_checkers_group_qa",
+      "passed_cases": 14,
+      "status": "passed"
+    },
+    {
+      "executed_cases": 4,
+      "id": "trusted_host",
+      "minimum_cases": 4,
+      "owner_module": "tests.test_checkers_trusted_host",
+      "passed_cases": 4,
+      "status": "passed"
+    },
+    {
+      "executed_cases": 6,
+      "id": "trusted_routes",
+      "minimum_cases": 6,
+      "owner_module": "tests.test_checkers_trusted_routes",
+      "passed_cases": 6,
+      "status": "passed"
+    },
+    {
+      "executed_cases": 9,
+      "id": "social_admission",
+      "minimum_cases": 9,
+      "owner_module": "tests.test_checkers_social_admission",
+      "passed_cases": 9,
+      "status": "passed"
+    },
+    {
+      "executed_cases": 2,
+      "id": "ownership_boundaries",
+      "minimum_cases": 2,
+      "owner_module": "tests.test_checkers_boundary_contract",
+      "passed_cases": 2,
+      "status": "passed"
+    }
+  ],
+  "source_scope": "SOURCE_TREE",
+  "source_assertion_status": true,
+  "coverage_contract_test_cases": 4,
+  "coverage_contract_passed": true,
+  "prior_exact_ci_run": "https://github.com/TheBigTreeInc/atrium/actions/runs/42239065318",
+  "new_version_exact_zip_ci": "not_run",
+  "new_version_windows_build": "not_run",
+  "operator_acceptance": "pending",
+  "live_tavi_to_browser": "not_run",
+  "structurizr_parser": "not_run",
+  "note": "This record is Linux source test evidence only; original ZIP evidence is collected separately after packaging."
+}
