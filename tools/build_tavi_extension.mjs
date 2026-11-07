@@ -9,7 +9,7 @@ const dest=path.join(root,'dist-tavi','ui');
 // evolving shared UI sources would change bytes and fail a real TaviX checkout.
 const configured=JSON.parse(await readFile(path.join(web,'hosted-config.json'),'utf8'));
 const configuredEndpoint=parseHostedCatalogSource(configured);
-if(configuredEndpoint==='./hosted-games.json'){
+if(configuredEndpoint==='./hosted-games.json' && process.env.ATRIUM_TAVIX_DEV_PREVIEW!=='1'){
  const frozen=path.join(root,'extensions','tavi','immutable-1.0.4');
  const lock=JSON.parse(await readFile(path.join(root,'extensions','tavi','immutable-1.0.4.lock.json'),'utf8'));
  if(lock.schema!=='atrium.tavix.immutable-lock/v1'||lock.version!=='1.0.4')throw Error('Invalid historical TaviX lock');
@@ -72,6 +72,7 @@ const bridge=await readFile(path.join(root,'extensions/tavi/extension-bridge.mjs
 if(!bridge.includes("../../src/hosted_catalog.mjs"))throw Error('Trusted catalog source import missing in TaviX bridge');
 await writeFile(path.join(dest,'extension-bridge.mjs'),bridge.replace("../../src/hosted_catalog.mjs","./src/hosted_catalog.mjs"));
 await cp(path.join(root,'extensions/tavi/tavix-sdk.mjs'),path.join(dest,'tavix-sdk.mjs'));
+await cp(path.join(root,'extensions/tavi/installed-games.mjs'),path.join(dest,'installed-games.mjs'));
 // A live public catalog is a different immutable TaviX release. Preserve the
 // existing 1.0.4 bytes when the operator has not configured an approved URL.
 // Version for a future live release is explicit source-controlled metadata, not
@@ -79,8 +80,8 @@ await cp(path.join(root,'extensions/tavi/tavix-sdk.mjs'),path.join(dest,'tavix-s
 const endpoint=configuredEndpoint;
 const baseManifest=JSON.parse(await readFile(path.join(root,'extensions/tavi/manifest.json'),'utf8'));
 let extensionManifest=baseManifest;
-if(endpoint!=='./hosted-games.json'){
- const release=JSON.parse(await readFile(path.join(root,'extensions/tavi/hosted-release.json'),'utf8'));
+if(endpoint!=='./hosted-games.json' || process.env.ATRIUM_TAVIX_DEV_PREVIEW==='1'){
+ const release=process.env.ATRIUM_TAVIX_DEV_PREVIEW==='1' ? {schema:'atrium.tavix.hosted-release/v1',version:'1.0.6'} : JSON.parse(await readFile(path.join(root,'extensions/tavi/hosted-release.json'),'utf8'));
  if(release.schema!=='atrium.tavix.hosted-release/v1' ||
     Object.keys(release).some(key=>!['schema','version'].includes(key)) ||
     !/^\d+\.\d+\.\d+$/.test(release.version) ||
@@ -96,7 +97,7 @@ if(endpoint!=='./hosted-games.json'){
  extensionManifest={...baseManifest,version:release.version};
 }
 await writeFile(path.join(root,'dist-tavi','manifest.json'),JSON.stringify(extensionManifest,null,2)+'\n');
-console.log(`Atrium TaviX ${extensionManifest.version}: ${endpoint==='./hosted-games.json'?'existing immutable offline preview':'operator-configured hosted catalog'}`);
+console.log(`Atrium TaviX ${extensionManifest.version}: ${process.env.ATRIUM_TAVIX_DEV_PREVIEW==='1'?'explicit developer preview':'operator-configured hosted extension'}`);
 console.log('Tavi extension built from shared Atrium static UI');
 
 }

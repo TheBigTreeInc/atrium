@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {validateInstalledInventory,installedGamesClient,openInstalledGame} from '../extensions/tavi/installed-games.mjs';
+const game={id:'org.example.klondike',version:'0.1.0',name:'Klondike Solitaire',classification:{type:'game',categories:['cards','solitaire']}};
+const response={schema:'tavix.installed-games.inventory/v1',games:[game]};
+const sdk={info:async()=>({features:['tavix.installed-games/v1']}),games:{installed:{list:async()=>response,open:async({id,expectedVersion})=>({accepted:true,id,version:expectedVersion})}}};
+test('accepts validated host inventory without executable URLs',()=>{const g=validateInstalledInventory(response);assert.equal(g[0].name,'Klondike Solitaire');assert.ok(Object.isFrozen(g[0]));});
+test('fails closed when feature is not advertised',async()=>{const x=await installedGamesClient({...sdk,info:async()=>({features:[]})});assert.deepEqual(x,{available:false,games:[]});});
+test('host game listing and explicit version-pinned open',async()=>{const x=await installedGamesClient(sdk);assert.equal(x.available,true);assert.equal((await openInstalledGame(sdk,x.games[0],x)).accepted,true);});
+test('stale or unlisted game never invokes host open',async()=>{const x=await installedGamesClient(sdk);await assert.rejects(openInstalledGame(sdk,{...game,version:'0.2.0'},x),/verified installed inventory/);});
+test('rejects malicious metadata and duplicate game IDs',()=>{for(const bad of [{...game,launchUrl:'https://evil.test'},{...game,classification:{type:'app',categories:[]}},{...game,name:' '},{...game,id:'../../bad'}])assert.throws(()=>validateInstalledInventory({...response,games:[bad]}));assert.throws(()=>validateInstalledInventory({...response,games:[game,game]}));});
+test('host rejection is not treated as successful game launch',async()=>{const x=await installedGamesClient(sdk);await assert.rejects(openInstalledGame({...sdk,games:{installed:{...sdk.games.installed,open:async()=>({accepted:false})}}},game,x),/did not accept/);});

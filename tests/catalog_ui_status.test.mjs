@@ -9,5 +9,5 @@ test('catalog transport failures stay visible on Discover and My Games',()=>{
  assert.match(source,/area\.prepend\(issuePanel\(issue\)\)/);
  assert.match(source,/libraryMirror\.append\(issuePanel\(issue\)\)/);
  assert.doesNotMatch(source,/if\(!count\)\s*\{?\s*area\.innerHTML=/);
- assert.match(source,/if\(!issues\.length\)/);
+ assert.match(source,/if\(!issues\.length&&installedSnapshot\.available/);
 });

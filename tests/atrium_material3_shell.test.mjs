@@ -39,7 +39,7 @@ test('real source filters, accessible nav state and connection retry are wired',
 });
 test('static and hosted Tavi builds include shared Material CSS but do not rewrite immutable release',()=>{
  for(const path of ['tools/build.mjs','tools/verify_web.mjs','tools/build_tavi_extension.mjs'])assert.match(file(path),/material-theme\.css/);
- assert.match(tavi,/if\(configuredEndpoint==='\.\/hosted-games\.json'\)/);
+ assert.match(tavi,/if\(configuredEndpoint==='\.\/hosted-games\.json' && process\.env\.ATRIUM_TAVIX_DEV_PREVIEW!=='1'\)/);
  assert.match(tavi,/immutable-1\.0\.4\.lock\.json/);
  assert.match(css,/\.chips\[hidden\]\{display:none!important\}/);
 });

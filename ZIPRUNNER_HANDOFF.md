@@ -1,6 +1,10 @@
-# Atrium 0.5.71 — CI schema and WindowsPath symlink regression repair
+# Atrium 0.5.74 — post-update stamp version repair
 
-GitHub 42377997643 revealed strict pinned done_work evidence validation and WindowsPath-specific symlink mock behavior; 0.5.71 repairs both without changing the game runtime. The 0.5.70 Windows/CI acceptance is NOT passed. See `docs/P1_115_GITHUB_CI_REPAIR_071.adoc`.
+Fixes ZipRunner failure on 0.5.72 caused by a stale 0.5.71 post-update stamp. Adds packaging preflight and regression. See `docs/P1_117_POST_UPDATE_STAMP_REPAIR_073.adoc`.
+
+# Atrium 0.5.74 — CI schema and WindowsPath symlink regression repair
+
+GitHub 42377997643 revealed strict pinned done_work evidence validation and WindowsPath-specific symlink mock behavior; 0.5.74 repairs both without changing the game runtime. The 0.5.70 Windows/CI acceptance is NOT passed. See `docs/P1_115_GITHUB_CI_REPAIR_071.adoc`.
 
 Windows ZipRunner 2026-11-07 failed on `test_offline_game` requiring Windows symlink creation (WinError 1314) and an exact string assertion of a Unix-style Python interpreter path. The tests now preserve fail-closed security validation without elevated Windows privileges and compare normalized native paths. No production game logic, TaviX package install mechanism, existing C4 components or operator approval gates changed. Retains the full independent Klondike/TaviX converter work from 0.5.69. See `docs/P1_114_WINDOWS_TEST_PORTABILITY_070.adoc`.
 

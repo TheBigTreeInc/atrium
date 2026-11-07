@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.71",
+  "version": "0.5.74",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1143,6 +1143,69 @@
           "mode": "manual",
           "checks": [
             "ATR-174-WIN-PINNED-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-175-TAVIX-INSTALLED-GAMES-CONSUMER",
+      "criteria": [
+        {
+          "id": "ATR-175-AC-UNIT",
+          "description": "Host inventory validation and version-pinned launch fail closed on untrusted data and missing features.",
+          "mode": "automated",
+          "checks": [
+            "ATR-175-T1"
+          ]
+        },
+        {
+          "id": "ATR-175-AC-DEVICE",
+          "description": "Operator proves Tavi installed game inventory and launch with Klondike in Tavi.",
+          "mode": "manual",
+          "checks": [
+            "ATR-175-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-176-POST-UPDATE-STAMP-SYNC",
+      "criteria": [
+        {
+          "id": "ATR-176-STAMP-PREFLIGHT",
+          "description": "Version stamp, package and plan agree; stale stamp rejected by packaging preflight.",
+          "mode": "automated",
+          "checks": [
+            "ATR-176-T1"
+          ]
+        },
+        {
+          "id": "ATR-176-WINDOWS-ACCEPTANCE",
+          "description": "Operator verifies native Windows ZipRunner import and post-update tests.",
+          "mode": "manual",
+          "checks": [
+            "ATR-176-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-177-WORKBOARD-PLAN-COVERAGE-REPAIR",
+      "criteria": [
+        {
+          "id": "ATR-177-COVERAGE-UNIT",
+          "description": "Manifest planned work, workboard implemented and verification tasks have exact coverage.",
+          "mode": "automated",
+          "checks": [
+            "ATR-177-T1"
+          ]
+        },
+        {
+          "id": "ATR-177-WINDOWS-ACCEPTANCE",
+          "description": "Operator verifies Windows ZipRunner full regression.",
+          "mode": "manual",
+          "checks": [
+            "ATR-177-M1"
           ]
         }
       ]
@@ -2342,7 +2405,65 @@
       "kind": "manual",
       "stage": "acceptance",
       "description": "Native Windows CI and pinned ZipRunner package approval",
-      "instructions": "Run 0.5.71 exact committed source through GitHub Linux/Windows verification and actual non-admin Windows ZipRunner. Check pinned done_work schema, symlink mock, release model evidence, original TaviX immutable release, and manual operator approval; no automatic deployment or game publication."
+      "instructions": "Run 0.5.73 exact committed source through GitHub Linux/Windows verification and actual non-admin Windows ZipRunner. Check pinned done_work schema, symlink mock, release model evidence, original TaviX immutable release, and manual operator approval; no automatic deployment or game publication."
+    },
+    {
+      "id": "ATR-175-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "TaviX installed games consumer tests",
+      "runner_ref": "node --test tests/installed_games_bridge.test.mjs",
+      "test_ref": "tests/installed_games_bridge.test.mjs",
+      "assertions": [
+        "Reject untrusted inventory",
+        "Fail closed on missing feature",
+        "Version-pinned launch"
+      ]
+    },
+    {
+      "id": "ATR-175-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Real Tavi installed Klondike launch",
+      "instructions": "Install classified Klondike and verify it appears and opens in Atrium; test offline restart and disabled package."
+    },
+    {
+      "id": "ATR-176-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Version consistency and stale stamp regression",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_post_update_stamp.py",
+      "assertions": [
+        "All current versions agree",
+        "Stale stamp fails package preflight"
+      ]
+    },
+    {
+      "id": "ATR-176-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Windows ZipRunner acceptance",
+      "instructions": "Import corrected source ZIP into non-admin Windows ZipRunner, verify post-update stamp and run full tests; preserve local configuration and operator release approval."
+    },
+    {
+      "id": "ATR-177-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Cross-file work coverage regression",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_release_pipeline.py",
+      "assertions": [
+        "planned_work equals done_work union todo_work",
+        "verification tasks exactly equal implemented workboard tasks"
+      ]
+    },
+    {
+      "id": "ATR-177-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Windows full QA and pinned validator",
+      "instructions": "Run full Windows ZipRunner build and pinned validator; verify no changes to protected runtime state and obtain operator acceptance before release."
     }
   ]
 }

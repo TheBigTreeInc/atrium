@@ -1,0 +1,22 @@
+= Atrium 0.5.72: TaviX installed games consumer
+:toc:
+
+== Ownership and status
+
+Atrium consumes the proposed `tavix.installed-games/v1` contract supplied by TaviX 0.1.10. Tavi owns classification, installation, trust, inventory authorization and opening isolated extensions. Atrium does not enumerate Tavi private storage or invent installed game URLs.
+
+This source pass implements the Atrium-side consumer, not the Tavi host implementation. The existing immutable TaviX 1.0.4 distribution is unchanged. The new bridge is present in the next source-based TaviX build and an explicitly requested developer preview (`ATRIUM_TAVIX_DEV_PREVIEW=1`). A source ZIP alone does not update the installed Atrium extension.
+
+== Host contract
+
+Atrium checks `host.info.features` for `tavix.installed-games/v1`. When absent it shows `Installed games unavailable`, not `No games yet`. When advertised, it invokes `games.installed.list`, validates `tavix.installed-games.inventory/v1`, and renders only validated game descriptors. A user-initiated Play action refreshes the inventory and calls `games.installed.open` with `{id,expectedVersion}`. The Tavi host MUST authorize both methods, revalidate installed/enabled state, digest and version, and control navigation. An accepted response does not certify that the game ran.
+
+Atrium never accepts caller-supplied URLs, executable paths, credentials or package bytes through this interface. Browser/LoopRD games remain a separate reviewed publication mechanism.
+
+== Developer-preview build
+
+After `npm run build`, run `ATRIUM_TAVIX_DEV_PREVIEW=1 node tools/build_tavi_extension.mjs` (PowerShell: `$env:ATRIUM_TAVIX_DEV_PREVIEW='1'; node tools/build_tavi_extension.mjs`). This creates a source-built `dist-tavi` for an explicit 1.0.6 developer preview, not an authorized production release. Do not stage or publish it without TaviX repository validation and operator approval.
+
+== Acceptance
+
+Automated `node --test tests/installed_games_bridge.test.mjs` verifies absent features, hostile DTOs, duplicate IDs, stale version and denied launch. Real Tavi host authorization, Klondike installation, offline play, persistence and update behavior remain operator tests.

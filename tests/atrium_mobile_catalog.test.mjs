@@ -18,6 +18,6 @@ test('no false zero when the hosted catalog has no active HTTPS gateway',()=>{
 test('future TaviX shell has no second bottom bar; pinned offline version remains immutable',()=>{
  assert.match(builder,/tavix-inline-tabs/);
  assert.match(builder,/layout\.before\(nav\)/);
- assert.match(builder,/if\(configuredEndpoint==='\.\/hosted-games\.json'\)/);
+ assert.match(builder,/if\(configuredEndpoint==='\.\/hosted-games\.json' && process\.env\.ATRIUM_TAVIX_DEV_PREVIEW!=='1'\)/);
  assert.match(builder,/copied pinned immutable offline release/);
 });

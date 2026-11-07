@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.71-ziprunner.zip'
+NAME = 'atrium-0.5.74-ziprunner.zip'
 SUFFIXES = {'.dsl', '.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'dist-tavi', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
@@ -47,7 +47,7 @@ ALLOWED_CHECK_FIELDS = frozenset({
 
 def validate_verification_checks(plan):
     """Reject schema-invalid verification check metadata before ZIP creation."""
-    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.71':
+    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.74':
         raise ValueError('verification-plan project/version does not match package')
     checks = plan.get('checks')
     if not isinstance(checks, list) or not checks:
@@ -179,6 +179,47 @@ def validate_manifest_done_work(manifest, available):
                 raise ValueError(f'{where}.ref: evidence must be packaged: {ref!r}')
     return len(items)
 
+def validate_post_update_stamp(manifest, plan, workboard):
+    """Reject stale post-update stamp before producing a ZipRunner source ZIP."""
+    stamp = json.loads((ROOT/'.ziprunner-post-update-tests.json').read_text(encoding='utf-8'))
+    version = manifest['project']['version']
+    for name, value in [('post-update test stamp', stamp.get('version')),
+                        ('verification plan', plan.get('version')),
+                        ('workboard update', workboard.get('version'))]:
+        if value != version:
+            raise ValueError(f'{name} version {value!r} does not match package version {version!r}')
+    if stamp.get('schema') != 'ziprunner.post-update-tests.v1' or not isinstance(stamp.get('tests'), list):
+        raise ValueError('Invalid post-update test stamp schema')
+
+
+def validate_work_coverage(manifest, plan, workboard):
+    """Reject cross-file task drift before creating an importable source ZIP."""
+    planned = [x['id'] for x in manifest['planned_work']]
+    done = [x['id'] for x in manifest['done_work']]
+    todo = [x['id'] for x in manifest['todo_work']]
+    implemented = [x['id'] for x in workboard['implemented']]
+    remaining = [x['id'] for x in workboard['remaining']]
+    tasks = [x['id'] for x in plan['tasks']]
+    for name, ids in [('planned_work', planned), ('done_work', done), ('todo_work', todo),
+                      ('workboard implemented', implemented), ('workboard remaining', remaining),
+                      ('verification tasks', tasks)]:
+        if len(ids) != len(set(ids)):
+            raise ValueError(f'{name}: duplicate work identifiers')
+    if set(planned) != set(done) | set(todo) or set(done) & set(todo):
+        raise ValueError('planned_work must equal done_work union todo_work without overlap')
+    if set(done) != set(implemented) or not set(todo) <= set(remaining):
+        raise ValueError('workboard implemented must match done_work and include all manifest todo_work')
+    if set(tasks) != set(implemented):
+        raise ValueError('verification tasks must exactly cover implemented work')
+    check_ids = {c['id'] for c in plan['checks']}
+    for task in plan['tasks']:
+        if not task.get('criteria'):
+            raise ValueError(f'verification task {task["id"]}: criteria required')
+        for criterion in task['criteria']:
+            if not criterion.get('checks') or not set(criterion['checks']) <= check_ids:
+                raise ValueError(f'verification task {task["id"]}: missing check reference')
+
+
 def main():
     plan = json.loads((ROOT/'ziprunner-verification-plan.json').read_text(encoding='utf-8'))
     validate_verification_checks(plan)
@@ -187,7 +228,9 @@ def main():
     validate_manifest_evidence_checks(manifest, available)
     validate_manifest_done_work(manifest, available)
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.71'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.74'
+    validate_post_update_stamp(manifest, plan, workboard)
+    validate_work_coverage(manifest, plan, workboard)
     # ZipRunner validates both sections before it overlays any files. Fail the
     # source build at the same boundary, instead of distributing a broken ZIP.
     for section in ('implemented', 'remaining'):

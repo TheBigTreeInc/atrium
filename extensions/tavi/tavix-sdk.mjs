@@ -54,6 +54,7 @@ export function createTaviXSDK(target=window.parent,source=window){
   // TaviX optional module. Tavi 0.3.108 deliberately fails closed until the
   // generic nested surface broker is implemented and advertised by host.info.
   surfaces:{requestOpen:surface=>request('surface.requestOpen',{surface})},
+  games:{installed:{list:()=>request('games.installed.list'),open:({id,expectedVersion})=>request('games.installed.open',{id,expectedVersion})}},
   on,
   wallet:{balance:()=>call('wallet.balance'),transactions:params=>call('wallet.transactions',params),
     claim:params=>call('wallet.claim',params),convert:params=>call('wallet.convert',params),

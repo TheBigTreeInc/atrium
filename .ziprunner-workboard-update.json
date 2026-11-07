@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.71",
-  "summary": "0.5.71 repairs GitHub 42377997643 pinned ZipRunner done_work evidence and WindowsPath symlink mock with proactive schema preflight. Keeps all prior states and operator acceptance pending.",
+  "version": "0.5.74",
+  "summary": "0.5.73 repairs stale ZipRunner post-update stamp in 0.5.72, retaining installed-games integration and pending Tavi host acceptance.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -561,11 +561,37 @@
     {
       "id": "ATR-174-CI-PINNED-EVIDENCE-WINDOWS-SYMLINK",
       "title": "Repair pinned ZipRunner evidence contract and Windows symlink mock",
-      "summary": "0.5.70 CI failed on done_work[50] title/missing evidence and WindowsPath is_symlink mock not intercepting. Source 0.5.71 adds pinned schema preflight, complete packaged evidence, and OS-concrete symlink test while preserving fail-closed validation. Windows/CI acceptance pending.",
+      "summary": "0.5.70 CI failed on done_work[50] title/missing evidence and WindowsPath is_symlink mock not intercepting. Source 0.5.73 adds pinned schema preflight, complete packaged evidence, and OS-concrete symlink test while preserving fail-closed validation. Windows/CI acceptance pending.",
       "operator_checks": [
-        "Inspect pinned 0.5.71 exact-commit Linux+Windows GitHub Actions and official ZipRunner spec validation.",
+        "Inspect pinned 0.5.73 exact-commit Linux+Windows GitHub Actions and official ZipRunner spec validation.",
         "Run native Windows ZipRunner build with non-administrator account and verify full suite.",
         "Keep operator-approved runtime, prior Workboard states, installed package and release gates unchanged."
+      ]
+    },
+    {
+      "id": "ATR-175-TAVIX-INSTALLED-GAMES-CONSUMER",
+      "title": "TaviX installed-games inventory and launch consumer",
+      "summary": "Feature-gated trusted inventory, fail-closed DTO validation, My Games installed cards and version-pinned host launch; real Tavi host support and device QA pending.",
+      "operator_checks": [
+        "On Tavi with advertised feature, verify installed Klondike appears in Atrium My Games and opens through Tavi host.",
+        "On older Tavi verify unavailable status rather than falsely reporting zero installed games; test disabled and stale packages."
+      ]
+    },
+    {
+      "id": "ATR-176-POST-UPDATE-STAMP-SYNC",
+      "title": "Repair ZipRunner post-update version mismatch",
+      "summary": "Aligned stamp and package version and added fail-fast preflight with a negative regression for stale stamps.",
+      "operator_checks": [
+        "Import exact 0.5.73 ZIP into Windows ZipRunner and verify the post-update stamp is accepted.",
+        "Confirm installed-games integration and protected runtime data remain intact."
+      ]
+    },
+    {
+      "id": "ATR-177-WORKBOARD-PLAN-COVERAGE-REPAIR",
+      "title": "Repair workboard/manifest/plan coverage",
+      "summary": "Ensure planned_work covers all done and todo work, and verification tasks exactly cover implemented work, with packaging-time preflight.",
+      "operator_checks": [
+        "Confirm Windows ZipRunner full build accepts the corrected package."
       ]
     }
   ],

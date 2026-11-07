@@ -20,6 +20,7 @@ workspace "Atrium" "C4 model of the Atrium game marketplace, LoopRD runtime comp
             }
             tavix = container "Atrium TaviX extension" "Embedded Atrium catalog and navigation using the host SDK; reviewed 1.0.4 remains immutable and new styling is future release source." "JavaScript, TaviX SDK" {
                 taviBridge = component "TaviX launch adapter" "Requests reviewed game surfaces and navigation from the Tavi host, without becoming a game server." "JavaScript"
+                installedGameBridge = component "Installed TaviX game consumer" "Negotiates tavix.installed-games/v1, validates read-only game descriptors and requests version-pinned host launch; Tavi enforces authorization." "JavaScript"
                 taviSdk = component "TaviX host protocol adapter" "Validates host responses and communicates through the Tavi extension protocol." "JavaScript"
             }
             api = container "Atrium LoopRD component" "One LoopRD component, composed from registry, arcade, Checkers, and discovery fragments; activated through external DAPI." "LoopRD YAML and Python handlers" {
@@ -102,6 +103,7 @@ workspace "Atrium" "C4 model of the Atrium game marketplace, LoopRD runtime comp
         hostedGameClient -> hostedProjection "Consumes LoopRD-generated hosted catalog JSON when configured" "GET /catalog/hosted-games"
         checkersPlayer -> checkersRoutes "Source-only match protocol; requires authenticated same-origin host" "HTTP JSON"
         taviBridge -> taviSdk "Uses typed host SDK"
+        installedGameBridge -> taviSdk "Requests authorized installed game inventory and launch"
         taviBridge -> hostedGameClient "Reads hosted catalog from configured trusted source"
         registry -> registryStore "Stores publication and publisher records" "SQLAlchemy"
         arcade -> registryStore "Declares lounge and table models in the shared Atrium database" "LoopRD models"

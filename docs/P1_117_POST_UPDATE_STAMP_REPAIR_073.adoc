@@ -1,0 +1,7 @@
+= Atrium 0.5.73: ZipRunner post-update stamp repair
+
+The 0.5.72 ZIP failed before installation because `.ziprunner-post-update-tests.json` declared version `0.5.71`, while the package manifest declared `0.5.72`.
+
+0.5.73 aligns the stamp, source manifest, verification plan, workboard, package builder and CI artifact labels. The packaging CLI now rejects version drift before generating an archive. Tests cover both aligned versions and a deliberately stale stamp.
+
+This repair preserves the Atrium installed-game inventory and launch consumer from 0.5.72, all operator approval gates, and existing TaviX immutable assets. Windows ZipRunner and real Tavi host acceptance remain pending.

@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.71",
-    "base_version": "0.5.70",
+    "version": "0.5.74",
+    "base_version": "0.5.72",
     "source_revision": "98300ea5cacc83e9e3ddc9a5f2f3fe407225157e"
   },
   "update": {
-    "id": "ATR-P1-20261107-071",
+    "id": "ATR-P1-20261107-074",
     "kind": "source_update",
     "created_at": "2026-11-07T15:30:00+01:00",
-    "summary": "Repair pinned ZipRunner done_work evidence metadata and concrete WindowsPath symlink-mock regression from GitHub 42377997643. Add preflight regression while preserving independent offline-game intake, TaviX preview boundary and all operator gates."
+    "summary": "Repair manifest planned work and verification-plan coverage after Windows 0.5.73 regression; retain installed-games consumer and operator gates."
   },
   "planned_work": [
     {
@@ -379,6 +379,24 @@
       "title": "Repair pinned done_work evidence schema and concrete WindowsPath symlink test",
       "priority": "critical",
       "acceptance_criteria": "CI packaged manifest validates strict done_work schema; Windows Python symlink security test exercises concrete WindowsPath method without administrative privilege, and official pinned ZipRunner validator and native build acceptance remain operator-gated."
+    },
+    {
+      "id": "ATR-175-TAVIX-INSTALLED-GAMES-CONSUMER",
+      "title": "Consume classified installed games from trusted Tavi host",
+      "priority": "high",
+      "acceptance_criteria": "Validate trusted inventory, render My Games and launch via Tavi host; real device acceptance remains pending."
+    },
+    {
+      "id": "ATR-176-POST-UPDATE-STAMP-SYNC",
+      "title": "Align post-update stamp and add fail-fast version preflight",
+      "priority": "high",
+      "acceptance_criteria": "All package versions agree and stale stamps are rejected before ZipRunner import."
+    },
+    {
+      "id": "ATR-177-WORKBOARD-PLAN-COVERAGE-REPAIR",
+      "title": "Repair manifest planned-work and verification-plan coverage",
+      "priority": "critical",
+      "acceptance_criteria": "Exact sets of planned, implemented and remaining work agree; all implemented tasks have verification criteria and checks; package preflight catches drift."
     }
   ],
   "done_work": [
@@ -1691,7 +1709,60 @@
         {
           "kind": "documentation",
           "ref": "docs/P1_115_GITHUB_CI_REPAIR_071.adoc",
-          "description": "Evidence, scope and acceptance gates for 0.5.71 repairs"
+          "description": "Evidence, scope and acceptance gates for 0.5.73 repairs"
+        }
+      ]
+    },
+    {
+      "id": "ATR-175-TAVIX-INSTALLED-GAMES-CONSUMER",
+      "summary": "Added host-feature-gated installed-game listing and launch to Atrium My Games; live Tavi host integration pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/installed-games.mjs",
+          "description": "Strict inventory DTO validation and version-pinned host launch"
+        },
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "Installed game cards and unavailable-state handling"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/installed_games_bridge.test.mjs",
+          "description": "Host inventory, malicious descriptor and stale launch regressions"
+        }
+      ]
+    },
+    {
+      "id": "ATR-176-POST-UPDATE-STAMP-SYNC",
+      "summary": "Aligned ZipRunner post-update stamp to 0.5.73 and added packaging preflight for version agreement.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": ".ziprunner-post-update-tests.json",
+          "description": "Version matches update manifest"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_post_update_stamp.py",
+          "description": "Version consistency regression test"
+        }
+      ]
+    },
+    {
+      "id": "ATR-177-WORKBOARD-PLAN-COVERAGE-REPAIR",
+      "summary": "Restored planned_work entries for ATR-175/176 and verification-plan task/check linkage for ATR-176; added strict packaging preflight and regression tests.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/package_zip.py",
+          "description": "Cross-file work coverage preflight"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Planned work and verification coverage regressions"
         }
       ]
     }
@@ -2107,13 +2178,13 @@
       {
         "id": "ATR-174-SOURCE-071",
         "status": "not_run",
-        "description": "Source 0.5.71 repaired pinned done_work and concrete Windows symlink regression; exact source test run pending",
+        "description": "Source 0.5.73 repaired pinned done_work and concrete Windows symlink regression; exact source test run pending",
         "reason": "Regression tests and exact source package QA not yet run"
       },
       {
         "id": "ATR-174-WIN-OPERATOR-071",
         "status": "not_run",
-        "description": "Native Windows and pinned ZipRunner acceptance for 0.5.71",
+        "description": "Native Windows and pinned ZipRunner acceptance for 0.5.73",
         "reason": "Requires fresh exact-commit CI, Windows ZipRunner and operator review; prior 0.5.70 GitHub CI failed"
       }
     ]

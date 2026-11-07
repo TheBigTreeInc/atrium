@@ -3,6 +3,7 @@
 // SDK 1.0.0 supplied with the Atrium 0.5.39 source. No bearer, Social token,
 // LoopRD operator key or player proof is forwarded into the launched surface.
 import {createTaviXSDK, assertTaviXHostInfo} from './tavix-sdk.mjs';
+import {installedGamesClient,openInstalledGame} from './installed-games.mjs';
 import {fetchConfiguredHostedCatalog} from '../../src/hosted_catalog.mjs';
 
 const tavi=createTaviXSDK();
@@ -96,3 +97,10 @@ void tavi.info().then(info=>{
  if(hostOwnsNavigation(info)){document.body?.classList?.add('tavix-host-navigation');returnButton?.remove();}
  else if(returnButton)returnButton.hidden=false;
 }).catch(()=>{if(returnButton)returnButton.hidden=false;});
+
+// The host authenticates the caller and authorizes both operations. This bridge
+// never trusts caller-provided URLs, package paths, tokens or game code.
+window.__atriumInstalledGames={
+ list:()=>installedGamesClient(tavi),
+ open:async(game,inventory)=>openInstalledGame(tavi,game,inventory)
+};

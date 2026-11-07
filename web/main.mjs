@@ -10,7 +10,7 @@ const closeGame=document.querySelector('#closeGame');
 const catalogStatus=document.querySelector('#catalogStatus');
 const libraryMirror=document.querySelector('#libraryMirror');
 const categoryChips=document.querySelector('.chips');
-let refreshInFlight=false,activeApp=null,generation=0,endpoint=null,activeFilter="all";
+let refreshInFlight=false,activeApp=null,generation=0,endpoint=null,activeFilter="all",installedSnapshot={available:false,games:[]},installedError=null;
 
 function showView(name){
  document.querySelectorAll('[data-view-panel]').forEach(panel=>{panel.hidden=panel.dataset.viewPanel!==name;});
@@ -106,14 +106,53 @@ document.querySelectorAll('.chip[data-filter]').forEach(chip=>chip.addEventListe
  });
  applyCategoryFilter();
 }));
+function makeInstalledCard(game){
+ const card=document.createElement('article');card.className='game-card';card.dataset.gameId=game.id;card.dataset.source='installed';
+ const cover=document.createElement('div');cover.className='cover';
+ const symbol=document.createElement('span');symbol.className='symbol';symbol.textContent='♠';
+ const live=document.createElement('span');live.className='live';live.textContent='INSTALLED';cover.append(symbol,live);
+ const body=document.createElement('div');body.className='card-body';
+ const meta=document.createElement('div');meta.className='meta';
+ const tag=document.createElement('span');tag.className='pill';tag.textContent='Offline-capable package';
+ const version=document.createElement('span');version.className='pill muted';version.textContent=game.version;
+ meta.append(tag,version);
+ const heading=document.createElement('h3');heading.textContent=game.name;
+ const details=document.createElement('p');details.textContent=game.classification.categories.join(' · ')||'Installed TaviX game';
+ const actions=document.createElement('div');actions.className='card-actions';
+ const play=document.createElement('button');play.className='btn primary';play.type='button';play.textContent='Play';
+ const status=document.createElement('span');status.setAttribute('role','status');status.className='status';
+ play.addEventListener('click',async()=>{
+  play.disabled=true;status.textContent='Asking Tavi to open…';
+  try{
+   // Re-fetch before launch to avoid a stale/removed package. The host also
+   // rechecks its trusted registry and the expected version independently.
+   const fresh=await window.__atriumInstalledGames.list();
+   if(!fresh.available)throw Error('Tavi installed-game support is unavailable');
+   await window.__atriumInstalledGames.open(game,fresh);
+   status.textContent='Opening in Tavi…';
+  }catch(error){status.textContent='Cannot open: '+String(error?.message||'Host rejected launch');}
+  finally{play.disabled=false;}
+ });
+ actions.append(play,status);body.append(meta,heading,details,actions);card.append(cover,body);return card;
+}
+async function refreshInstalledGames(){
+ installedError=null;
+ if(typeof window.__atriumInstalledGames?.list!=='function'){
+  installedSnapshot={available:false,games:[]};return;
+ }
+ try{installedSnapshot=await window.__atriumInstalledGames.list();}
+ catch(error){installedSnapshot={available:false,games:[]};installedError=String(error?.message||'Host request failed');}
+}
 function syncLibraryMirror(issues=[]){
  libraryMirror.replaceChildren();
  const cards=[...area.querySelectorAll('.game-card')];
+ if(installedSnapshot.available){for(const game of installedSnapshot.games)libraryMirror.append(makeInstalledCard(game));}
+ else libraryMirror.append(emptyState('Installed games unavailable',installedError?'Tavi could not provide its installed-game inventory. Try reopening Atrium.':'This Tavi host does not yet expose installed games to Atrium. Update Tavi to enable local game discovery.'));
  // Show problems alongside any available games. The mirror must never silently
  // represent a network error as a legitimate zero-game library.
  for(const issue of issues)libraryMirror.append(issuePanel(issue));
  if(!cards.length){
-  if(!issues.length)libraryMirror.append(emptyState('No games yet','The connected catalogs returned no published games.'));
+  if(!issues.length&&installedSnapshot.available&&!installedSnapshot.games.length)libraryMirror.append(emptyState('No games yet','No installed games or published games were found.'));
   return;
  }
  for(const card of cards){
@@ -129,6 +168,7 @@ async function refreshCatalog(){
  if(refreshInFlight)return;refreshInFlight=true;
  try{
   const issues=[];
+  await refreshInstalledGames();
   let count=0, catalog=null;
   try{
    catalog=await freshCatalog();
