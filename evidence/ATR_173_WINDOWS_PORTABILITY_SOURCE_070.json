@@ -1,0 +1,57 @@
+{
+  "schema": "atrium.windows-portability-source-qa/v1",
+  "project": "atrium",
+  "version": "0.5.70",
+  "base_version": "0.5.69",
+  "origin_failed_ziprunner_version": "0.5.68",
+  "origin_failed_ziprunner_zip_sha256": "e70a015b1c67358fc5643cd5306d005e98474244dd971fa35eb5ae1d6bfa0421",
+  "origin_win32_errors": [
+    {
+      "test": "test_offline_game.OfflineGameContractTests.test_symlinks_and_traversal_rejected",
+      "error": "WinError 1314 (no symlink creation privilege)",
+      "fix": "Windows privilege-denial fallback verifies real fail-closed guard using existing asset; independent guard test runs on all platforms"
+    },
+    {
+      "test": "test_checkers_group_coverage.ExactGroupCoverageTests.test_exact_package_prefers_healthy_source_python",
+      "error": "Str(Path) uses platform-native separators",
+      "fix": "Compare Path instances rather than Unix literal string"
+    }
+  ],
+  "tests": {
+    "full_python_source": {
+      "cases": 409,
+      "passed": 409,
+      "status": "passed",
+      "environment": "Linux Python source tree; not native Windows"
+    },
+    "javascript_source": {
+      "cases": 87,
+      "passed": 87,
+      "status": "passed"
+    },
+    "checkers_group_source": {
+      "cases": 47,
+      "passed": 47,
+      "status": "passed"
+    },
+    "web_build": {
+      "status": "passed"
+    },
+    "web_verify": {
+      "status": "passed"
+    }
+  },
+  "preserved": [
+    "Original Atrium source modules and existing C4 components",
+    "TaviX immutable historical releases",
+    "Independent game source remains external",
+    "No release/operator approval"
+  ],
+  "pending": [
+    "Exact ZIP QA",
+    "Official pinned ZipRunner validator",
+    "Real installed Windows ZipRunner acceptance",
+    "Operator release approval",
+    "Actual Tavi Klondike local game runtime test"
+  ]
+}

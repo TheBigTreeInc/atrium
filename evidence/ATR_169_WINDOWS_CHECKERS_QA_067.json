@@ -1,0 +1,40 @@
+{
+  "schema": "atrium.source-check-evidence/v1",
+  "project": "atrium",
+  "version": "0.5.67",
+  "task": "ATR-169-WINDOWS-CHECKERS-GROUP-PYTHON-ENV",
+  "source_zip_base_version": "0.5.66",
+  "source_fix": "verified venv used for Windows group QA and spec-guard subprocess; exact-package child selects healthy project Python",
+  "failure_basis": {
+    "commit": "8cf5a3266c2a3f61714921d17d5291548ec99f47",
+    "url": "https://github.com/TheBigTreeInc/atrium/actions/runs/42307595956/job/128200767476#step:7:29",
+    "reason": "Windows standalone group source mode ran with host Python lacking yaml while an isolated .venv was available"
+  },
+  "observed_local": {
+    "source_python_full": {
+      "status": "passed",
+      "tests": 392
+    },
+    "javascript": {
+      "status": "passed",
+      "tests": 87
+    },
+    "checkers_source": {
+      "status": "passed",
+      "tests": 47,
+      "groups": 7,
+      "source_digest": "5ae15e50b6db282be02d2177261d0f5d35029a2bda46f7d48749adf7dfcb2202"
+    },
+    "generated_spec_check": "passed",
+    "web_build": "passed",
+    "ci_regression": "included_and_passed"
+  },
+  "future_gates": {
+    "exact_commit_0_5_67_ci": "not_run",
+    "native_windows_ziprunner": "not_run",
+    "operator_acceptance": "pending",
+    "release": "not_authorized",
+    "live_social_tavi_browser": "not_verified"
+  },
+  "architecture": "No Level 1-3 component, interface or external dependency changed; existing architecture/c4 baseline preserved."
+}

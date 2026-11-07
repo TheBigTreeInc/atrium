@@ -120,6 +120,18 @@ def write_report(path, document):
             tmp.unlink()
 
 
+def verified_group_python():
+    """Use source build dependencies even if ZipRunner starts QA with host Python.
+
+    An extracted ZIP must run its *own* packaged modules and tests, but Python
+    itself may come from the verified source-project environment. No site
+    packages, secrets, or runtime state are copied into the source ZIP.
+    """
+    from tools.setup_build_env import venv_python, healthy
+    candidate = venv_python()
+    return str(candidate) if healthy(candidate) else sys.executable
+
+
 def packaged_run(package: Path, report: Path):
     if not package.is_file() or package.stat().st_size > 32_000_000:
         raise ValueError('missing or unexpectedly large source ZIP')
@@ -149,7 +161,7 @@ def packaged_run(package: Path, report: Path):
         version = json.loads((root / 'package.json').read_text(encoding='utf-8'))['version']
         if package.name != f'atrium-{version}-ziprunner.zip':
             raise ValueError('source ZIP filename/version mismatch')
-        command = [sys.executable, str(root / 'tools/checkers_group_qa.py'),
+        command = [verified_group_python(), str(root / 'tools/checkers_group_qa.py'),
                    '--from-extracted-sha', sha, '--report', str(report)]
         env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
         proc = subprocess.run(command, cwd=root, env=env, capture_output=True, text=True, timeout=90)

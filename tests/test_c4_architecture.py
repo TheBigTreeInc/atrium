@@ -45,7 +45,8 @@ class C4ArchitectureTests(unittest.TestCase):
         self.assertFalse({ref for edge in edges for ref in edge}-known)
         views=re.findall(r'^\s*(?:systemContext|container|component|dynamic)\s+\w+\s+(atrium_[a-z_]+)\b',text,re.M)
         self.assertEqual(len(views),len(set(views)))
-        self.assertEqual(len(views),7)
+        self.assertEqual(len(views),8)
+        self.assertIn("atrium_offline_candidate_components", views)
         # Strip quoted strings/comments to sanity-check block nesting; this does NOT validate DSL grammar.
         without_strings=re.sub(r'"(?:[^"\\]|\\.)*"','""',text)
         self.assertEqual(without_strings.count('{'),without_strings.count('}'))

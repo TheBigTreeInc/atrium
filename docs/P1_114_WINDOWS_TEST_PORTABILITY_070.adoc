@@ -1,0 +1,29 @@
+= Atrium 0.5.70 — Windows test-portability repair for external games
+:revnumber: 0.5.70
+:revdate: 2026-11-07
+
+== Operator evidence
+
+The local ZipRunner attempt at 0.5.68 reported `build_failed` in `C:\Users\dorbi\source\atrium` while running 400 Python tests on Windows Python 3.13. Two test-only failures were confirmed:
+
+* `tests/test_offline_game.py::test_symlinks_and_traversal_rejected` attempted to create a filesystem symlink without the necessary Windows `SeCreateSymbolicLinkPrivilege` and raised `WinError 1314` *before* running the negative security check.
+* `tests/test_checkers_group_coverage.py::test_exact_package_prefers_healthy_source_python` compared the path returned by `str(Path('/verified/python'))` to the literal Unix string `'/verified/python'`. Windows correctly renders this test fixture using backslashes; this did not indicate a wrong interpreter.
+
+The source tree used here is the exact content of the previously distributed Atrium 0.5.69 source ZIP. This new release retains offline candidate pack/verify, external Klondike 0.1.0 conversion and all existing C4 component identities.
+
+== Fix and validation boundary
+
+. On systems that permit creating a symlink, the offline-game test still creates a real symlink and expects the existing package writer to reject it.
+. When Windows denies `symlink_to` specifically with `WinError 1314`, the test instead marks an existing source asset as an apparent symlink under a narrowly scoped `Path.is_symlink` mock. The package writer must still reject it. Other errors are not swallowed.
+. An additional unconditional test exercises the simulated symlink rejection on Linux, Windows and any no-privilege sandbox.
+. The group QA source-python regression now compares native `Path` objects, eliminating Unix-path formatting assumptions while preserving interpreter selection and negative coverage checks.
+
+No runtime install, TaviX local permission, real-game acceptance, approval or C4 architecture responsibility changed. The official ZipRunner package validator and real non-administrator Windows operator run remain independent verification gates. No previous Workboard statuses are promoted or deleted.
+
+== Operator acceptance
+
+. Import the source ZIP through ZipRunner with existing `.venv`, server settings, private config and runtime paths preserved; do not manually change Windows symlink privileges.
+. Inspect the full Python test log. Both reported cases must pass, together with the new simulated guard regression and all existing Python tests.
+. Run exact-package Checkers group QA and JavaScript/build verification; verify no immutable TaviX 1.0.4 content was modified.
+. Verify the exact GitHub commit's Windows and pinned ZipRunner validator runs after an approved push.
+. Separately import external Klondike developer-preview `.tavix` into a developer-enabled Tavi instance and record real UI/offline gameplay acceptance. Atrium's own installed-game UI remains blocked on a trusted host inventory/launch bridge.

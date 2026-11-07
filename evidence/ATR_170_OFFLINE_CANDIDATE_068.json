@@ -1,0 +1,30 @@
+{
+  "schema": "atrium.offline-candidate-source-qa/v1",
+  "version": "0.5.68",
+  "scope": "SOURCE_ONLY",
+  "workboard_id": "ATR-170-OFFLINE-EXTERNAL-GAME-CANDIDATE",
+  "python_unittest": {
+    "status": "passed",
+    "count": 400,
+    "command": "python -m unittest discover -s tests -q"
+  },
+  "javascript": {
+    "status": "passed",
+    "count": 87,
+    "command": "npm test"
+  },
+  "web_build": {
+    "status": "passed",
+    "command": "npm run build"
+  },
+  "offline_candidate_tests": {
+    "status": "passed",
+    "count": 8,
+    "test_ref": "tests/test_offline_game.py"
+  },
+  "tavix_install": "not_run",
+  "android_offline": "not_run",
+  "structurizr_cli": "not_run",
+  "ci_0_5_68": "not_run",
+  "explanation": "A synthetic external HTML/JS test fixture validates the candidate contract; real game delivery and device acceptance remain independent."
+}

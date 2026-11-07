@@ -1,3 +1,21 @@
+# Atrium 0.5.70 — Windows test-portability repair after 0.5.68 ZipRunner failure
+
+Windows ZipRunner 2026-11-07 failed on `test_offline_game` requiring Windows symlink creation (WinError 1314) and an exact string assertion of a Unix-style Python interpreter path. The tests now preserve fail-closed security validation without elevated Windows privileges and compare normalized native paths. No production game logic, TaviX package install mechanism, existing C4 components or operator approval gates changed. Retains the full independent Klondike/TaviX converter work from 0.5.69. See `docs/P1_114_WINDOWS_TEST_PORTABILITY_070.adoc`.
+
+# Atrium 0.5.69 — external Klondike to TaviX developer-preview integration
+
+The independent Klondike 0.1.0 build passed 52 game tests and 47 distribution checks. Atrium fixed .sha256/SVG candidate intake and added `tools/offline_tavix.py` to generate a deterministic *unprivileged* local `.tavix` test app from a verified candidate. No game source is included, and no install, Atrium Installed Games, save persistence, approval, production CI or release is claimed. See `docs/P1_113_KLONDIKE_EXTERNAL_GAME_QA_069.adoc`.
+
+# Atrium 0.5.68 — external offline game candidate intake (source-only)
+
+See `docs/OFFLINE_GAME_HANDOFF.adoc`. The package verifies independent builds but does not install or play them in Tavi. No Solitaire game is included.
+
+# Atrium 0.5.67 — Windows Checkers QA Python isolation repair
+
+GitHub Actions run [42307595956](https://github.com/TheBigTreeInc/atrium/actions/runs/42307595956) failed under Windows because standalone group QA inherited host Python without PyYAML. This repair runs the 47-case group under the verified project `.venv`, and uses the same dependency isolation for the generated-spec guard. Gameplay, the existing C4 architecture, and immutable TaviX remain unchanged. Independent Windows/operator and release approval are pending.
+
+## Previous pass
+
 # Atrium 0.5.66 — exact package Checkers group evidence
 
 Expanded the packaged Checkers QA suite to seven required groups including all American Checkers rules, shared game engine and ownership boundary tests. Every group has a minimum and fail-closed verdict; missing, skipped or duplicate coverage cannot be claimed as passed. 0.5.65 exact CI was successful (https://github.com/TheBigTreeInc/atrium/actions/runs/42239065318). This version does not activate Social/LoopRD services, alter TaviX releases, or approve Windows/operator release. The established C4 model is unchanged because this pass only extends tests. See docs/P1_110_CHECKERS_EXACT_PACKAGE_RULE_BOUNDARY_QA_066.adoc.

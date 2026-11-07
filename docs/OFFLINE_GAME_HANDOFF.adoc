@@ -1,0 +1,123 @@
+= Atrium 0.5.68 — Independent offline-game candidate intake
+:toc: left
+
+== Scope and implementation status
+
+This pass provides *a reproducible candidate bundle format and source-side validator* for an independent developer's offline web game. It does NOT ship Solitaire, install a game into Tavi, update the live Atrium catalog, expose a TaviX installed-package inventory, or claim Android airplane-mode acceptance. The bundled game itself must be developed outside Atrium.
+
+The distinct `atrium.offline-game/v1` contract is an Atrium-owned *candidate interchange*, not the existing published `atrium.app/v1` HTTPS reviewed-entry schema and not a released TaviX extension schema. The suggested `runtime: tavix-web-candidate` declares a build *target*, not a proven runtime installation.
+
+== Independent game developer handoff
+
+A game author supplies a complete build directory containing `index.html` and all local JavaScript, CSS, WASM, images and audio. No backend is necessary. The game itself owns its rules and locally persisted saves. Relative paths are required. Network URLs are prohibited in text runtime assets by the conservative static scanner; further dynamic network behavior, CSP and persistence checks require Tavi runtime tests. No library or game files are manufactured by the Atrium packager.
+
+From the Atrium source root:
+
+[source,shell]
+----
+python tools/offline_game.py pack /path/to/external-solitaire/build /path/to/solitaire-candidate.zip --id org.example.solitaire --publisher example --title Solitaire --version 1.0.0
+python tools/offline_game.py verify /path/to/solitaire-candidate.zip
+----
+
+The archive contains `atrium-game.json` at the root plus exactly the files listed in its `files` digest map. Deterministic ZIP creation, SHA-256 per asset, bounded aggregate size, disallowed path traversal/symlinks and unknown asset types are enforced. Candidate acceptance is separate from publishing and installation.
+
+The JSON Schema source of truth is `schemas/atrium-offline-game-v1.schema.json`; the executable validator additionally checks archive bytes, hashes, file sizes and conservative offline references. Limits: 256 files; 16 MiB/file; 64 MiB total. These are *initial interoperability limits*, not Tavi capacity claims. A game whose assets exceed these limits needs separate review; do not silently truncate or create a live server dependency.
+
+== Required host-side work (not implemented by this package)
+
+. TaviX must validate and install locally signed/reviewed extension packages using its own installer (this `.zip` candidate is **not** directly installable as `.tavix`).
+. Tavi must expose a reviewed installed-game inventory and launch mechanism with explicit scoped permissions and package identity; this Atrium repository currently verifies neither inventory method nor capability semantics.
+. Atrium's *Installed games* view must consume only an authenticated local host inventory, not developer-provided JSON, browser storage, an untrusted URL or the online LoopRD catalog.
+. TaviX runtime must prove offline asset resolution, CSP and WASM MIME handling, touch performance at 355x630, local save isolation, restart persistence, update retention, and failed/revoked package handling.
+. Any API addition needs a mutually versioned Tavi/TaviX contract and separate integration tests. Existing `surface.requestOpen` is for reviewed HTTPS targets, not a local game-install authorization; do not overload its `target` with an invented `file://` or `tavix://` URL.
+
+== Acceptance gates
+
+* Source QA: pack a synthetic external two-file fixture, verify deterministic hash, rejection of altered bytes, symlinks, traversal, unsupported metadata, unlisted files and remote dependencies.
+* Integration QA: import the external Solitaire build without Atrium code changes, install via approved TaviX, show it in Atrium's actual installed-game list, launch while disconnected, save and resume after Tavi restart, then update without data loss. **Pending and not claimed by this pass.**
+* Operator: human review and release remain independent. No Git push, TaviX publication, package installation or production activation is performed.
+
+== C4 architecture delta
+
+`offlineCandidateTools` is an operator-run Python CLI application with `offlineBundleValidator` and `offlineBundlePackager` components. It reads third-party local build assets and produces a candidate ZIP. No runtime relationship to TaviX installer or published catalog is modeled because none is implemented. Existing Level 3 runtime, portal and TaviX diagrams remain unchanged.
+
+== 0.5.69: Convert a verified external game to a *developer-only* TaviX preview
+
+This step **does not install or publish a game**. It derives an untrusted local TaviX
+application from the independently created `atrium.offline-game/v1` candidate. The
+source game is not copied into Atrium's repository, and no game logic is modified.
+TaviX 1.0 uses `tavi.extension/v1` with `kind: app` — **not** a native `kind: game`.
+The app's private `ui/atrium-game.json` records the verified original game ID,
+application ID and input candidate SHA-256 so a future trusted Tavi host can
+expose game inventory *after* it validates installation.
+
+[source,shell]
+----
+# Example using independently supplied Klondike Solitaire 0.1.0
+python tools/offline_game.py pack /external/klondike/dist /tmp/klondike-candidate.zip \
+  --id klondike.solitaire --publisher example-publisher \
+  --title "Klondike Solitaire" --version 0.1.0
+python tools/offline_game.py verify /tmp/klondike-candidate.zip
+python tools/offline_tavix.py pack /tmp/klondike-candidate.zip /tmp/klondike-preview.tavix \
+  --application-id org.example.klondike
+python tools/offline_tavix.py verify /tmp/klondike-preview.tavix
+----
+
+The package ID `org.example.klondike` and publisher `example-publisher` are
+**developer test identifiers**, not an official or approved publication.
+The TaviX converter targets the actual 0.3.127+ developer local-import bounds:
+60 files, 1 MB/file, 12 MB aggregate, and the compatible file types
+HTML/CSS/JS/JSON/PNG/SVG/WebP. It rejects existing candidate WASM and other
+assets that the current host does not support. The original SHA-256 sidecar
+`MANIFEST.sha256` is source metadata; the TaviX integrity lock independently
+hashes every included payload byte, so that sidecar is omitted from the TaviX
+preview (but remains in the original candidate).
+
+The preview uses **stored ZIP entries**, avoiding a `DecompressionStream('deflate-raw')`
+requirement on older Android WebViews. There is no signing, no first-party
+capability and no `storage.private` grant. This is a local developer import
+for app-sandbox smoke testing, not an official Atrium release.
+
+=== Operator steps (manual, device-dependent)
+
+. Use a Tavi build supporting local `.tavix` import (source introduced in 0.3.127).
+. Sign in on a LoopRD account with `permissions.developer=true`; turn on Tavi's
+  developer visibility toggle. Neither condition alone is sufficient.
+. Open *Apps → Install .tavix* and choose the generated file. Inspect the local
+  unverified-source warning, exact app identity, permissions and digest; approve
+  only after review. No programmatic installation or auto-approval occurs.
+. Find *Klondike Solitaire* in *Apps → All*, open it, and attempt a full game.
+  Test after disabling network **after** importing. Record renderer/status logs,
+  missing styles, missing images and script errors if it does not load.
+. Check save/restart behavior separately. Tavi's local sandbox has an opaque
+  origin and `connect-src 'none'`, so browser IndexedDB/localStorage may be
+  unavailable. This developer preview deliberately has no game save bridge;
+  persistence is **not certified** even when the game's standalone browser save
+  tests passed.
+. Do not report *Atrium → Installed games* acceptance from this test. Tavi owns
+  the installed package inventory and game launch RPC. Neither is advertised to
+  Atrium by the current implementation. The separate ATR-171 contract remains
+  operator-owned and critical.
+
+The primary upstream references for this *verified source compatibility* are:
+
+* https://github.com/TheBigTreeInc/social/blob/main/docs/TAVI_LOCAL_TAVIX_0127.adoc
+* https://github.com/TheBigTreeInc/social/blob/main/schemas/tavi.extension.v1.schema.json
+* https://github.com/TheBigTreeInc/social/blob/main/schemas/tavix.package.v1.schema.json
+* https://github.com/TheBigTreeInc/social/blob/main/client/src/extensions/local-package.js
+* https://github.com/TheBigTreeInc/social/blob/main/client/public/local-extension-host.js
+
+=== Next cross-project requirement for Atrium's own UI
+
+The *actual Tavi-owned installed-package registry* should be the only source
+for Installed Games. The Tavi owner needs to implement an authenticated,
+feature-negotiated host inventory and open-by-installed-identity interface,
+scoped to the installed official Atrium extension and the current account.
+Entries must be derived from installed verified TaviX packages and validated
+`ui/atrium-game.json` metadata, not browser-populated JSON or publisher URLs.
+`surface.requestOpen` currently validates *public HTTPS game targets*, so
+it must **not** be invoked with a fake `file://`, `tavix://` or `blob:` URL.
+Package installation, user approval, current installed identity, account
+scope, revocation, version selection, offline launch and private game saves
+remain exclusively Tavi host responsibilities. Atrium must only render and
+request launch of entries returned by that host.

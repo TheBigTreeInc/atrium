@@ -77,7 +77,7 @@ jobs:
       - name: Build and validate ZipRunner source ZIP
         run: |
           python tools/package_zip.py
-          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.66-ziprunner.zip --expected-project atrium --require-verification-plan
+          python _upstream/ziprunner-spec/tools/validate.py package dist/atrium-0.5.70-ziprunner.zip --expected-project atrium --require-verification-plan
           python _upstream/ziprunner-spec/tools/validate.py looprd ziprunner.looprd.json --root . --expected-project atrium
       - name: Upload disposable Checkers group QA evidence
         uses: actions/upload-artifact@v4
@@ -94,8 +94,8 @@ jobs:
       - name: Upload source ZIP for operator review (no auto-deploy)
         uses: actions/upload-artifact@v4
         with:
-          name: atrium-0.5.66-ziprunner
-          path: dist/atrium-0.5.66-ziprunner.zip
+          name: atrium-0.5.70-ziprunner
+          path: dist/atrium-0.5.70-ziprunner.zip
           if-no-files-found: error
 
   windows-ziprunner-build:
@@ -115,7 +115,7 @@ jobs:
       - name: Run source checks under venv Python
         run: python tools/run_python_checks.py
       - name: Disposable Checkers two-client group QA
-        run: python tools/checkers_group_qa.py --report state/qa/checkers/windows.json
+        run: .\.venv\Scripts\python.exe tools/checkers_group_qa.py --report state/qa/checkers/windows.json
       - name: Verify ZipRunner registered isolated Python recipe
         run: python tools/run_python_checks.py
       - name: Check JavaScript build

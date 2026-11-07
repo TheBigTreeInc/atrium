@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.66",
+  "version": "0.5.70",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1038,6 +1038,90 @@
           "mode": "manual",
           "checks": [
             "ATR-168-CHECKERS-GROUP-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-169-WINDOWS-CHECKERS-GROUP-PYTHON-ENV",
+      "criteria": [
+        {
+          "id": "ATR-169-WIN-ENV-UNIT",
+          "description": "Windows Checkers group QA uses verified .venv, generated-spec guard selects a healthy isolated interpreter and the workflow has an explicit regression.",
+          "mode": "automated",
+          "checks": [
+            "ATR-169-WIN-ENV-T1"
+          ]
+        },
+        {
+          "id": "ATR-169-WIN-ENV-OPERATOR",
+          "description": "Record exact-commit Windows source/ZipRunner and human operator acceptance independently.",
+          "mode": "manual",
+          "checks": [
+            "ATR-169-WIN-ENV-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-170-OFFLINE-EXTERNAL-GAME-CANDIDATE",
+      "criteria": [
+        {
+          "id": "ATR-170-OFFLINE-CANDIDATE-SOURCE",
+          "description": "Independent game pack/verify CLI is deterministic, fails closed, and does not install or publish.",
+          "mode": "automated",
+          "checks": [
+            "ATR-170-OFFLINE-CANDIDATE-T1"
+          ]
+        },
+        {
+          "id": "ATR-170-OFFLINE-CANDIDATE-OPERATOR",
+          "description": "Human reviews real independent game intake and separately authorizes any TaviX integration.",
+          "mode": "manual",
+          "checks": [
+            "ATR-170-OFFLINE-CANDIDATE-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-172-KLONDIKE-EXTERNAL-DEV-TAVIX",
+      "criteria": [
+        {
+          "id": "ATR-172-EXTERNAL-PREVIEW-SOURCE",
+          "description": "Accept unmodified independent Klondike offline distribution, generate an unprivileged deterministic TaviX developer preview and prove source integrity.",
+          "mode": "automated",
+          "checks": [
+            "ATR-172-EXTERNAL-PREVIEW-T1"
+          ]
+        },
+        {
+          "id": "ATR-172-TAVI-DEVICE-ACCEPTANCE",
+          "description": "Real Tavi operator installation, offline play, save and Atrium Installed Games remain separate gates.",
+          "mode": "manual",
+          "checks": [
+            "ATR-172-EXTERNAL-PREVIEW-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-173-WINDOWS-PORTABLE-OFFLINE-QA",
+      "criteria": [
+        {
+          "id": "ATR-173-WINDOWS-PORTABILITY-SOURCE",
+          "description": "Test offline-game symlink rejection without Windows symlink creation privilege and check interpreter comparison using OS-native paths.",
+          "mode": "automated",
+          "checks": [
+            "ATR-173-WIN-PORTABILITY-T1"
+          ]
+        },
+        {
+          "id": "ATR-173-WINDOWS-INSTALLED-BUILD",
+          "description": "Verify actual Win32 ZipRunner build, generated spec and offline-game candidate regression after source import; preserve approval gate.",
+          "mode": "manual",
+          "checks": [
+            "ATR-173-WIN-PORTABILITY-M1"
           ]
         }
       ]
@@ -2137,6 +2221,87 @@
       "stage": "acceptance",
       "description": "Operator verifies original critical Checkers QA and live deployment boundaries",
       "instructions": "Verify exact ZIP source SHA and seven group breakdown. Run installed Windows ZipRunner tests, inspect source-only trust boundaries, then separately verify real Social identities and a complete Tavi-to-browser match. Only human acceptance may promote the Workboard task to Done."
+    },
+    {
+      "id": "ATR-169-WIN-ENV-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Windows source group QA venv and generated-spec dependency boundary",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_ci_integrations.py",
+      "assertions": [
+        "Windows CI prepares .venv first and runs Checkers QA via .venv/Scripts/python.exe",
+        "Generated-spec test selects verified .venv when available and never skips --check",
+        "Source QA and exact-package QA retain all 47 existing Checkers group cases",
+        "Exact ZIP child runner reuses verified source environment when invoked by host Python, without packaging dependencies or skipping tests."
+      ]
+    },
+    {
+      "id": "ATR-169-WIN-ENV-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Review Windows venv group QA after approved 0.5.67 GitHub push",
+      "instructions": "Inspect GitHub run 42307595956 failure and compare with new exact-commit 0.5.67 run, verify Windows 47-case group, source/ZipRunner validators, then fresh local installed Windows build. No operator/release gate is auto-approved."
+    },
+    {
+      "id": "ATR-170-OFFLINE-CANDIDATE-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "External offline web-game candidate pack and verify with hostile ZIP cases",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_offline_game.py",
+      "assertions": [
+        "Pack external fixture with no game written in Atrium; output hash and manifest stable across two builds",
+        "Reject remote runtime asset URLs, missing entry, wrong identifiers, archive traversal, symlinks, altered hashes and unlisted assets",
+        "No TaviX runtime, network request, installed-game inventory or release is claimed"
+      ]
+    },
+    {
+      "id": "ATR-170-OFFLINE-CANDIDATE-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Verify external Solitaire game locally in real Tavi and authorize separately",
+      "instructions": "Use independently delivered game candidate and agreed TaviX host installer; prove installed-game listing, launch with airplane mode, restart/resume and upgrade retaining saved progress. Do not mark Done based on source test."
+    },
+    {
+      "id": "ATR-172-EXTERNAL-PREVIEW-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Verified independent-game source input converts into safe deterministic unprivileged TaviX preview",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_offline_tavix.py",
+      "assertions": [
+        "Accept integrity sidecar and SVG XML namespace from external source without relaxing remote-reference rejection",
+        "Validate source ZIP before converting, and emit bounded TaviX app manifest with per-file lock integrity and original game identity",
+        "Reject modified candidate, modified TaviX archive, unsupported WASM, wrong Tavi IDs, and preserve identical output across builds"
+      ]
+    },
+    {
+      "id": "ATR-172-EXTERNAL-PREVIEW-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Import external-game developer TaviX in real Tavi and check offline launch; do not infer Atrium inventory support",
+      "instructions": "With actual developer grant and operator approval, use Apps -> Install .tavix to install locally, open Klondike under Apps/All, check assets, controls and airplane mode. Test restart save separately; opaque sandbox may prohibit storage. Atrium -> Installed Games and open-by-installed identity remain Tavi host integration, NOT achieved by this app preview."
+    },
+    {
+      "id": "ATR-173-WIN-PORTABILITY-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Cross-platform offline-game and group-Python regression tests",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_offline_game.py",
+      "assertions": [
+        "Symlink paths must still fail closed, even when WinError 1314 prevents creating a real symlink",
+        "Deterministic simulated symlink rejection executes on all operating systems",
+        "Verified group Python interpreter is compared as a native Path, not a Unix-only string"
+      ]
+    },
+    {
+      "id": "ATR-173-WIN-PORTABILITY-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Re-run installed Windows ZipRunner build after 0.5.68 failed with two platform-dependent test assertions",
+      "instructions": "Import approved Atrium 0.5.70 ZIP with existing local config preserved. Confirm offline-game symlink and Checkers group Python tests pass under non-administrator Windows Python 3.13; check full source tests, Node build, pinned validator, unchanged official TaviX 1.0.4, and log operator sign-off separately. No auto-release."
     }
   ]
 }

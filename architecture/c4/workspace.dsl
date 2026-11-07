@@ -57,6 +57,11 @@ workspace "Atrium" "C4 model of the Atrium game marketplace, LoopRD runtime comp
             }
             catalogGateway = container "Optional catalog gateway" "Operator-started loopback HTTP server exporting fresh reviewed and hosted catalog snapshots; public TLS proxy requires separate deployment." "Python HTTPServer"
             registrationReader = container "Deployment registration reader" "Operator-run CLI that reads LoopRD component inventory and sibling atriumd.yaml documents and submits trusted observations." "Python CLI"
+            offlineCandidateTools = container "Offline game candidate tools" "Operator-run source-only pack/verify of external offline web games and developer TaviX preview generation; no installation, publication or game execution." "Python CLI" {
+                offlineBundleValidator = component "Offline game candidate validator" "Verifies exact external file digests, bounded archive paths, offline references and manifest contract." "Python"
+                offlineBundlePackager = component "Offline game candidate packager" "Builds a deterministic ZIP and metadata from independent game assets." "Python"
+                offlineTavixPreview = component "Offline TaviX preview converter" "Transforms only verified candidate bytes into a bounded developer-only TaviX app/lockfile; does not install, sign or publish." "Python"
+            }
             marketGrove = container "Market Grove LoopRD subcomponent" "Bundled independent LoopRD child game with its own market operations, scheduled clearing job, and game-owned state." "LoopRD YAML and Python"
             marketStore = container "Market Grove game database" "Game-owned market order, state, and trade history storage." "SQLite" {
                 tags "Database"
@@ -65,6 +70,9 @@ workspace "Atrium" "C4 model of the Atrium game marketplace, LoopRD runtime comp
 
         player -> portal "Browses the game library and launches reviewed web entries" "Browser / HTTPS"
         player -> tavix "Opens Atrium through Tavi's embedded extension" "Tavi UI"
+        operator -> offlineCandidateTools "Packages and verifies independent game candidate builds (not installs)" "Local CLI"
+        offlineBundlePackager -> offlineBundleValidator "Verifies generated candidate before returning digest" "Python"
+        offlineTavixPreview -> offlineBundleValidator "Validates candidate before preview conversion" "Python"
         operator -> registrationReader "Runs registration synchronization with private operator configuration" "CLI"
         operator -> api "Reviews publisher releases and trusted deployments" "Scoped LoopRD API"
         tavi -> tavix "Hosts the extension and owns global navigation" "TaviX host protocol"
@@ -111,6 +119,11 @@ workspace "Atrium" "C4 model of the Atrium game marketplace, LoopRD runtime comp
     }
 
     views {
+        component offlineCandidateTools atrium_offline_candidate_components "Independent offline-game packaging, integrity verification and developer preview conversion (no install path)" {
+            include *
+            autoLayout lr
+        }
+
         systemContext atrium atrium_context "Atrium's product boundary and external owners" {
             include *
             autoLayout lr

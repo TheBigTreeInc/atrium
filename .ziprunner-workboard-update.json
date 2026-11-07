@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.66",
-  "summary": "0.5.66 expands the exact-source-package Checkers group QA to rules, common game contract, disposable two-client network, trusted host/routes, verified-Social fixtures and source ownership boundaries; adds per-group fail-closed coverage without modifying production routes or the C4 model.",
+  "version": "0.5.70",
+  "summary": "0.5.70 repairs two operator-observed Windows test portability failures from rejected 0.5.68: symlink creation WinError 1314 and host-specific Python Path separators. Retains all 0.5.69 external-game/TaviX work without modifying Solitaire or Tavi, preserving runtime state and review gates.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -513,9 +513,49 @@
       "priority": "critical",
       "summary": "The same original ZIP now supplies all seven required Checkers QA groups. Individual passed/skipped/error records, minimum counts and group ownership fail closed; source-only tests are never labeled as live Social/Tavi acceptance.",
       "operator_checks": [
-        "Run the new 0.5.66 original ZIP with tools/checkers_group_qa.py --package and keep its input_zip_sha256, group breakdown, fixture hash and actual assertion records.",
+        "Run the new 0.5.67 original ZIP with tools/checkers_group_qa.py --package and keep its input_zip_sha256, group breakdown, fixture hash and actual assertion records.",
         "Review DGN-CHECKERS-M1-AUTOMATED-QA-001 acceptance separately; inspect generic lobby/catalog boundaries and confirm Tavi includes no authoritative Checkers server.",
         "Run fresh native Windows post-update QA, review GitHub exact-commit CI and obtain human operator acceptance; a disposable HTTP source test is not a live Tavi/browser match or a release approval."
+      ]
+    },
+    {
+      "id": "ATR-169-WINDOWS-CHECKERS-GROUP-PYTHON-ENV",
+      "title": "Fix Windows Checkers group QA interpreter isolation",
+      "priority": "critical",
+      "summary": "Windows workflow invokes the already-prepared .venv interpreter for group QA. Generated spec guard executes under the healthy project venv when available, and regression checks prevent host Python drift. No live runtime changed.",
+      "operator_checks": [
+        "Verify the exact-commit GitHub Actions Windows Checkers group 47/47 and the pinned package validator after approved push.",
+        "Perform fresh local Windows ZipRunner build/post-update QA against 0.5.67 and compare source ZIP SHA.",
+        "Record operator acceptance explicitly; do not mark critical DGN work Done or authorize release solely from CI."
+      ]
+    },
+    {
+      "id": "ATR-170-OFFLINE-EXTERNAL-GAME-CANDIDATE",
+      "title": "Validate and package an independent offline web-game candidate",
+      "summary": "Source CLI accepts an external HTML/JS/WASM game build, produces a reproducible hash-indexed candidate ZIP, rejects unsafe archive content and remote runtime references, and records a source-only C4 component. TaviX installation/launch and inventory are explicitly not implemented.",
+      "operator_checks": [
+        "Review independent external game bytes and resulting manifest without importing game source into Atrium or granting access to Tavi secrets.",
+        "Operator must independently accept actual TaviX import, installed-game visibility, offline launch and persistent saves; source-only candidate acceptance is not that test."
+      ]
+    },
+    {
+      "id": "ATR-172-KLONDIKE-EXTERNAL-DEV-TAVIX",
+      "title": "Import independent Klondike source and produce unprivileged TaviX local preview",
+      "summary": "Fix candidate validator .sha256/SVG false positives and add source-backed conversion from independently verified offline game ZIP to deterministic TaviX app/lock, with original game provenance, stored archive members and hostile-content tests. No game logic or privileged install.",
+      "operator_checks": [
+        "Review independent Klondike 0.1.0 game ZIP and externally generated preview file identity/digests.",
+        "Confirm developer-only Tavi app import and actual game launch separately on Tavi, including offline and restart tests.",
+        "Do not infer official Atrium game registration, installed inventory, update persistence or release."
+      ]
+    },
+    {
+      "id": "ATR-173-WINDOWS-PORTABLE-OFFLINE-QA",
+      "title": "Make offline-game symlink and Checkers interpreter QA portable on Windows",
+      "summary": "WinError 1314 from Windows non-admin symlink creation now exercises the same guard through deterministic mocking; real OS symlinks are tested when permitted. Python path regression uses pathlib native path comparison. No change to game engine, TaviX package structure, installed-game UI, C4 responsibilities or operator approval.",
+      "operator_checks": [
+        "Verify full 0.5.70 Python and JS regression on actual Windows ZipRunner using a non-admin account; record failures and exact ZIP digest.",
+        "Confirm operator-side symlink fallback still rejects unsafe game content; do not enable Windows developer privileges just for tests.",
+        "Validate exact-commit Linux/Windows GitHub Actions and pinned ZipRunner package contract independently before acceptance."
       ]
     }
   ],
@@ -625,6 +665,17 @@
         "Verify LoopRD 0.5.0 commit abaf03fc2e97858508963cee23ba54fb5a041738 is the deployed runtime and Atrium 0.5.51 passes actual DAPI semantic validation.",
         "Verify public unauthenticated GET/OPTIONS at the real operator TLS origin and private API/management denial, no-store, limits and revocation.",
         "Preserve and configure real trusted game-web and atrium-web launch maps; only then stage and separately review/publish immutable TaviX 1.0.6."
+      ]
+    },
+    {
+      "id": "ATR-171-TAVI-INSTALLED-GAME-BRIDGE",
+      "title": "Bind Tavi installed-game inventory and local launch for Atrium",
+      "summary": "Tavi 0.3.127+ includes *developer-only* .tavix import and Tavi Apps launching, now source-compatible with independent Klondike 0.1.0 preview. However official Atrium Installed Games still lacks a trusted installed-game inventory and open-by-installed-identity host contract. Its new local opaque sandbox also leaves browser save persistence unverified. Do not fake inventory or claim success from source-only tests.",
+      "priority": "critical",
+      "operator_checks": [
+        "Manually import externally built org.example.klondike .tavix via a developer-enabled Tavi instance and verify game actually plays in airplane mode.",
+        "Design and implement trusted Tavi-host installed-game inventory and open-by-installed-identity API for the official Atrium extension; review metadata and package scope.",
+        "Provide isolated persistent save adapter and verify Tavi restart/update retention on Android without exposing Tavi credentials."
       ]
     }
   ]

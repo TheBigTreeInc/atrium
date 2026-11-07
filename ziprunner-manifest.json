@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.66",
-    "base_version": "0.5.65",
-    "source_revision": "6cb12f8039238751b25544b82f56a0fbb90c9c14"
+    "version": "0.5.70",
+    "base_version": "0.5.69",
+    "source_revision": "8cf5a3266c2a3f61714921d17d5291548ec99f47"
   },
   "update": {
-    "id": "ATR-P1-20261106-066",
+    "id": "ATR-P1-20261107-070",
     "kind": "source_update",
-    "created_at": "2026-11-06T23:10:00+01:00",
-    "summary": "Exact-ZIP Checkers verification closes source group evidence gap by adding game-rule and ownership boundaries to the same 47-case disposable group matrix; production integrations and release remain independently operator-gated."
+    "created_at": "2026-11-07T10:49:00+01:00",
+    "summary": "Repair exact Win32 ZipRunner 0.5.68 test failures (symlink creation privilege and non-native path assertion) while retaining 0.5.69 externally authored Klondike intake/TaviX conversion; no runtime authorization, game changes or release."
   },
   "planned_work": [
     {
@@ -349,6 +349,30 @@
       "title": "Exact-ZIP Checkers rules and ownership group coverage",
       "priority": "critical",
       "acceptance_criteria": "Seven required source/exact-ZIP game rule, engine, network, trusted host, Social fixture and module ownership suites; fail for skipped, incomplete, duplicate and unknown assertions. Record original ZIP digest and independent Windows/real-client acceptance as pending."
+    },
+    {
+      "id": "ATR-169-WINDOWS-CHECKERS-GROUP-PYTHON-ENV",
+      "title": "Fix Windows Checkers group QA Python interpreter isolation",
+      "acceptance_criteria": "Windows CI group step executes via prepared project .venv; generated-spec guard verifies PyYAML under the healthy isolated venv, with source contract regression and unchanged 47 Checkers test count.",
+      "priority": "critical"
+    },
+    {
+      "id": "ATR-170-OFFLINE-EXTERNAL-GAME-CANDIDATE",
+      "title": "Add independent offline-game source intake and strict candidate verification",
+      "acceptance_criteria": "External game pack/verify deterministic, offline references/path/hash checks; versioned C4 documentation, no installed-game claims or operator approval inferred.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-172-KLONDIKE-EXTERNAL-DEV-TAVIX",
+      "title": "Accept independent Klondike candidate and create unprivileged TaviX developer-preview app",
+      "priority": "high",
+      "acceptance_criteria": "Klondike unchanged source build converts to deterministic TaviX app with integrity lock, no privilege, source identity retained, negative tests; real Tavi developer import and device UI acceptance pending."
+    },
+    {
+      "id": "ATR-173-WINDOWS-PORTABLE-OFFLINE-QA",
+      "title": "Windows portable offline game + Checkers QA",
+      "priority": "critical",
+      "acceptance_criteria": "No-admin Windows source/test suite passes including symlink block and verified interpreter tests; exact source ZIP passes suite and pinned package validator after Git push; operator acceptance remains separate."
     }
   ],
   "done_work": [
@@ -1544,6 +1568,84 @@
           "description": "Acceptance boundary and exact-ZIP run instructions"
         }
       ]
+    },
+    {
+      "id": "ATR-169-WINDOWS-CHECKERS-GROUP-PYTHON-ENV",
+      "summary": "Source-level repair: Windows CI Checkers QA now runs under verified project .venv; generated-spec guard also prefers healthy project .venv; regression guards host-Python selection. Operator approval and release pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "description": "Windows GitHub Actions interpreter selection",
+          "ref": ".github/workflows/verify.yml"
+        },
+        {
+          "kind": "test",
+          "description": "Spec-guard test and Windows QA CI regression",
+          "ref": "tests/test_ci_integrations.py"
+        },
+        {
+          "kind": "source",
+          "description": "Spec-guard interpreter selection",
+          "ref": "tests/test_checkers.py"
+        },
+        {
+          "kind": "documentation",
+          "description": "Windows reproduction and operator review",
+          "ref": "docs/P1_111_WINDOWS_CHECKERS_PYTHON_067.adoc"
+        }
+      ]
+    },
+    {
+      "id": "ATR-170-OFFLINE-EXTERNAL-GAME-CANDIDATE",
+      "summary": "Implemented source-only external offline-game candidate package and verifier; real Tavi installation, runtime inventory and Android acceptance remain pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "description": "Independent game pack/verify entry point",
+          "ref": "tools/offline_game.py"
+        },
+        {
+          "kind": "test",
+          "description": "Candidate archive adversarial regression",
+          "ref": "tests/test_offline_game.py"
+        },
+        {
+          "kind": "documentation",
+          "description": "Offline candidate contract and remaining host work",
+          "ref": "docs/OFFLINE_GAME_HANDOFF.adoc"
+        },
+        {
+          "kind": "source",
+          "description": "C4 Level 3 offline candidate components",
+          "ref": "architecture/c4/workspace.dsl"
+        }
+      ]
+    },
+    {
+      "id": "ATR-172-KLONDIKE-EXTERNAL-DEV-TAVIX",
+      "title": "Offline external-game source to TaviX developer preview conversion",
+      "summary": "Preliminary source tests pass; only operator preview, no live TaviX installation, Atrium UI integration, or release."
+    },
+    {
+      "id": "ATR-173-WINDOWS-PORTABLE-OFFLINE-QA",
+      "summary": "Source test-only repair from 0.5.68 Win32 ZipRunner failure. Symlink guard remains fail closed and source Python-path assertions use OS-native Path. Installed Windows acceptance remains pending.",
+      "evidence": [
+        {
+          "kind": "test",
+          "description": "Windows symlink privilege regression and simulated fail-closed guard",
+          "ref": "tests/test_offline_game.py"
+        },
+        {
+          "kind": "test",
+          "description": "Cross-platform verified Python interpreter test",
+          "ref": "tests/test_checkers_group_coverage.py"
+        },
+        {
+          "kind": "documentation",
+          "description": "Windows failure analysis and operator instructions",
+          "ref": "docs/P1_114_WINDOWS_TEST_PORTABILITY_070.adoc"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -1889,19 +1991,75 @@
       {
         "id": "ATR-167-EXACT-CI-065",
         "status": "passed",
-        "description": "0.5.65 exact commit 6cb12f8 source, DAPI, pinned ZipRunner validator and Windows smoke passed in GitHub CI run 42239065318; does not approve 0.5.66.",
+        "description": "0.5.65 exact commit 6cb12f8 source, DAPI, pinned ZipRunner validator and Windows smoke passed in GitHub CI run 42239065318; does not approve 0.5.67.",
         "evidence_ref": "https://github.com/TheBigTreeInc/atrium/actions/runs/42239065318"
       },
       {
         "id": "ATR-168-OPERATOR-066",
         "status": "not_run",
-        "description": "0.5.66 exact GitHub CI, fresh installed Windows QA, real Social/Tavi/browser multiplayer, Structurizr CLI and human acceptance",
+        "description": "0.5.67 exact GitHub CI, fresh installed Windows QA, real Social/Tavi/browser multiplayer, Structurizr CLI and human acceptance",
         "reason": "A local source-only group pass and previous-commit CI cannot prove these independent production and operator checks."
+      },
+      {
+        "id": "ATR-169-LOCAL-067",
+        "status": "passed",
+        "description": "Source regression and exact-package Checkers group QA for Windows interpreter repair",
+        "evidence_ref": "evidence/ATR_169_WINDOWS_CHECKERS_QA_067.json",
+        "command": "python -m unittest discover -s tests -q && python tools/checkers_group_qa.py && npm test && npm run build",
+        "environment": "Local Linux source tree with disposable loopback HTTP; Windows run pending"
+      },
+      {
+        "id": "ATR-169-EXACT-CI-067",
+        "status": "not_run",
+        "description": "0.5.67 exact-commit GitHub Actions Windows and pinned ZipRunner validator",
+        "reason": "Requires a separately approved Git push of the candidate version."
+      },
+      {
+        "id": "ATR-170-OFFLINE-068",
+        "status": "passed",
+        "description": "Source-only external offline-game contract tests (400 Python, 87 JS) and static build passed; no Tavi installation claim",
+        "command": "python -m unittest discover -s tests -q && npm test && npm run build",
+        "environment": "Local source checkout, Python 3.13 and Node 22; native Windows not run",
+        "evidence_ref": "evidence/ATR_170_OFFLINE_CANDIDATE_068.json"
+      },
+      {
+        "id": "ATR-170-ANDROID-068",
+        "status": "not_run",
+        "description": "Offline game installation, installed-library UI, play and save in real Tavi",
+        "reason": "TaviX installed-package inventory and local launch APIs have not been verified or implemented; no hardware acceptance."
+      },
+      {
+        "id": "ATR-172-SOURCE-069",
+        "status": "passed",
+        "description": "External Klondike integration tests and full Atrium regression",
+        "command": "python -m unittest discover -s tests -q && npm test && npm run build && python tools/checkers_group_qa.py",
+        "environment": "Local Linux source tree; external Klondike game provided separately, package not installed to Tavi",
+        "evidence_ref": "evidence/ATR_172_KLONDIKE_EXTERNAL_QA_069.json"
+      },
+      {
+        "id": "ATR-172-TAVI-DEVICE-069",
+        "status": "not_run",
+        "description": "Real Tavi developer .tavix install, phone game and save acceptance",
+        "reason": "Requires operator with Tavi 0.3.127+ developer grant and actual Android hardware; Tavi installed game host API is not implemented."
+      },
+      {
+        "id": "ATR-173-SOURCE-070",
+        "status": "passed",
+        "description": "0.5.70 Linux source regression: 409 Python tests, 87 JavaScript, 47 Checkers groups and web build/verify; Windows/operator not run",
+        "command": "python -m unittest discover -s tests -v && npm test && python tools/checkers_group_qa.py && npm run build && npm run verify",
+        "environment": "Local Linux source tree; no Windows symlink privilege or native installer acceptance claimed",
+        "evidence_ref": "evidence/ATR_173_WINDOWS_PORTABILITY_SOURCE_070.json"
+      },
+      {
+        "id": "ATR-173-WIN-OPERATOR-070",
+        "status": "not_run",
+        "description": "Installed Windows non-admin source import/ZipRunner and operator acceptance for 0.5.70",
+        "reason": "Requires actual Windows ZipRunner operator run; Linux source testing cannot prove native Windows acceptance."
       }
     ]
   },
   "handover": {
-    "next_pass": "Verify 0.5.66 exact CI and operator Windows QA, then activate trusted LoopRD/Social Checkers and accept one real Tavi-to-browser match.",
+    "next_pass": "Run 0.5.70 through real Windows ZipRunner, then test independently developed Klondike 0.1.0 .tavix in Tavi Apps and negotiate trusted installed-game inventory/launch contract for Atrium My Games. Never conflate source tests with real phone offline acceptance.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -1913,7 +2071,8 @@
       "0.5.56 routes are source-only and the fixture HTTP listener is NOT production authentication. LoopRD game info still announces persistentMatchesEnabled:false. Never expose transport without an independently reviewed Social session verifier, accepted challenge contract, CSRF/TLS, and operator permission gates.",
       "Installed TaviX 1.0.4 is immutable and cannot display the new source UX until a new operator-approved extension is installed.",
       "Material styling is source-only: no active hosted catalog/real game registrations or TaviX 1.0.6 installation was verified. Existing TaviX 1.0.4 still renders historical dark UI.",
-      "Group test now covers required rules/ownership boundaries but uses test-only Social aliases and cannot prove live Tavi/browser authentication, production routing or release approval."
+      "Group test now covers required rules/ownership boundaries but uses test-only Social aliases and cannot prove live Tavi/browser authentication, production routing or release approval.",
+      "0.5.66 exact Windows CI 42307595956 failed the generated-spec subprocess because host Python lacked PyYAML; 0.5.67 has not yet passed its own native Windows CI."
     ],
     "blockers": [
       "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",
@@ -1924,7 +2083,8 @@
       "0.5.60 remote client and view remain source-only; authenticated Social/LoopRD transport and Tavi/browser deployment are not connected or operator-accepted.",
       "0.5.63 host-neutral player is a source/static asset only: Social login/CSRF/accepted challenge and authenticated LoopRD Match endpoints are NOT deployed or operator-approved; no real Tavi/browser gameplay demonstrated.",
       "0.5.63 only binds server-injected typed Social original challenge projections. Real session lookup, accepted friendship lookup, authoritative original challenge retrieval, public LoopRD handlers and deployed Tavi clients remain unimplemented and require separate operator review.",
-      "No active public hosted catalog endpoint or source-verified deployment evidence in the ZIP; cannot make games playable by inventing URLs."
+      "No active public hosted catalog endpoint or source-verified deployment evidence in the ZIP; cannot make games playable by inventing URLs.",
+      "External offline-game ZIP candidate validation does not prove TaviX installation, local package discovery, storage persistence or execution in Tavi. Separate Tavi owner acceptance required."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",

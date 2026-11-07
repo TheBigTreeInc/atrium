@@ -93,3 +93,28 @@ Or, with the official Structurizr CLI distribution, use the documented `validate
 For later development: update DSL and this README **in the same pass** when a component, responsibility, dependency, transport interface, persistence boundary or deployment architecture changes. Keep IDs stable and distinguish deployed from source-only status. Reference ODPS capability names, if a compatible Atrium ODPS description becomes available, rather than copying unrelated product descriptions into C4. No Atrium ODPS artifact was present in the inspected source ZIP.
 
 Do not add a deployment diagram until actual runtime nodes, HTTPS proxy, published catalog mapping and game host bindings are verified; do not model hypothetical infrastructure as running.
+
+== Offline candidate ingestion (0.5.68)
+
+The new `offlineCandidateTools` Python CLI container owns `offlineBundlePackager` and `offlineBundleValidator`. It reads third-party local web builds, writes deterministic candidate ZIPs and enforces offline, hash, path and size constraints. Its new view key is `atrium_offline_candidate_components`. **It does not install anything in Tavi, talk to LoopRD, publish a catalog or establish a local game inventory.** See `docs/OFFLINE_GAME_HANDOFF.adoc`. The separate Tavi/TaviX installed-package inventory and launch contract is pending source verification, so no fabricated dependency was drawn. No independent Structurizr CLI validation is claimed.
+
+
+== Local TaviX developer-preview conversion (0.5.69)
+
+`offlineCandidateTools` gains `offlineTavixPreview` (`tools/offline_tavix.py`).
+It accepts only a verified `atrium.offline-game/v1` candidate and produces a
+TaviX 1.0 `tavi.extension/v1` **developer preview** with a per-member SHA-256
+lockfile and portable `ui/atrium-game.json` provenance metadata.
+The independent game source and game engine are not part of the Atrium source
+package. No call from the operator CLI to Tavi or LoopRD occurs.
+
+Tavi's local `.tavix` installer (Tavi 0.3.127+ source) is an *external,*
+operator-controlled step. Tavi's sandbox may prevent localStorage/IndexedDB,
+and a local preview is not a trusted or publicly released extension.
+The ATR-171 installed-game inventory/identity-based local launch path is still
+**unimplemented**. The converter does not create a relationship between
+Atrium's live catalog and Tavi's installed-package registry.
+
+See `docs/P1_113_KLONDIKE_EXTERNAL_GAME_QA_069.adoc` and
+`docs/OFFLINE_GAME_HANDOFF.adoc`. The C4 source regression is **not equivalent**
+to an official Structurizr CLI validation.

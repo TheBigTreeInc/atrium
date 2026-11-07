@@ -1,0 +1,64 @@
+= ATR-172 — Klondike 0.1.0 independent game intake and local TaviX developer preview
+:revnumber: 0.5.69
+:revdate: 2026-11-07
+:toc: left
+
+== Scope
+
+No Solitaire implementation, modification, game source or art is imported into
+Atrium. An independently supplied `klondike-solitaire-0.1.0-ziprunner.zip`
+contained the game's `dist/` multi-asset build, `dist-single/index.html`,
+provisional Atrium metadata, game tests and AsciiDoc/C4 documentation.
+The external source archive was SHA-256
+`c530534c6e47f66e21abe491500cb9dd8bee4e012e8e5ceccc42bd6b3750513d`.
+
+The game authored its own JavaScript engine; 52 game unit tests passed locally
+and its `npm run verify` reported 47 checks passed. This does **not** certify
+its real Tavi gameplay, mobile runtime, UI or persistence. The externally
+supplied source ZIP is **not** included in the Atrium ZIP.
+
+== Observed Atrium integration defect and repair
+
+0.5.68 rejected the legitimate Klondike `dist/MANIFEST.sha256` asset suffix.
+After that fix, it rejected the standard SVG `xmlns="http://www.w3.org/2000/svg"`
+namespace while scanning for external URLs. 0.5.69 accepts these exact
+non-network cases while continuing to reject remote imports and paths. The
+existing fail-closed offline asset scan and manifest digest checks remain.
+
+Atrium then verified the unchanged external `dist/` directory as an
+`atrium.offline-game/v1` candidate with eight assets, source candidate SHA-256
+`089246f36810717ee1ad0438e7d8a6305f0e9e38b80d45865c7a5325cdba4a74`.
+The original game has not been added to Atrium's runtime or published catalog.
+
+== TaviX 1.0 developer preview path
+
+The 0.5.69 source includes `tools/offline_tavix.py`. It converts only a verified
+candidate to a bounded, deterministic, unprivileged `tavi.extension/v1`
+application for Tavi 0.3.127+ developer local import. The converter does not
+invent a local game launch RPC or installed-game registry, does not install
+or publish, and cannot silently impersonate Atrium's official extension.
+
+The exact Klondike developer-preview package, built outside Atrium source, has
+ID `org.example.klondike`, TaviX version `0.1.0`, nine integrity-locked payload
+members and SHA-256
+`f35043795e722f17822366e0ee8fcc0b71be8920616e0722c293ea2201f2c6a5`.
+It uses stored ZIP members, so it does not rely on Android support for
+`DecompressionStream('deflate-raw')`. `ui/atrium-game.json` is descriptive
+provenance metadata, **not** a privileged local installed-game listing.
+
+== Acceptance boundary
+
+The next operator test is *Tavi → Apps → Install .tavix → Apps / All → Klondike*
+with explicit developer grant and unverified-file approval. Actual load,
+mobile rendering, controls, offline replay and persisted saves must be checked
+on the device. The Tavi sandbox is opaque-origin, and game browser persistence
+is not guaranteed. No complete acceptance is claimed until observed.
+
+The user's product goal is **Klondike visible and playable from Atrium's own
+Installed Games UI**. That remains blocked by the separately owned TaviX
+installed-game inventory and local open-by-identity bridge (ATR-171), not by
+the Solitaire developer or the offline bundle contract. A local imported Tavi
+app appearing under Tavi's Apps UI is only an intermediate smoke test.
+
+See `docs/OFFLINE_GAME_HANDOFF.adoc` for commands, operator procedure and
+upstream Tavi contract links. Existing Workboard human approvals stay intact.

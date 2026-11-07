@@ -1,0 +1,23 @@
+= Atrium 0.5.67: Windows Checkers group QA Python environment repair
+:revdate: 2026-11-07
+
+== Failure and cause
+
+GitHub Actions run `42307595956`, exact commit `8cf5a3266c2a3f61714921d17d5291548ec99f47`, failed at step 7 of the Windows `Disposable Checkers two-client group QA` job. `tests/test_checkers.py::test_stale_spec_guard` launched `tools/build_spec.py --check` via the current executable, which was host Python lacking the project PyYAML dependency. Prior source tests had succeeded under `.venv`.
+
+== Source repair
+
+The Windows CI group step now runs `.\.venv\Scripts\python.exe tools/checkers_group_qa.py`, using the previously initialized and verified project venv. The generated-spec guard selects the project venv if its required imports are healthy; otherwise it keeps the current interpreter and fails normally if dependencies are absent. It still executes the actual `tools/build_spec.py --check`, never a mock or skip. The exact-ZIP child process also selects the healthy source-project Python interpreter even when the caller is host Python; it still imports all tests and game logic from the extracted archive, not the checkout. Regressions in `tests/test_ci_integrations.py` and `tests/test_checkers_group_coverage.py` enforce these boundaries.
+
+== Validation ownership
+
+This is a test runner repair and does not modify the Checkers rules, authority, Social integration, LoopRD routes or TaviX. The existing C4 `architecture/c4/workspace.dsl` remains valid as a source baseline; official Structurizr CLI parser validation remains pending.
+
+[source,powershell]
+----
+python tools/setup_build_env.py
+.\.venv\Scripts\python.exe tools/checkers_group_qa.py --report state/qa/checkers/windows-verified.json
+python tools/run_python_checks.py
+----
+
+These are proposed Windows verification commands, not claimed executions. The exact 0.5.67 GitHub CI and installed Windows ZipRunner build, human operator acceptance, live Tavi/browser play and release remain separate gates.

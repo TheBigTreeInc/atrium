@@ -27,7 +27,13 @@ class CheckersTest(unittest.TestCase):
  def test_invalid_board_rejected(self):
   with self.assertRaises(ValueError):legal_moves(['xxx'],'r')
  def test_stale_spec_guard(self):
-  import subprocess,sys
-  r=subprocess.run([sys.executable,'tools/build_spec.py','--check'],capture_output=True,text=True)
-  self.assertEqual(r.returncode,0,r.stdout+r.stderr)
+  import subprocess, sys
+  from tools.setup_build_env import venv_python, healthy, ROOT
+  # Group QA may be started with host Python, without project PyYAML.
+  # Run the real generated-spec check with verified isolated dependencies.
+  candidate = venv_python()
+  interpreter = str(candidate) if healthy(candidate) else sys.executable
+  r = subprocess.run([interpreter, 'tools/build_spec.py', '--check'],
+                     cwd=ROOT, capture_output=True, text=True, encoding='utf-8')
+  self.assertEqual(r.returncode, 0, r.stdout+r.stderr)
 if __name__=='__main__':unittest.main()

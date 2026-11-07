@@ -1,11 +1,11 @@
 {
   "schema": "ziprunner.post-update-tests.v1",
-  "version": "0.5.66",
+  "version": "0.5.70",
   "tests": [
     {
       "kind": "command",
       "semantic_id": "atrium-python-source-tests",
-      "definition_revision": "3",
+      "definition_revision": "4",
       "rerun_policy": "every_update",
       "command": "python tools/run_python_checks.py",
       "attention_on_failure": true,
@@ -23,7 +23,7 @@
     {
       "kind": "command",
       "semantic_id": "atrium-checkers-disposable-group-qa",
-      "definition_revision": "6",
+      "definition_revision": "7",
       "rerun_policy": "every_update",
       "command": "python tools/checkers_group_qa.py",
       "attention_on_failure": true,

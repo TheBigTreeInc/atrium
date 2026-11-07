@@ -59,6 +59,20 @@ class CiIntegrationTests(unittest.TestCase):
         self.assertIn("guest = client.get(catalog_url)", smoke)
         self.assertIn("client.get(endpoint+'/registry/discovery/v2/catalog').status_code == 401", smoke)
 
+    def test_windows_group_qa_uses_isolated_python(self):
+        """GitHub run 42307595956: host Python lacked yaml in spec-guard child."""
+        windows = self.workflow.split('  windows-ziprunner-build:', 1)[1]
+        self.assertLess(windows.index('name: Prepare isolated Windows Python environment'),
+                        windows.index('name: Disposable Checkers two-client group QA'))
+        self.assertIn('run: python tools/setup_build_env.py', windows)
+        self.assertIn(r'run: .\.venv\Scripts\python.exe tools/checkers_group_qa.py --report state/qa/checkers/windows.json', windows)
+        self.assertNotIn('run: python tools/checkers_group_qa.py --report state/qa/checkers/windows.json', windows)
+        guard = (ROOT / 'tests/test_checkers.py').read_text(encoding='utf-8')
+        self.assertIn('from tools.setup_build_env import venv_python, healthy, ROOT', guard)
+        self.assertIn('interpreter = str(candidate) if healthy(candidate) else sys.executable', guard)
+        self.assertIn('import yaml', (ROOT / 'tools/build_spec.py').read_text(encoding='utf-8'))
+        self.assertIn('PyYAML==', (ROOT / 'requirements-dev.txt').read_text(encoding='utf-8'))
+
     def test_ci_artifacts_use_current_source_version(self):
         version=json.loads((ROOT/'package.json').read_text(encoding='utf-8'))['version']
         self.assertIn(f'atrium-{version}-ziprunner.zip', self.workflow)

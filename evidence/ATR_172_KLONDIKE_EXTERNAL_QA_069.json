@@ -1,0 +1,45 @@
+{
+  "schema": "atrium.qa-evidence/v1",
+  "project": "atrium",
+  "version": "0.5.69",
+  "scope": "SOURCE_TREE_AND_EXTERNAL_GAME_ARTIFACTS",
+  "date": "2026-11-07",
+  "external_game": {
+    "name": "Klondike Solitaire",
+    "version": "0.1.0",
+    "source_zip_sha256": "c530534c6e47f66e21abe491500cb9dd8bee4e012e8e5ceccc42bd6b3750513d",
+    "tests_passed": 52,
+    "distribution_verification_checks_passed": 47,
+    "browser_e2e": "blocked_by_chromium_administrator_file_url_policy",
+    "game_source_modified": false,
+    "source_included_in_atrium": false
+  },
+  "candidate": {
+    "schema": "atrium.offline-game/v1",
+    "game_id": "klondike.solitaire",
+    "source_asset_count": 8,
+    "sha256": "089246f36810717ee1ad0438e7d8a6305f0e9e38b80d45865c7a5325cdba4a74",
+    "status": "verified_not_installed"
+  },
+  "tavix_preview": {
+    "application_id": "org.example.klondike",
+    "version": "0.1.0",
+    "payload_members": 9,
+    "sha256": "f35043795e722f17822366e0ee8fcc0b71be8920616e0722c293ea2201f2c6a5",
+    "permissions": ["ui.panel"],
+    "archive_compression": "stored",
+    "status": "developer_preview_not_installed"
+  },
+  "source_tests": {
+    "python_full": "408 passed",
+    "javascript": "87 passed",
+    "checkers_group": "47 passed",
+    "static_web_build": "passed",
+    "native_windows": "not_run",
+    "structurizr_cli": "not_run",
+    "official_pinned_ziprunner_validator": "not_run_locally",
+    "real_tavi_android": "not_run"
+  },
+  "operator_acceptance": "pending",
+  "release": "not_authorized"
+}
