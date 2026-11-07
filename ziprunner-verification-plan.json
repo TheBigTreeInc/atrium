@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.70",
+  "version": "0.5.71",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1122,6 +1122,27 @@
           "mode": "manual",
           "checks": [
             "ATR-173-WIN-PORTABILITY-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-174-CI-PINNED-EVIDENCE-WINDOWS-SYMLINK",
+      "criteria": [
+        {
+          "id": "ATR-174-CI-MANIFEST-EVIDENCE",
+          "description": "Every done_work entry conforms to pinned schema and references real packaged evidence; Windows symlink guard test patches actual concrete path implementation.",
+          "mode": "automated",
+          "checks": [
+            "ATR-174-CI-EVIDENCE-T1"
+          ]
+        },
+        {
+          "id": "ATR-174-WIN-PINNED-ACCEPTANCE",
+          "description": "Verify exact-commit GitHub Linux/Windows CI, pinned ZipRunner validator and native operator Windows acceptance without local overrides.",
+          "mode": "manual",
+          "checks": [
+            "ATR-174-WIN-PINNED-M1"
           ]
         }
       ]
@@ -2302,6 +2323,26 @@
       "stage": "acceptance",
       "description": "Re-run installed Windows ZipRunner build after 0.5.68 failed with two platform-dependent test assertions",
       "instructions": "Import approved Atrium 0.5.70 ZIP with existing local config preserved. Confirm offline-game symlink and Checkers group Python tests pass under non-administrator Windows Python 3.13; check full source tests, Node build, pinned validator, unchanged official TaviX 1.0.4, and log operator sign-off separately. No auto-release."
+    },
+    {
+      "id": "ATR-174-CI-EVIDENCE-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "GitHub 42377997643 pinned manifest done_work and concrete WindowsPath symlink regression",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_release_pipeline.py",
+      "assertions": [
+        "done_work rejects unsupported title, missing/empty evidence, unpackageable references",
+        "Every done_work evidence entry is packaged and obeys pinned schema",
+        "offline-game symlink guard rejects without OS symlink creation privilege"
+      ]
+    },
+    {
+      "id": "ATR-174-WIN-PINNED-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Native Windows CI and pinned ZipRunner package approval",
+      "instructions": "Run 0.5.71 exact committed source through GitHub Linux/Windows verification and actual non-admin Windows ZipRunner. Check pinned done_work schema, symlink mock, release model evidence, original TaviX immutable release, and manual operator approval; no automatic deployment or game publication."
     }
   ]
 }

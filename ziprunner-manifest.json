@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.70",
-    "base_version": "0.5.69",
-    "source_revision": "8cf5a3266c2a3f61714921d17d5291548ec99f47"
+    "version": "0.5.71",
+    "base_version": "0.5.70",
+    "source_revision": "98300ea5cacc83e9e3ddc9a5f2f3fe407225157e"
   },
   "update": {
-    "id": "ATR-P1-20261107-070",
+    "id": "ATR-P1-20261107-071",
     "kind": "source_update",
-    "created_at": "2026-11-07T10:49:00+01:00",
-    "summary": "Repair exact Win32 ZipRunner 0.5.68 test failures (symlink creation privilege and non-native path assertion) while retaining 0.5.69 externally authored Klondike intake/TaviX conversion; no runtime authorization, game changes or release."
+    "created_at": "2026-11-07T15:30:00+01:00",
+    "summary": "Repair pinned ZipRunner done_work evidence metadata and concrete WindowsPath symlink-mock regression from GitHub 42377997643. Add preflight regression while preserving independent offline-game intake, TaviX preview boundary and all operator gates."
   },
   "planned_work": [
     {
@@ -373,6 +373,12 @@
       "title": "Windows portable offline game + Checkers QA",
       "priority": "critical",
       "acceptance_criteria": "No-admin Windows source/test suite passes including symlink block and verified interpreter tests; exact source ZIP passes suite and pinned package validator after Git push; operator acceptance remains separate."
+    },
+    {
+      "id": "ATR-174-CI-PINNED-EVIDENCE-WINDOWS-SYMLINK",
+      "title": "Repair pinned done_work evidence schema and concrete WindowsPath symlink test",
+      "priority": "critical",
+      "acceptance_criteria": "CI packaged manifest validates strict done_work schema; Windows Python symlink security test exercises concrete WindowsPath method without administrative privilege, and official pinned ZipRunner validator and native build acceptance remain operator-gated."
     }
   ],
   "done_work": [
@@ -1623,8 +1629,24 @@
     },
     {
       "id": "ATR-172-KLONDIKE-EXTERNAL-DEV-TAVIX",
-      "title": "Offline external-game source to TaviX developer preview conversion",
-      "summary": "Preliminary source tests pass; only operator preview, no live TaviX installation, Atrium UI integration, or release."
+      "summary": "Preliminary source tests pass; only operator preview, no live TaviX installation, Atrium UI integration, or release.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/offline_tavix.py",
+          "description": "Deterministic independent-game candidate to unprivileged TaviX preview converter"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_offline_tavix.py",
+          "description": "TaviX conversion, malicious archive, and artifact reproducibility regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_113_KLONDIKE_EXTERNAL_GAME_QA_069.adoc",
+          "description": "External Klondike acceptance boundaries and unverified real-device host features"
+        }
+      ]
     },
     {
       "id": "ATR-173-WINDOWS-PORTABLE-OFFLINE-QA",
@@ -1644,6 +1666,32 @@
           "kind": "documentation",
           "description": "Windows failure analysis and operator instructions",
           "ref": "docs/P1_114_WINDOWS_TEST_PORTABILITY_070.adoc"
+        }
+      ]
+    },
+    {
+      "id": "ATR-174-CI-PINNED-EVIDENCE-WINDOWS-SYMLINK",
+      "summary": "Source-only regression repair: pinned done_work schema preflight rejects extra title/missing or unpackageable evidence; WindowsPath symlink mocking uses platform-concrete path class; real Windows CI and operator acceptance remain pending.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/package_zip.py",
+          "description": "Pinned done_work evidence schema preflight in source package builder"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_release_pipeline.py",
+          "description": "Negative and positive pinned done_work schema regression"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_offline_game.py",
+          "description": "Platform-concrete Path symlink rejection regression"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/P1_115_GITHUB_CI_REPAIR_071.adoc",
+          "description": "Evidence, scope and acceptance gates for 0.5.71 repairs"
         }
       ]
     }
@@ -2055,6 +2103,18 @@
         "status": "not_run",
         "description": "Installed Windows non-admin source import/ZipRunner and operator acceptance for 0.5.70",
         "reason": "Requires actual Windows ZipRunner operator run; Linux source testing cannot prove native Windows acceptance."
+      },
+      {
+        "id": "ATR-174-SOURCE-071",
+        "status": "not_run",
+        "description": "Source 0.5.71 repaired pinned done_work and concrete Windows symlink regression; exact source test run pending",
+        "reason": "Regression tests and exact source package QA not yet run"
+      },
+      {
+        "id": "ATR-174-WIN-OPERATOR-071",
+        "status": "not_run",
+        "description": "Native Windows and pinned ZipRunner acceptance for 0.5.71",
+        "reason": "Requires fresh exact-commit CI, Windows ZipRunner and operator review; prior 0.5.70 GitHub CI failed"
       }
     ]
   },

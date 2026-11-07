@@ -64,11 +64,14 @@ class OfflineGameContractTests(unittest.TestCase):
         # Exercise pack_folder's real is_symlink guard deterministically even
         # when the operating system cannot create a symlink at all.
         target = self.game/'game.js'
-        real_is_symlink = Path.is_symlink
-        with patch.object(Path, 'is_symlink', autospec=True,
-                          side_effect=lambda path: path == target or real_is_symlink(path)):
+        # Patching Path alone does not reliably intercept WindowsPath methods.
+        # Patch the concrete class returned by the running platform.
+        concrete_path = type(target)
+        with patch.object(concrete_path, 'is_symlink', autospec=True,
+                          side_effect=lambda path: path.name == 'game.js') as guard:
             with self.assertRaisesRegex(ValueError, 'Symlink'):
                 self.build()
+            self.assertTrue(guard.called, 'pack_folder must check actual asset paths')
 
     def test_symlink_guard_does_not_require_windows_privilege(self):
         self.assertSymlinkRejectedViaMock()

@@ -125,6 +125,33 @@ class P0ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, r'\$\.checks\[84\].*unsupported fields'):
             validate_verification_checks(bad)
 
+    def test_pinned_ziprunner_done_work_evidence_schema(self):
+        """GitHub 42377997643: title forbidden, evidence required on done_work."""
+        from copy import deepcopy
+        from tools.package_zip import validate_manifest_done_work
+        manifest=json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
+        available={p.relative_to(ROOT).as_posix() for p in source_files()}
+        self.assertEqual(validate_manifest_done_work(manifest,available),len(manifest['done_work']))
+        i=next(i for i,item in enumerate(manifest['done_work'])
+               if item['id']=='ATR-172-KLONDIKE-EXTERNAL-DEV-TAVIX')
+        for bad_fields,pattern in (
+            ({'title':'not allowed'},'unsupported fields'),
+            ({'evidence':[]},'nonempty array'),
+            ({'evidence':None},'nonempty array'),
+        ):
+            bad=deepcopy(manifest)
+            bad['done_work'][i].update(bad_fields)
+            with self.assertRaisesRegex(ValueError,pattern):
+                validate_manifest_done_work(bad,available)
+        bad=deepcopy(manifest)
+        bad['done_work'][i].pop('evidence')
+        with self.assertRaisesRegex(ValueError,'nonempty array'):
+            validate_manifest_done_work(bad,available)
+        bad=deepcopy(manifest)
+        bad['done_work'][i]['evidence'][0]['ref']='secrets/not-packaged.txt'
+        with self.assertRaisesRegex(ValueError,'evidence must be packaged'):
+            validate_manifest_done_work(bad,available)
+
     def test_pinned_ziprunner_passed_check_evidence_ref_contract(self):
         """GitHub 42023076428: passed checks must point to real packaged evidence."""
         from copy import deepcopy

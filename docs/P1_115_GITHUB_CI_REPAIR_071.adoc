@@ -1,0 +1,17 @@
+= Atrium 0.5.71 — pinned ZipRunner evidence and WindowsPath CI repair
+:revdate: 2026-11-07
+
+== Trigger and evidence
+
+GitHub Actions source-commit run 42377997643 on SHA 98300ea5cacc83e9e3ddc9a5f2f3fe407225157e failed on two independent boundaries:
+
+* Linux source/Node/DAPI checks passed, but official pinned ZipRunner schema validation rejected `ziprunner-manifest.json` `$.done_work[50]`: extra `title`, missing `evidence`, and nonempty evidence-array requirement. The `ATR-172` record now has only allowed keys and packaged source/test/documentation evidence.
+* Windows 409-test suite failed the non-admin symlink regression because patching `Path.is_symlink` did not intercept the concrete WindowsPath dispatch. The test now patches `type(target).is_symlink` and checks the real `pack_folder` failure, without creating a real Windows symlink. The production guard is unchanged.
+
+== Prevent recurrence
+
+`tools/package_zip.py` now validates all `done_work` entries using pinned `pac-labs/ziprunner-spec` revision `341005206094862853435ad68801be7ff28c4490`: exact allowed fields, nonempty evidence, evidence kind/ref/description, and packaged ref existence. `tests/test_release_pipeline.py` proves missing evidence, empty evidence, extra title and unpackageable refs fail before ZIP generation. Official upstream validator remains authoritative.
+
+== Boundaries and acceptance
+
+This is a source/CI repair only. No changes to Klondike gameplay, offline candidate contract, TaviX preview converter, trusted installed game library, production host or Social authentication. Existing TaviX 1.0.4 remains immutable. Manual Windows ZipRunner, exact-commit Linux/Windows CI, real Tavi Android offline acceptance and operator release approval remain separate gates.

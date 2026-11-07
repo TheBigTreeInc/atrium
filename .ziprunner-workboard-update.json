@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.70",
-  "summary": "0.5.70 repairs two operator-observed Windows test portability failures from rejected 0.5.68: symlink creation WinError 1314 and host-specific Python Path separators. Retains all 0.5.69 external-game/TaviX work without modifying Solitaire or Tavi, preserving runtime state and review gates.",
+  "version": "0.5.71",
+  "summary": "0.5.71 repairs GitHub 42377997643 pinned ZipRunner done_work evidence and WindowsPath symlink mock with proactive schema preflight. Keeps all prior states and operator acceptance pending.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -556,6 +556,16 @@
         "Verify full 0.5.70 Python and JS regression on actual Windows ZipRunner using a non-admin account; record failures and exact ZIP digest.",
         "Confirm operator-side symlink fallback still rejects unsafe game content; do not enable Windows developer privileges just for tests.",
         "Validate exact-commit Linux/Windows GitHub Actions and pinned ZipRunner package contract independently before acceptance."
+      ]
+    },
+    {
+      "id": "ATR-174-CI-PINNED-EVIDENCE-WINDOWS-SYMLINK",
+      "title": "Repair pinned ZipRunner evidence contract and Windows symlink mock",
+      "summary": "0.5.70 CI failed on done_work[50] title/missing evidence and WindowsPath is_symlink mock not intercepting. Source 0.5.71 adds pinned schema preflight, complete packaged evidence, and OS-concrete symlink test while preserving fail-closed validation. Windows/CI acceptance pending.",
+      "operator_checks": [
+        "Inspect pinned 0.5.71 exact-commit Linux+Windows GitHub Actions and official ZipRunner spec validation.",
+        "Run native Windows ZipRunner build with non-administrator account and verify full suite.",
+        "Keep operator-approved runtime, prior Workboard states, installed package and release gates unchanged."
       ]
     }
   ],

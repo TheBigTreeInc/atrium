@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT = Path(__file__).resolve().parents[1]
-NAME = 'atrium-0.5.70-ziprunner.zip'
+NAME = 'atrium-0.5.71-ziprunner.zip'
 SUFFIXES = {'.dsl', '.py', '.yaml', '.yml', '.json', '.md', '.adoc', '.html', '.mjs', '.csv', '.txt', '.zr', '.sh', '.js', '.css'}
 EXCLUDED = {'.git', '.venv', 'node_modules', 'dist', 'dist-tavi', 'state', 'logs', 'data', 'secrets',
             '__pycache__', '.pytest_cache', '_upstream'}
@@ -47,7 +47,7 @@ ALLOWED_CHECK_FIELDS = frozenset({
 
 def validate_verification_checks(plan):
     """Reject schema-invalid verification check metadata before ZIP creation."""
-    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.70':
+    if plan.get('project') != 'atrium' or plan.get('version') != '0.5.71':
         raise ValueError('verification-plan project/version does not match package')
     checks = plan.get('checks')
     if not isinstance(checks, list) or not checks:
@@ -128,14 +128,66 @@ def validate_manifest_evidence_checks(manifest, available):
         raise ValueError('validation.model_reported: cannot be passed with failed checks')
     return len(checks)
 
+
+# Strictly matches pac-labs/ziprunner-spec revision
+# 341005206094862853435ad68801be7ff28c4490,
+# schemas/ziprunner-manifest.schema.json: properties.done_work.
+DONE_WORK_FIELDS = frozenset({'id', 'summary', 'evidence'})
+DONE_EVIDENCE_FIELDS = frozenset({'kind', 'ref', 'description'})
+DONE_EVIDENCE_KINDS = frozenset({'source', 'test', 'log', 'diff', 'manual', 'review', 'documentation'})
+
+def validate_manifest_done_work(manifest, available):
+    """Fail locally if already-done work cannot be accepted by pinned ZipRunner.
+
+    Source evidence must be present in the packaged archive; no source ZIP can
+    claim operator acceptance merely by listing a future device test.
+    """
+    items = manifest.get('done_work')
+    if not isinstance(items, list):
+        raise ValueError('$.done_work: must be an array')
+    seen = set()
+    for i, item in enumerate(items):
+        at = f'$.done_work[{i}]'
+        if not isinstance(item, dict):
+            raise ValueError(f'{at}: expected object')
+        extra = set(item) - DONE_WORK_FIELDS
+        if extra:
+            raise ValueError(f'{at}: unsupported fields {sorted(extra)}')
+        for field in ('id', 'summary'):
+            if not isinstance(item.get(field), str) or not item[field].strip():
+                raise ValueError(f'{at}.{field}: required nonempty text')
+        if item['id'] in seen:
+            raise ValueError(f'{at}.id: duplicate ID')
+        seen.add(item['id'])
+        evidence = item.get('evidence')
+        if not isinstance(evidence, list) or not evidence:
+            raise ValueError(f'{at}.evidence: must be a nonempty array')
+        for j, proof in enumerate(evidence):
+            where = f'{at}.evidence[{j}]'
+            if not isinstance(proof, dict):
+                raise ValueError(f'{where}: expected object')
+            extra = set(proof) - DONE_EVIDENCE_FIELDS
+            if extra:
+                raise ValueError(f'{where}: unsupported fields {sorted(extra)}')
+            if proof.get('kind') not in DONE_EVIDENCE_KINDS:
+                raise ValueError(f'{where}.kind: unsupported kind')
+            for field in ('ref', 'description'):
+                if not isinstance(proof.get(field), str) or not proof[field].strip():
+                    raise ValueError(f'{where}.{field}: required nonempty text')
+            ref = proof['ref']
+            if ref not in available:
+                raise ValueError(f'{where}.ref: evidence must be packaged: {ref!r}')
+    return len(items)
+
 def main():
     plan = json.loads((ROOT/'ziprunner-verification-plan.json').read_text(encoding='utf-8'))
     validate_verification_checks(plan)
     manifest = json.loads((ROOT/'ziprunner-manifest.json').read_text(encoding='utf-8'))
-    validate_manifest_evidence_checks(
-        manifest, {p.relative_to(ROOT).as_posix() for p in source_files()})
+    available = {p.relative_to(ROOT).as_posix() for p in source_files()}
+    validate_manifest_evidence_checks(manifest, available)
+    validate_manifest_done_work(manifest, available)
     workboard = json.loads((ROOT/'.ziprunner-workboard-update.json').read_text(encoding='utf-8'))
-    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.70'
+    assert workboard['project'] == 'atrium' and workboard['version'] == '0.5.71'
     # ZipRunner validates both sections before it overlays any files. Fail the
     # source build at the same boundary, instead of distributing a broken ZIP.
     for section in ('implemented', 'remaining'):
