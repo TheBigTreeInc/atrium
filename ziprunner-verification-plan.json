@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.74",
+  "version": "0.5.75",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -2412,7 +2412,7 @@
       "kind": "automated",
       "stage": "unit",
       "description": "TaviX installed games consumer tests",
-      "runner_ref": "node --test tests/installed_games_bridge.test.mjs",
+      "runner_ref": "atrium-node-source-tests",
       "test_ref": "tests/installed_games_bridge.test.mjs",
       "assertions": [
         "Reject untrusted inventory",

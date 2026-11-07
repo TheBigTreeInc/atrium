@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.74",
+  "version": "0.5.75",
   "summary": "0.5.73 repairs stale ZipRunner post-update stamp in 0.5.72, retaining installed-games integration and pending Tavi host acceptance.",
   "implemented": [
     {
