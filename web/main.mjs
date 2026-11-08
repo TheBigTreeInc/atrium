@@ -2,7 +2,6 @@ import {mountHostedLife} from '../src/hosted_cards.mjs';
 import {mountMultiplayerPreview} from '../src/multiplayer_preview_ui.mjs';
 import {loadIsolatedApp} from '../src/apphost.mjs';
 import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
-import {loadHostedEndpoint, isUnconfiguredHostedCatalog} from '../src/hosted_catalog.mjs';
 
 const area=document.querySelector('#apps');
 const stage=document.querySelector('#stage');
@@ -193,7 +192,7 @@ async function refreshCatalog(){
  try{
   const issues=[];
   await refreshInstalledGames();
-  let count=0, catalog=null,hostedDisabled=false;
+  let count=0, catalog=null;
   try{
    catalog=await freshCatalog();
    if(activeApp&&!isStillPublished(catalog,activeApp))revokeOpenApp();
@@ -203,18 +202,11 @@ async function refreshCatalog(){
    revokeOpenApp('Game library unavailable.');
   }
   area.replaceChildren();
-  try{
-   // The developer preview has no public LoopRD gateway by design. Do NOT
-   // request a fake endpoint and present its expected absence as an outage.
-   await loadHostedEndpoint();
-  }catch(error){
-   if(isUnconfiguredHostedCatalog(error))hostedDisabled=true;
-   else issues.push(catalogIssue('hosted',error));
-  }
-  if(!hostedDisabled&&!issues.some(i=>i.source==='hosted')){
-   try{count+=await mountHostedLife({area});}
-   catch(error){issues.push(catalogIssue('hosted',error));}
-  }
+  // An unconfigured hosted gateway resolves to the bundled, validated
+  // hosted-games.json snapshot. A valid empty list is NOT a service outage.
+  // Genuine HTTP, trust and schema errors are still handled below.
+  try{count+=await mountHostedLife({area});}
+  catch(error){issues.push(catalogIssue('hosted',error));}
   if(catalog){for(const app of catalog.apps){area.append(makeReviewedCard(app));count++;}}
   if(issues.length){
    catalogStatus.textContent=count?`${count} available · Some online games could not be refreshed`:'Online catalog unavailable';
@@ -222,10 +214,10 @@ async function refreshCatalog(){
    // One small notice per failing source; never a huge repeated error card.
    for(const issue of issues)area.prepend(issuePanel(issue));
   }else{
-   catalogStatus.textContent=count?`${count} ${count===1?'game':'games'} available`:'';
+   catalogStatus.textContent=count?`${count} ${count===1?'game':'games'}`:'0 games';
    catalogStatus.dataset.state=count?'ready':'empty';
    if(!count){
-    const node=libraryNotice('No online games published yet',hostedDisabled?'There are no online games to browse yet.':'There are no published games in the connected catalogs.');
+    const node=libraryNotice('No games published yet','Games will appear here when they are added to the catalog.');
     const button=document.createElement('button');button.type='button';button.className='source-retry';button.textContent='Refresh';button.addEventListener('click',()=>void refreshCatalog());node.append(button);
     area.append(node);
    }

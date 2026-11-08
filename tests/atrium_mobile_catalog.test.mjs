@@ -9,10 +9,11 @@ test('mobile layout wraps categories and presents a light/dark palette',()=>{
  assert.match(html,/prefers-color-scheme:dark/);
  assert.match(html,/\.chips\[hidden\]\{display:none!important\}/);
 });
-test('no false zero when the hosted catalog has no active HTTPS gateway',()=>{
- assert.match(main,/isUnconfiguredHostedCatalog\(error\)/);
+test('empty hosted catalog is a normal zero-game library, while real errors remain visible',()=>{
+ assert.doesNotMatch(main,/isUnconfiguredHostedCatalog\(error\)/);
  assert.match(main,/categoryChips\.hidden=count===0/);
- assert.match(main,/hostedDisabled=true/);
+ assert.doesNotMatch(main,/hostedDisabled/);
+ assert.match(main,/No games published yet/);
  assert.match(main,/issues\.push\(catalogIssue\('hosted',error\)\)/);
 });
 test('future TaviX shell has no second bottom bar; pinned offline version remains immutable',()=>{

@@ -183,7 +183,7 @@ body.tavix-extension .footnote{display:none}
 .trust-notes summary{cursor:pointer;color:var(--md-on-surface-variant)}
 .trust-notes p{max-width:730px;line-height:1.5;margin-top:10px}
 
-/* 0.5.77: Small-screen status should be a line, not a full game-sized card. */
+/* 0.5.78: Small-screen status should be a line, not a full game-sized card. */
 .source-notice,.library-notice{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:12px;border:1px solid var(--md-outline-variant);background:var(--md-surface-container-low);font-size:13px;line-height:1.35;color:var(--md-on-surface);}
 .source-notice{border-color:var(--md-outline-variant);}
 .source-retry{flex-shrink:0;min-height:30px;padding:4px 10px;border:1px solid var(--md-outline-variant);border-radius:99px;background:var(--md-secondary-container);color:var(--md-on-secondary-container);font:inherit;font-weight:650;cursor:pointer;}

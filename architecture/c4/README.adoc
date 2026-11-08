@@ -122,3 +122,13 @@ to an official Structurizr CLI validation.
 == Embedded player shell (0.5.76)
 
 `portalShell` now owns the shared storefront and embedded Tavi player-first view: My Games and Discover are compact secondary tabs; unconnected Activity and Lobbies placeholders remain standalone-only. Tavi remains the only global navigation owner. No new external interface or claimed host theme API is introduced. The separate 1.0.7 developer preview requires local operator install; the 1.0.4 immutable extension remains untouched. See `docs/ATRIUM_TAVI_EMBEDDED_UX_076.adoc`.
+
+== Empty bundled catalog snapshot (0.5.78)
+
+`src/hosted_catalog.mjs` treats an empty operator `gatewayUrl` as a request
+to read the bundled, validated `web/hosted-games.json` snapshot. `web/main.mjs`
+consumes it using the existing hosted catalog client; no additional remote
+server or dependency is implied. An empty published catalog is a healthy
+zero-item UI state. Configured remote failures remain visible and fail closed.
+See `docs/ATRIUM_CATALOG_HEALTHY_EMPTY_078.adoc`. The existing C4 components
+and opaque optional gateway boundary remain unchanged.

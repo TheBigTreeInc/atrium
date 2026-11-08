@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.77",
+  "version": "0.5.78",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1248,6 +1248,27 @@
           "mode": "manual",
           "checks": [
             "ATR-179-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-180-HEALTHY-EMPTY-CATALOG",
+      "criteria": [
+        {
+          "id": "ATR-180-EMPTY-TRUSTED-CATALOG",
+          "description": "Valid empty bundled catalog returns an empty array and rendered zero-state, not a source error; genuine configured transport failures remain visible and fail closed.",
+          "mode": "automated",
+          "checks": [
+            "ATR-180-T1"
+          ]
+        },
+        {
+          "id": "ATR-180-TAVI-SURFACE",
+          "description": "Check Tavi UI using exact 1.0.9 preview and distinguish player-empty state from live server activation.",
+          "mode": "manual",
+          "checks": [
+            "ATR-180-M1"
           ]
         }
       ]
@@ -2549,6 +2570,26 @@
       "stage": "acceptance",
       "description": "Exact Atrium TaviX 1.0.8 operator visual and host integration QA",
       "instructions": "Sideload 1.0.8 developer preview and inspect the small viewport with and without installed games; confirm no red errors for intentionally absent online sources, verify compact notices and retry only for actual faults; separately accept only if Tavi host lists and launches Klondike. Never assume connected server is available without confirmed published endpoint."
+    },
+    {
+      "id": "ATR-180-T1",
+      "kind": "automated",
+      "stage": "functional",
+      "description": "Healthy-empty hosted/reviewed catalog fallback and failed configured remote regression",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/atrium_catalog_healthy_empty_078.test.mjs",
+      "assertions": [
+        "Blank gateway resolves to bundled hosted catalog, no external fetch",
+        "Empty hosted and reviewed snapshots are schema-valid and show zero games",
+        "Configured HTTP failure rejects and does not masquerade as empty catalog"
+      ]
+    },
+    {
+      "id": "ATR-180-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator Tavi 1.0.9 preview zero-catalog and failed-remote QA",
+      "instructions": "Install exact developer-preview .tavix 1.0.9; confirm Discover displays 0 games and No games published yet without availability warning when bundled catalogs are valid. If approved remote HTTPS source genuinely fails, retry message remains compact. No live service, Klondike launch or release accepted without evidence."
     }
   ]
 }

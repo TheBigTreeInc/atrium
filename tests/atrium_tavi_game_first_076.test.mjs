@@ -36,7 +36,7 @@ test('empty activity and lobbies tell the truth and let players browse',()=>{
  assert.match(main,/Installed games not connected/);
 });
 test('new local preview is versioned without mutating frozen 1.0.4 or reviewed hosted 1.0.6',()=>{
- assert.match(builder,/version:'1\.0\.8'\} : JSON\.parse/);
+ assert.match(builder,/version:'1\.0\.9'\} : JSON\.parse/);
  assert.match(builder,/immutable-1\.0\.4\.lock\.json/);
  assert.equal(JSON.parse(read('extensions/tavi/hosted-release.json')).version,'1.0.6');
 });

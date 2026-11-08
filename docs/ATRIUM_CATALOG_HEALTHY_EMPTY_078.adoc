@@ -1,0 +1,35 @@
+= Atrium 0.5.78: empty catalog is healthy
+
+== Symptom and root cause
+
+In the 1.0.8 embedded developer preview, a blank `gatewayUrl` in
+`web/hosted-config.json` was interpreted by `loadHostedEndpoint()` as
+`ATRIUM_HOSTED_NOT_CONFIGURED`. This prevented the code from fetching
+`web/hosted-games.json`, which already contains a valid empty published-game
+snapshot. The UI presented a non-error as a disconnected catalog.
+
+== Implementation
+
+* An empty hosted `gatewayUrl` now resolves through the existing
+  `parseHostedCatalogSource()` validation to `./hosted-games.json`.
+* The frontend fetches the hosted source once via `mountHostedLife()`.
+  Both hosted and reviewed empty snapshots render as "0 games" and a compact
+  "No games published yet" row, without disconnected styling.
+* A configured HTTPS gateway that fails HTTP, TLS or schema validation still
+  presents an error, does not fabricate a zero inventory, and never opens an
+  unreviewed game. Host-installed TaviX discovery is separate.
+* No live operator gateway, server or catalog registrations were created by
+  this source change. An empty bundled preview snapshot is a **valid local
+  catalog**, not proof of a healthy remote public service.
+
+== Acceptance
+
+Run `node --test tests/atrium_catalog_healthy_empty_078.test.mjs`,
+`npm test`, `npm run build`, package QA and Windows ZipRunner.
+Sideload the *distinct* TaviX 1.0.9 developer preview and confirm
+Discover shows "0 games" / "No games published yet", without a network
+warning when the empty trusted snapshots are readable. If a configured
+trusted endpoint responds with HTTP 503, a compact retry message must remain.
+
+Source-only tests do not establish live server availability, real game
+publication, installed-game host APIs or operator release approval.

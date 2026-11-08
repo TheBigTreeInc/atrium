@@ -1,4 +1,21 @@
-# Atrium 0.5.77 — compact catalog status and offline-preview repair
+# Atrium 0.5.78 — empty game catalog is normal
+
+Source-only correction for the 1.0.8 preview: an empty hosted `gatewayUrl`
+now uses the bundled, strictly validated `hosted-games.json`. The previous
+blank-gateway exception was incorrectly blocking this healthy zero-game state.
+Online discovery now displays `0 games` / `No games published yet` rather than
+an outage. A configured but genuinely failing HTTPS source still shows a
+compact retry warning and never grants unreviewed games access. Added focused
+regressions, documented boundaries, updated C4 documentation, and prepared
+1.0.9 developer preview. This does not deploy a public catalog or implement
+Tavi installed-game host APIs. Real Tavi/Windows operator acceptance pending.
+
+Immutable TaviX 1.0.4 and approved hosted-release 1.0.6 remain unchanged.
+No Git push, publication or operator approval implied.
+
+---
+
+# Atrium 0.5.78 — compact catalog status and offline-preview repair
 
 Based on source 0.5.76. The screenshot of the Atrium 1.0.7 developer
 preview showed two full-size connection-error panels and an oversized

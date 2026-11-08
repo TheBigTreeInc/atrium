@@ -1,6 +1,6 @@
 apiVersion: looprd/v1
 component: atrium
-release: 0.5.77
+release: 0.5.78
 api:
   version: v1
 auth:

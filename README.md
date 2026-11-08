@@ -1,3 +1,12 @@
+## Atrium 0.5.78 — healthy empty catalogs
+
+An empty online catalog is a normal state. The Tavi preview now reads the
+validated bundled hosted and reviewed catalogs even without a public gateway,
+and renders "0 games" / "No games published yet" instead of unavailable.
+Configured remote failures are still surfaced without bypassing trust.
+See `docs/ATRIUM_CATALOG_HEALTHY_EMPTY_078.adoc`. Live public publication
+and real Tavi installed-game host integration remain separate.
+
 # Atrium 0.5.71 — CI schema and WindowsPath symlink regression repair
 
 GitHub 42377997643 revealed strict pinned done_work evidence validation and WindowsPath-specific symlink mock behavior; 0.5.71 repairs both without changing the game runtime. The 0.5.70 Windows/CI acceptance is NOT passed. See `docs/P1_115_GITHUB_CI_REPAIR_071.adoc`.
@@ -455,6 +464,6 @@ Atrium 0.5.38 TaviX distribution: the ZipRunner recipe builds its Tavi UI, then 
 
 A separate *unpublished* TaviX developer preview 1.0.7 renders a lightweight Discover / My Games surface under the Tavi host navigation. The default build still copies the immutable 1.0.4 package. See `docs/ATRIUM_TAVI_EMBEDDED_UX_076.adoc`; neither host installed-game support nor Tavi operator acceptance is established by source tests.
 
-## Tavi catalog status repair (0.5.77)
+## Tavi catalog status repair (0.5.78)
 
 Offline developer previews intentionally ship with empty public `gatewayUrl` values; this must not appear as a transport failure. The new embedded UI displays one compact online-source notice in Discover only if a configured endpoint actually fails, and does not duplicate it in My Games. An unavailable installed-games host feature remains a separate compact status until Tavi provides the trusted inventory and launch methods. This repair does not configure, provision or activate a public LoopRD server or bypass publish/trust gates. TaviX developer preview 1.0.8 is local-only. See `docs/ATRIUM_TAVI_CATALOG_STATES_077.adoc`.

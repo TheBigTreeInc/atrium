@@ -34,10 +34,8 @@ export async function loadHostedEndpoint(fetcher=fetch, configUrl='./hosted-conf
  const response=await fetcher(configUrl,{cache:'no-store',credentials:'omit',redirect:'error'});
  if(!response.ok)throw Error('Hosted catalog source configuration unavailable');
  const config=await response.json();
- // Offline preview output is never the connected public LoopRD registry.
- if(config?.schema==='atrium.hosted-source/v1' && config.gatewayUrl==='') {
-  throw Error('ATRIUM_HOSTED_NOT_CONFIGURED: The public game catalog is not connected.');
- }
+ // An empty gateway deliberately selects the bundled, validated catalog.
+ // Zero published games is a healthy state, not a connection failure.
  return parseHostedCatalogSource(config);
 }
 export async function fetchHostedCatalog(fetcher=fetch,url='./hosted-games.json'){
@@ -50,7 +48,3 @@ export async function fetchConfiguredHostedCatalog(fetcher=fetch){
  return fetchHostedCatalog(fetcher,endpoint);
 }
 
-/** Offline developer-preview mode is an expected configuration, not an outage. */
-export function isUnconfiguredHostedCatalog(error){
- return typeof error?.message==='string' && error.message.startsWith('ATRIUM_HOSTED_NOT_CONFIGURED:');
-}

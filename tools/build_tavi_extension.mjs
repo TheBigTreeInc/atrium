@@ -81,7 +81,7 @@ const endpoint=configuredEndpoint;
 const baseManifest=JSON.parse(await readFile(path.join(root,'extensions/tavi/manifest.json'),'utf8'));
 let extensionManifest=baseManifest;
 if(endpoint!=='./hosted-games.json' || process.env.ATRIUM_TAVIX_DEV_PREVIEW==='1'){
- const release=process.env.ATRIUM_TAVIX_DEV_PREVIEW==='1' ? {schema:'atrium.tavix.hosted-release/v1',version:'1.0.8'} : JSON.parse(await readFile(path.join(root,'extensions/tavi/hosted-release.json'),'utf8'));
+ const release=process.env.ATRIUM_TAVIX_DEV_PREVIEW==='1' ? {schema:'atrium.tavix.hosted-release/v1',version:'1.0.9'} : JSON.parse(await readFile(path.join(root,'extensions/tavi/hosted-release.json'),'utf8'));
  if(release.schema!=='atrium.tavix.hosted-release/v1' ||
     Object.keys(release).some(key=>!['schema','version'].includes(key)) ||
     !/^\d+\.\d+\.\d+$/.test(release.version) ||

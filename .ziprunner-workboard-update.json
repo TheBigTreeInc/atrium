@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.77",
-  "summary": "0.5.77 repairs confusing offline-preview connectivity errors and oversized repeated panels; Tavi installed-game host support and live hosted publication remain separate acceptance tasks.",
+  "version": "0.5.78",
+  "summary": "0.5.78 repairs confusing offline-preview connectivity errors and oversized repeated panels; Tavi installed-game host support and live hosted publication remain separate acceptance tasks.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -613,6 +613,16 @@
         "My Games displays a single compact host status if Tavi has not yet advertised installed-game inventory; no duplicate online source errors.",
         "With explicitly configured but unreachable public gateway, Discover displays a small retry notice rather than silently claiming zero published games.",
         "Confirm previously published TaviX 1.0.4 and hosted release metadata 1.0.6 remain unchanged; no release without approval."
+      ]
+    },
+    {
+      "id": "ATR-180-HEALTHY-EMPTY-CATALOG",
+      "title": "Empty trusted catalog is normal, not unavailable",
+      "summary": "An empty hosted gateway now reads the packaged validated hosted-games.json; no speculative connectivity error. Both empty catalogs render 0 games; genuine configured remote errors remain fail closed. Source-only, host acceptance pending.",
+      "operator_checks": [
+        "Sideload Atrium 1.0.9 developer preview in Tavi: Discover shows 0 games / No games published yet without a connection error.",
+        "When using a deliberately broken configured HTTPS gateway, a compact retry remains visible and no untrusted game appears.",
+        "Verify existing installed-games host bridge/launch state independently; do not claim a live server or operator approval."
       ]
     }
   ],

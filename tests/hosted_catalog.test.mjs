@@ -35,6 +35,9 @@ test('operator-approved second hosted game can be listed without Life hardcoding
  assert.throws(()=>validateHostedCatalog({...base,games:[{...other,apiBaseUrl:game.apiBaseUrl}]}));
 });
 
-test('offline preview configuration explicitly says not connected rather than zero published games',async()=>{
- await assert.rejects(()=>fetchConfiguredHostedCatalog(async()=>({ok:true,json:async()=>({schema:'atrium.hosted-source/v1',gatewayUrl:''})})),/ATRIUM_HOSTED_NOT_CONFIGURED/);
+test('offline preview configuration reads the bundled valid empty catalog',async()=>{
+ const calls=[];
+ const fetcher=async(url)=>{calls.push(url);return {ok:true,json:async()=>url==='./hosted-config.json'?{schema:'atrium.hosted-source/v1',gatewayUrl:''}:base};};
+ assert.deepEqual((await fetchConfiguredHostedCatalog(fetcher)).games,[]);
+ assert.deepEqual(calls,['./hosted-config.json','./hosted-games.json']);
 });

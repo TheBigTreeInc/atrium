@@ -3,8 +3,8 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.77",
-    "base_version": "0.5.76",
+    "version": "0.5.78",
+    "base_version": "0.5.77",
     "source_revision": "98300ea5cacc83e9e3ddc9a5f2f3fe407225157e"
   },
   "update": {
@@ -409,6 +409,12 @@
       "title": "Compact catalog states and correct offline preview behavior",
       "priority": "high",
       "acceptance_criteria": "An unconfigured developer preview never reports a network error; genuine source failures remain visible once; Tavi embedded game library uses compact notices and does not duplicate online source failures; host inventory absence is distinct from empty games; no trust bypass or fabricated server activation."
+    },
+    {
+      "id": "ATR-180-HEALTHY-EMPTY-CATALOG",
+      "title": "Use valid empty bundled catalogs as normal discovery state",
+      "priority": "high",
+      "acceptance_criteria": "Tavi preview empty hosted and reviewed catalogs render zero games without an outage; configured network errors are actionable; no fake live gateway, no weakened trust, local installed TaviX state remains separate."
     }
   ],
   "done_work": [
@@ -1827,6 +1833,32 @@
           "kind": "test",
           "ref": "tests/tavi_catalog_compact_077.test.mjs",
           "description": "Source-mode versus outage and one-context status regression"
+        }
+      ]
+    },
+    {
+      "id": "ATR-180-HEALTHY-EMPTY-CATALOG",
+      "summary": "Removed erroneous blank-gateway exception and redundant hosted preflight; valid empty trusted snapshots now load normally, preserving fail-closed remote errors. Added source behavior tests and docs, no live endpoint claimed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/hosted_catalog.mjs",
+          "description": "Validated fallback to bundled empty hosted catalog"
+        },
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "Hosted inventory renders normal zero-game state with actual remote failures distinct"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/atrium_catalog_healthy_empty_078.test.mjs",
+          "description": "Healthy empty, remote HTTP failure and UI status regression"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/ATRIUM_CATALOG_HEALTHY_EMPTY_078.adoc",
+          "description": "Source-only behavior and deployment boundary"
         }
       ]
     }
