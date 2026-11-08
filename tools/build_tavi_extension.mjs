@@ -43,7 +43,7 @@ if(configuredEndpoint==='./hosted-games.json' && process.env.ATRIUM_TAVIX_DEV_PR
 }else{
 await rm(path.join(root,'dist-tavi'),{recursive:true,force:true});
 await mkdir(dest,{recursive:true});
-for (const name of ['index.html','material-theme.css','main.mjs','catalog.json','catalog-config.json','hosted-games.json','hosted-config.json']) await cp(path.join(web,name),path.join(dest,name));
+for (const name of ['index.html','material-theme.css','main.mjs','catalog.json','catalog-config.json','tavix-games.json','hosted-games.json','hosted-config.json']) await cp(path.join(web,name),path.join(dest,name));
 await cp(path.join(web,'src'),path.join(dest,'src'),{recursive:true});
 const html=await readFile(path.join(dest,'index.html'),'utf8');
 const insert=`<button id="returnTavi" type="button" class="tavi-return" hidden>← Return to Tavi</button>`;
@@ -78,6 +78,7 @@ if(!bridge.includes("../../src/hosted_catalog.mjs"))throw Error('Trusted catalog
 await writeFile(path.join(dest,'extension-bridge.mjs'),bridge.replace("../../src/hosted_catalog.mjs","./src/hosted_catalog.mjs"));
 await cp(path.join(root,'extensions/tavi/tavix-sdk.mjs'),path.join(dest,'tavix-sdk.mjs'));
 await cp(path.join(root,'extensions/tavi/installed-games.mjs'),path.join(dest,'installed-games.mjs'));
+for(const file of ['atrium-assets.mjs','tavi-assets-client-0.1.11.mjs'])await cp(path.join(root,'extensions/tavi',file),path.join(dest,file));
 // A live public catalog is a different immutable TaviX release. Preserve the
 // existing 1.0.4 bytes when the operator has not configured an approved URL.
 // Version for a future live release is explicit source-controlled metadata, not

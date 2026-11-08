@@ -1,0 +1,27 @@
+Atrium 0.5.82 - 2026-11-09 source QA (Linux source container)
+Base: operator-supplied atrium-0.5.81-ziprunner-retry.zip
+Compared source contracts: operator-supplied looprd-social-0.3.150-ziprunner.zip and tavi-assets-0.1.11-ziprunner.zip
+
+python -m unittest discover -s tests -v
+  PASS: 421 tests in 66.386 seconds.
+
+npm test
+  PASS: 123 tests.
+
+python tools/checkers_group_qa.py --report state/qa/checkers/atrium_082.json
+  PASS: 47 Checkers source-tree tests; report deliberately excluded from ZIP under protected state/ directory.
+
+npm run build
+  PASS: Pages-safe static web build, source verify, pinned immutable Atrium TaviX 1.0.4 copy.
+  Hosted game catalog remains intentionally disabled; optional TaviX source staging SKIPPED due to missing repository checkout.
+
+npm run verify
+  PASS: Pages-safe static portal assets.
+
+python -m unittest tests.test_release_pipeline tests.test_ci_integrations tests.test_spec_validation tests.test_tavix_marketplace_projection -q
+  PASS: 33 focused release, CI, specification and marketplace tests.
+
+Canonical Assets 0.1.11 SDK copied byte-identically:
+  SHA-256 1bd62909d948f3df160d481b87b825a2d2aa6a8e4c4eccf1c82841a3d539faca
+
+These are source-only checks. Native Windows ZipRunner build, operator-approved index digest, active Social 0.3.150 service principal, real Assets grants, Life backend and two independently authenticated real-client game remain NOT RUN / NOT ACCEPTED.

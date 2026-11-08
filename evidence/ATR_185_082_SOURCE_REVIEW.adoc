@@ -1,0 +1,8 @@
+= Atrium 0.5.82 source input and security review
+
+* Input archives inspected: operator-supplied Social 0.3.150, Tavi Assets 0.1.11, and Atrium 0.5.81 repaired source ZIP.
+* Social 0.3.150 retained `/ecosystem/atrium-challenge-status` and `/ecosystem/atrium-contact-status` and host-installed-games/v1 identity/version launch contract. This is source compatibility, not verified production operation.
+* Tavi Assets 0.1.11 `sdk/client.mjs` copied byte-for-byte as the reference client. SHA-256 `1bd62909d948f3df160d481b87b825a2d2aa6a8e4c4eccf1c82841a3d539faca`.
+* The static TaviX projection is initially empty; operator approval and digest pin of a real index have not occurred. It holds no package URL, hash-shaped install entitlement, service credential or direct installer.
+* Verification commands and actual results are recorded separately in `evidence/ATR_185_082_LOCAL_QA.txt` once executed.
+* Windows ZipRunner, deployed Life host, real two-client acceptance and public/official TaviX publication: not run; explicit operator approval required.

@@ -2,6 +2,7 @@ import {mountHostedLife} from '../src/hosted_cards.mjs';
 import {mountMultiplayerPreview} from '../src/multiplayer_preview_ui.mjs';
 import {loadIsolatedApp} from '../src/apphost.mjs';
 import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
+import {fetchTavixMarketplace} from '../src/tavix_marketplace.mjs';
 
 const area=document.querySelector('#apps');
 const stage=document.querySelector('#stage');
@@ -66,7 +67,7 @@ function makeReviewedCard(app){
  */
 function catalogIssue(kind, error){
  const embedded=document.body.classList.contains('tavix-extension');
- const title=kind==='hosted'?'Hosted game catalog unavailable':'Reviewed game catalog unavailable';
+ const title=kind==='hosted'?'Hosted game catalog unavailable':kind==='tavix'?'TaviX game catalog unavailable':'Reviewed game catalog unavailable';
  return {
   title:embedded?'Online games could not be refreshed':title,
   detail:embedded?'Check your connection or try again.':String(error?.message||'The catalog could not be loaded.'),
@@ -153,6 +154,33 @@ function makeInstalledCard(game){
  });
  actions.append(play,status);body.append(meta,heading,details,actions);card.append(cover,body);return card;
 }
+/** TaviX catalog entries are DISPLAY metadata, not an installation source.
+ * Only Tavi's verified installed-games API can launch a package. */
+function makeTavixMarketplaceCard(game){
+ const card=document.createElement('article');card.className='game-card';card.dataset.gameId=game.id;card.dataset.source='tavix';
+ const cover=document.createElement('div');cover.className='cover';
+ const symbol=document.createElement('span');symbol.className='symbol';symbol.textContent='🎮';
+ const marker=document.createElement('span');marker.className='live';marker.textContent='TaviX';cover.append(symbol,marker);
+ const body=document.createElement('div');body.className='card-body';
+ const meta=document.createElement('div');meta.className='meta';
+ const publisher=document.createElement('span');publisher.className='pill';publisher.textContent=game.publisher;
+ const version=document.createElement('span');version.className='pill muted';version.textContent=game.version;meta.append(publisher,version);
+ const heading=document.createElement('h3');heading.textContent=game.name;
+ const detail=document.createElement('p');detail.textContent=game.description;
+ const actions=document.createElement('div');actions.className='card-actions';
+ const status=document.createElement('span');status.className='status';status.setAttribute('role','status');
+ const installed=installedSnapshot.available&&installedSnapshot.games.find(g=>g.id===game.id&&g.version===game.version);
+ if(installed){
+  const play=document.createElement('button');play.className='btn primary';play.type='button';play.textContent='Play';
+  play.addEventListener('click',async()=>{
+   play.disabled=true;status.textContent='Checking installed game…';
+   try{const fresh=await window.__atriumInstalledGames.list();await window.__atriumInstalledGames.open(installed,fresh);status.textContent='Opening in Tavi…';}
+   catch(error){status.textContent='Tavi declined: '+String(error?.message||'unavailable');}
+   finally{play.disabled=false;}
+  });actions.append(play);
+ }else status.textContent='Install through Tavi Apps';
+ actions.append(status);body.append(meta,heading,detail,actions);card.append(cover,body);return card;
+}
 async function refreshInstalledGames(){
  installedError=null;
  if(typeof window.__atriumInstalledGames?.list!=='function'){
@@ -208,6 +236,12 @@ async function refreshCatalog(){
   try{count+=await mountHostedLife({area});}
   catch(error){issues.push(catalogIssue('hosted',error));}
   if(catalog){for(const app of catalog.apps){area.append(makeReviewedCard(app));count++;}}
+  // The bundled snapshot is healthy/empty until an independently approved
+  // TaviX index is projected at build time. Missing online services do not
+  // prevent a cached/local TaviX catalog from being shown.
+  try{const marketplace=await fetchTavixMarketplace(fetch);
+   for(const game of marketplace.games){area.append(makeTavixMarketplaceCard(game));count++;}
+  }catch(error){issues.push(catalogIssue('tavix',error));}
   if(issues.length){
    catalogStatus.textContent=count?`${count} available · Some online games could not be refreshed`:'Online catalog unavailable';
    catalogStatus.dataset.state='disconnected';

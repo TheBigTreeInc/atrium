@@ -1,0 +1,37 @@
+= Atrium 0.5.82 — TaviX marketplace projection and Assets consumer
+:toc: left
+
+== What this release actually implements
+
+Atrium builds a *display-only* catalog from an already operator-approved, hash-pinned `tavi.repository/v1` snapshot. It reads the real Tavi Social 0.3.150 TaviX `classification.type: game` convention, rather than turning LoopRD game-service discovery into an installable-games index. The TaviX repository/host still owns package distribution, approval, digest/integrity verification, install, update and opening games. A SHA-256 pin checks exact bytes but never proves *who* approved them; the operator must independently obtain and approve the source snapshot and digest. No unknown repository becomes trusted because it can produce a hash.
+
+Files:
+
+* `src/tavix_marketplace_projection.py`, `tools/project_tavix_marketplace.py`: bounded, deterministic, fail-closed offline projection with atomic output. Only classified games; unclassified apps are not reclassified. Package locations, permissions, executable entrypoints and user-specific grants are deliberately excluded.
+* `src/tavix_marketplace.mjs`: strict client schema, same-origin, no-credentials snapshot reader.
+* `web/tavix-games.json`: healthy empty default until an operator explicitly approves and projects TaviX index bytes. `web/main.mjs`: Discover has a TaviX filter and display cards. A matching Tavi-installed version can be opened *only* through the existing version-pinned `tavix.installed-games/v1` host bridge; an uninstalled game only displays “Install through Tavi Apps”. No new installer exists.
+* `tools/build.mjs`, `tools/build_tavi_extension.mjs`, `tools/verify_web.mjs`: carry and check the optional projection in standalone and future source-built TaviX extensions; pinned immutable 1.0.4 stays frozen.
+* `extensions/tavi/atrium-assets.mjs`: optional adapter to the exact, unmodified canonical Tavi Assets 0.1.11 `sdk/client.mjs` under `extensions/tavi/tavi-assets-client-0.1.11.mjs`. The vendored SDK SHA-256 is `1bd62909d948f3df160d481b87b825a2d2aa6a8e4c4eccf1c82841a3d539faca`. This is a reference consumer, not a separate Assets engine, wallet, installer, shop, entitlement system or pack registry. Tavi's host must advertise `tavi.assets/v1` and enforce package- and session-scoped grants; no user/package entitlement is manufactured by Atrium. The currently pinned Atrium 1.0.4 extension has only `ui.panel` permission and does not activate this feature.
+
+== Operator-controlled marketplace projection (no publication)
+
+. Obtain the canonical approved TaviX repository JSON and its expected SHA-256 *independently from the approved TaviX repository operator*. Store it outside the source ZIP and verify the source identity. A self-generated digest of unreviewed bytes is not an approval.
+. Optionally author a presentation-only document containing `schema: atrium.tavix-presentation/v1` and `games: {"org.example.klondike": {"description": "...", "featured": true, "collections": ["cards"]}}`.
+. Run `python tools/project_tavix_marketplace.py --index <reviewed-index.json> --approved-sha256 <independently-approved-64-hex> --presentation <metadata.json> --output web/tavix-games.json`. Omit `--presentation` when not required. The command never makes a network request, installs a package, edits service configuration or publishes to GitHub.
+. Run Python tests and `npm run build`; separately review and approve the source release, TaviX host and static Pages publication. No automatic publication is authorized.
+. On index revocation/removal, replace the snapshot with a newly operator-reviewed projection and publish through the existing approval process. Installed game launching still rechecks Tavi's live installed registry.
+
+== Source-verified Social 0.3.150 compatibility
+
+The supplied Social 0.3.150 `looprd.yaml`, `server/atrium_challenge_lookup.py`, `server/atrium_contact_lookup.py` and Tavi host code retain the same strict service-only `/ecosystem/atrium-challenge-status` and `/ecosystem/atrium-contact-status` POST routes and `atrium.social-*-status/v1` result envelopes used by the Atrium 0.5.81 adapter. Its `games.installed.open` still expects `{params:{id,expectedVersion}}`. Therefore `src/social_0145_binding.py` is *compatible on source contract*, and no duplicate adapter is needed. `tests/test_social_0145_binding.py` and existing installed-game tests are preserved.
+
+The Life `create`, `match.attest`, `join`, `seat.verify`, `resume` and `status` service operations remain proposed interop, not a verified deployed Life service. Source-only simulated accounts do not prove two real clients, authenticated Social service credentials or actual turn processing. Do not mount public lobby routes, inject browser credentials, stage a TaviX review candidate as official, or claim multiplayer acceptance before the owning operators approve the real transport.
+
+== Required operator acceptance before claiming completion
+
+. ZipRunner: build 0.5.82 on Windows using preserved local state, run the complete source suites and compare the package version across source/CI/specification.
+. TaviX: independently approve an exact repository index digest; project a real classified game and inspect Discover, empty/unapproved behavior, correct installed-game launch, revocation and offline behaviour. Tavi 0.3.150 must explicitly approve the Atrium extension privilege; ordinary sideloaded previews cannot impersonate it.
+. Assets: Tavi host operator must wire real Assets 0.1.11 storage, persistent pack state, grants and permissions. Only after a reviewed next Atrium extension manifest requests necessary permissions may the host advertise Assets capabilities. Check revoked and ungranted packs never resolve; no automatic shop/purchase/deployment in this pass.
+. Life: operator-host Social with `social:service`, principal `atrium`, issuer binding, caller allowlist and approved private route; Life owner must provide actual authoritative match/seat services. Run two verified accounts (at least one Tavi), original invite/accept, independent Life seat grant, completed turns, restart/resume, revoke/decline/expiry tests and service failures.
+
+The prior hosted LoopRD discovery remains for compatibility but is not a source of TaviX installation trust. Public matchmaking is still deferred until private two-account game completion is proven. No changes to private user data, active credentials, protected ZipRunner config, or platform approval gates.

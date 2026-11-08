@@ -5,7 +5,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const dist=path.join(root,'dist');
-for (const name of ['index.html','material-theme.css','main.mjs','catalog.json','catalog-config.json','hosted-config.json','hosted-games.json','registration-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','src/hosted_life.mjs','.nojekyll']) {
+for (const name of ['index.html','material-theme.css','main.mjs','catalog.json','catalog-config.json','tavix-games.json','hosted-config.json','hosted-games.json','registration-config.json','src/apphost.mjs','src/catalog_client.mjs','src/multiplayer_lobby.mjs','src/mock_life_api.mjs','src/multiplayer_preview_ui.mjs','src/hosted_life.mjs','.nojekyll']) {
  const file=path.join(dist,name);
  const info=await stat(file);
  assert(info.isFile() && (info.size>0 || name==='.nojekyll'),`missing build asset: ${name}`);
@@ -14,6 +14,9 @@ const main=await readFile(path.join(dist,'main.mjs'),'utf8');
 assert(main.includes("'./src/apphost.mjs'"),'built entrypoint must use relative module import');
 assert(!main.includes("'../src/apphost.mjs'"),'built entrypoint escapes dist');
 assert(main.includes("'./src/catalog_client.mjs'"),'catalog module path must be build-local');
+assert(main.includes("'./src/tavix_marketplace.mjs'"),'TaviX marketplace module path must be build-local');
+const {parseTavixMarketplace}=await import('../src/tavix_marketplace.mjs');
+parseTavixMarketplace(JSON.parse(await readFile(path.join(dist,'tavix-games.json'),'utf8')));
 assert(main.includes("'./src/multiplayer_preview_ui.mjs'"),'multiplayer mock entry must be build-local');
 assert(!main.includes("'../src/multiplayer_preview_ui.mjs'"),'multiplayer entry escapes dist');
 const mockSource=await readFile(path.join(dist,'src','mock_life_api.mjs'),'utf8');

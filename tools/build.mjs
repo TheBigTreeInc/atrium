@@ -3,13 +3,14 @@ import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const root=path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const out=path.join(root,'dist');await rm(out,{recursive:true,force:true});await mkdir(path.join(out,'src'),{recursive:true});
-for(const file of ['index.html','material-theme.css','main.mjs','catalog.json','catalog-config.json','hosted-games.json','hosted-config.json','registration-config.json','.nojekyll'])await copyFile(path.join(root,'web',file),path.join(out,file));
+for(const file of ['index.html','material-theme.css','main.mjs','catalog.json','catalog-config.json','tavix-games.json','hosted-games.json','hosted-config.json','registration-config.json','.nojekyll'])await copyFile(path.join(root,'web',file),path.join(out,file));
 await copyFile(path.join(root,'src','apphost.mjs'),path.join(out,'src','apphost.mjs'));
 await copyFile(path.join(root,'src','catalog_client.mjs'),path.join(out,'src','catalog_client.mjs'));
+await copyFile(path.join(root,'src','tavix_marketplace.mjs'),path.join(out,'src','tavix_marketplace.mjs'));
 for(const f of ['hosted_catalog.mjs','hosted_cards.mjs'])await copyFile(path.join(root,'src',f),path.join(out,'src',f));
 for(const name of ['multiplayer_lobby.mjs','mock_life_api.mjs','multiplayer_preview_ui.mjs','hosted_life.mjs'])await copyFile(path.join(root,'src',name),path.join(out,'src',name));
 const entry = await readFile(path.join(out,'main.mjs'),'utf8');
-await (await import('node:fs/promises')).writeFile(path.join(out,'main.mjs'),entry.replace("from '../src/hosted_catalog.mjs'","from './src/hosted_catalog.mjs'").replace("from '../src/apphost.mjs'","from './src/apphost.mjs'").replace("from '../src/catalog_client.mjs'","from './src/catalog_client.mjs'").replace("from '../src/hosted_cards.mjs'","from './src/hosted_cards.mjs'").replace("from '../src/multiplayer_preview_ui.mjs'","from './src/multiplayer_preview_ui.mjs'"));
+await (await import('node:fs/promises')).writeFile(path.join(out,'main.mjs'),entry.replace("from '../src/hosted_catalog.mjs'","from './src/hosted_catalog.mjs'").replace("from '../src/apphost.mjs'","from './src/apphost.mjs'").replace("from '../src/catalog_client.mjs'","from './src/catalog_client.mjs'").replace("from '../src/tavix_marketplace.mjs'","from './src/tavix_marketplace.mjs'").replace("from '../src/hosted_cards.mjs'","from './src/hosted_cards.mjs'").replace("from '../src/multiplayer_preview_ui.mjs'","from './src/multiplayer_preview_ui.mjs'"));
 // Market Grove stays an operator preview until verified Social wallet settlement is available.
 await mkdir(path.join(out,'games','market-grove'),{recursive:true});
 for(const [source,target] of [

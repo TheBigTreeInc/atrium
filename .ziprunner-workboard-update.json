@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.81",
-  "summary": "0.5.81 binds existing unmounted Atrium lobby adapters to Social 0.3.145 exact service-only challenge/contact routes; simulated two-account persistent recovery and refusal tests pass. Life live service, operator trust, two actual clients and publication remain blocked.",
+  "version": "0.5.82",
+  "summary": "0.5.82: TaviX pinned approved-index display projection, Discover cards and optional canonical Assets 0.1.11 SDK transport; Social 0.3.150 service routes source-compatible. No real Life or official extension activation without approval.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -653,6 +653,25 @@
         "On a non-production Social 0.3.145 LoopRD runtime, verify original challenge and current-contact privileged endpoints with operator-bound atrium service identity, caller allowlist and issuer.",
         "Have Life owners approve/create durable match and seat authority APIs; verify real two-account invite/accept, client/service restart, turns and match completion before activation.",
         "Keep the immutable TaviX 1.0.4 extension and 1.0.11 review candidate separated; do not auto-publish, modify operator secrets or release without approval."
+      ]
+    },
+    {
+      "id": "ATR-185-TAVIX-DISCOVER",
+      "title": "Derive Atrium game discovery from pinned reviewed TaviX index",
+      "summary": "Offline, atomic display-only TaviX classified-game projection; separate presentation metadata; static Discover TaviX cards with launch only through authorized installed-games host; no installer or unapproved trust.",
+      "operator_checks": [
+        "Review the TaviX operator-approved index and digest independently before building web/tavix-games.json.",
+        "Verify unapproved, uninstalled, stale or revoked games have no install action and cannot launch; Play only uses authorized Tavi installed registry.",
+        "Approve a new official Tavi extension separately; pinned 1.0.4 is unchanged."
+      ]
+    },
+    {
+      "id": "ATR-186-ASSETS-CONSUMER",
+      "title": "Connect optional canonical Tavi Assets 0.1.11 SDK consumer",
+      "summary": "Byte-identical Tavi Assets 0.1.11 transport-injected consumer, host-only method bridge and fail-closed feature negotiation; no local entitlement engine and no newly requested privileges.",
+      "operator_checks": [
+        "Verify real Tavi 0.3.150 Assets service is operator-connected with per-pack grants, installation, entitlement and persistence.",
+        "Approve an Atrium extension permission change before trying to access any real assets; never broaden the current pinned 1.0.4 release."
       ]
     }
   ],

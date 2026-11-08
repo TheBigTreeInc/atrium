@@ -7,6 +7,7 @@
 export const TAVIX_STANDARD='tavix/1.0';
 export const TAVIX_CHANNEL='tavi.extension/v1';
 export const TAVIX_HOST_API='1.0.0';
+const ASSETS_METHODS=new Set(['assets.dependencies.status','assets.describe','assets.objects.list','assets.objects.get','assets.collections.list','assets.collections.get','assets.preferences.get','assets.preferences.set','assets.resolve','assets.packs.list','assets.objects.discover','assets.composition.resolve']);
 
 export function assertTaviXHostInfo(info){
  if(!info||typeof info!=='object'||info.standard!==TAVIX_STANDARD||info.channel!==TAVIX_CHANNEL||typeof info.api!=='string'||!/^1\.\d+\.\d+$/.test(info.api)||typeof info.extensionId!=='string'||info.mode!=='embedded'||info.navigation!=='host'||!Array.isArray(info.features))throw Error('Host is not TaviX 1.0 compatible');
@@ -55,6 +56,9 @@ export function createTaviXSDK(target=window.parent,source=window){
   // generic nested surface broker is implemented and advertised by host.info.
   surfaces:{requestOpen:surface=>request('surface.requestOpen',{surface})},
   games:{installed:{list:()=>request('games.installed.list'),open:({id,expectedVersion})=>request('games.installed.open',{params:{id,expectedVersion}})}},
+  // Tavi Assets' canonical transport-injected SDK consumes only these typed
+  // host methods. No direct extension file reads or local asset permissions.
+  assetRequest:(method,params)=>{if(!ASSETS_METHODS.has(method))return Promise.reject(Error('Unsupported Tavi Assets method'));return call(method,params);},
   on,
   wallet:{balance:()=>call('wallet.balance'),transactions:params=>call('wallet.transactions',params),
     claim:params=>call('wallet.claim',params),convert:params=>call('wallet.convert',params),

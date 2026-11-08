@@ -1,3 +1,7 @@
+### Atrium 0.5.82: TaviX marketplace and canonical Assets bridge (unreleased)
+
+The source now projects a separately operator-approved, SHA-256-pinned `tavi.repository/v1` index into a display-only TaviX game registry; the bundled snapshot is healthy/empty until explicitly approved. Discover can show such games, but installed-game launches still require a verified Tavi host session. The canonical Tavi Assets 0.1.11 SDK is carried byte-identically through a fail-closed, optional host transport; current immutable Atrium TaviX 1.0.4 has no Assets permissions and is unchanged. Social 0.3.150 source retains the existing exact service-only routes. Life's production authority, Windows ZipRunner acceptance and real two-client play remain pending. See `docs/ATRIUM_TAVIX_MARKETPLACE_ASSETS_082.adoc`.
+
 ### Atrium 0.5.81: server-only Social 0.3.145 lobby binding
 
 The next multiplayer integration pass maps Atrium's already-existing trusted Social challenge/contact adapters to the two actual service routes shipped in Tavi Social 0.3.145. It adds source-only two-account create/invite/accept/restart/resume rehearsal and refusal tests. This **does not mount a live lobby endpoint** or demonstrate a real Life match; the Life authority and operator service routing still require separate approval and real-client QA. See `docs/ATRIUM_SOCIAL_0145_081.adoc`. The default immutable Atrium TaviX 1.0.4 and separately reviewed installed-games 1.0.11 candidate remain unchanged. No new installer or game-server discovery dependency was added.

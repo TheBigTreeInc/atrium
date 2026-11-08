@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.81",
+  "version": "0.5.82",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1334,6 +1334,48 @@
           "mode": "manual",
           "checks": [
             "ATR-183-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-185-TAVIX-DISCOVER",
+      "criteria": [
+        {
+          "id": "ATR-185-SOURCE",
+          "description": "Offline, atomic display-only TaviX classified-game projection; separate presentation metadata; static Discover TaviX cards with launch only through authorized installed-games host; no installer or unapproved trust.",
+          "mode": "automated",
+          "checks": [
+            "ATR-185-T1"
+          ]
+        },
+        {
+          "id": "ATR-185-OP",
+          "description": "Requires separately approved real host/index/service and operator release.",
+          "mode": "manual",
+          "checks": [
+            "ATR-185-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-186-ASSETS-CONSUMER",
+      "criteria": [
+        {
+          "id": "ATR-186-SOURCE",
+          "description": "Byte-identical Tavi Assets 0.1.11 transport-injected consumer, host-only method bridge and fail-closed feature negotiation; no local entitlement engine and no newly requested privileges.",
+          "mode": "automated",
+          "checks": [
+            "ATR-186-T1"
+          ]
+        },
+        {
+          "id": "ATR-186-OP",
+          "description": "Requires separately approved real host/index/service and operator release.",
+          "mode": "manual",
+          "checks": [
+            "ATR-186-M1"
           ]
         }
       ]
@@ -2741,6 +2783,42 @@
       "stage": "acceptance",
       "description": "Live Social 0.3.145 and Life authoritative multiplayer acceptance with two real players",
       "instructions": "Operator reviews trusted Social principal, social:service scope, LOOPRD_TAVI_CHALLENGE_READ_CALLERS and issuer. Life independently implements/adopts authenticated idempotent create, attest, join, seat, resume and turn APIs. Test two actual players (one Tavi), accept an original challenge, play a genuine turn, restart clients and services, resume, verify revoke/expiry failures. No approved source, backend or real-device acceptance is implied by the simulator."
+    },
+    {
+      "id": "ATR-185-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Derive Atrium game discovery from pinned reviewed TaviX index source guard",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_tavix_marketplace_projection.py",
+      "assertions": [
+        "Offline, atomic display-only TaviX classified-game projection; separate presentation metadata; static Discover TaviX cards with launch only through authorized installed-games host; no installer or unapproved trust."
+      ]
+    },
+    {
+      "id": "ATR-185-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Derive Atrium game discovery from pinned reviewed TaviX index operator acceptance",
+      "instructions": "Review the TaviX operator-approved index and digest independently before building web/tavix-games.json. Verify unapproved, uninstalled, stale or revoked games have no install action and cannot launch; Play only uses authorized Tavi installed registry. Approve a new official Tavi extension separately; pinned 1.0.4 is unchanged."
+    },
+    {
+      "id": "ATR-186-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Connect optional canonical Tavi Assets 0.1.11 SDK consumer source guard",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/tavi_assets_contract.test.mjs",
+      "assertions": [
+        "Byte-identical Tavi Assets 0.1.11 transport-injected consumer, host-only method bridge and fail-closed feature negotiation; no local entitlement engine and no newly requested privileges."
+      ]
+    },
+    {
+      "id": "ATR-186-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Connect optional canonical Tavi Assets 0.1.11 SDK consumer operator acceptance",
+      "instructions": "Verify real Tavi 0.3.150 Assets service is operator-connected with per-pack grants, installation, entitlement and persistence. Approve an Atrium extension permission change before trying to access any real assets; never broaden the current pinned 1.0.4 release."
     }
   ]
 }

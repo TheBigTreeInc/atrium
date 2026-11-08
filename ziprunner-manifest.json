@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.81",
-    "base_version": "0.5.80",
+    "version": "0.5.82",
+    "base_version": "0.5.81",
     "source_revision": "98300ea5cacc83e9e3ddc9a5f2f3fe407225157e"
   },
   "update": {
-    "id": "ATR-P1-20261108-081",
+    "id": "ATR-P1-20261109-082",
     "kind": "source_update",
-    "created_at": "2026-11-08T15:08:15+01:00",
-    "summary": "Additive source-only Social 0.3.145 challenge/contact route binding for the existing unmounted Atrium/Life lobby, with two fake-account persistence/denial tests. No real Life API, public Atrium host route or official Tavi approval asserted."
+    "created_at": "2026-11-09T00:00:00+01:00",
+    "summary": "Add display-only TaviX approved-index marketplace projection and optional canonical Tavi Assets 0.1.11 consumer; verify Social 0.3.150 source wire parity. Preserve unmounted Life backend, official TaviX 1.0.4 and all operator approval gates."
   },
   "planned_work": [
     {
@@ -433,6 +433,18 @@
       "title": "Bridge verified Social 0.3.145 service lookups to Atrium lobby",
       "priority": "high",
       "acceptance_criteria": "The server-only adapter maps real Social 0.3.145 paths, rejects malformed requests/denials and preserves independent Life seat authority; source QA and rollout gates are recorded, no live release claimed."
+    },
+    {
+      "id": "ATR-185-TAVIX-DISCOVER",
+      "title": "Derive Atrium game discovery from pinned reviewed TaviX index",
+      "acceptance_criteria": "Review the TaviX operator-approved index and digest independently before building web/tavix-games.json. Verify unapproved, uninstalled, stale or revoked games have no install action and cannot launch; Play only uses authorized Tavi installed registry. Approve a new official Tavi extension separately; pinned 1.0.4 is unchanged.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-186-ASSETS-CONSUMER",
+      "title": "Connect optional canonical Tavi Assets 0.1.11 SDK consumer",
+      "acceptance_criteria": "Verify real Tavi 0.3.150 Assets service is operator-connected with per-pack grants, installation, entitlement and persistence. Approve an Atrium extension permission change before trying to access any real assets; never broaden the current pinned 1.0.4 release.",
+      "priority": "high"
     }
   ],
   "done_work": [
@@ -1952,6 +1964,63 @@
           "description": "Authority boundaries, exact endpoints, operator activation gates and rollback constraints"
         }
       ]
+    },
+    {
+      "id": "ATR-185-TAVIX-DISCOVER",
+      "summary": "Offline, atomic display-only TaviX classified-game projection; separate presentation metadata; static Discover TaviX cards with launch only through authorized installed-games host; no installer or unapproved trust.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/tavix_marketplace_projection.py",
+          "description": "Digest-pinned TaviX index projection without executable URLs or install trust"
+        },
+        {
+          "kind": "source",
+          "ref": "src/tavix_marketplace.mjs",
+          "description": "Fail-closed source-side TaviX static snapshot client"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_tavix_marketplace_projection.py",
+          "description": "Python pin/metadata/atomic CLI and negative tests"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavix_marketplace.test.mjs",
+          "description": "Node static catalog parsing and no-credentials network checks"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/ATRIUM_TAVIX_MARKETPLACE_ASSETS_082.adoc",
+          "description": "Registry, trust and operator approval boundaries"
+        }
+      ]
+    },
+    {
+      "id": "ATR-186-ASSETS-CONSUMER",
+      "summary": "Byte-identical Tavi Assets 0.1.11 transport-injected consumer, host-only method bridge and fail-closed feature negotiation; no local entitlement engine and no newly requested privileges.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/tavi-assets-client-0.1.11.mjs",
+          "description": "Unmodified Assets 0.1.11 canonical reference consumer SDK"
+        },
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/atrium-assets.mjs",
+          "description": "Optional TaviX session host transport adapter"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavi_assets_contract.test.mjs",
+          "description": "Feature absence, grants and request-transport regression"
+        },
+        {
+          "kind": "documentation",
+          "ref": "evidence/ATR_185_082_SOURCE_REVIEW.adoc",
+          "description": "Reference SDK hash and approval boundaries"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -2419,11 +2488,33 @@
         "description": "Unbounded full Python discovery suite",
         "status": "not_run",
         "reason": "Full discovery suite attempted but exceeded 120-second local execution limit; targeted source checks passed."
+      },
+      {
+        "id": "ATR-185-LOCAL",
+        "description": "TaviX marketplace projection and static/Node source compatibility",
+        "status": "passed",
+        "environment": "Linux source-only sandbox, no approved TaviX index",
+        "command": "python -m unittest tests.test_tavix_marketplace_projection -v && npm test && npm run build",
+        "evidence_ref": "evidence/ATR_185_082_LOCAL_QA.txt"
+      },
+      {
+        "id": "ATR-186-LOCAL",
+        "description": "Tavi Assets canonical client/host transport source-level compatibility",
+        "status": "passed",
+        "environment": "Linux source-only sandbox, fake host grants",
+        "command": "node --test tests/tavi_assets_contract.test.mjs",
+        "evidence_ref": "evidence/ATR_185_082_LOCAL_QA.txt"
+      },
+      {
+        "id": "ATR-185-OPERATOR",
+        "description": "Windows ZipRunner, official TaviX index digest, production Assets grants and two real Life clients",
+        "status": "not_run",
+        "reason": "No native Windows runner, separately reviewed index digest, privileged Tavi host or deployed Life authority available."
       }
     ]
   },
   "handover": {
-    "next_pass": "Operator-stage Social 0.3.145 exact privileged challenge/contact lookups and review the true Life authority binding; mount the authenticated Atrium service entry only after review; test two real clients with one Tavi account and durable Life turn, then continue the approved TaviX-to-Atrium static registry projection. No installer duplication.",
+    "next_pass": "Pass Windows ZipRunner 0.5.82, approve an exact TaviX repository snapshot to populate Discover, approve new official TaviX Assets permissions if needed, and deploy independently reviewed Life authority and authenticated Social 0.3.150 host binding for two real-client acceptance.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -2449,7 +2540,9 @@
       "0.5.63 only binds server-injected typed Social original challenge projections. Real session lookup, accepted friendship lookup, authoritative original challenge retrieval, public LoopRD handlers and deployed Tavi clients remain unimplemented and require separate operator review.",
       "No active public hosted catalog endpoint or source-verified deployment evidence in the ZIP; cannot make games playable by inventing URLs.",
       "External offline-game ZIP candidate validation does not prove TaviX installation, local package discovery, storage persistence or execution in Tavi. Separate Tavi owner acceptance required.",
-      "Social 0.3.145 privileged routes exist in source but were not verified deployed with atrium service principal and explicit caller allowlist; Life proposed authoritative exchange remains unmounted."
+      "Social 0.3.145 privileged routes exist in source but were not verified deployed with atrium service principal and explicit caller allowlist; Life proposed authoritative exchange remains unmounted.",
+      "Atrium 0.5.82 static TaviX marketplace remains empty until operator supplies independently verified/approved index bytes+digest; source CLI pin alone is not a cryptographic approval signature.",
+      "The canonical Assets 0.1.11 SDK is connected only as an optional client: pinned Atrium TaviX 1.0.4 lacks assets.read permission and no real Tavi Assets host grant/service deployment has been accepted."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
@@ -2546,11 +2639,16 @@
       "id": "ATR-P1-OP-081",
       "description": "Import and review 0.5.81 source, verify Social 0.3.145 operator-only route binding, independently review Life seat/match APIs and then test genuine two-client multiplayer before any live host activation or TaviX publication.",
       "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-082",
+      "description": "Review and import Atrium 0.5.82 on Windows; approve real TaviX index digest, verify official Tavi host and Assets grants; separately activate Life host and two-client acceptance. No automatic publication.",
+      "status": "required"
     }
   ],
   "release": {
     "requested": false,
     "requires_operator_approval": true,
-    "notes": "Requires explicit operator approval. 0.5.81 is a source-only unmounted Social/Atrium lobby bridge and fake two-account test; no actual Life session, hosted route, TaviX approval, Git publication or Windows acceptance."
+    "notes": "0.5.82 source update only; no official TaviX extension change, Live Life API, real host principal, published marketplace, Windows acceptance, real installed game or operator release."
   }
 }

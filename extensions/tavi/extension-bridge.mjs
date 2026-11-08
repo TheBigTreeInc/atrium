@@ -4,6 +4,7 @@
 // LoopRD operator key or player proof is forwarded into the launched surface.
 import {createTaviXSDK, assertTaviXHostInfo} from './tavix-sdk.mjs';
 import {installedGamesClient,openInstalledGame} from './installed-games.mjs';
+import {createAtriumAssets} from './atrium-assets.mjs';
 import {fetchConfiguredHostedCatalog} from '../../src/hosted_catalog.mjs';
 
 const tavi=createTaviXSDK();
@@ -104,3 +105,8 @@ window.__atriumInstalledGames={
  list:()=>installedGamesClient(tavi),
  open:async(game,inventory)=>openInstalledGame(tavi,game,inventory)
 };
+
+// Optional canonical Tavi Assets client. This is unavailable for the current
+// pinned ui.panel-only Atrium release: any future assets.read permission and
+// official host grant require separate operator approval, never client opt-in.
+window.__atriumAssets=createAtriumAssets(tavi);
