@@ -23,7 +23,7 @@ test('embedded Tavi has one compact status per context and does not duplicate so
  assert.match(main,/await mountHostedLife\(\{area\}\)/);
  assert.match(main,/if\(!document\.body\.classList\.contains\('tavix-extension'\)\)for\(const issue of issues\)/);
  assert.match(main,/No games published yet/);
- assert.match(main,/Installed games not connected/);
+ assert.match(main,/Installed games in Tavi/);
  assert.doesNotMatch(main,/Catalog not connected/);
  assert.doesNotMatch(main,/Retry connection/);
  assert.match(css,/body\.tavix-extension \.emptyState \.state-icon\{display:none/);

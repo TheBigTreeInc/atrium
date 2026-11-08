@@ -170,7 +170,7 @@ function syncLibraryMirror(issues=[]){
  libraryMirror.replaceChildren();
  const cards=[...area.querySelectorAll('.game-card')];
  if(installedSnapshot.available){for(const game of installedSnapshot.games)libraryMirror.append(makeInstalledCard(game));}
- else libraryMirror.append(libraryNotice('Installed games not connected',installedError?'Tavi did not return an installed-games inventory.':'Tavi has not shared your installed games with Atrium yet.','Discover'));
+ else libraryMirror.append(libraryNotice('Installed games in Tavi',installedError?'Tavi could not provide the approved game list.':'Games appear here when Tavi authorizes the official Atrium integration.','Discover'));
  // Standalone diagnostics may include catalog failures; inside Tavi each
  // online source warning appears only in Discover, never twice.
  if(!document.body.classList.contains('tavix-extension'))for(const issue of issues)libraryMirror.append(issuePanel(issue));
@@ -230,5 +230,12 @@ async function refreshCatalog(){
 
 mountMultiplayerPreview(document.querySelector('#multiplayerLab'));
 await refreshCatalog();
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)void refreshCatalog();});
-setInterval(()=>{if(!document.hidden)void refreshCatalog();},60000);
+// A game launch can temporarily replace the Tavi extension surface without
+// unloading it. Refresh trusted inventory on return; never cache a previous
+// authorization as proof a game is still installed/enabled. Fresh loads also
+// follow the initial refreshCatalog() path above.
+const refreshOnReturn=()=>{if(!document.hidden)void refreshCatalog();};
+document.addEventListener('visibilitychange',refreshOnReturn);
+window.addEventListener('focus',refreshOnReturn);
+window.addEventListener('pageshow',refreshOnReturn);
+setInterval(refreshOnReturn,60000);

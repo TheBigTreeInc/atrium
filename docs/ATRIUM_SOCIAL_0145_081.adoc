@@ -1,0 +1,52 @@
+= Atrium 0.5.81 — Social 0.3.145 trusted lobby route adapter
+:toc: left
+
+== Scope and ownership
+
+This is an additive *server-only* bridge between Atrium's existing hostless lobby and the two privileged, game-neutral Social 0.3.145 lookup routes. It does not introduce another installer, identity provider, challenge inbox, lobby authority, game rule engine, network client or public API.
+
+* Tavi: verified account identity, contacts, existing `game_challenge_send` / `interaction_reply`, notifications and installed applications.
+* TaviX: approved game package identity, integrity, install, update and launch.
+* Atrium: game discovery presentation, lobby identity, association of the original Social challenge, invites/session coordination and future opt-in matchmaking.
+* Social's privileged backend: original challenge response and *current* friendship. It never grants Life seats.
+* Life: independently verifies match creation, recipient game-seat admission, resume, turns, result and persistent game state. The Life authority exchange is still an *unmounted proposed interop contract*.
+
+The public marketplace may be a static projection of approved TaviX packages. Lobbies cannot be static: they require authenticated, persistent, server-side state. Legacy LoopRD game-server discovery may remain for compatibility but must not be the source of installable-game trust.
+
+== Verified Social 0.3.145 wire routes
+
+The route paths below were checked against the supplied Social 0.3.145 source package's `looprd.yaml`, `server/atrium_challenge_lookup.py` and `server/atrium_contact_lookup.py`. They are **not** URLs and must never be assembled from an end-user request.
+
+[cols="2,2,3",options="header"]
+|===
+|Service route (POST)|Request|Successful response
+|`/ecosystem/atrium-challenge-status`
+|`{"schema":"atrium.social-challenge-status/v1","challengeId":123}`
+|Exact `schema,challengeId,issuer,sender,recipient,gameId,status,original`; `original` MUST be literal `true`
+|`/ecosystem/atrium-contact-status`
+|`{"schema":"atrium.social-contact-status/v1","issuer":"trusted-issuer","sender":"acct_1","recipient":"acct_2"}`
+|Exact `schema,issuer,sender,recipient,accepted`; only literal `true` is accepted
+|===
+
+The host calls these with independently authenticated service principal `atrium`, scope `social:service`, and Social's explicit `LOOPRD_TAVI_CHALLENGE_READ_CALLERS=atrium` gate. The Social operator binds `LOOPRD_TAVI_SOCIAL_ISSUER` to an agreed issuer. Disabled credentials, absent allowlisting, non-service principals, mismatched IDs, cross-instance issuers and unrecognized response shapes all deny admission. The optional earlier `/ecosystem/challenge-status` contract is not used because it has a different response format and does not supply the original-challenge issuer proof plus the current-contact proof together.
+
+`src/social_0145_binding.py` provides `Social0145ServiceRoutes(service_call)`. `service_call(path,request)` is an **operator-injected authenticated host call**, not a fetch function available to TaviX. `bind_social0145_multiplayer(...)` composes the existing strict `TrustedSocialStatus`, `SocialChallengeBridge` and `TrustedLifeAuthority`. No network route is mounted or production DB modified by building/importing the source ZIP.
+
+== End-to-end flow and tests
+
+. Tavi user `acct_1` creates the proposed Life match through Atrium; Atrium persists an opaque lobby ID and requires Life's independent match attestation.
+. Tavi's existing challenge send returns the *original* Social interaction ID; Atrium attaches it to exactly one ready lobby/match and checks the current contact relationship.
+. Recipient uses Tavi's existing acceptance interaction; Atrium's trusted backend checks Social's original challenge and current contact status *again*.
+. Life independently grants a seat; Atrium verifies the seat and records lobby membership. Successful acceptance by Social alone never seats the player.
+. Both clients may quit; Atrium SQLite lobby and Life game state remain server-owned. Later resume revalidates identity, deployment and Life seat. Lobby leave does not terminate the Life match.
+
+`python -m unittest tests.test_social_0145_binding -v` is a source-only adapter rehearsal covering strict 0.3.145 operation/path mapping, fake two-account create/attach/accept/restart/resume, absent/revoked relationship, rejected and forged Social results, outage, untrusted identity, disabled deployment and refused Life seat. Other source suites remain unchanged. These tests use a fake Life exchange and a fake operator-injected Social transport: they **do not prove** working live network routing, two real clients, Life's deployed API or Tavi device acceptance.
+
+== Activation gates — NOT completed by this release
+
+* Social operator: deploy/verify the exact two routes from Social 0.3.145 on the actual LoopRD service, confirm the separate service-principal and issuer settings, and test caller-denied cases. Do not expose these through a public browser client or grant an open cross-origin access path.
+* Life owner: provide independently reviewed match-create, attest, join, seat-verify, resume and status operations with idempotence, authenticated grants and durable game state. The existing `TrustedLifeAuthority` fixtures are proposed, not evidence these endpoints exist in production.
+* Atrium operator: mount the reviewed typed host boundary; configure persistent SQLite location and backup policy; integrate approved game/deployment bindings without hardcoded LoopRD URL in `looprd.yaml` or `atriumd.yaml`.
+* End-to-end QA: two actual authenticated accounts, one Tavi client, one second real client, genuine challenge/invite/accept, Life seat and completed turn; restart both clients and services; validate forged/expired/declined/revoked cases. Use only the approved Atrium/TaviX extension capability path. Record versions and operator decision.
+
+No automatic publication, live endpoint mounting, TaviX version bump, operator acceptance or Git push is authorized by this source change. The immutable 1.0.4 extension and separately reviewed 1.0.11 installed-games candidate remain untouched.

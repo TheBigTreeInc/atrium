@@ -132,3 +132,31 @@ server or dependency is implied. An empty published catalog is a healthy
 zero-item UI state. Configured remote failures remain visible and fail closed.
 See `docs/ATRIUM_CATALOG_HEALTHY_EMPTY_078.adoc`. The existing C4 components
 and opaque optional gateway boundary remain unchanged.
+
+== Installed-game launch envelope and approved host (0.5.79)
+
+The existing `taviSdk` component now sends `games.installed.open` with
+`params` wrapping `id` and `expectedVersion`, matching the Social 0.3.141
+handoff. `installedGameBridge` still validates host-advertised inventory
+and exact versions, and `Tavi Messenger` owns official caller authorization,
+local game navigation and revocation. No extra cross-project component is
+introduced; this is a wire correction to an existing relation. A local
+developer-preview source is *not* a privileged official Atrium source.
+`docs/ATRIUM_TAVI_APPROVED_INSTALLED_GAMES_079.adoc` records the operator
+publication and on-device acceptance boundaries. Structurizr CLI validation
+remains unverified unless separately executed.
+
+== Installed-game review candidate and lifecycle (0.5.80)
+
+The existing `installedGameBridge` in the Atrium TaviX container now checks
+TaviX host identity and current advertised feature both on list and again on
+Play, then sends only `id` and `expectedVersion` through the host protocol.
+The `portalShell` refreshes installed inventory when its retained view resumes
+(on visibility/focus/pageshow). The existing opaque external `Tavi Messenger`
+node continues to own source authorization, actual game execution, switching
+back to Atrium/Tavi Games/Home and grant revocation; no Tavi internals are
+modeled. `tools/build_tavi_extension.mjs` can additionally emit a source-built
+1.0.11 unapproved review candidate for the empty-catalog condition, without
+changing immutable 1.0.4 or automatically promoting any repository entry.
+See `docs/ATRIUM_TAVI_INSTALLED_GAMES_REVIEW_CANDIDATE_080.adoc`.
+Structurizr CLI validation remains unverified until run independently.

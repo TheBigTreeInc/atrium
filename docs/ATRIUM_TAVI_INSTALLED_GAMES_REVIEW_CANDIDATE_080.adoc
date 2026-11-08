@@ -1,0 +1,95 @@
+= Atrium 0.5.80 — official-source installed-game review candidate
+:toc:
+
+== Reason for this pass
+
+An ordinary source build without a configured HTTPS hosted-game catalog intentionally
+preserves immutable TaviX 1.0.4. That behavior protects a shipped artifact, but
+it also prevents a current installed-games consumer from being reviewed through
+the official TaviX repository when no online games have been published.
+A healthy empty catalog must not block local-game discovery.
+
+== Explicit candidate build (no publishing)
+
+. Build the normal static portal with `npm run build` and verify with `npm run verify`.
+  Normal builds still select the byte-pinned 1.0.4 release in the offline state.
+. Build a **separate, unapproved** candidate from the current static output:
++
+[source,bash]
+----
+ATRIUM_TAVIX_REVIEW_CANDIDATE=1 node tools/build_tavi_extension.mjs
+----
++
+On PowerShell use `$env:ATRIUM_TAVIX_REVIEW_CANDIDATE='1'; node tools/build_tavi_extension.mjs`
+then remove the environment override. The output `dist-tavi` is generated,
+not packaged into the source ZIP. Version `1.0.11` comes from
+`extensions/tavi/installed-games-candidate.json`; never reuse its version
+for different bytes once an operator approves an immutable release.
+. Validate/archive using TaviX 0.1.11 tools (external project):
++
+[source,bash]
+----
+python tools/tavix_package.py pack <atrium>/dist-tavi <review>/atrium-1.0.11.tavix
+python tools/tavix_package.py validate-archive <review>/atrium-1.0.11.tavix
+----
++
+No ordinary `npm run build` with the review override is allowed: that
+command auto-stages to the sibling TaviX checkout and is explicitly rejected.
+The candidate-builder invocation itself only writes `dist-tavi`. It does not
+Git-push, publish, grant permissions, replace immutable 1.0.4 or alter Tavi.
+Do not imply that a developer-installed bundle has official trust.
+
+== Host lifecycle
+
+Atrium negotiates `tavix.installed-games/v1` using a verified TaviX host
+identity. A host without an approved Atrium session advertises no installed-
+games feature and receives no cross-extension listing. On Play, Atrium
+refreshes installed inventory, rechecks the host feature and sends exactly:
+
+[source,json]
+----
+{"method":"games.installed.open","params":{"id":"org.example.klondike","expectedVersion":"0.1.0"}}
+----
+
+The host, not Atrium, rechecks that the game is classified, installed,
+enabled, approved, correct-version and current-session authorized. The host
+owns navigation into the game and back into Atrium, Tavi Games or Home.
+Atrium refreshes the inventory on remount and on visibility, focus or pageshow
+when a retained surface comes back. No URL, executable path, direct game file,
+private registry, Tavi credentials or asset grants are transferred.
+
+The contract simulator test `tests/tavi_installed_game_lifecycle_080.test.mjs`
+proves Atrium's request formatting and caller behavior only; it does NOT
+execute a real Tavi 0.3.141 runtime. A successful host response must be
+acknowledged before host navigation unmounts the caller, otherwise Atrium
+may time out despite a successful launch. Tavi owns this ordering.
+
+== TaviX 0.1.11 and asset contract
+
+Existing TaviX 1.0 manifests remain valid without `assetDependencies`.
+The Atrium candidate does not request `assets.read` or
+`assets.preferences.write`; it does not provide asset packs, storefront
+entitlements or wallet purchases. Optional card/deck/theme asset requests
+belong to Klondike and the approved Tavi Assets runtime. TaviX 0.1.11 is a
+manifest/packaging contract, not proof of live `tavi.assets/v1` host grants.
+
+== Manual approval and acceptance gates
+
+. Tavi operator reviews exact candidate bytes, SHA-256, manifest, lockfile,
+  publisher source and current Social host implementation. Official source
+  must be approved through Tavi's explicit review path or through an
+  operator-approved digest-pinned development mechanism; a local shadow
+  cannot self-approve.
+. Confirm the actual Tavi host advertises installed-games only to this
+  reviewed Atrium session and that classified Klondike appears in My Games.
+. Play Klondike, return to Atrium, Tavi Games and Home. Verify offline play
+  and saved progress after game close and full Tavi restart.
+. Reject stale package version, uninstall, disabled game and revoked Atrium
+  source grant without leaking cross-extension details. Denied callers must
+  receive a generic error before inventory lookup.
+. Maintain the healthy zero-game catalog for an unconfigured online gateway.
+  Do not weaken the local iframe network sandbox or treat an empty catalog as
+  a server failure.
+
+No operator acceptance, hosted public release, exact-commit GitHub CI or native
+Windows ZipRunner verification is implied by source-only test success.

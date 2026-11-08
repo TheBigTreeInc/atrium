@@ -1,0 +1,62 @@
+{
+  "schema": "atrium.source-qa/v1",
+  "project": "atrium",
+  "sourceVersion": "0.5.80",
+  "provenance": "local source tree; no operator device or Windows ZipRunner access",
+  "checks": [
+    {
+      "name": "npm test",
+      "result": "passed",
+      "count": 117,
+      "log": "local console output (not embedded as a credential-bearing log)"
+    },
+    {
+      "name": "python release pipeline",
+      "result": "passed",
+      "count": 16
+    },
+    {
+      "name": "python C4 architecture",
+      "result": "passed",
+      "count": 5
+    },
+    {
+      "name": "python platform architecture",
+      "result": "passed",
+      "count": 3
+    },
+    {
+      "name": "npm run build",
+      "result": "passed",
+      "detail": "default build preserved immutable TaviX 1.0.4; optional TaviX staging skipped because no sibling checkout existed"
+    },
+    {
+      "name": "npm run verify",
+      "result": "passed"
+    },
+    {
+      "name": "TaviX 0.1.11 pack and validate-archive",
+      "result": "passed",
+      "detail": "TaviX official 0.1.11 supplied source tool on explicitly built unapproved 1.0.11 candidate; candidate not staged/published",
+      "sha256": "6291aa579d188161a160d79aeac1a192e1cf853a056a39fb68ab83e5556b2605"
+    },
+    {
+      "name": "complete Python regression",
+      "result": "incomplete",
+      "detail": "Execution timed out during nested integration suite; no full regression pass claimed"
+    },
+    {
+      "name": "native Windows ZipRunner",
+      "result": "not_run"
+    },
+    {
+      "name": "exact-commit GitHub CI",
+      "result": "not_run"
+    },
+    {
+      "name": "real authorized Tavi 0.3.141 and Klondike",
+      "result": "not_run"
+    }
+  ],
+  "trust": "Source-built review candidate is not entitled to tavix.installed-games/v1 until actual Tavi host approves official source. No asset dependencies, no auto-push, no release."
+}

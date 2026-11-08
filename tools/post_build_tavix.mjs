@@ -15,6 +15,9 @@ import {fileURLToPath} from 'node:url';
 import {tavixPostBuildEnvironment} from './tavix_post_build_config.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// The normal build always performs TaviX staging. Review candidates MUST be
+// built through the isolated extension builder, never this auto-staging path.
+if(process.env.ATRIUM_TAVIX_REVIEW_CANDIDATE==='1')throw Error('Review candidates must not run through npm run build / automatic TaviX staging');
 const env = tavixPostBuildEnvironment(root);
 console.log(`[atrium-post-build] TAVIX_REPOSITORY_DIR=${env.TAVIX_REPOSITORY_DIR}`);
 console.log(`[atrium-post-build] TAVIX_STAGE_REQUIRED=${env.TAVIX_STAGE_REQUIRED}`);

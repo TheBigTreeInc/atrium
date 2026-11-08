@@ -1,3 +1,52 @@
+# 0.5.81 ZipRunner retry — release metadata repair
+
+This retry corrects a version drift in the original 0.5.81 source archive. The source package, verification plan, workboard and manifest already said `0.5.81`; `looprd.yaml` and `.github/workflows/verify.yml` still said `0.5.80`. The root spec is now `0.5.81`, the workflow validates/uploads the same source version, and `ziprunner.looprd.json` has the refreshed root-spec SHA-256. No lobby, Social, Life, Checkers or TaviX implementation changes were made in the repair.
+
+Local Linux QA: 417 Python unit tests passed, 117 Node tests passed, 47 Checkers source-tree tests passed, all checked-in generators/source-spec checks passed, and `npm run build` passed. Windows ZipRunner build and real-client/operator acceptance remain **not run**. Logs were placed under excluded `state/` and are not shipped. See `evidence/ATR_184_081_RELEASE_METADATA_REPAIR.txt`. No publishing, deployment, repository staging, approval, or private-state changes.
+
+---
+
+# Atrium 0.5.81 — Social 0.3.145 trusted lobby boundary (source only)
+
+Base version: 0.5.80. The patch adds `src/social_0145_binding.py` and `tests/test_social_0145_binding.py`, mapping existing lobby coordination to the two genuine Social 0.3.145 privileged status routes. This is an additive unmounted backend adapter. The new rehearsal uses two fake authenticated subjects and a fake Life service, not an actual Tavi device or network game. The old 1.0.4 extension is pinned and the 1.0.11 review candidate is *not* approved by this change. Preserve all local/private state and operator gates. See `docs/ATRIUM_SOCIAL_0145_081.adoc`.
+
+Acceptance blockers: deploy trusted Social backend + service allowlisting, finalize Life authoritative create/join/seat API, mount authenticated Atrium host routes and test two real players. No automatic publication.
+
+---
+
+# Atrium 0.5.80 — unapproved TaviX official-source review candidate and host lifecycle
+
+This source update enables an *explicit review-only* TaviX 1.0.11 build with a
+healthy empty online catalog, without modifying immutable 1.0.4 or automatically
+staging to TaviX. It rechecks installed-game host authorization at Play and
+refreshes the library when Atrium returns from a game. TaviX 0.1.11 validated
+the candidate package without Assets permissions. This is **not** a release or
+proof of real Social host authorization. The unapproved local candidate must
+follow Tavi's official repository review or explicitly authorized digest-pinned
+path before Klondike can be tested end-to-end.
+
+Source QA: 117 JavaScript tests, 24 focused Python tests, static build and
+TaviX 0.1.11 candidate validation passed. Full Python suite did not finish;
+native Windows ZipRunner, exact-commit CI, operator acceptance and device tests
+are pending. See `evidence/ATR_182_SOURCE_QA_080.json` and
+`docs/ATRIUM_TAVI_INSTALLED_GAMES_REVIEW_CANDIDATE_080.adoc`.
+
+---
+
+# Atrium 0.5.79 — Social 0.3.141 bridge correction
+
+Versioned source-only repair. `games.installed.open` now wraps identity and
+expected version under `params`, matching the Social 0.3.141 handoff.
+Regression tests assert the exact `tavi.extension/v1` message and unchanged
+storage/navigation shapes. Embedded My Games gives a neutral, compact
+message when Tavi has not authorized the official installed-games feature.
+
+The source work does not turn a developer-imported TaviX into an official
+trusted repository installation. Official/digest-pinned trust approvals,
+Klondike launch persistence, and device acceptance remain operator and Tavi
+responsibilities. No data, secret, live configuration, automatic publication,
+Git push or release authorization is included.
+
 # Atrium 0.5.78 — empty game catalog is normal
 
 Source-only correction for the 1.0.8 preview: an empty hosted `gatewayUrl`

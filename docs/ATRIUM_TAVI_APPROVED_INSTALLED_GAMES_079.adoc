@@ -1,0 +1,61 @@
+= Atrium 0.5.79: Tavi 0.3.141 installed-game host handoff
+:toc:
+
+== Corrected request wire format
+
+The Atrium SDK sends `games.installed.open` as a `tavi.extension/v1`
+request with **`params: {id,expectedVersion}`**, not top-level `id` and
+`expectedVersion`. `games.installed.list` has no arguments. Existing Tavi
+`storage.get`, `storage.set`, `navigation.close`, and surface requests retain
+their existing top-level field shapes. The request and the inventory DTO
+contain no target URL, executable path, credential, or cross-extension
+registry access. The host response must accept exactly the selected
+installed game ID and version; stale choices and rejections fail closed.
+
+== Runtime and trust boundaries
+
+Atrium negotiates `host.info.features` for `tavix.installed-games/v1` and
+never bypasses this check. An unadvertised feature is expected from a
+locally imported developer preview, even when it shares the official
+Atrium application ID. Social grants privileged installed-game inventory
+only to approved official repository installations. A local digest or
+publisher string alone is not authorization. Do not loosen the sandbox,
+read another app's private storage, or silently promote developer bundles.
+
+The source handoff from Tavi for Social 0.3.141 specifies the new `params`
+wire shape and the official-source restriction. Public Social `main` still reports version 0.3.140 as checked on
+2026-11-08 and does not yet advertise the installed-games methods in
+`client/src/extensions/host.js`. The supplied Tavi team handoff is for
+0.3.141, which cannot be verified from that older public source.
+This Atrium-only repair does not constitute deployed host verification.
+
+== Publication / approval acceptance
+
+. Build and run tests from this source ZIP; do not modify immutable Atrium
+  TaviX 1.0.4 or a previously approved release in place.
+. Have Tavi provide an approved official Atrium extension source on its
+  exact reviewed repository, with a new immutable release version, or an
+  explicitly operator-approved digest-pinned local-preview grant.
+. Publish the newly approved release through the existing operator-reviewed
+  TaviX repository/index path only after source, manifest, lockfile, and
+  runtime permissions have all been validated. Never auto-push.
+. On a Tavi build that actually advertises `tavix.installed-games/v1`
+  to that approved release, install classified Klondike, verify My Games
+  listing, Play, return to Atrium and Tavi Home, offline play, persistent
+  saves and restart behavior.
+. Disable/remove the game, replace it with a new version, and revoke the
+  official Atrium grant; verify inventory and launch reject every stale
+  or unauthorized attempt without revealing private metadata.
+
+A developer preview may test rendering and the message format with a
+synthetic host, but it MUST NOT be cited as proof of the privileged Tavi
+integration. A blank hosted gateway remains a valid, healthy empty catalog;
+no network relaxation or fake backend was introduced.
+
+== Ownership
+
+Atrium: SDK wire envelope, inventory validation and player experience.
+Tavi Social: official caller authorization, inventory, launch, navigation
+and host revocation. Klondike: top-level storage SDK calls, native platform
+acceptance, offline persistence and optional Assets support. Tavi Assets:
+shared asset contract and store; not a prerequisite to play Klondike.

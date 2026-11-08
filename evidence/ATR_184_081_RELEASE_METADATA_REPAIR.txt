@@ -1,0 +1,37 @@
+Atrium 0.5.81 — source-version drift repair verification (2026-11-08)
+
+Reason for retry:
+  Windows ZipRunner original 0.5.81 source reported 3 failures / 417 tests.
+  test_ci_artifacts_use_current_source_version: stale 0.5.80 CI ZIP labels.
+  test_cross_file_release_version_cannot_drift: stale spec release 0.5.80.
+  test_actual_spec_is_one_component: stale spec release 0.5.80.
+
+Source changes:
+  looprd.yaml: root spec release 0.5.81 (from 0.5.80).
+  .github/workflows/verify.yml: 3 artifact/version references now 0.5.81.
+  ziprunner.looprd.json: updated root spec SHA-256.
+  ZIPRUNNER_HANDOFF.md: retry explanation.
+  evidence/ATR_184_081_RELEASE_METADATA_REPAIR.txt: local repair QA summary.
+
+Verification (extracted 0.5.81 repair working tree on Linux):
+  python -m unittest discover -s tests -v: PASS (417 tests, 67.329 seconds).
+  npm test: PASS (117 tests).
+  npm run build: PASS (static web + pinned TaviX 1.0.4 copy; no repo stage).
+  python tools/checkers_group_qa.py --report state/qa/checkers/atrium-081-repair-linux.json: PASS (47 tests; source tree only).
+  python tools/build_spec.py --check: PASS.
+  python tools/build_registry_spec.py --check: PASS.
+  python tools/build_registration_spec.py --check: PASS.
+  python tools/build_market_grove_spec.py --check: PASS.
+  python tools/check_specs.py: PASS.
+  python tools/validate_atriumd.py examples/life.atriumd.yaml --component the-life-loop: PASS.
+
+Environment note:
+  First full-suite attempt in this repair workspace produced 12 packaging-guard
+  errors when temporary test logs were mistakenly placed in an includable source
+  directory. The logs were moved to excluded state/ before the clean rerun.
+  The complete clean rerun passed all 417 tests.
+
+Remaining acceptance gates:
+  NOT RUN: Windows-native ZipRunner build, operator acceptance, real Life
+  authority wiring, approved Tavi host capability, real two-client Tavi multiplayer.
+  No Git publication, live staging, or release approval performed.

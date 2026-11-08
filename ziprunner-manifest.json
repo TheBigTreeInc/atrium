@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.78",
-    "base_version": "0.5.77",
+    "version": "0.5.81",
+    "base_version": "0.5.80",
     "source_revision": "98300ea5cacc83e9e3ddc9a5f2f3fe407225157e"
   },
   "update": {
-    "id": "ATR-P1-20261108-077",
+    "id": "ATR-P1-20261108-081",
     "kind": "source_update",
-    "created_at": "2026-11-08T08:00:00+01:00",
-    "summary": "Separate deliberately unconfigured offline preview from network errors, remove duplicated oversized failure panels in the Tavi UI, and validate catalog source and host bridge states without weakening trust controls."
+    "created_at": "2026-11-08T15:08:15+01:00",
+    "summary": "Additive source-only Social 0.3.145 challenge/contact route binding for the existing unmounted Atrium/Life lobby, with two fake-account persistence/denial tests. No real Life API, public Atrium host route or official Tavi approval asserted."
   },
   "planned_work": [
     {
@@ -415,6 +415,24 @@
       "title": "Use valid empty bundled catalogs as normal discovery state",
       "priority": "high",
       "acceptance_criteria": "Tavi preview empty hosted and reviewed catalogs render zero games without an outage; configured network errors are actionable; no fake live gateway, no weakened trust, local installed TaviX state remains separate."
+    },
+    {
+      "id": "ATR-181-SOCIAL-0141-INSTALLED-GAME-WIRE",
+      "title": "Correct Social 0.3.141 installed-game launch wire and official-source test handoff",
+      "priority": "critical",
+      "acceptance_criteria": "Atrium uses games.installed.open with params {id,expectedVersion}; preserves other SDK request shapes; only accesses host-advertised installed inventory and declines unauthorized, stale or revoked launch; actual game launch requires operator-approved official Atrium source and real Tavi device acceptance."
+    },
+    {
+      "id": "ATR-182-ATRIUM-OFFICIAL-REVIEW-CANDIDATE",
+      "title": "Review-only Atrium installed-game candidate and launch/return lifecycle",
+      "priority": "critical",
+      "acceptance_criteria": "Source creates offline-catalog 1.0.11 candidate only under explicit review flag; preserves original 1.0.4 and gates; Atrium rechecks feature on open and refreshes on return, with isolated simulated host tests; real Tavi trust and device acceptance remain external."
+    },
+    {
+      "id": "ATR-183-SOCIAL-0145-LOBBY-BINDING",
+      "title": "Bridge verified Social 0.3.145 service lookups to Atrium lobby",
+      "priority": "high",
+      "acceptance_criteria": "The server-only adapter maps real Social 0.3.145 paths, rejects malformed requests/denials and preserves independent Life seat authority; source QA and rollout gates are recorded, no live release claimed."
     }
   ],
   "done_work": [
@@ -1861,6 +1879,79 @@
           "description": "Source-only behavior and deployment boundary"
         }
       ]
+    },
+    {
+      "id": "ATR-181-SOCIAL-0141-INSTALLED-GAME-WIRE",
+      "summary": "Corrected the installed-game open request params envelope, preserved storage/navigation wire shapes, added four wire-level regression cases and source documentation for official Atrium trust and deferred Klondike runtime acceptance. No host authorization is bypassed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/tavix-sdk.mjs",
+          "description": "Social 0.3.141 installed-game open now uses params envelope"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavi_installed_games_wire_079.test.mjs",
+          "description": "Exact postMessage fields and privilege/rejection/stale regressions"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/ATRIUM_TAVI_APPROVED_INSTALLED_GAMES_079.adoc",
+          "description": "Official source and Tavi/Assets/Klondike ownership handoff"
+        }
+      ]
+    },
+    {
+      "id": "ATR-182-ATRIUM-OFFICIAL-REVIEW-CANDIDATE",
+      "summary": "Added explicit isolated 1.0.11 TaviX review-candidate build with no hosted URL, unchanged default 1.0.4 staging, optional-asset-free manifest; strengthened installed-game authorization rechecks and return refresh; added contract simulator tests. No official trust or release asserted.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "tools/build_tavi_extension.mjs",
+          "description": "Explicit review-only candidate without hosted catalog requirement"
+        },
+        {
+          "kind": "source",
+          "ref": "extensions/tavi/installed-games.mjs",
+          "description": "Host feature and identity revalidated for inventory and launch"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavi_installed_game_lifecycle_080.test.mjs",
+          "description": "Simulated trusted-host Play, return, stale, revoke, disabled and uninstall tests"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/ATRIUM_TAVI_INSTALLED_GAMES_REVIEW_CANDIDATE_080.adoc",
+          "description": "Operator review route and real-device acceptance gates"
+        }
+      ]
+    },
+    {
+      "id": "ATR-183-SOCIAL-0145-LOBBY-BINDING",
+      "summary": "Mapped Social 0.3.145 exact privileged route paths to existing fail-closed challenge/contact validators, preserved existing Life authority and added two-account fake host regression tests; source-only/unmounted.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "src/social_0145_binding.py",
+          "description": "Authenticated host-only Social 0.3.145 operation mapping"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_social_0145_binding.py",
+          "description": "Simulated two-account create/accept/restart and denial tests"
+        },
+        {
+          "kind": "test",
+          "ref": "evidence/ATR_183_081_LOCAL_QA.txt",
+          "description": "Extracted local targeted Python, Node, Checkers and build QA log; full Python discovery not completed"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/ATRIUM_SOCIAL_0145_081.adoc",
+          "description": "Authority boundaries, exact endpoints, operator activation gates and rollback constraints"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -2282,11 +2373,57 @@
         "status": "not_run",
         "description": "Native Windows and pinned ZipRunner acceptance for 0.5.73",
         "reason": "Requires fresh exact-commit CI, Windows ZipRunner and operator review; prior 0.5.70 GitHub CI failed"
+      },
+      {
+        "id": "ATR-181-TEST-079",
+        "status": "not_run",
+        "description": "Exact 0.5.79 extracted-ZIP installed-game SDK and JavaScript regression verification",
+        "reason": "Tests to be run after deterministic source ZIP package is built"
+      },
+      {
+        "id": "ATR-181-OPERATOR-079",
+        "status": "not_run",
+        "description": "Official Tavi Social 0.3.141 installed-game inventory and Klondike on-device launch/revocation",
+        "reason": "Requires operator-approved official Atrium installation and live Tavi feature; a local preview does not receive the privilege"
+      },
+      {
+        "id": "ATR-182-SOURCE-080",
+        "status": "passed",
+        "description": "0.5.80 local source checks: 117 JS, 24 focused Python, static build and TaviX 0.1.11 review candidate package validation",
+        "command": "npm test && npm run build && npm run verify; python -m unittest discover -s tests -p test_release_pipeline.py; review candidate built via opt-in tool",
+        "environment": "Isolated Linux source workspace; TaviX 0.1.11 supplied package validator; no native host access",
+        "evidence_ref": "evidence/ATR_182_SOURCE_QA_080.json"
+      },
+      {
+        "id": "ATR-182-OPERATOR-080",
+        "status": "not_run",
+        "description": "Tavi official-source review, native installed Klondike launch, return, persistence and host revocation",
+        "reason": "The source-simulated host and unapproved review candidate cannot establish official-source trust, and the user device must authorize and verify the actual installed-games host feature."
+      },
+      {
+        "id": "ATR-183-LOCAL",
+        "description": "Social 0.3.145 adapter integration plus existing lobby, Node, Checkers and static build source checks",
+        "status": "passed",
+        "environment": "Current Linux source container, Python 3.11+, Node 22; fake service transport only",
+        "command": "python -m unittest tests.test_trusted_multiplayer_contracts tests.test_social_challenge_bridge tests.test_lobby_runtime tests.test_hostless_lobby tests.test_lobby_outbox tests.test_social_0145_binding -v && npm test && python tools/checkers_group_qa.py && npm run build",
+        "evidence_ref": "evidence/ATR_183_081_LOCAL_QA.txt"
+      },
+      {
+        "id": "ATR-183-WINDOWS",
+        "description": "Windows ZipRunner source import and real two-client game service acceptance",
+        "status": "not_run",
+        "reason": "No Windows runner, operator-bound Social principal, mounted Atrium service or approved Life game authority available in this environment."
+      },
+      {
+        "id": "ATR-183-FULL-PYTHON",
+        "description": "Unbounded full Python discovery suite",
+        "status": "not_run",
+        "reason": "Full discovery suite attempted but exceeded 120-second local execution limit; targeted source checks passed."
       }
     ]
   },
   "handover": {
-    "next_pass": "Run 0.5.70 through real Windows ZipRunner, then test independently developed Klondike 0.1.0 .tavix in Tavi Apps and negotiate trusted installed-game inventory/launch contract for Atrium My Games. Never conflate source tests with real phone offline acceptance.",
+    "next_pass": "Operator-stage Social 0.3.145 exact privileged challenge/contact lookups and review the true Life authority binding; mount the authenticated Atrium service entry only after review; test two real clients with one Tavi account and durable Life turn, then continue the approved TaviX-to-Atrium static registry projection. No installer duplication.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -2311,7 +2448,8 @@
       "0.5.63 host-neutral player is a source/static asset only: Social login/CSRF/accepted challenge and authenticated LoopRD Match endpoints are NOT deployed or operator-approved; no real Tavi/browser gameplay demonstrated.",
       "0.5.63 only binds server-injected typed Social original challenge projections. Real session lookup, accepted friendship lookup, authoritative original challenge retrieval, public LoopRD handlers and deployed Tavi clients remain unimplemented and require separate operator review.",
       "No active public hosted catalog endpoint or source-verified deployment evidence in the ZIP; cannot make games playable by inventing URLs.",
-      "External offline-game ZIP candidate validation does not prove TaviX installation, local package discovery, storage persistence or execution in Tavi. Separate Tavi owner acceptance required."
+      "External offline-game ZIP candidate validation does not prove TaviX installation, local package discovery, storage persistence or execution in Tavi. Separate Tavi owner acceptance required.",
+      "Social 0.3.145 privileged routes exist in source but were not verified deployed with atrium service principal and explicit caller allowlist; Life proposed authoritative exchange remains unmounted."
     ],
     "notes": [
       "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
@@ -2403,11 +2541,16 @@
       "id": "ATR-P1-OP-065",
       "description": "Review/import v0.5.16, verify exact installed ZIP/commit CI, inspect browser mock lobby on real desktop/mobile Pages after manual workflow_dispatch; confirm no live Life or Social calls and reject any implied game certification. Approve separately.",
       "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-081",
+      "description": "Import and review 0.5.81 source, verify Social 0.3.145 operator-only route binding, independently review Life seat/match APIs and then test genuine two-client multiplayer before any live host activation or TaviX publication.",
+      "status": "required"
     }
   ],
   "release": {
     "requested": false,
     "requires_operator_approval": true,
-    "notes": "Operator release approval required; gateway and Pages TLS must be configured by operator, no automatic publication or credential export."
+    "notes": "Requires explicit operator approval. 0.5.81 is a source-only unmounted Social/Atrium lobby bridge and fake two-account test; no actual Life session, hosted route, TaviX approval, Git publication or Windows acceptance."
   }
 }

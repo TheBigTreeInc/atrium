@@ -1,3 +1,21 @@
+### Atrium 0.5.81: server-only Social 0.3.145 lobby binding
+
+The next multiplayer integration pass maps Atrium's already-existing trusted Social challenge/contact adapters to the two actual service routes shipped in Tavi Social 0.3.145. It adds source-only two-account create/invite/accept/restart/resume rehearsal and refusal tests. This **does not mount a live lobby endpoint** or demonstrate a real Life match; the Life authority and operator service routing still require separate approval and real-client QA. See `docs/ATRIUM_SOCIAL_0145_081.adoc`. The default immutable Atrium TaviX 1.0.4 and separately reviewed installed-games 1.0.11 candidate remain unchanged. No new installer or game-server discovery dependency was added.
+
+## Atrium 0.5.79 — approved-host installed-game launch wire fix
+
+Social 0.3.141 expects `games.installed.open` arguments under `params`; the
+Atrium SDK previously sent them top-level. The request envelope is now fixed,
+with dedicated postMessage tests and no changes to other methods.
+Locally imported Atrium previews cannot receive privileged inventory access
+without Social's explicit official-source approval; `tavix.installed-games/v1`
+remains the only inventory discovery route. Do not weaken Tavi's sandbox or
+confuse an unapproved preview with a failed catalog.
+
+See `docs/ATRIUM_TAVI_APPROVED_INSTALLED_GAMES_079.adoc` for operator handoff.
+No release, official repository update, host API availability, Klondike runtime
+acceptance or Git push is claimed.
+
 ## Atrium 0.5.78 — healthy empty catalogs
 
 An empty online catalog is a normal state. The Tavi preview now reads the
@@ -467,3 +485,16 @@ A separate *unpublished* TaviX developer preview 1.0.7 renders a lightweight Dis
 ## Tavi catalog status repair (0.5.78)
 
 Offline developer previews intentionally ship with empty public `gatewayUrl` values; this must not appear as a transport failure. The new embedded UI displays one compact online-source notice in Discover only if a configured endpoint actually fails, and does not duplicate it in My Games. An unavailable installed-games host feature remains a separate compact status until Tavi provides the trusted inventory and launch methods. This repair does not configure, provision or activate a public LoopRD server or bypass publish/trust gates. TaviX developer preview 1.0.8 is local-only. See `docs/ATRIUM_TAVI_CATALOG_STATES_077.adoc`.
+
+### Atrium 0.5.80: Tavi installed-games official-source review candidate
+
+The normal offline build continues to preserve immutable TaviX 1.0.4. An
+explicit `ATRIUM_TAVIX_REVIEW_CANDIDATE=1 node tools/build_tavi_extension.mjs`
+creates an **unapproved** 1.0.11 extension candidate with the current Atrium
+installed-games consumer and a healthy empty online catalog. It never stages
+or publishes itself. The Tavi host must separately approve official repository
+provenance before granting cross-extension inventory and launch access.
+Atrium rechecks the installed-games feature on Play and refreshes inventory on
+return to the same embedded surface. See
+`docs/ATRIUM_TAVI_INSTALLED_GAMES_REVIEW_CANDIDATE_080.adoc` for operator
+review, simulated-host tests, trust gates and remaining on-device acceptance.

@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.78",
-  "summary": "0.5.78 repairs confusing offline-preview connectivity errors and oversized repeated panels; Tavi installed-game host support and live hosted publication remain separate acceptance tasks.",
+  "version": "0.5.81",
+  "summary": "0.5.81 binds existing unmounted Atrium lobby adapters to Social 0.3.145 exact service-only challenge/contact routes; simulated two-account persistent recovery and refusal tests pass. Life live service, operator trust, two actual clients and publication remain blocked.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -623,6 +623,36 @@
         "Sideload Atrium 1.0.9 developer preview in Tavi: Discover shows 0 games / No games published yet without a connection error.",
         "When using a deliberately broken configured HTTPS gateway, a compact retry remains visible and no untrusted game appears.",
         "Verify existing installed-games host bridge/launch state independently; do not claim a live server or operator approval."
+      ]
+    },
+    {
+      "id": "ATR-181-SOCIAL-0141-INSTALLED-GAME-WIRE",
+      "title": "Social 0.3.141 installed-game open envelope and approved-host handoff",
+      "summary": "`games.installed.open` uses `params:{id,expectedVersion}` only for that method; existing top-level storage methods stay unchanged. Added wire-level tests, compact unapproved-host My Games copy, docs, C4 delta; official review and device integration still pending.",
+      "operator_checks": [
+        "On an explicitly approved official Atrium repository install, verify host advertises tavix.installed-games/v1 and lists trusted classified Klondike.",
+        "Play Klondike and return to Atrium/Tavi, verify saves across app and host restarts, reject old versions, disabled games and revoked official Atrium grant.",
+        "Confirm local developer preview is NOT silently granted inventory or cross-extension private storage; offline catalog remains a normal zero-game state."
+      ]
+    },
+    {
+      "id": "ATR-182-ATRIUM-OFFICIAL-REVIEW-CANDIDATE",
+      "title": "Explicit installed-games review candidate, authorization and return lifecycle",
+      "summary": "Source-built 1.0.11 review candidate with healthy empty catalog is isolated from normal immutable 1.0.4 staging; on Play rechecks official host feature and refreshes on retained-surface return. TaviX 0.1.11 requires no additional assets grants for Atrium. Source tests are not device acceptance.",
+      "operator_checks": [
+        "Review exact 1.0.11 TaviX manifest, SHA-256, source and candidate after Tavi official repository installation approval; never grant a local preview implicitly.",
+        "On actual Social host with feature, install classified Klondike, Play and navigate back to Atrium, Games and Home; verify saves across Tavi restart.",
+        "Confirm disabled/uninstalled/stale game and revoked official Atrium source cannot launch, and empty online catalog displays normally."
+      ]
+    },
+    {
+      "id": "ATR-183-SOCIAL-0145-LOBBY-BINDING",
+      "title": "Bind Atrium lobby source adapters to verified Social 0.3.145 privileged routes",
+      "summary": "Add typed, server-only mapping for Social 0.3.145 original challenge and current contact endpoints and compose existing Atrium/Life lobby adapters; test two simulated Social accounts, persisted recovery, fake Life authority and fail-closed abuse/outage. No production route or operator-granted service identity is mounted.",
+      "operator_checks": [
+        "On a non-production Social 0.3.145 LoopRD runtime, verify original challenge and current-contact privileged endpoints with operator-bound atrium service identity, caller allowlist and issuer.",
+        "Have Life owners approve/create durable match and seat authority APIs; verify real two-account invite/accept, client/service restart, turns and match completion before activation.",
+        "Keep the immutable TaviX 1.0.4 extension and 1.0.11 review candidate separated; do not auto-publish, modify operator secrets or release without approval."
       ]
     }
   ],

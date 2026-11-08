@@ -33,10 +33,10 @@ test('empty activity and lobbies tell the truth and let players browse',()=>{
  assert.match(html,/class="footnote trust-notes"/);
  assert.match(html,/<summary>How games are protected<\/summary>/);
  assert.match(main,/function appendDiscoverAction\(/);
- assert.match(main,/Installed games not connected/);
+ assert.match(main,/Installed games in Tavi/);
 });
 test('new local preview is versioned without mutating frozen 1.0.4 or reviewed hosted 1.0.6',()=>{
- assert.match(builder,/version:'1\.0\.9'\} : JSON\.parse/);
+ assert.match(builder,/version:'1\.0\.10'/);
  assert.match(builder,/immutable-1\.0\.4\.lock\.json/);
  assert.equal(JSON.parse(read('extensions/tavi/hosted-release.json')).version,'1.0.6');
 });

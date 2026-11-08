@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.78",
+  "version": "0.5.81",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1269,6 +1269,71 @@
           "mode": "manual",
           "checks": [
             "ATR-180-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-181-SOCIAL-0141-INSTALLED-GAME-WIRE",
+      "criteria": [
+        {
+          "id": "ATR-181-WIRE",
+          "description": "Social 0.3.141 launch request has exact params envelope, with unchanged storage/navigation messages and no unauthorized inventory access.",
+          "mode": "automated",
+          "checks": [
+            "ATR-181-T1"
+          ]
+        },
+        {
+          "id": "ATR-181-OFFICIAL-HOST",
+          "description": "An operator-approved Tavi host advertises installed-games to official Atrium and launches, resumes and revokes verified Klondike without granting preview privileges.",
+          "mode": "manual",
+          "checks": [
+            "ATR-181-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-182-ATRIUM-OFFICIAL-REVIEW-CANDIDATE",
+      "criteria": [
+        {
+          "id": "ATR-182-SOURCE",
+          "description": "Unapproved 1.0.11 candidate build remains separate from immutable offline 1.0.4, and host privilege/return life cycle is guarded by source tests.",
+          "mode": "automated",
+          "checks": [
+            "ATR-182-T1",
+            "ATR-182-T2"
+          ]
+        },
+        {
+          "id": "ATR-182-APPROVED-HOST",
+          "description": "Actual approved official Atrium installation reaches real Tavi host and launches/returns Klondike with trustworthy lifecycle.",
+          "mode": "manual",
+          "checks": [
+            "ATR-182-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-183-SOCIAL-0145-LOBBY-BINDING",
+      "criteria": [
+        {
+          "id": "ATR-183-SOURCE",
+          "description": "Social 0.3.145 exact privileged route adapter and simulated two-account lobby denial/recovery are exercised without mounting a route.",
+          "mode": "automated",
+          "checks": [
+            "ATR-183-T1",
+            "ATR-183-T2"
+          ]
+        },
+        {
+          "id": "ATR-183-LIVE",
+          "description": "Real Social-to-Life host credentials, audience, seat verification, two independent clients and production release are separately operator accepted.",
+          "mode": "manual",
+          "checks": [
+            "ATR-183-M1"
           ]
         }
       ]
@@ -2590,6 +2655,92 @@
       "stage": "acceptance",
       "description": "Operator Tavi 1.0.9 preview zero-catalog and failed-remote QA",
       "instructions": "Install exact developer-preview .tavix 1.0.9; confirm Discover displays 0 games and No games published yet without availability warning when bundled catalogs are valid. If approved remote HTTPS source genuinely fails, retry message remains compact. No live service, Klondike launch or release accepted without evidence."
+    },
+    {
+      "id": "ATR-181-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Exact TaviX postMessage launch envelope and denied/absent/stale host feature regression",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/tavi_installed_games_wire_079.test.mjs",
+      "assertions": [
+        "games.installed.open carries only params {id,expectedVersion}, never a URL or top-level args",
+        "storage.get, storage.set and navigation.close retain the existing top-level request format",
+        "No installed-game feature means no inventory or launch requests",
+        "Host denial, stale version and rejected launch fail closed"
+      ]
+    },
+    {
+      "id": "ATR-181-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Approved official Atrium/Social 0.3.141 on-device Klondike end-to-end acceptance",
+      "instructions": "Do not rely on local imported developer preview for privileged host feature. On operator-approved official Atrium source and host version actually advertising tavix.installed-games/v1, install classified Klondike, verify My Games, Play, return to Atrium/Tavi Games/Home, offline play and save persistence across Tavi restart; reject disabled/stale/revoked access. Do not approve/release based on source-only tests."
+    },
+    {
+      "id": "ATR-182-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Simulated Social installed-game lifecycle, authorizations and navigation, with no host claim",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/tavi_installed_game_lifecycle_080.test.mjs",
+      "assertions": [
+        "Approved Klondike inventory and launch use exact identity/version params",
+        "Return re-lists inventory without direct registry access",
+        "Stale, disabled, uninstalled and revoked/preview launches fail closed"
+      ]
+    },
+    {
+      "id": "ATR-182-T2",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Separate TaviX review candidate opt-in and preserved immutable release gates",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/tavi_review_candidate_080.test.mjs",
+      "assertions": [
+        "1.0.11 candidate metadata is source-controlled",
+        "Default 1.0.4 remains unchanged",
+        "No asset dependencies or auto-stage in review mode"
+      ]
+    },
+    {
+      "id": "ATR-182-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Official approved TaviX source, real Social and Klondike on-device lifecycle review",
+      "instructions": "Use Tavi-approved official Atrium repository (or explicitly operator-approved digest pin), not ordinary local shadow. Verify Tavi advertises installed games, Klondike Play and return to Atrium/Games/Home, offline save across restart, disabled/stale/uninstalled/revoked denial, empty catalog, private-data isolation. Record device/version and reviewed package digest. Do not release without operator approval."
+    },
+    {
+      "id": "ATR-183-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Social 0.3.145 service-only route binding and authenticated two-client *simulator*",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_social_0145_binding.py",
+      "assertions": [
+        "Exact original-challenge and current-contact route paths, schemas and allowlisted fields",
+        "Fake two-account Life lobby persists and resumes across SQLite store restart",
+        "Forged Social original/issuer/game/recipient, declined or revoked contacts, Life refusal and host outage fail closed"
+      ]
+    },
+    {
+      "id": "ATR-183-T2",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Existing Atrium lobby, challenge bridge and game authority tests remain passing",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_trusted_multiplayer_contracts.py",
+      "assertions": [
+        "Existing Life match attestations and seat authorization remain fail closed",
+        "Existing Tavi challenge/original interaction, durable lobby and outbox semantics remain unchanged"
+      ]
+    },
+    {
+      "id": "ATR-183-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Live Social 0.3.145 and Life authoritative multiplayer acceptance with two real players",
+      "instructions": "Operator reviews trusted Social principal, social:service scope, LOOPRD_TAVI_CHALLENGE_READ_CALLERS and issuer. Life independently implements/adopts authenticated idempotent create, attest, join, seat, resume and turn APIs. Test two actual players (one Tavi), accept an original challenge, play a genuine turn, restart clients and services, resume, verify revoke/expiry failures. No approved source, backend or real-device acceptance is implied by the simulator."
     }
   ]
 }
