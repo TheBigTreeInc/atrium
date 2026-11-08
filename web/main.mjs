@@ -2,6 +2,7 @@ import {mountHostedLife} from '../src/hosted_cards.mjs';
 import {mountMultiplayerPreview} from '../src/multiplayer_preview_ui.mjs';
 import {loadIsolatedApp} from '../src/apphost.mjs';
 import {fetchPublicCatalog, loadCatalogEndpoint, isStillPublished} from '../src/catalog_client.mjs';
+import {loadHostedEndpoint, isUnconfiguredHostedCatalog} from '../src/hosted_catalog.mjs';
 
 const area=document.querySelector('#apps');
 const stage=document.querySelector('#stage');
@@ -23,6 +24,8 @@ function showView(name){
 }
 document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>showView(button.dataset.view)));
 document.querySelectorAll('[data-view-target]').forEach(button=>button.addEventListener('click',()=>showView(button.dataset.viewTarget)));
+// The Tavi extension is a player library first; standalone Atrium still opens Discover.
+if(document.body.classList.contains('tavix-extension'))showView('library');
 document.querySelectorAll('[data-jump-library]').forEach(button=>button.addEventListener('click',()=>{showView('discover');area.scrollIntoView({behavior:'smooth',block:'start'});}));
 
 function revokeOpenApp(reason='This game is no longer available in the trusted game library.'){
@@ -59,15 +62,17 @@ function makeReviewedCard(app){
  actions.append(button);body.append(meta,heading,details,actions);card.append(cover,body);return card;
 }
 
-/** Neither a failed transport nor an unconfigured gateway is an empty registry. */
+/** Configuration not supplied in an offline developer preview is NOT a network error.
+ * Genuine transport and schema errors remain visible without repeating tall cards.
+ */
 function catalogIssue(kind, error){
- const msg=String(error?.message||'');
- if(kind==='hosted' && msg.includes('ATRIUM_HOSTED_NOT_CONFIGURED')){
-  return {title:'Hosted games not connected',detail:'The trusted LoopRD catalog is not connected to this Atrium extension yet. Games are not uploaded to Tavi individually; the operator needs to activate the public catalog and publish a refreshed TaviX extension.'};
- }
- return kind==='hosted'
-  ? {title:'Hosted game catalog unavailable',detail:'Atrium could not load the trusted LoopRD game catalog. Check the public catalog URL and HTTPS connection; registered games cannot be shown until it recovers.'}
-  : {title:'Reviewed game catalog unavailable',detail:'Atrium could not load its reviewed app catalog. Check the configured source; availability is currently unknown.'};
+ const embedded=document.body.classList.contains('tavix-extension');
+ const title=kind==='hosted'?'Hosted game catalog unavailable':'Reviewed game catalog unavailable';
+ return {
+  title:embedded?'Online games could not be refreshed':title,
+  detail:embedded?'Check your connection or try again.':String(error?.message||'The catalog could not be loaded.'),
+  source:kind
+ };
 }
 function emptyState(title, detail){
  const box=document.createElement('div');box.className='emptyState';
@@ -77,12 +82,26 @@ function emptyState(title, detail){
  box.append(symbol,heading,para);return box;
 }
 function issuePanel(issue){
- const node=emptyState(issue.title,issue.detail);
+ const node=document.createElement('div');node.className='source-notice';
  node.dataset.catalogIssue='true';node.setAttribute('role','status');
- const icon=node.querySelector('.state-icon');if(icon)icon.textContent='!';
- const retry=document.createElement('button');retry.type='button';retry.className='btn tonal retry-btn';
- retry.textContent='Retry connection';retry.addEventListener('click',()=>void refreshCatalog());
- node.append(retry);return node;
+ const message=document.createElement('span');message.textContent=issue.title;
+ const retry=document.createElement('button');retry.type='button';retry.className='source-retry';
+ retry.textContent='Retry';retry.addEventListener('click',()=>void refreshCatalog());
+ node.append(message,retry);
+ // Keep detailed source diagnostics inspectable, not duplicated in a huge panel.
+ if(!document.body.classList.contains('tavix-extension')){
+  const details=document.createElement('small');details.textContent=issue.detail;node.append(details);
+ }
+ return node;
+}
+function libraryNotice(title,detail,actionLabel){
+ const node=document.createElement('div');node.className='library-notice';node.setAttribute('role','status');
+ const copy=document.createElement('span');
+ const strong=document.createElement('strong');strong.textContent=title;copy.append(strong);
+ if(detail){const description=document.createElement('span');description.className='library-notice-detail';description.textContent=detail;copy.append(description);}
+ node.append(copy);
+ if(actionLabel){const button=document.createElement('button');button.type='button';button.className='source-retry';button.textContent=actionLabel;button.addEventListener('click',()=>showView('discover'));node.append(button);}
+ return node;
 }
 /** Filters are based only on actual publication sources, not invented genres. */
 function applyCategoryFilter(){
@@ -143,16 +162,21 @@ async function refreshInstalledGames(){
  try{installedSnapshot=await window.__atriumInstalledGames.list();}
  catch(error){installedSnapshot={available:false,games:[]};installedError=String(error?.message||'Host request failed');}
 }
+function appendDiscoverAction(box, label='Find games'){
+ const action=document.createElement('button');action.type='button';action.className='btn tonal';
+ action.textContent=label;action.addEventListener('click',()=>showView('discover'));
+ box.append(action);return box;
+}
 function syncLibraryMirror(issues=[]){
  libraryMirror.replaceChildren();
  const cards=[...area.querySelectorAll('.game-card')];
  if(installedSnapshot.available){for(const game of installedSnapshot.games)libraryMirror.append(makeInstalledCard(game));}
- else libraryMirror.append(emptyState('Installed games unavailable',installedError?'Tavi could not provide its installed-game inventory. Try reopening Atrium.':'This Tavi host does not yet expose installed games to Atrium. Update Tavi to enable local game discovery.'));
- // Show problems alongside any available games. The mirror must never silently
- // represent a network error as a legitimate zero-game library.
- for(const issue of issues)libraryMirror.append(issuePanel(issue));
+ else libraryMirror.append(libraryNotice('Installed games not connected',installedError?'Tavi did not return an installed-games inventory.':'Tavi has not shared your installed games with Atrium yet.','Discover'));
+ // Standalone diagnostics may include catalog failures; inside Tavi each
+ // online source warning appears only in Discover, never twice.
+ if(!document.body.classList.contains('tavix-extension'))for(const issue of issues)libraryMirror.append(issuePanel(issue));
  if(!cards.length){
-  if(!issues.length&&installedSnapshot.available&&!installedSnapshot.games.length)libraryMirror.append(emptyState('No games yet','No installed games or published games were found.'));
+  if(!issues.length&&installedSnapshot.available&&!installedSnapshot.games.length)libraryMirror.append(libraryNotice('No games installed yet','Installed games will appear here when Tavi reports them.','Discover'));
   return;
  }
  for(const card of cards){
@@ -169,7 +193,7 @@ async function refreshCatalog(){
  try{
   const issues=[];
   await refreshInstalledGames();
-  let count=0, catalog=null;
+  let count=0, catalog=null,hostedDisabled=false;
   try{
    catalog=await freshCatalog();
    if(activeApp&&!isStillPublished(catalog,activeApp))revokeOpenApp();
@@ -179,18 +203,32 @@ async function refreshCatalog(){
    revokeOpenApp('Game library unavailable.');
   }
   area.replaceChildren();
-  try{count+=await mountHostedLife({area});}
-  catch(error){issues.push(catalogIssue('hosted',error));}
+  try{
+   // The developer preview has no public LoopRD gateway by design. Do NOT
+   // request a fake endpoint and present its expected absence as an outage.
+   await loadHostedEndpoint();
+  }catch(error){
+   if(isUnconfiguredHostedCatalog(error))hostedDisabled=true;
+   else issues.push(catalogIssue('hosted',error));
+  }
+  if(!hostedDisabled&&!issues.some(i=>i.source==='hosted')){
+   try{count+=await mountHostedLife({area});}
+   catch(error){issues.push(catalogIssue('hosted',error));}
+  }
   if(catalog){for(const app of catalog.apps){area.append(makeReviewedCard(app));count++;}}
   if(issues.length){
-   catalogStatus.textContent=count?`${count} available · Source unavailable`:'Catalog not connected';
+   catalogStatus.textContent=count?`${count} available · Some online games could not be refreshed`:'Online catalog unavailable';
    catalogStatus.dataset.state='disconnected';
-   // Keep the issue visible even if another source has cards.
+   // One small notice per failing source; never a huge repeated error card.
    for(const issue of issues)area.prepend(issuePanel(issue));
   }else{
-   catalogStatus.textContent=`${count} ${count===1?'game':'games'} available`;
+   catalogStatus.textContent=count?`${count} ${count===1?'game':'games'} available`:'';
    catalogStatus.dataset.state=count?'ready':'empty';
-   if(!count)area.append(emptyState('No published games','Both connected catalog sources responded successfully, but no games are currently published.'));
+   if(!count){
+    const node=libraryNotice('No online games published yet',hostedDisabled?'There are no online games to browse yet.':'There are no published games in the connected catalogs.');
+    const button=document.createElement('button');button.type='button';button.className='source-retry';button.textContent='Refresh';button.addEventListener('click',()=>void refreshCatalog());node.append(button);
+    area.append(node);
+   }
   }
   if(categoryChips)categoryChips.hidden=count===0;
   applyCategoryFilter();

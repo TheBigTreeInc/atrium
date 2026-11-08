@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.75",
-  "summary": "0.5.73 repairs stale ZipRunner post-update stamp in 0.5.72, retaining installed-games integration and pending Tavi host acceptance.",
+  "version": "0.5.77",
+  "summary": "0.5.77 repairs confusing offline-preview connectivity errors and oversized repeated panels; Tavi installed-game host support and live hosted publication remain separate acceptance tasks.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -592,6 +592,27 @@
       "summary": "Ensure planned_work covers all done and todo work, and verification tasks exactly cover implemented work, with packaging-time preflight.",
       "operator_checks": [
         "Confirm Windows ZipRunner full build accepts the corrected package."
+      ]
+    },
+    {
+      "id": "ATR-178-TAVI-EMBEDDED-PLAYER-UX",
+      "title": "Tavi embedded game-first UX and empty-state cleanup",
+      "summary": "Updated the Atrium UI inside Tavi: visible Discover/My Games top tabs, library-first, light-style fallback, truthful Activity/Lobbies placeholders in standalone, and collapsed trust notes. No installed inventory or host launch acceptance implied.",
+      "operator_checks": [
+        "In the separately installed developer preview 1.0.7, open Atrium inside Tavi at roughly 355×630: no second bottom navigation, only Discover/My Games compact top tabs, and light chrome consistent with Tavi.",
+        "Open My Games with/without the installed-games host capability: the library is actionable and must not claim a missing catalog is an empty inventory.",
+        "Confirm historical 1.0.4 bundle and 1.0.6 configured-hosted release metadata remain unchanged; do not publish a new release without approval."
+      ]
+    },
+    {
+      "id": "ATR-179-COMPACT-CATALOG-STATUS",
+      "title": "Compact catalog source states in Tavi and correct preview configuration",
+      "summary": "Unconfigured hosted-preview source is expected rather than reported as an outage; genuine transport/schema failure remains actionable in Discover, never duplicated in My Games; compact notices replace oversized panels. Tavi host inventory and live service activation remain unverified.",
+      "operator_checks": [
+        "Install developer-preview Atrium TaviX 1.0.8 in Tavi at 355px: Discover has no red catalog warning when hosted gatewayUrl is deliberately blank.",
+        "My Games displays a single compact host status if Tavi has not yet advertised installed-game inventory; no duplicate online source errors.",
+        "With explicitly configured but unreachable public gateway, Discover displays a small retry notice rather than silently claiming zero published games.",
+        "Confirm previously published TaviX 1.0.4 and hosted release metadata 1.0.6 remain unchanged; no release without approval."
       ]
     }
   ],

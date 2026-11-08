@@ -10,7 +10,7 @@ workspace "Atrium" "C4 model of the Atrium game marketplace, LoopRD runtime comp
 
         atrium = softwareSystem "Atrium" "Reviewed game catalog, registration, game discovery, generic lobbies, and source-level Checkers multiplayer integration." {
             portal = container "Atrium browser portal" "Static storefront and game discovery, independent of the Tavi messenger." "HTML, CSS, JavaScript" {
-                portalShell = component "Portal and navigation" "Renders Material-like storefront, tabs, source filters, loading and empty states." "web/main.mjs, HTML, CSS"
+                portalShell = component "Portal and navigation" "Renders storefront and validates source availability; embedded Tavi uses compact independent catalog/installed-game statuses, without duplicate host navigation or misreporting disabled offline sources as outages." "web/main.mjs, HTML, CSS"
                 reviewedCatalogClient = component "Reviewed release client" "Loads and verifies published immutable app snapshots and configured catalog origin." "JavaScript"
                 hostedGameClient = component "Hosted game catalog client" "Loads and validates public trusted LoopRD hosted game projections without credentials." "JavaScript"
                 iframeHost = component "Sandboxed app host" "Checks reviewed HTML SHA-256 and embeds it in a restricted iframe." "JavaScript"

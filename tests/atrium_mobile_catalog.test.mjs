@@ -10,9 +10,9 @@ test('mobile layout wraps categories and presents a light/dark palette',()=>{
  assert.match(html,/\.chips\[hidden\]\{display:none!important\}/);
 });
 test('no false zero when the hosted catalog has no active HTTPS gateway',()=>{
- assert.match(main,/ATRIUM_HOSTED_NOT_CONFIGURED/);
+ assert.match(main,/isUnconfiguredHostedCatalog\(error\)/);
  assert.match(main,/categoryChips\.hidden=count===0/);
- assert.match(main,/games are not uploaded to Tavi individually/i);
+ assert.match(main,/hostedDisabled=true/);
  assert.match(main,/issues\.push\(catalogIssue\('hosted',error\)\)/);
 });
 test('future TaviX shell has no second bottom bar; pinned offline version remains immutable',()=>{

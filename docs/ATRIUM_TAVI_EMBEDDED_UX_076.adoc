@@ -1,0 +1,42 @@
+= Atrium 0.5.76 — Tavi embedded player experience
+
+== Observed problem
+
+In the 355px-wide Windows Tavi screenshot, Atrium shows a dark standalone-like
+Activity page, an oversized and misleading empty state, technical LoopRD
+operator text, and a second bottom navigation stacked over Tavi's own footer.
+That layout matches the frozen TaviX 1.0.4 asset, which the default build
+copies unchanged. Editing source without updating the installed extension
+cannot correct an immutable deployed package.
+
+== Implementation
+
+* New source-based developer TaviX preview uses *1.0.7*, distinct from the
+  frozen 1.0.4 and the operator-governed hosted 1.0.6 release.
+* In Tavi, Atrium presents Discover and My Games as two compact, secondary
+  tabs below the host header. My Games is the initial view.
+* Tavi already owns notifications and game activity. Lobbies and Activity,
+  which are placeholders in this source, are hidden from the embedded
+  navigation. They remain present in standalone Atrium and are not called
+  live feeds.
+* A light surface is selected *only for embedded Atrium*. This avoids the
+  Windows dark OS preference contradicting light Tavi chrome. A host-provided
+  authoritative theme contract is *not available in this source*; real theme
+  negotiation is a later coordinated task with Tavi.
+* Technical operator notes remain accessible as a collapsed safety disclosure
+  in standalone Atrium and are hidden in Tavi. No trust validation is removed.
+* No new network entitlement, API, LoopRD dependency or game-host trust is added.
+
+== Acceptance and boundaries
+
+1. Validate the new 1.0.7 developer package in Tavi's local installer.
+2. At approximately 355x630, check that the Tavi top and bottom bars remain
+   Tavi-owned and only the two Atrium secondary tabs appear.
+3. Confirm installed-game host discovery is still *not proved*: the actual
+   Tavi host must advertise `tavix.installed-games/v1` and authorize
+   `games.installed.list` / `games.installed.open`.
+4. Confirm offline 1.0.4 assets and hosted-release 1.0.6 metadata are
+   unchanged. CI build and source checks are not operator acceptance.
+
+No Git push, public publishing, auto-deployment, or operator acceptance is
+performed by the source ZIP or this note.

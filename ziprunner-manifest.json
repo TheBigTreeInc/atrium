@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.75",
-    "base_version": "0.5.72",
+    "version": "0.5.77",
+    "base_version": "0.5.76",
     "source_revision": "98300ea5cacc83e9e3ddc9a5f2f3fe407225157e"
   },
   "update": {
-    "id": "ATR-P1-20261107-075",
+    "id": "ATR-P1-20261108-077",
     "kind": "source_update",
-    "created_at": "2026-11-07T15:30:00+01:00",
-    "summary": "Repair pinned verification-plan runner_ref syntax for installed-games bridge test; retain the existing source implementation and operator gates."
+    "created_at": "2026-11-08T08:00:00+01:00",
+    "summary": "Separate deliberately unconfigured offline preview from network errors, remove duplicated oversized failure panels in the Tavi UI, and validate catalog source and host bridge states without weakening trust controls."
   },
   "planned_work": [
     {
@@ -397,6 +397,18 @@
       "title": "Repair manifest planned-work and verification-plan coverage",
       "priority": "critical",
       "acceptance_criteria": "Exact sets of planned, implemented and remaining work agree; all implemented tasks have verification criteria and checks; package preflight catches drift."
+    },
+    {
+      "id": "ATR-178-TAVI-EMBEDDED-PLAYER-UX",
+      "title": "Simplify Atrium player UX inside Tavi",
+      "priority": "high",
+      "acceptance_criteria": "Tavi embedded UI defaults to My Games, uses only actionable player tabs, hides unconnected placeholder features, has readable empty states and matches Tavi light chrome; immutable 1.0.4 is unchanged."
+    },
+    {
+      "id": "ATR-179-COMPACT-CATALOG-STATUS",
+      "title": "Compact catalog states and correct offline preview behavior",
+      "priority": "high",
+      "acceptance_criteria": "An unconfigured developer preview never reports a network error; genuine source failures remain visible once; Tavi embedded game library uses compact notices and does not duplicate online source failures; host inventory absence is distinct from empty games; no trust bypass or fabricated server activation."
     }
   ],
   "done_work": [
@@ -1763,6 +1775,58 @@
           "kind": "test",
           "ref": "tests/test_release_pipeline.py",
           "description": "Planned work and verification coverage regressions"
+        }
+      ]
+    },
+    {
+      "id": "ATR-178-TAVI-EMBEDDED-PLAYER-UX",
+      "summary": "Implemented Tavi-specific game-first responsive UI, friendlier empty states and explicit light fallback until a verified host theme contract exists; separate developer preview is versioned 1.0.7; no live host claim.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "web/index.html",
+          "description": "Player-facing empty state and collapsed trust disclosure"
+        },
+        {
+          "kind": "source",
+          "ref": "web/material-theme.css",
+          "description": "Two-tab embedded layout and Tavi light baseline"
+        },
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "My Games first and actionable error states"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/atrium_tavi_game_first_076.test.mjs",
+          "description": "Source UI and explicit developer-preview invariants"
+        }
+      ]
+    },
+    {
+      "id": "ATR-179-COMPACT-CATALOG-STATUS",
+      "summary": "Removed double error cards, treated intentionally blank hosted preview configuration as disabled rather than down, added compact inline statuses and source-state regression tests; no live backend or Tavi host implementation claimed.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "web/main.mjs",
+          "description": "Separates unconfigured preview from network failures with compact single-context notices"
+        },
+        {
+          "kind": "source",
+          "ref": "src/hosted_catalog.mjs",
+          "description": "Explicit guard for intentionally unconfigured hosted source"
+        },
+        {
+          "kind": "source",
+          "ref": "web/material-theme.css",
+          "description": "Small-screen status spacing and compact notification rows"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/tavi_catalog_compact_077.test.mjs",
+          "description": "Source-mode versus outage and one-context status regression"
         }
       ]
     }

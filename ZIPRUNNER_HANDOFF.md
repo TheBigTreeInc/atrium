@@ -1,3 +1,46 @@
+# Atrium 0.5.77 — compact catalog status and offline-preview repair
+
+Based on source 0.5.76. The screenshot of the Atrium 1.0.7 developer
+preview showed two full-size connection-error panels and an oversized
+installed-games fallback. The preview intentionally carries empty online
+`gatewayUrl` values; reporting this as a server outage was incorrect.
+
+The source now distinguishes a deliberately unconfigured hosted preview
+from a genuinely failed configured endpoint, renders compact statuses,
+and avoids repeating online errors in My Games. It also fixes the static
+build's new hosted-source module import. Package-generated TaviX developer
+preview 1.0.8 is separately installable locally; the source ZIP never
+claims that a public server was deployed or that Tavi's host inventory and
+launch APIs were accepted. See `docs/ATRIUM_TAVI_CATALOG_STATES_077.adoc`.
+
+Tests observed: 101 JavaScript, 16 focused release-pipeline Python,
+5 C4, 3 platform-architecture; web build and TaviX 0.1.10 archive integrity
+passed. Full Python regression, pinned upstream ZipRunner validator,
+Windows ZipRunner and real Tavi operator acceptance are not proven.
+
+Immutable Atrium TaviX 1.0.4 and reviewed hosted release metadata 1.0.6
+remain unchanged. Preserve local configuration and runtime data; no Git
+push, publication, release or operator approval is implied.
+
+---
+
+# Atrium 0.5.76 — Tavi game-first embedded UI source pass
+
+Based on 0.5.75. The user-observed Activity screenshot still exposes
+obsolete 1.0.4-era bottom navigation and verbose placeholder copy inside a
+narrow Tavi shell. This pass changes the shared source and prepares an explicit
+*developer-only* TaviX 1.0.7 preview: compact Discover/My Games secondary
+navigation, My Games default, light theme fallback in Tavi, actionable empty
+states, and no unfinished Activity/Lobbies tab in the embedded view. Standalone
+Atrium retains the full four-section navigation and collapsed operator-trust
+notes. See `docs/ATRIUM_TAVI_EMBEDDED_UX_076.adoc`.
+
+Immutable TaviX 1.0.4 remains byte-for-byte unchanged; the operator-governed
+hosted-release 1.0.6 version remains unchanged. The ZipRunner ZIP contains
+source, not a deployed Tavi update. Installed-game host discovery and launch,
+Windows ZipRunner and operator approval remain pending. No Git push, tag, public
+publication or release is authorized.
+
 # Atrium 0.5.75 — post-update stamp version repair
 
 Fixes ZipRunner failure on 0.5.72 caused by a stale 0.5.71 post-update stamp. Adds packaging preflight and regression. See `docs/P1_117_POST_UPDATE_STAMP_REPAIR_073.adoc`.

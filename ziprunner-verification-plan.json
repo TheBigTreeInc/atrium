@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.75",
+  "version": "0.5.77",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1206,6 +1206,48 @@
           "mode": "manual",
           "checks": [
             "ATR-177-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-178-TAVI-EMBEDDED-PLAYER-UX",
+      "criteria": [
+        {
+          "id": "ATR-178-UI-SOURCE",
+          "description": "Embedded UI presents only working player entry points, matches light Tavi header and avoids misleading empty activity claims.",
+          "mode": "automated",
+          "checks": [
+            "ATR-178-T1"
+          ]
+        },
+        {
+          "id": "ATR-178-OPERATOR",
+          "description": "Operator inspects an actual installed 1.0.7 developer preview at the small Tavi viewport and confirms it is the loaded version.",
+          "mode": "manual",
+          "checks": [
+            "ATR-178-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-179-COMPACT-CATALOG-STATUS",
+      "criteria": [
+        {
+          "id": "ATR-179-CATALOG-STATES",
+          "description": "Unconfigured preview source is not an error, but failed configured source stays visible; compact UI never duplicates online source notices in My Games.",
+          "mode": "automated",
+          "checks": [
+            "ATR-179-T1"
+          ]
+        },
+        {
+          "id": "ATR-179-TAVI-UI-ACCEPT",
+          "description": "Operator verifies compact real Tavi rendering and the local inventory bridge behavior on the exact preview package.",
+          "mode": "manual",
+          "checks": [
+            "ATR-179-M1"
           ]
         }
       ]
@@ -2464,6 +2506,49 @@
       "stage": "acceptance",
       "description": "Windows full QA and pinned validator",
       "instructions": "Run full Windows ZipRunner build and pinned validator; verify no changes to protected runtime state and obtain operator acceptance before release."
+    },
+    {
+      "id": "ATR-178-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Embedded Tavi game-first layout, navigation and honest empty-state regression",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/atrium_tavi_game_first_076.test.mjs",
+      "assertions": [
+        "My Games is the initial embedded view while standalone Discover remains intact",
+        "Only Discover and My Games appear as embedded tabs",
+        "Embedded theme has a predictable light baseline",
+        "Placeholder activity is never presented as an authoritative empty feed",
+        "Developer preview version changes without mutating protected releases"
+      ]
+    },
+    {
+      "id": "ATR-178-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Tavi embedded UI acceptance on the exact 1.0.7 package",
+      "instructions": "Install new developer preview, verify package version 1.0.7; inspect 355px Tavi viewport in host with light theme and an OS dark preference; My Games/Discover appear as top secondary tabs; no duplicated footer or obsolete Activity. Confirm no game launch claim without Tavi host support."
+    },
+    {
+      "id": "ATR-179-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Optional catalog source and compact Tavi UI regression",
+      "runner_ref": "atrium-node-source-tests",
+      "test_ref": "tests/tavi_catalog_compact_077.test.mjs",
+      "assertions": [
+        "Empty gateway is explicitly unconfigured rather than unavailable",
+        "Configured gateway network/HTTP faults remain real errors",
+        "Tavi My Games does not duplicate online catalog errors",
+        "Compact single-line source and library statuses replace large issue cards"
+      ]
+    },
+    {
+      "id": "ATR-179-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Exact Atrium TaviX 1.0.8 operator visual and host integration QA",
+      "instructions": "Sideload 1.0.8 developer preview and inspect the small viewport with and without installed games; confirm no red errors for intentionally absent online sources, verify compact notices and retry only for actual faults; separately accept only if Tavi host lists and launches Klondike. Never assume connected server is available without confirmed published endpoint."
     }
   ]
 }

@@ -1,0 +1,23 @@
+= Atrium 0.5.77 — embedded catalog source states
+
+== Observed root cause
+
+The 1.0.7 developer TaviX package has `catalog-config.json` and `hosted-config.json` containing empty `gatewayUrl`. This intentionally selects the static preview and disables online hosted discovery. The old UI caught the resulting `ATRIUM_HOSTED_NOT_CONFIGURED` exception as a transport error, displayed a large red panel in Discover, then repeated the failure in My Games. Tavi installed-game capability absence had a separate oversized panel.
+
+== Implemented 0.5.77 behavior
+
+* Explicitly detect the hosted-catalog configuration sentinel: an empty preview gateway does not raise a player-facing network warning.
+* Continue to validate the reviewed local catalog snapshot; no synthetic published game or assumed LoopRD approval.
+* If configured hosted or reviewed endpoints genuinely fail (transport, schema, TLS, HTTP), show a single compact actionable warning with Retry in Discover, not a second large panel in My Games. Never interpret network failures as an empty verified inventory.
+* Show the Tavi installed-games capability status independently in My Games; only the host may authorize or open installed packages.
+* Keep all cryptographic validation, publisher trust and version-pinned launch controls unchanged.
+
+== Server and host activation boundaries
+
+The LoopRD hosted-game projection code exists, but source code is not proof of a deployed server. A production hosted extension must be built only after an operator configures a real HTTPS anonymous game projection URL and the build preflight verifies a public JSON response, cache policy, CORS and nonempty trusted game set; see `tools/configure_hosted_catalog.mjs`. No fabricated gateway or credential is inserted into a development bundle.
+
+The independent Tavi installed-game registry and `games.installed.list`/`games.installed.open` operations are owned by the Tavi host. Atrium must not read another app's private files or impersonate Tavi to compensate for missing capabilities.
+
+== Acceptance
+
+Sideload developer TaviX 1.0.8; inspect Discover and My Games at approximately 355px wide. Expect no red catalog errors when gatewayUrl is empty, one compact host status if installed-game capability absent, and a compact online retry notice when a deliberately configured unreachable endpoint is used. Genuine host discovery and Klondike launch require Tavi operator acceptance; no automatic approval or release.

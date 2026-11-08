@@ -134,3 +134,72 @@ body.tavix-extension #gameTools{top:68px}
  .chip.active,.chip[aria-pressed=true]{background:var(--md-secondary-container);color:var(--md-on-secondary-container)}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+/* 0.5.76: A Tavi extension is a section of the messenger, not a second app.
+   Show only working entry points. Keep the placeholder sections in the
+   standalone portal until they are backed by actual notifications/sessions.
+   Tavi currently exposes no verified theme preference through our host SDK;
+   use its light chrome as the embedded baseline, not the OS preference. */
+body.tavix-extension{
+ color-scheme:light;
+ --md-primary:#236949;--md-on-primary:#fff;--md-primary-container:#bce9cc;
+ --md-on-primary-container:#08381f;--md-secondary-container:#d9eadb;
+ --md-on-secondary-container:#203b2b;--md-surface:#f7fbf6;
+ --md-surface-container:#eaf2e9;--md-surface-container-high:#e2eee3;
+ --md-surface-container-low:#f1f7f0;--md-surface-bright:#fff;
+ --md-on-surface:#182e22;--md-on-surface-variant:#506558;
+ --md-outline:#718678;--md-outline-variant:#c8d8cc;
+ --md-error:#a43d3d;--md-error-container:#ffdad7;
+ --md-on-error-container:#661e1c;
+ --bg:#f7fbf6;--surface:#fff;--surface2:#eaf2e9;--surface3:#e2eee3;
+ --line:#c8d8cc;--primary:#236949;--onPrimary:#fff;
+ --text:#182e22;--muted:#506558;--accent:#2c7352;
+ --shadow:0 2px 7px #133b2112;
+ background:var(--md-surface);color:var(--md-on-surface)
+}
+html:has(> body.tavix-extension){color-scheme:light;background:#f7fbf6}
+body.tavix-extension .topbar{display:none}
+body.tavix-extension .layout{display:block;min-height:0;padding:12px 14px 18px;max-width:100%}
+body.tavix-extension .rail{display:none}
+body.tavix-extension .bottom-nav.tavix-inline-tabs{
+ grid-template-columns:repeat(2,minmax(0,1fr));min-height:49px;padding:0 12px;
+ position:sticky;top:0;z-index:20
+}
+body.tavix-extension .tavix-inline-tabs .nav-btn[data-view="lobbies"],
+body.tavix-extension .tavix-inline-tabs .nav-btn[data-view="activity"]{display:none}
+body.tavix-extension .tavix-inline-tabs .nav-btn{min-height:49px;padding:7px 6px;font-size:13px}
+body.tavix-extension .tavix-inline-tabs .nav-icon{display:none}
+body.tavix-extension .section-head h2{font-size:21px}
+body.tavix-extension .section-head p{line-height:1.35}
+body.tavix-extension .panel{border:0;background:transparent;box-shadow:none;padding:0}
+body.tavix-extension .emptyState{padding:19px;gap:9px;border:1px solid var(--md-outline-variant);border-radius:20px;background:var(--md-surface-container-low);min-height:0;box-shadow:none}
+body.tavix-extension .emptyState h3{font-size:18px}
+body.tavix-extension .emptyState p{font-size:13px;line-height:1.45}
+body.tavix-extension .emptyState .btn{margin-top:3px;min-height:40px}
+body.tavix-extension .emptyState[data-catalog-issue=true]{background:#fff1ef;border-color:#edc8c2}
+body.tavix-extension .game-card{border-radius:20px}
+body.tavix-extension .game-card .cover{height:86px}
+body.tavix-extension .footnote{display:none}
+.trust-notes summary{cursor:pointer;color:var(--md-on-surface-variant)}
+.trust-notes p{max-width:730px;line-height:1.5;margin-top:10px}
+
+/* 0.5.77: Small-screen status should be a line, not a full game-sized card. */
+.source-notice,.library-notice{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:12px;border:1px solid var(--md-outline-variant);background:var(--md-surface-container-low);font-size:13px;line-height:1.35;color:var(--md-on-surface);}
+.source-notice{border-color:var(--md-outline-variant);}
+.source-retry{flex-shrink:0;min-height:30px;padding:4px 10px;border:1px solid var(--md-outline-variant);border-radius:99px;background:var(--md-secondary-container);color:var(--md-on-secondary-container);font:inherit;font-weight:650;cursor:pointer;}
+.library-notice>span{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.library-notice-detail{font-size:12px;color:var(--md-on-surface-variant);}
+.source-notice small{display:block;font-size:11px;color:var(--md-on-surface-variant);}
+body.tavix-extension .section{margin-top:12px;}
+body.tavix-extension .section-head{gap:2px;margin-bottom:8px;}
+body.tavix-extension .section-head h2{font-size:18px;}
+body.tavix-extension .section-head p{font-size:12px;line-height:1.25;}
+body.tavix-extension .grid{gap:8px;}
+body.tavix-extension .emptyState{padding:10px 12px;gap:3px;border-radius:12px;background:var(--md-surface-container-low);}
+body.tavix-extension .emptyState .state-icon{display:none;}
+body.tavix-extension .emptyState h3{font-size:14px;line-height:1.3;}
+body.tavix-extension .emptyState p{font-size:12px;line-height:1.35;}
+body.tavix-extension .emptyState .btn{min-height:32px;padding:4px 12px;margin-top:3px;}
+body.tavix-extension .source-notice,body.tavix-extension .library-notice{padding:9px 10px;border-radius:11px;font-size:12px;}
+body.tavix-extension .source-retry{font-size:12px;}
+body.tavix-extension #catalogStatus:empty{display:none;}

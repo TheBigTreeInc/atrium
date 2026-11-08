@@ -49,3 +49,8 @@ export async function fetchConfiguredHostedCatalog(fetcher=fetch){
  const endpoint=await loadHostedEndpoint(fetcher);
  return fetchHostedCatalog(fetcher,endpoint);
 }
+
+/** Offline developer-preview mode is an expected configuration, not an outage. */
+export function isUnconfiguredHostedCatalog(error){
+ return typeof error?.message==='string' && error.message.startsWith('ATRIUM_HOSTED_NOT_CONFIGURED:');
+}

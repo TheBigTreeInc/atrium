@@ -118,3 +118,7 @@ Atrium's live catalog and Tavi's installed-package registry.
 See `docs/P1_113_KLONDIKE_EXTERNAL_GAME_QA_069.adoc` and
 `docs/OFFLINE_GAME_HANDOFF.adoc`. The C4 source regression is **not equivalent**
 to an official Structurizr CLI validation.
+
+== Embedded player shell (0.5.76)
+
+`portalShell` now owns the shared storefront and embedded Tavi player-first view: My Games and Discover are compact secondary tabs; unconnected Activity and Lobbies placeholders remain standalone-only. Tavi remains the only global navigation owner. No new external interface or claimed host theme API is introduced. The separate 1.0.7 developer preview requires local operator install; the 1.0.4 immutable extension remains untouched. See `docs/ATRIUM_TAVI_EMBEDDED_UX_076.adoc`.
