@@ -1,0 +1,49 @@
+= Atrium 0.5.84 — Market Grove shared exchange expansion and source handoff
+:revdate: 2026-11-13
+:toc:
+
+== Source baseline and scope
+
+0.5.84 is a source candidate layered over the Library `Atrium/Latest/atrium-0.5.83-ziprunner.zip` snapshot (not a verified newer Git commit). Preserve authoritative checkout and reconcile against main before production. Only Atrium source files change: `games/market-grove/game/engine.py`, the new `exchange_extensions.py`, separate child `looprd.base.yaml`, generated `looprd.yaml`, source generator, game web UI, reference import utility, tests and documentation, plus exact ZipRunner release metadata. No TaviX `.tavix` binary or Tavi Wallet implementation is modified.
+
+== Implemented
+
+* Market Grove remains a hosted Atrium game discovered from `games/market-grove/atriumd.yaml` under root Atrium LoopRD source; separate `market-grove` service auth/storage, not root includes.
+* 44 finite game instruments (26 fictional equities, 12 commodity-inspired, 6 FX-inspired) in one SQLite child DB, not separate apps or currencies.
+* 20 bot strategies across 200 persistent deterministic practice accounts; one coordinated scheduler tick per auction, not 20 competing scheduled jobs.
+* Maximum-volume, uniform-price player-to-player matching with no self-fills, then residual finite maker trades; all trades settle game-owned practice funds atomically and respect limits/reservations.
+* A shared price and daily-reference anchor, provenance, premium basis points, bounded movements and idempotent, operator-only reference ingestion (`market:reference`). Optional external reference importer with fixed official ECB endpoint and offline vetted JSON input; source does not auto-enable network fetching.
+* New databases default to five-minute auctions; older source databases keep their existing (hourly) immutable interval. The 60-second job only ticks due periods and cannot replay a completed auction.
+* Responsive Market Grove UI now filters fictional equities/commodities/FX and shows the reference premium and global market quote; the operator-only preview still requires a short-lived Market Grove child key, not a Tavi sign-in.
+
+== Rebuild and QA
+
+[source,shell]
+----
+python tools/build_market_grove_spec.py --check
+python tools/check_specs.py
+python -m unittest discover -s tests -v
+npm test
+npm run build
+npm run verify
+python tools/package_zip.py
+----
+
+`tools/market_grove_reference_import.py` default behavior displays JSON without submitting any request. For operator-vetted JSON, run `python tools/market_grove_reference_import.py --file APPROVED.json`. For optional official daily ECB references, run `python tools/market_grove_reference_import.py --ecb`. To submit after *separate grant and provenance approval* set `MARKET_GROVE_REFERENCE_TOKEN` in an ephemeral operator environment, provide HTTPS child URL and pass `--apply --base-url ...`. **Never** place tokens in source or a browser. EIA API key and licensed metals feeds require separately approved operator fetch jobs; do not invent data or inject an unrestricted third-party endpoint. Sources: https://data.ecb.europa.eu/help/api/data-examples ; https://www.eia.gov/opendata/documentation.php . The external observations represent relative movement only; no underlying spot assets or physical commodities are bought.
+
+== Activation / rollback
+
+. Take backups of root Atrium and *separate Market Grove child* databases, operator config and source checkpoint. Check current Git/ZipRunner main against 0.5.83 and reconcile conflicts before overlay.
+. Import 0.5.84 into existing Atrium project in ZipRunner. Existing protected runtime, secrets, config, data and environment are excluded from ZIP, never deleted. Confirm the child remains separately scoped.
+. Review `market:reference` grant; create no credential or self-authorizing key. Verify refs refused without the additional scope. Apply no reference imports until data provenance and supplier terms are approved.
+. Run Linux/Windows ZipRunner builds, pinned DAPI spec validation, two-account shared runtime/cron and browser/mobile operator checks. Use 320/390/768px, detached/embedded client, sessions and server restarts. Offline/hostless Lifegame behavior must remain unchanged.
+. Monitor SQLite storage and runtime performance before raising auction rate or enabling 200 bots outside disposable service. Historical existing DB period must not change implicitly. Roll back the source through ZipRunner with operator review; retain DB backups. New schema tables and references may need explicit migration rollback on staging.
+. Keep Wallet real Gold **disabled** until approved, signed, realm-scoped `tavi.wallet-market-settlement/v1` service flow and independent recovery are implemented. No play-only/free Gold investing, unlimited simulated bot treasury, minted sell rewards, cash-out or real-money economy.
+
+== Outstanding operator/owner work
+
+* Social/Wallet owner: implement trading-specific hold/commit/release/receipt/reconcile service and pre-funded bot treasury. Spec is `games/market-grove/docs/TAVI_WALLET_STOCKS.adoc`. This is not a TaviX version task; the official Atrium TaviX 1.0.4 build remains immutable.
+* Atrium operator: approve trusted child deployment, live auth/session delegation and staged reference importer; run exact target QA.
+* Atrium developer: add durable cross-service settlement saga once Tavi Wallet endpoint exists; add audited wallet projections for true Gold portfolios. Do not switch the current isolated practice cash to Gold via string replacement.
+
+Current status: source-only implementation, no source push, deployment, remote service credentials, public marketplace publication or Windows operator acceptance asserted.

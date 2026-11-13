@@ -25,7 +25,7 @@ class MarketGroveImportTests(unittest.TestCase):
         s=self.spec
         self.assertEqual('market-grove',s['component'])
         self.assertEqual('database',s['auth']['mode'])
-        self.assertEqual({'market:trade','market:read'},set(s['auth']['scopes']))
+        self.assertEqual({'market:trade','market:read','market:reference'},set(s['auth']['scopes']))
         self.assertEqual([{'service':'atrium','document':'atriumd.yaml'}],s['registrations'])
         self.assertIn('registration.readers.v1',s['requires'])
         self.assertEqual(60,s['jobs']['clear-market']['intervalSeconds'])
@@ -98,9 +98,9 @@ class MarketGroveImportTests(unittest.TestCase):
             namespace={'__name__':'test_market_grove_engine'}
             exec(self.handlers[('GET','/market/state')]['source'],namespace)
             Market=namespace['Market']
-            m=Market(Path(tmp)/'market.sqlite',interval_seconds=3600,seed_demo_players=False)
+            m=Market(Path(tmp)/'market.sqlite',interval_seconds=300,seed_demo_players=False,simulated_traders=True)
             initial=m.snapshot(first['player'])['period']
-            m.settle_due((initial+1)*3600)
+            m.settle_due((initial+1)*300)
             after=run('GET','/market/state',Context(alice))
             stranger=run('GET','/market/state',Context(bob))
             self.assertEqual('1',after['holdings'][0]['shares'])
@@ -111,7 +111,7 @@ class MarketGroveImportTests(unittest.TestCase):
             self.assertEqual('shared-practice',after['mode'])
             self.assertFalse(after['walletConnected'])
             # Retry of a completed period cannot fill again.
-            m.settle_due((initial+1)*3600)
+            m.settle_due((initial+1)*300)
             self.assertEqual('1',m.snapshot(first['player'])['holdings'][0]['shares'])
             investments=run('GET','/market/investments',Context(alice))
             self.assertEqual('practice-credit',investments['currencyId'])

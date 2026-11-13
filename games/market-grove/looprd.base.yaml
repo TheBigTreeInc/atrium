@@ -2,7 +2,7 @@
 # Generated handlers are self-contained. Host must support registration.readers.v1.
 apiVersion: looprd/v1
 component: market-grove
-release: '0.3.0'
+release: '0.4.0'
 api:
   version: v1
 auth:
@@ -10,9 +10,10 @@ auth:
   scopes:
     - market:read
     - market:trade
+    - market:reference
 database:
   backend: sqlite
-  schemaVersion: 1
+  schemaVersion: 2
 registrations:
   - service: atrium
     document: atriumd.yaml
@@ -60,4 +61,14 @@ handlers:
     method: GET
     kind: python
     scopes: [market:read]
+    source: "generated"
+  - path: /market/reference
+    method: POST
+    kind: python
+    scopes: [market:reference]
+    source: "generated"
+  - path: /market/reference/observation
+    method: POST
+    kind: python
+    scopes: [market:reference]
     source: "generated"

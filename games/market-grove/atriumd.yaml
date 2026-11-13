@@ -4,7 +4,7 @@ game:
   id: market.grove
   publisher: thebigtreeinc
   title: Market Grove
-  summary: A fictional shared stock exchange with scheduled global auctions and persistent orders.
+  summary: A shared fictional exchange with player-driven prices, 20 simulated trading strategies, commodity and FX indices, and scheduled auctions.
   kind: game
   platforms:
     - runtime: web

@@ -1,8 +1,8 @@
 {
   "schema": "ziprunner.workboard-update.v1",
   "project": "atrium",
-  "version": "0.5.82",
-  "summary": "0.5.82: TaviX pinned approved-index display projection, Discover cards and optional canonical Assets 0.1.11 SDK transport; Social 0.3.150 service routes source-compatible. No real Life or official extension activation without approval.",
+  "version": "0.5.84",
+  "summary": "Atrium 0.5.84: add a globally shared source-only Market Grove fictional exchange child with 44 instruments, peer matching, 200 persistent practice bots, 20 strategies, external reference importer and strict real Wallet settlement gate; no TaviX change.",
   "implemented": [
     {
       "id": "ATR-104-PUBLIC",
@@ -673,6 +673,26 @@
         "Verify real Tavi 0.3.150 Assets service is operator-connected with per-pack grants, installation, entitlement and persistence.",
         "Approve an Atrium extension permission change before trying to access any real assets; never broaden the current pinned 1.0.4 release."
       ]
+    },
+    {
+      "id": "ATR-187-PROJECT-REGISTRY",
+      "title": "Reconcile Atrium source agents and project knowledge registry",
+      "summary": "Add sourced proposed project-memory record, owner-scoped agent instructions, QA regression and non-destructive Library cleanup trace; preserve runtime and release gates.",
+      "operator_checks": [
+        "Review the new memory, agent profile, existing AGENTS.md and Library reconciliation documentation for accurate ownership and no private data.",
+        "Check active Git main revision and Windows ZipRunner source build; do not mark Done before real operator acceptance.",
+        "Approve any shared catalog publication or Library cleanup deletions separately."
+      ]
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-EXCHANGE-084",
+      "title": "Extend Atrium Market Grove shared exchange with simulated traders and reference anchors",
+      "summary": "Tested source implementation of 44 instruments and 20 persistent simulated bot strategies, global peer-to-peer auctions, reference-price ingestion and market UI; practice Gold only until separately authorized Wallet escrow.",
+      "operator_checks": [
+        "Import and build exact 0.5.84 ZIP on Windows; verify Market Grove LoopRD child migration and isolated auth.",
+        "With real two-principal game identities check a shared market quote, peer fills, bot liquidity and source-only Gold/share conservation.",
+        "Approve any fresh rate license and market:reference key. Do not enable trading with Tavi Wallet or push immutable TaviX changes as part of this pass."
+      ]
     }
   ],
   "remaining": [
@@ -792,6 +812,17 @@
         "Manually import externally built org.example.klondike .tavix via a developer-enabled Tavi instance and verify game actually plays in airplane mode.",
         "Design and implement trusted Tavi-host installed-game inventory and open-by-installed-identity API for the official Atrium extension; review metadata and package scope.",
         "Provide isolated persistent save adapter and verify Tavi restart/update retention on Android without exposing Tavi credentials."
+      ]
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-WALLET-SETTLEMENT",
+      "title": "Authorize and implement real Tavi Gold trading settlement for Market Grove",
+      "summary": "Requires Social/Tavi Wallet owner service-side earned Gold escrow and transfers, funded bot treasury, realm identity delegation and crash-safe recovery; current Atrium market remains isolated practice credits.",
+      "priority": "critical",
+      "operator_checks": [
+        "Review Tavi Wallet trading spec in games/market-grove/docs/TAVI_WALLET_STOCKS.adoc.",
+        "Approve service-only hold/commit/release/reconcile and read-only Wallet projection, with free/refill Gold excluded from trading.",
+        "Prove two-user balance reconciliation after interrupted settlement and real Assets Store spendability; otherwise keep walletConnected false."
       ]
     }
   ]

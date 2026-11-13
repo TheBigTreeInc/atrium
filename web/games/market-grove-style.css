@@ -42,3 +42,7 @@ body{min-width:0;overflow-wrap:break-word}
 }
 @media(max-width:350px){.brand-icon{display:none}.nav button[data-page]{font-size:10px}.stats section{padding:8px 7px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Atrium 0.5.84: reference/market-premium inspection. */
+.instrument-reference {padding:10px 12px;margin:10px 0 14px;border:1px solid #40624e;border-radius:10px;color:#c6dfce;background:#192f25;font-size:.78rem;line-height:1.5;overflow-wrap:anywhere}
+#market-filter {margin-top:4px;margin-bottom:5px}

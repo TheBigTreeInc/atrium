@@ -3,15 +3,15 @@
   "spec_version": "1.0.0",
   "project": {
     "key": "atrium",
-    "version": "0.5.82",
-    "base_version": "0.5.81",
+    "version": "0.5.84",
+    "base_version": "0.5.83",
     "source_revision": "98300ea5cacc83e9e3ddc9a5f2f3fe407225157e"
   },
   "update": {
-    "id": "ATR-P1-20261109-082",
+    "id": "ATR-P1-20261113-084",
     "kind": "source_update",
-    "created_at": "2026-11-09T00:00:00+01:00",
-    "summary": "Add display-only TaviX approved-index marketplace projection and optional canonical Tavi Assets 0.1.11 consumer; verify Social 0.3.150 source wire parity. Preserve unmounted Life backend, official TaviX 1.0.4 and all operator approval gates."
+    "created_at": "2026-11-13T12:13:00+01:00",
+    "summary": "Extend the existing Atrium Market Grove LoopRD child into a globally shared 44-instrument fictional exchange with 20 bot strategies, price-reference ingest, peer auctions and nonfinancial Wallet safeguards. Source-only; no production Wallet trading, host grant or publication."
   },
   "planned_work": [
     {
@@ -445,6 +445,24 @@
       "title": "Connect optional canonical Tavi Assets 0.1.11 SDK consumer",
       "acceptance_criteria": "Verify real Tavi 0.3.150 Assets service is operator-connected with per-pack grants, installation, entitlement and persistence. Approve an Atrium extension permission change before trying to access any real assets; never broaden the current pinned 1.0.4 release.",
       "priority": "high"
+    },
+    {
+      "id": "ATR-187-PROJECT-REGISTRY",
+      "title": "Reconcile Atrium source agents and project knowledge registry",
+      "acceptance_criteria": "Review canonical identity and source SHA, provider-read Library mirrors, and Windows ZipRunner; shared catalog publication remains independently gated.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-EXCHANGE-084",
+      "title": "Extend Atrium Market Grove shared exchange with simulated traders and reference anchors",
+      "acceptance_criteria": "Run shared-quote, peer matching, conservation, bot persistence, input validation and existing suites; independently verify Windows ZipRunner + real LoopRD migration and operator-authenticated reference ingestion. Real Tavi Wallet settlement remains gated.",
+      "priority": "high"
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-WALLET-SETTLEMENT",
+      "title": "Authorize and implement real Tavi Gold trading settlement for Market Grove",
+      "acceptance_criteria": "Social/Wallet owner implements service-only authorized hold/settle/release/reconcile, funded bot treasury, strict earned-vs-playOnly Gold checks, realm-bound principal and multi-actor transactional recovery; verify two authenticated players and Assets Store spendability.",
+      "priority": "critical"
     }
   ],
   "done_work": [
@@ -2021,6 +2039,78 @@
           "description": "Reference SDK hash and approval boundaries"
         }
       ]
+    },
+    {
+      "id": "ATR-187-PROJECT-REGISTRY",
+      "summary": "Add sourced proposed project-memory record, owner-scoped agent instructions, QA regression and non-destructive Library cleanup trace; preserve runtime and release gates.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "registry/project-memory.json",
+          "description": "Curated owner-scoped proposed project facts with unknown UUID explicit"
+        },
+        {
+          "kind": "source",
+          "ref": ".ziprunner/PROJECT_AGENTS.md",
+          "description": "Source-owned scoped agent instructions, preserves approval gates"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/ATRIUM_REGISTRY_RECONCILIATION_083.adoc",
+          "description": "Observed Library inventory, external contract separation and blockers"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_project_memory.py",
+          "description": "Schema, scoping, version, privacy and agent continuity regressions"
+        }
+      ]
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-EXCHANGE-084",
+      "summary": "Implement source-only 44-instrument market, 20 bot strategies with persistent accounts, peer auctions, market-maker finite inventory, audited practice balances, vetted reference observations and market UI with clear non-Wallet state.",
+      "evidence": [
+        {
+          "kind": "source",
+          "ref": "games/market-grove/game/exchange_extensions.py",
+          "description": "Shared auction planner, 20 deterministic bot strategies, initial instrument catalog"
+        },
+        {
+          "kind": "source",
+          "ref": "games/market-grove/game/engine.py",
+          "description": "Atomic SQLite journal, peer settlement, reference tables and simulator"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/build_market_grove_spec.py",
+          "description": "Isolated self-contained LoopRD child source generator"
+        },
+        {
+          "kind": "source",
+          "ref": "tools/market_grove_reference_import.py",
+          "description": "Gated approved-reference-source importer"
+        },
+        {
+          "kind": "documentation",
+          "ref": "docs/ATRIUM_MARKET_GROVE_EXCHANGE_084.adoc",
+          "description": "Migration, trust, rollback and acceptance requirements"
+        },
+        {
+          "kind": "documentation",
+          "ref": "games/market-grove/docs/TAVI_WALLET_STOCKS.adoc",
+          "description": "Required downstream Wallet trade settlement contract; not implemented"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_market_grove_exchange_084.py",
+          "description": "Exchange order matching, conservation and persistent bot regressions"
+        },
+        {
+          "kind": "test",
+          "ref": "tests/test_market_grove_reference_import_084.py",
+          "description": "Reference parsing and importer security tests"
+        }
+      ]
     }
   ],
   "todo_work": [
@@ -2071,6 +2161,16 @@
         "LoopRD 0.5.0 runtime not independently confirmed deployed on operator host",
         "Real trusted launchOrigins and publicly reachable TLS origin not available from source ZIP",
         "Immutable TaviX 1.0.6 release still must pass live catalog preflight and separate operator approval"
+      ]
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-WALLET-SETTLEMENT",
+      "status": "blocked",
+      "next_action": "Send Tavi Wallet service-contract handoff to Social owner for separate implementation, security review and operator grant; only then replace Market Grove practice market settlement with idempotent Wallet ledger operations.",
+      "blockers": [
+        "Existing tavi-wallet service supports merchant/reward but no trading hold/capture/seller-credit contract.",
+        "No approved realm-bound Tavi identity/delegation and privately funded bot treasury for Market Grove.",
+        "No operator-approved multi-component recovery tests or production service-scoped grants."
       ]
     }
   ],
@@ -2510,11 +2610,31 @@
         "description": "Windows ZipRunner, official TaviX index digest, production Assets grants and two real Life clients",
         "status": "not_run",
         "reason": "No native Windows runner, separately reviewed index digest, privileged Tavi host or deployed Life authority available."
+      },
+      {
+        "id": "ATR-115-084-LOCAL",
+        "description": "Atrium Market Grove shared simulator and importer regressions and source package",
+        "status": "passed",
+        "environment": "Local Linux Python 3.13, Node 22 (not Windows ZipRunner)",
+        "command": "python -m unittest tests.test_market_grove_exchange_084 tests.test_market_grove_reference_import_084 tests.test_market_grove_engine tests.test_market_grove_import tests.test_project_memory -q && python tools/check_specs.py && npm test && npm run build && npm run verify && python tools/checkers_group_qa.py && python tools/package_zip.py",
+        "evidence_ref": "evidence/ATR_115_084_LOCAL_QA.txt"
+      },
+      {
+        "id": "ATR-115-084-WIN",
+        "description": "Windows ZipRunner full source build, LoopRD scoped child migration and real client acceptance",
+        "status": "not_run",
+        "reason": "Requires user Windows ZipRunner and operator-managed LoopRD deployment."
+      },
+      {
+        "id": "ATR-115-084-WALLET",
+        "description": "Market Grove real earned Tavi Gold / Tavi Assets Store settlement",
+        "status": "blocked",
+        "reason": "Authoritative Wallet trading service, grants, funded simulation treasury and accepted two-user recovery tests are not implemented."
       }
     ]
   },
   "handover": {
-    "next_pass": "Pass Windows ZipRunner 0.5.82, approve an exact TaviX repository snapshot to populate Discover, approve new official TaviX Assets permissions if needed, and deploy independently reviewed Life authority and authenticated Social 0.3.150 host binding for two real-client acceptance.",
+    "next_pass": "Run Atrium 0.5.84 Windows ZipRunner source acceptance and authorized LoopRD 0.4+ child migration, including reference importer approvals, then collaborate with Tavi Wallet owner on earned Gold-only escrow, peer payout and crash recovery; TaviX 1.0.4 remains untouched.",
     "risks": [
       "The installed v0.5.12 ZIP is still operator-unverified although its exact commit 435872423... passed Linux and Windows GitHub Actions.",
       "v0.5.14 Gateway performs full SHA-256 verification on each request and may require performance optimization for large catalogs; do not introduce caching without durable invalidation and fail-closed acceptance.",
@@ -2527,7 +2647,9 @@
       "Installed TaviX 1.0.4 is immutable and cannot display the new source UX until a new operator-approved extension is installed.",
       "Material styling is source-only: no active hosted catalog/real game registrations or TaviX 1.0.6 installation was verified. Existing TaviX 1.0.4 still renders historical dark UI.",
       "Group test now covers required rules/ownership boundaries but uses test-only Social aliases and cannot prove live Tavi/browser authentication, production routing or release approval.",
-      "0.5.66 exact Windows CI 42307595956 failed the generated-spec subprocess because host Python lacked PyYAML; 0.5.67 has not yet passed its own native Windows CI."
+      "0.5.66 exact Windows CI 42307595956 failed the generated-spec subprocess because host Python lacked PyYAML; 0.5.67 has not yet passed its own native Windows CI.",
+      "Market Grove 0.5.84 uses fictional practice credits: walletConnected remains false and credits cannot be converted into spendable Tavi Gold.",
+      "40+ instruments and 200 bots are an initial simulation scale; verify real LoopRD job performance, independent exchange auth and data backups on operator target."
     ],
     "blockers": [
       "Live TLS proxy and Pages publication, operator asset acceptance, and production rollout require explicit operator actions; no unattended auto-activation.",
@@ -2541,23 +2663,11 @@
       "No active public hosted catalog endpoint or source-verified deployment evidence in the ZIP; cannot make games playable by inventing URLs.",
       "External offline-game ZIP candidate validation does not prove TaviX installation, local package discovery, storage persistence or execution in Tavi. Separate Tavi owner acceptance required.",
       "Social 0.3.145 privileged routes exist in source but were not verified deployed with atrium service principal and explicit caller allowlist; Life proposed authoritative exchange remains unmounted.",
-      "Atrium 0.5.82 static TaviX marketplace remains empty until operator supplies independently verified/approved index bytes+digest; source CLI pin alone is not a cryptographic approval signature.",
-      "The canonical Assets 0.1.11 SDK is connected only as an optional client: pinned Atrium TaviX 1.0.4 lacks assets.read permission and no real Tavi Assets host grant/service deployment has been accepted."
+      "Atrium 0.5.83 static TaviX marketplace remains empty until operator supplies independently verified/approved index bytes+digest; source CLI pin alone is not a cryptographic approval signature.",
+      "The canonical Assets 0.1.11 SDK is connected only as an optional client: pinned Atrium TaviX 1.0.4 lacks assets.read permission and no real Tavi Assets host grant/service deployment has been accepted.",
+      "Actual Tavi Wallet trading contract and pre-funded Gold for bots not available; no spendable Gold profits yet."
     ],
-    "notes": [
-      "v0.5.0 supplies a static build and operator-dispatched publication workflow, not an automated deployment.",
-      "Shared Social sign-in and game installation remain unimplemented; do not expose a database API key in Pages.",
-      "Game public catalog is deliberately empty until reviewed bytes and snapshot are published.",
-      "v0.5.1 adds an explicit Life/hosted-game registration design and sample only; current v1 cannot register current multi-MiB Life build.",
-      "Unknown root Looprd fields are rejected; discovery must use existing handlers/metadata or upstream spec extension, never fabricated root atrium field.",
-      "v0.5.14 adds live anonymous gateway and Pages optional config; static preview remains deliberately empty unless separately reviewed. Not a user-login, hosted game support or DAPI token proxy.",
-      "v0.5.16 exposes a read-only/no-network Atrium multiplayer UI lab that is independent of the published game catalog; no browser token, live Life game or Tavi delivery is enabled.",
-      "v0.5.34 adds opt-in local reader with per-deployment pull authority. Existing v2 push and public GitHub workflow registration are preserved; discovery is not publication.",
-      "0.5.59 exact-commit CI run 42029745669 passed Linux pinned validator and Windows smoke; does not approve 0.5.60 or live release.",
-      "0.5.60 exact commit 0d406ecac575ecad5d96706f804cc0328aa9a60c passed Linux pinned ZipRunner/DAPI validator and Windows GitHub job: https://github.com/TheBigTreeInc/atrium/actions/runs/42037625554. This CI does not approve release or verify 0.5.63.",
-      "0.5.63 source-only Social admission uses original game_challenge_send challenge ID encoded as lobbyRef social_<id>; server verifies game checkers, status accepted, current friendship and participant sessions. Deterministic match selector is not a credential. No public route is enabled.",
-      "0.5.61 exact push ea111728ca9280a403709f423039abf91ff1ed05 CI run 42051680353 passed pinned source/DAPI/ZipRunner Linux and Windows smoke; native operator QA and release still unapproved."
-    ]
+    "notes": "0.5.84 is a source-only Atrium Market Grove child extension based on Library 0.5.83; not a Git checkout, deployment, real Tavi Gold change or immutable Atrium TaviX update. Full Python discovery retest timed out after one metadata mismatch was fixed and targeted tests passed; full direct suite is not claimed."
   },
   "operator_actions": [
     {
@@ -2642,13 +2752,18 @@
     },
     {
       "id": "ATR-P1-OP-082",
-      "description": "Review and import Atrium 0.5.82 on Windows; approve real TaviX index digest, verify official Tavi host and Assets grants; separately activate Life host and two-client acceptance. No automatic publication.",
+      "description": "Review and import Atrium 0.5.83 on Windows; approve real TaviX index digest, verify official Tavi host and Assets grants; separately activate Life host and two-client acceptance. No automatic publication.",
+      "status": "required"
+    },
+    {
+      "id": "ATR-P1-OP-084",
+      "description": "Review 0.5.84 source overlay, build on Windows, backup Market Grove DB, validate 44 instruments and shared global auctions from distinct LoopRD principals, approve any reference source and explicit market:reference key; do not enable Wallet until independent Social grant and treasury acceptance.",
       "status": "required"
     }
   ],
   "release": {
     "requested": false,
     "requires_operator_approval": true,
-    "notes": "0.5.82 source update only; no official TaviX extension change, Live Life API, real host principal, published marketplace, Windows acceptance, real installed game or operator release."
+    "notes": "0.5.84 Atrium source candidate: no Windows acceptance, Wallet trading settlement, authorized server grants, Git push or publication. TaviX immutable 1.0.4 unchanged."
   }
 }

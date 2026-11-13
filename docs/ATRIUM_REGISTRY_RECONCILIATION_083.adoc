@@ -1,0 +1,26 @@
+= Atrium 0.5.83 — project registry reconciliation (source proposal)
+:toc: left
+
+== Scope and provenance
+
+Source candidate 0.5.83 is based on the verified bytes of Atrium 0.5.82 ZipRunner source ZIP (SHA-256 `afe650d38ed016398c368b5e669a89dcf1ddbffd584be58da4f0d4d015e00c6e`). GitHub `TheBigTreeInc/atrium` main advertises package version 0.5.82 and includes an `AGENTS.md` which was absent from the delivered 0.5.82 source ZIP. A full checkout equivalence check and exact current Git HEAD are still required. This pass is documentation/metadata only; no game services, permissions, persisted user state, deployment or static catalog are activated.
+
+== Project identity, rights and dependencies
+
+`atrium`, source repository `https://github.com/TheBigTreeInc/atrium`, default branch `main`; canonical UUID unknown. Repo documentation and project.zr determine owned source and ZipRunner overlay behavior. The currently shipped TaviX extension 1.0.4 remains immutable. Tavi owns authentication/contacts/install, TaviX package trust, Tavi Assets `.tavia` grants and entitlements; Atrium owns game display metadata and multiplayer coordination; Life/game service owns authoritative state/seats; LoopRD is portable backend plumbing with approved host bindings. Do not infer production URLs from docs.
+
+== Durable knowledge and future sessions
+
+`registry/project-memory.json` is a small curated, sourced, proposed record (schema `ziprunner.project-memory/v1`); `.ziprunner/PROJECT_AGENTS.md` is a source-owned profile supplement, and `AGENTS.md` retains the repository's agent entry instructions. Read `/ECOSYSTEM.md`, `/registry/INDEX.md`, `/registry/catalog.json` and relevant owner-approved `/schematics/` before continuing. These Library files and v3 schemas are proposals, not a published default or proof of approval. Do not edit the centrally stewarded catalog, global archive or other projects' contracts.
+
+== Library reconciliation as observed 2026-11-12
+
+Thirteen older Library files at `/Atrium/` contain 0.5.55–0.5.57 ZIPs, their unique QA snapshots, and four historical pasted texts. Attempts to materialize their raw bytes failed. They are retained without move/delete; archival is blocked until byte/hash verification succeeds. The two local 0.5.80 ZIP copies and both 0.5.81 repaired retries are exactly duplicate by SHA-256. The initial 0.5.81 candidate failed Windows build because of version-drift; the repaired retry passed source QA but has no independently verified Windows acceptance. The 0.5.82 candidate is source-tested, not accepted/released. A separate final cleanup manifest itemizes these facts.
+
+== Acceptance and continuation
+
+* Confirm native Windows ZipRunner accepts 0.5.83 against an authoritative complete source checkout. Do not automatically merge, publish or tag.
+* Reconcile source SHA and actual Git HEAD with Library `PROJECT.md`/memory mirrors. Shared catalog changes are proposed to the central registry maintainer, not published here.
+* Operator verifies two real Tavi clients join, leave, resume and finish a Life match against approved game authority after trusted Social routing is configured. Static TaviX registry remains empty without a separately approved digest.
+* Preserve private DB, key/config, build output, user state, `.git` and SDK privilege boundaries.
+

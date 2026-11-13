@@ -1,7 +1,7 @@
 {
   "schema": "ziprunner.verification-plan/v1",
   "project": "atrium",
-  "version": "0.5.82",
+  "version": "0.5.84",
   "tasks": [
     {
       "id": "ATR-104-PUBLIC",
@@ -1376,6 +1376,49 @@
           "mode": "manual",
           "checks": [
             "ATR-186-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-187-PROJECT-REGISTRY",
+      "criteria": [
+        {
+          "id": "ATR-187-SOURCE",
+          "description": "Add sourced proposed project-memory record, owner-scoped agent instructions, QA regression and non-destructive Library cleanup trace; preserve runtime and release gates.",
+          "mode": "automated",
+          "checks": [
+            "ATR-187-T1"
+          ]
+        },
+        {
+          "id": "ATR-187-OP",
+          "description": "Review canonical identity and source SHA, provider-read Library mirrors, and Windows ZipRunner; shared catalog publication remains independently gated.",
+          "mode": "manual",
+          "checks": [
+            "ATR-187-M1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ATR-115-MARKET-GROVE-EXCHANGE-084",
+      "criteria": [
+        {
+          "id": "ATR-115-084-SOURCE",
+          "description": "Static/source and automated matching, persistence, reference import, schema-generator coverage",
+          "mode": "automated",
+          "checks": [
+            "ATR-115-084-T1",
+            "ATR-115-084-T2"
+          ]
+        },
+        {
+          "id": "ATR-115-084-OP",
+          "description": "Windows and real LoopRD two-principal trading, migrations, rates, grant and payout gates",
+          "mode": "manual",
+          "checks": [
+            "ATR-115-084-M1"
           ]
         }
       ]
@@ -2819,6 +2862,55 @@
       "stage": "acceptance",
       "description": "Connect optional canonical Tavi Assets 0.1.11 SDK consumer operator acceptance",
       "instructions": "Verify real Tavi 0.3.150 Assets service is operator-connected with per-pack grants, installation, entitlement and persistence. Approve an Atrium extension permission change before trying to access any real assets; never broaden the current pinned 1.0.4 release."
+    },
+    {
+      "id": "ATR-187-T1",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Atrium scoped registry memory and source agent integrity",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_project_memory.py",
+      "assertions": [
+        "Versioned proposed source-owned record uses attributed facts; no canonical UUID guess; original Git agent gates and ownership are preserved."
+      ]
+    },
+    {
+      "id": "ATR-187-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Provider and operator review of proposed Atrium registry records",
+      "instructions": "Review canonical identity and source SHA, provider-read Library mirrors, and Windows ZipRunner; shared catalog publication remains independently gated."
+    },
+    {
+      "id": "ATR-115-084-T1",
+      "kind": "automated",
+      "stage": "integration",
+      "description": "Shared exchange and conservation regression",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_market_grove_exchange_084.py",
+      "assertions": [
+        "44 instruments, 20 trader strategies, persisted bots and shared prices",
+        "Peer volume matching, self-match refusal, Gold/share conservation, reference replay validation"
+      ]
+    },
+    {
+      "id": "ATR-115-084-T2",
+      "kind": "automated",
+      "stage": "unit",
+      "description": "Vetted real reference import format and operator source restrictions",
+      "runner_ref": "atrium-python-source-tests",
+      "test_ref": "tests/test_market_grove_reference_import_084.py",
+      "assertions": [
+        "No apply without opt-in and approved service key",
+        "Daily ECB data normalization, staleness and input validation"
+      ]
+    },
+    {
+      "id": "ATR-115-084-M1",
+      "kind": "manual",
+      "stage": "acceptance",
+      "description": "Operator Windows/LoopRD market and identity acceptance",
+      "instructions": "Import exact source ZIP, run Windows commands, backup SQLite first, confirm distinct game principals share traded quotes, operator-only market:reference, bot job idempotence; leave Tavi Wallet settlement unavailable until separately implemented and approved."
     }
   ]
 }

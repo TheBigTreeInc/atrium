@@ -12,6 +12,8 @@ import re
 import secrets
 import sqlite3
 import time
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from game.exchange_extensions import ADDITIONAL_COMPANIES, REFERENCE_CODES, STRATEGIES, BOT_COUNT, BOT_ORDERS_PER_AUCTION, BOT_SEED_CREDITS, reference_class, deterministic_number, choose_peer_auction, bot_intent
 
 COMPANIES = (
     ('CEDR', 'Cedarworks', 'Forestry & materials', 93, '🌲'),
@@ -20,7 +22,7 @@ COMPANIES = (
     ('HIVE', 'Honeycomb Co.', 'Farms & food', 58, '✿'),
     ('FORG', 'Ironforge', 'Industry & energy', 118, '⚒'),
     ('MOSS', 'Moss & Co.', 'Homes & gardens', 48, '❧'),
-)
+) + ADDITIONAL_COMPANIES
 SYMBOLS = {c[0] for c in COMPANIES}
 REQUEST = re.compile(r'^[a-zA-Z0-9_-]{8,100}$')
 MAX_QTY = 1000
@@ -51,12 +53,13 @@ class Market:
     """Single authoritative state per database. Production must replace demo sessions
     and practice cash with trusted realm authentication and wallet settlement.
     """
-    def __init__(self, path: str | Path, *, interval_seconds=3600, now=None, seed_demo_players=True):
+    def __init__(self, path: str | Path, *, interval_seconds=3600, now=None, seed_demo_players=True, simulated_traders=False):
         if type(interval_seconds) is not int or not 10 <= interval_seconds <= 86400 or 86400 % interval_seconds:
             raise ValueError('interval must divide a UTC day, between 10 and 86400 seconds')
         self.path = str(path)
         self.interval = interval_seconds
         self.clock = now or time.time
+        self.simulated_traders = bool(simulated_traders)
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         with self.conn() as db:
             db.executescript('''
@@ -69,6 +72,28 @@ class Market:
                 CREATE TABLE IF NOT EXISTS orders (id TEXT PRIMARY KEY, player_id TEXT NOT NULL REFERENCES players(id), request_id TEXT NOT NULL, digest TEXT NOT NULL, symbol TEXT NOT NULL REFERENCES companies(symbol), side TEXT NOT NULL CHECK(side IN ('buy','sell')), quantity INTEGER NOT NULL, remaining INTEGER NOT NULL CHECK(remaining>=0), limit_price INTEGER NOT NULL, period INTEGER NOT NULL, status TEXT NOT NULL, created INTEGER NOT NULL, UNIQUE(player_id,request_id));
                 CREATE TABLE IF NOT EXISTS fills (id INTEGER PRIMARY KEY AUTOINCREMENT, order_id TEXT NOT NULL REFERENCES orders(id), player_id TEXT NOT NULL REFERENCES players(id), symbol TEXT NOT NULL, side TEXT NOT NULL, quantity INTEGER NOT NULL, price INTEGER NOT NULL, fee INTEGER NOT NULL, period INTEGER NOT NULL);
                 CREATE INDEX IF NOT EXISTS idx_orders_book ON orders(symbol,status,created,id);
+                CREATE TABLE IF NOT EXISTS trading_treasury (id INTEGER PRIMARY KEY CHECK(id=1), fees INTEGER NOT NULL CHECK(fees>=0));
+                CREATE TABLE IF NOT EXISTS market_references (
+                    symbol TEXT PRIMARY KEY REFERENCES companies(symbol), asset_class TEXT NOT NULL,
+                    reference_price INTEGER NOT NULL CHECK(reference_price>0),
+                    source TEXT NOT NULL, observed_at INTEGER NOT NULL, provider_symbol TEXT,
+                    provenance TEXT NOT NULL DEFAULT 'seeded', revision INTEGER NOT NULL DEFAULT 0);
+                CREATE TABLE IF NOT EXISTS market_trades (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, period INTEGER NOT NULL, symbol TEXT NOT NULL,
+                    buyer TEXT NOT NULL, seller TEXT NOT NULL, quantity INTEGER NOT NULL,
+                    price INTEGER NOT NULL, buyer_fee INTEGER NOT NULL, seller_fee INTEGER NOT NULL,
+                    buy_order TEXT, sell_order TEXT);
+                CREATE INDEX IF NOT EXISTS ix_market_trades_symbol ON market_trades(symbol,id);
+                CREATE TABLE IF NOT EXISTS market_reference_feeds (
+                    symbol TEXT PRIMARY KEY REFERENCES companies(symbol),
+                    baseline_raw TEXT NOT NULL, baseline_gold INTEGER NOT NULL,
+                    last_raw TEXT NOT NULL, observed_at INTEGER NOT NULL, source TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS market_reference_receipts (
+                    request_id TEXT PRIMARY KEY, digest TEXT NOT NULL, symbol TEXT NOT NULL,
+                    revision INTEGER NOT NULL, observed_at INTEGER NOT NULL);
+                CREATE TABLE IF NOT EXISTS bot_accounts (
+                    player_id TEXT PRIMARY KEY REFERENCES players(id), strategy TEXT NOT NULL, ordinal INTEGER NOT NULL UNIQUE);
+
             ''')
             row=db.execute('SELECT period,interval FROM clock WHERE id=1').fetchone()
             if row is None:
@@ -82,6 +107,22 @@ class Market:
                         db.execute('INSERT INTO players VALUES(?,?,0)',(name,START_CREDITS))
             elif row['interval']!=interval_seconds:
                 raise ValueError('Trading period is immutable for an existing exchange; use its original interval')
+
+        # Idempotent additive catalog migration; no existing positions or prices reset.
+        with self.conn() as db:
+            db.execute('INSERT OR IGNORE INTO trading_treasury VALUES(1,0)')
+            period=db.execute('SELECT period FROM clock WHERE id=1').fetchone()['period']
+            for sym,_,sector,price,_ in COMPANIES:
+                inserted=db.execute('INSERT OR IGNORE INTO companies(symbol,price,maker_shares,maker_cash) VALUES(?,?,?,?)',
+                                    (sym,price,MAKER_FLOAT,MAKER_CASH)).rowcount
+                if inserted:db.execute('INSERT OR IGNORE INTO history VALUES(?,?,?,0,0)',(sym,period,price))
+                db.execute('INSERT OR IGNORE INTO market_references(symbol,asset_class,reference_price,source,observed_at,provider_symbol) VALUES(?,?,?,?,?,?)',
+                           (sym,reference_class(sector),price,'simulation',0,REFERENCE_CODES.get(sym)))
+            if self.simulated_traders and db.execute('SELECT COUNT(*) FROM bot_accounts').fetchone()[0]<BOT_COUNT:
+                for n in range(BOT_COUNT):
+                    bot='bot_'+str(n).zfill(4)
+                    db.execute('INSERT OR IGNORE INTO players VALUES(?,?,0)',(bot,BOT_SEED_CREDITS))
+                    db.execute('INSERT OR IGNORE INTO bot_accounts VALUES(?,?,?)',(bot,STRATEGIES[n%len(STRATEGIES)],n))
 
     @contextmanager
     def conn(self):
@@ -127,48 +168,135 @@ class Market:
             if not row: raise MarketError(401,'session_required')
             return row['player_id']
 
+    def _bot_orders_for_period(self, db, period):
+        if not self.simulated_traders:return
+        # Bound volume to 20 orders per 5-minute auction, across 200 persistent bots.
+        # All bots use practice credits; no trusted Tavi Wallet calls or grants.
+        for slot in range(BOT_ORDERS_PER_AUCTION):
+            ordinal=(period*BOT_ORDERS_PER_AUCTION+slot)%BOT_COUNT
+            player='bot_'+str(ordinal).zfill(4)
+            row=db.execute('SELECT strategy FROM bot_accounts WHERE player_id=?',(player,)).fetchone()
+            if row is None:continue
+            # Rotate through all sectors; deterministic for restart/retry testing.
+            sym=COMPANIES[deterministic_number('symbol',period,ordinal,slot)%len(COMPANIES)][0]
+            price=db.execute('SELECT price FROM companies WHERE symbol=?',(sym,)).fetchone()['price']
+            ref=db.execute('SELECT reference_price FROM market_references WHERE symbol=?',(sym,)).fetchone()['reference_price']
+            h=db.execute('SELECT shares,locked FROM holdings WHERE player_id=? AND symbol=?',(player,sym)).fetchone()
+            account=db.execute('SELECT cash,locked FROM players WHERE id=?',(player,)).fetchone()
+            shares=(h['shares']-h['locked']) if h else 0
+            available=account['cash']-account['locked']
+            intent=bot_intent(row['strategy'],price=price,reference=ref,shares=shares,available=available,
+                              period=period,bot_id=ordinal,symbol=sym)
+            if intent is None:continue
+            side,qty,lim=intent
+            # Bot orders are limited to this auction and expire if not filled.
+            rid=f'simulation_{period}_{ordinal}_{slot}'
+            if db.execute('SELECT 1 FROM orders WHERE player_id=? AND request_id=?',(player,rid)).fetchone():continue
+            if side=='buy':
+                reserve=qty*per_share_reserve(lim)
+                if reserve>available:continue
+                db.execute('UPDATE players SET locked=locked+? WHERE id=?',(reserve,player))
+            else:
+                db.execute('UPDATE holdings SET locked=locked+? WHERE player_id=? AND symbol=?',(qty,player,sym))
+            digest=hashlib.sha256(rid.encode()).hexdigest()
+            oid=hashlib.sha256(f'market-bot:{rid}'.encode()).hexdigest()[:24]
+            db.execute('INSERT INTO orders VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+                       (oid,player,rid,digest,sym,side,qty,qty,lim,period,'open',int(period*self.interval)))
+
+    def _execute_fill(self, db, symbol, buy, sell, qty, price, period):
+        """Atomic shared Gold/shares exchange between two funded practice accounts."""
+        if buy['player_id']==sell['player_id']:raise RuntimeError('self trade prohibited')
+        gross=qty*price;buyer_fee=fee(qty,price);seller_fee=fee(qty,price)
+        reserved=qty*per_share_reserve(buy['limit_price'])
+        cost=gross+buyer_fee
+        if cost>reserved:raise RuntimeError('buy limit violated')
+        b=db.execute('UPDATE players SET cash=cash-?,locked=locked-? WHERE id=? AND cash>=? AND locked>=?',
+                     (cost,reserved,buy['player_id'],cost,reserved))
+        if b.rowcount!=1:raise RuntimeError('buyer hold invariant violated')
+        h=db.execute('SELECT shares,locked,basis FROM holdings WHERE player_id=? AND symbol=?',(sell['player_id'],symbol)).fetchone()
+        if h is None or h['shares']<qty or h['locked']<qty:raise RuntimeError('seller hold invariant violated')
+        basis=h['basis'] if qty==h['shares'] else h['basis']*qty//h['shares']
+        db.execute('UPDATE holdings SET shares=shares-?,locked=locked-?,basis=basis-? WHERE player_id=? AND symbol=?',
+                   (qty,qty,basis,sell['player_id'],symbol))
+        db.execute('UPDATE players SET cash=cash+? WHERE id=?',(gross-seller_fee,sell['player_id']))
+        db.execute('INSERT INTO holdings(player_id,symbol,shares,locked,basis) VALUES(?,?,?,0,?) ON CONFLICT(player_id,symbol) DO UPDATE SET shares=shares+excluded.shares,basis=basis+excluded.basis',
+                   (buy['player_id'],symbol,qty,cost))
+        for order in (buy,sell):
+            remaining=order['remaining']-qty
+            db.execute('UPDATE orders SET remaining=?,status=? WHERE id=?',
+                       (remaining,'filled' if remaining==0 else 'partial',order['id']))
+            order['remaining']=remaining
+        db.execute('UPDATE trading_treasury SET fees=fees+? WHERE id=1',(buyer_fee+seller_fee,))
+        db.execute('INSERT INTO market_trades(period,symbol,buyer,seller,quantity,price,buyer_fee,seller_fee,buy_order,sell_order) VALUES(?,?,?,?,?,?,?,?,?,?)',
+                   (period,symbol,buy['player_id'],sell['player_id'],qty,price,buyer_fee,seller_fee,buy['id'],sell['id']))
+        for order,f in ((buy,buyer_fee),(sell,seller_fee)):
+            db.execute('INSERT INTO fills(order_id,player_id,symbol,side,quantity,price,fee,period) VALUES(?,?,?,?,?,?,?,?)',
+                       (order['id'],order['player_id'],symbol,order['side'],qty,price,f,period))
+
     def _settle_due(self, db, now):
-        period= int(now)//self.interval
+        period=int(now)//self.interval
         last=db.execute('SELECT period FROM clock WHERE id=1').fetchone()['period']
         if period<=last:return
-        # One catch-up auction after downtime; no inaccessible historical replay.
+        # Expire unfilled simulation orders; never auto-cancel human orders.
+        for o in db.execute("SELECT o.id,o.player_id,o.symbol,o.side,o.remaining,o.limit_price FROM orders o JOIN bot_accounts b ON b.player_id=o.player_id WHERE o.status IN ('open','partial')"):
+            if o['side']=='buy':
+                db.execute('UPDATE players SET locked=locked-? WHERE id=?',(o['remaining']*per_share_reserve(o['limit_price']),o['player_id']))
+            else:
+                db.execute('UPDATE holdings SET locked=locked-? WHERE player_id=? AND symbol=?',(o['remaining'],o['player_id'],o['symbol']))
+            db.execute("UPDATE orders SET status='expired',remaining=0 WHERE id=?",(o['id'],))
+        self._bot_orders_for_period(db,period)
         for symbol,_,_,_,_ in COMPANIES:
             c=db.execute('SELECT price,maker_shares,maker_cash FROM companies WHERE symbol=?',(symbol,)).fetchone()
             opening=c['price']
-            orders=db.execute('SELECT * FROM orders WHERE symbol=? AND status IN (\'open\',\'partial\') ORDER BY created,rowid',(symbol,)).fetchall()
-            executed={'buy':0,'sell':0}; volume=0
-            # Selling replenishes finite exchange inventory before buying in same auction.
+            orders=[dict(o) for o in db.execute("SELECT * FROM orders WHERE symbol=? AND status IN ('open','partial') ORDER BY created,rowid",(symbol,)).fetchall()]
+            executed={'buy':0,'sell':0};volume=0
+            # Players and persistent simulated accounts can trade with each other.
+            clearing,matched=choose_peer_auction(orders,opening)
+            for buy,sell,qty in matched:
+                if qty<=0:continue
+                self._execute_fill(db,symbol,buy,sell,qty,clearing,period)
+                volume+=qty
+            # Maker supply and demand are finite; execute residuals only at opening.
+            orders=[dict(o) for o in db.execute("SELECT * FROM orders WHERE symbol=? AND status IN ('open','partial') ORDER BY created,rowid",(symbol,)).fetchall()]
             for side in ('sell','buy'):
                 for order in orders:
                     if order['side']!=side or (side=='buy' and order['limit_price']<opening) or (side=='sell' and order['limit_price']>opening):continue
                     maker=db.execute('SELECT maker_shares,maker_cash FROM companies WHERE symbol=?',(symbol,)).fetchone()
-                    capacity=(maker['maker_shares'] if side=='buy' else (maker['maker_cash'] // opening))
+                    capacity=(maker['maker_shares'] if side=='buy' else maker['maker_cash']//opening)
                     qty=min(order['remaining'],capacity)
-                    if not qty:continue
-                    gross=qty*opening; brokerage=fee(qty,opening)
+                    if qty<=0:continue
+                    gross=qty*opening;brokerage=fee(qty,opening)
                     if side=='buy':
-                        reserved=qty*per_share_reserve(order['limit_price'])
-                        cost=gross+brokerage
-                        assert cost<=reserved
+                        reserved=qty*per_share_reserve(order['limit_price']);cost=gross+brokerage
+                        if cost>reserved:raise RuntimeError('maker buy limit violated')
                         db.execute('UPDATE players SET cash=cash-?,locked=locked-? WHERE id=?',(cost,reserved,order['player_id']))
                         db.execute('INSERT INTO holdings(player_id,symbol,shares,locked,basis) VALUES(?,?,?,0,?) ON CONFLICT(player_id,symbol) DO UPDATE SET shares=shares+excluded.shares,basis=basis+excluded.basis',(order['player_id'],symbol,qty,cost))
                         db.execute('UPDATE companies SET maker_shares=maker_shares-?,maker_cash=maker_cash+? WHERE symbol=?',(qty,gross,symbol))
                     else:
                         h=db.execute('SELECT shares,basis FROM holdings WHERE player_id=? AND symbol=?',(order['player_id'],symbol)).fetchone()
-                        if h is None or h['shares']<qty:raise RuntimeError('escrow invariant violated')
+                        if h is None or h['shares']<qty:raise RuntimeError('maker sell hold violated')
                         basis=h['basis'] if qty==h['shares'] else h['basis']*qty//h['shares']
                         db.execute('UPDATE holdings SET shares=shares-?,locked=locked-?,basis=basis-? WHERE player_id=? AND symbol=?',(qty,qty,basis,order['player_id'],symbol))
                         db.execute('UPDATE players SET cash=cash+? WHERE id=?',(gross-brokerage,order['player_id']))
                         db.execute('UPDATE companies SET maker_shares=maker_shares+?,maker_cash=maker_cash-? WHERE symbol=?',(qty,gross,symbol))
+                    db.execute('UPDATE trading_treasury SET fees=fees+? WHERE id=1',(brokerage,))
                     remaining=order['remaining']-qty
                     db.execute('UPDATE orders SET remaining=?,status=? WHERE id=?',(remaining,'filled' if remaining==0 else 'partial',order['id']))
                     db.execute('INSERT INTO fills(order_id,player_id,symbol,side,quantity,price,fee,period) VALUES(?,?,?,?,?,?,?,?)',(order['id'],order['player_id'],symbol,side,qty,opening,brokerage,period))
                     executed[side]+=qty;volume+=qty
             net=executed['buy']-executed['sell']
-            pressure=max(-1200,min(1200,70*net))
-            # Macro background moves are deterministic; only executed flow influences pressure.
-            macro=drift(symbol,period)
-            newprice=max(2,min(2500,(opening*(10000+pressure+macro)+5000)//10000))
+            ref=db.execute('SELECT reference_price FROM market_references WHERE symbol=?',(symbol,)).fetchone()['reference_price']
+            # Reference acts as a gravity/valuation input, NEVER an oracle price fill.
+            # Only actual funded transactions contribute an executable last-trade price.
+            trade=db.execute('SELECT price FROM market_trades WHERE symbol=? AND period=? ORDER BY id DESC LIMIT 1',(symbol,period)).fetchone()
+            auction_price=trade['price'] if trade else (clearing if matched else opening)
+            pressure=max(-1000,min(1000,70*net))
+            macro=drift(symbol,period) // 6
+            tendency=max(-80,min(80,(ref-opening)*70//max(1,ref)))
+            baseline=auction_price if volume else opening
+            newprice=max(2,min(2500,(baseline*(10000+pressure+macro+tendency)+5000)//10000))
+            clamp=max(1,opening*12//100)
+            newprice=max(2,min(opening+clamp,max(opening-clamp,newprice)))
             db.execute('UPDATE companies SET price=?,volume=?,flow=? WHERE symbol=?',(newprice,volume,net,symbol))
             db.execute('INSERT INTO history VALUES(?,?,?,?,?)',(symbol,period,newprice,volume,net))
         db.execute('UPDATE clock SET period=? WHERE id=1',(period,))
@@ -183,13 +311,101 @@ class Market:
         companies=[];holdings=[];equity=0
         for sym,name,sector,_,icon in COMPANIES:
             row=db.execute('SELECT price,maker_shares,volume,flow FROM companies WHERE symbol=?',(sym,)).fetchone()
-            companies.append({'symbol':sym,'name':name,'sector':sector,'icon':icon,'price':str(row['price']),'exchangeShares':row['maker_shares'],'lastVolume':row['volume'],'lastNetDemand':row['flow']})
+            ref=db.execute('SELECT reference_price,source,observed_at,asset_class,provider_symbol FROM market_references WHERE symbol=?',(sym,)).fetchone()
+            companies.append({'symbol':sym,'name':name,'sector':sector,'icon':icon,'price':str(row['price']),
+                'referencePrice':str(ref['reference_price']),'referenceSource':ref['source'],
+                'referenceUpdatedAt':ref['observed_at'],'assetClass':ref['asset_class'],
+                'referenceCode':ref['provider_symbol'],'premiumBps':(row['price']-ref['reference_price'])*10000//ref['reference_price'],
+                'exchangeShares':row['maker_shares'],'lastVolume':row['volume'],'lastNetDemand':row['flow']})
             h=db.execute('SELECT shares,locked,basis FROM holdings WHERE player_id=? AND symbol=?',(player,sym)).fetchone()
             if h and h['shares']:
                 worth=h['shares']*row['price'];equity+=worth
                 holdings.append({'symbol':sym,'shares':str(h['shares']),'available':str(h['shares']-h['locked']),'reserved':str(h['locked']),'costBasis':str(h['basis']),'marketValue':str(worth),'unrealizedPnL':str(worth-h['basis']),'lastPrice':str(row['price'])})
         orders=[{'id':r['id'],'side':r['side'],'symbol':r['symbol'],'quantity':r['quantity'],'remaining':r['remaining'],'limitPrice':r['limit_price'],'status':r['status']} for r in db.execute('SELECT id,side,symbol,quantity,remaining,limit_price,status FROM orders WHERE player_id=? AND status IN (\'open\',\'partial\') ORDER BY created,id',(player,))]
-        return {'schema':'market-grove.snapshot/v2','mode':'shared-practice','walletConnected':False,'player':player,'period':period,'marketDay':period*self.interval//86400,'intervalSeconds':self.interval,'nextAuctionAt':(period+1)*self.interval,'cash':str(me['cash']),'availableCash':str(me['cash']-me['locked']),'reservedCash':str(me['locked']),'equity':str(equity),'netWorth':str(me['cash']+equity),'companies':companies,'holdings':holdings,'orders':orders,'marketScope':'shared-single-server','warning':'Practice credits only. Demo identities are not secure accounts.'}
+        return {'schema':'market-grove.snapshot/v2','mode':'shared-practice','walletConnected':False,'player':player,'period':period,'marketDay':period*self.interval//86400,'intervalSeconds':self.interval,'nextAuctionAt':(period+1)*self.interval,'cash':str(me['cash']),'availableCash':str(me['cash']-me['locked']),'reservedCash':str(me['locked']),'equity':str(equity),'netWorth':str(me['cash']+equity),'companies':companies,'holdings':holdings,'orders':orders,'marketScope':'shared-single-server','automatedTraders':BOT_COUNT if self.simulated_traders else 0,'strategyCount':len(STRATEGIES) if self.simulated_traders else 0,'warning':'Practice credits only. Demo identities are not secure accounts.'}
+
+    def update_reference(self, body):
+        """Operator-only import after license/provenance review; never a public user API."""
+        if not isinstance(body,dict) or set(body)!={'symbol','referencePrice','source','observedAt','requestId'}:
+            raise MarketError(422,'invalid_reference')
+        sym,price,source,ts,key=(body[x] for x in ('symbol','referencePrice','source','observedAt','requestId'))
+        if (sym not in REFERENCE_CODES or type(price) is not int or not 1<=price<=10000
+            or source not in ('ecb-daily','eia-daily','licensed-metals','operator-approved')
+            or type(ts) is not int or ts<=0 or ts>int(self.clock())+600
+            or not isinstance(key,str) or not REQUEST.fullmatch(key)):
+            raise MarketError(422,'invalid_reference')
+        expected={'ecb-daily':'ECB:','eia-daily':'EIA:','licensed-metals':'METALS:'}
+        if source in expected and not REFERENCE_CODES[sym].startswith(expected[source]):
+            raise MarketError(422,'reference_source_mismatch')
+        digest=hashlib.sha256(json.dumps(body,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        with self.conn() as db:
+            previous=db.execute('SELECT digest,revision FROM market_reference_receipts WHERE request_id=?',(key,)).fetchone()
+            if previous:
+                if previous['digest']!=digest:raise MarketError(409,'reference_request_reused')
+                return {'schema':'market-grove.reference/v1','duplicate':True,'revision':previous['revision']}
+            current=db.execute('SELECT reference_price,observed_at,revision FROM market_references WHERE symbol=?',(sym,)).fetchone()
+            if ts<=current['observed_at']:raise MarketError(409,'stale_reference')
+            # Stop unreviewed, outsized jumps (except initial seed); don't immediately change traded price.
+            if current['observed_at'] and abs(price-current['reference_price'])*100>current['reference_price']*15:
+                raise MarketError(409,'reference_jump_requires_review')
+            revision=current['revision']+1
+            db.execute('UPDATE market_references SET reference_price=?,source=?,observed_at=?,provenance=?,revision=? WHERE symbol=?',
+                       (price,source,ts,'operator-import',revision,sym))
+            db.execute('INSERT INTO market_reference_receipts VALUES(?,?,?,?,?)',(key,digest,sym,revision,ts))
+            return {'schema':'market-grove.reference/v1','duplicate':False,'revision':revision}
+
+    def ingest_observation(self, body):
+        """Operator-only: rebase external spot/rate percentage change to a game reference."""
+        if not isinstance(body,dict) or set(body)!={'symbol','source','observation','observedAt','requestId'}:
+            raise MarketError(422,'invalid_observation')
+        sym,src,raw,stamp,key=(body[k] for k in ('symbol','source','observation','observedAt','requestId'))
+        valid_sources={'ecb-daily':'ECB:','eia-daily':'EIA:','licensed-metals':'METALS:'}
+        if sym not in REFERENCE_CODES or src not in valid_sources or not REFERENCE_CODES[sym].startswith(valid_sources[src]):
+            raise MarketError(422,'invalid_observation')
+        if (not isinstance(raw,str) or not re.fullmatch(r'[0-9]{1,8}(?:\.[0-9]{1,8})?',raw) or
+            not isinstance(key,str) or not REQUEST.fullmatch(key) or type(stamp) is not int or
+            stamp<1 or stamp>int(self.clock())+600):
+            raise MarketError(422,'invalid_observation')
+        try:amount=Decimal(raw)
+        except InvalidOperation:raise MarketError(422,'invalid_observation')
+        if not Decimal('0.000001')<=amount<=Decimal('10000000'):raise MarketError(422,'invalid_observation')
+        digest=hashlib.sha256(json.dumps(body,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        with self.conn() as db:
+            duplicate=db.execute('SELECT digest,revision FROM market_reference_receipts WHERE request_id=?',(key,)).fetchone()
+            if duplicate:
+                if duplicate['digest']!=digest:raise MarketError(409,'reference_request_reused')
+                return {'schema':'market-grove.observation/v1','duplicate':True,'revision':duplicate['revision']}
+            current=db.execute('SELECT reference_price,revision,observed_at FROM market_references WHERE symbol=?',(sym,)).fetchone()
+            feed=db.execute('SELECT * FROM market_reference_feeds WHERE symbol=?',(sym,)).fetchone()
+            if feed is None:
+                if current['observed_at']>stamp:raise MarketError(409,'stale_reference')
+                db.execute('INSERT INTO market_reference_feeds VALUES(?,?,?,?,?,?)',
+                           (sym,raw,current['reference_price'],raw,stamp,src))
+                price=current['reference_price']
+            else:
+                if src!=feed['source'] or stamp<=feed['observed_at']:raise MarketError(409,'stale_or_changed_feed')
+                baseline=Decimal(feed['baseline_raw'])
+                price=max(1,int((Decimal(feed['baseline_gold'])*amount/baseline).quantize(Decimal('1'),rounding=ROUND_HALF_UP)))
+                if price>10000 or abs(price-current['reference_price'])*100>current['reference_price']*15:
+                    raise MarketError(409,'reference_jump_requires_review')
+                db.execute('UPDATE market_reference_feeds SET last_raw=?,observed_at=? WHERE symbol=?',(raw,stamp,sym))
+            revision=current['revision']+1
+            db.execute('UPDATE market_references SET reference_price=?,source=?,observed_at=?,revision=?,provenance=? WHERE symbol=?',
+                       (price,src,stamp,revision,'verified-operator-feed',sym))
+            db.execute('INSERT INTO market_reference_receipts VALUES(?,?,?,?,?)',(key,digest,sym,revision,stamp))
+            return {'schema':'market-grove.observation/v1','duplicate':False,'revision':revision,
+                    'referencePrice':price}
+
+    def audit(self):
+        """Practice-only conservation snapshot; excludes off-ledger external wallet money."""
+        with self.conn() as db:
+            players=db.execute('SELECT COALESCE(SUM(cash),0) FROM players').fetchone()[0]
+            makers=db.execute('SELECT COALESCE(SUM(maker_cash),0) FROM companies').fetchone()[0]
+            fees=db.execute('SELECT fees FROM trading_treasury WHERE id=1').fetchone()['fees']
+            supply={}
+            for row in db.execute('SELECT symbol,maker_shares FROM companies'):
+                supply[row['symbol']]=row['maker_shares']+db.execute('SELECT COALESCE(SUM(shares),0) FROM holdings WHERE symbol=?',(row['symbol'],)).fetchone()[0]
+            return {'practiceGold':players+makers+fees,'playersGold':players,'makerGold':makers,'fees':fees,'shares':supply}
 
     def snapshot(self, player):
         with self.conn() as db:
@@ -212,6 +428,10 @@ class Market:
                 return {'schema':'market-grove.order-receipt/v2','orderId':dup['id'],'status':dup['status'],'duplicate':True}
             account=db.execute('SELECT cash,locked FROM players WHERE id=?',(player,)).fetchone()
             if account is None:raise MarketError(401,'unknown_player')
+            if db.execute("SELECT COUNT(*) FROM orders WHERE player_id=? AND status IN ('open','partial')",(player,)).fetchone()[0]>=40:
+                raise MarketError(409,'too_many_open_orders')
+            if db.execute("SELECT COUNT(*) FROM orders WHERE symbol=? AND status IN ('open','partial')",(sym,)).fetchone()[0]>=160:
+                raise MarketError(409,'order_book_full')
             if side=='buy':
                 reserve=qty*per_share_reserve(lim)
                 if reserve>account['cash']-account['locked']:raise MarketError(409,'insufficient_available_credits')

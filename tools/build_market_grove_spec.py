@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT/'games/market-grove/looprd.base.yaml'
 OUT = ROOT/'games/market-grove/looprd.yaml'
 ENGINE = ROOT/'games/market-grove/game/engine.py'
+EXTENSIONS = ROOT/'games/market-grove/game/exchange_extensions.py'
 
 class Literal(str):
     pass
@@ -22,6 +23,8 @@ OPERATIONS = {
     '/market/history': 'history',
     '/market/activity': 'activity',
     '/market/investments': 'wallet_projection',
+    '/market/reference': 'update_reference',
+    '/market/reference/observation': 'ingest_observation',
 }
 
 ADAPTER = '''
@@ -34,7 +37,17 @@ def market_from_context(ctx):
         if not bind.url.drivername.startswith('sqlite') or not bind.url.database or bind.url.database == ':memory:':
             raise HTTPException(status_code=503, detail='market_storage_unavailable')
         path = bind.url.database
-    return Market(path, interval_seconds=3600, seed_demo_players=False)
+    # Existing market databases retain their established hour-long auction interval.
+    # New databases begin at a five-minute interval; no implicit live data reset.
+    interval=300
+    import sqlite3 as _sqlite3
+    from contextlib import closing as _closing
+    with _closing(_sqlite3.connect(path)) as db:
+        try:
+            previous=db.execute('SELECT interval FROM clock WHERE id=1').fetchone()
+            if previous:interval=previous[0]
+        except _sqlite3.OperationalError:pass
+    return Market(path, interval_seconds=interval, seed_demo_players=False, simulated_traders=True)
 
 def service_player(ctx, market):
     from starlette.exceptions import HTTPException
@@ -49,6 +62,8 @@ async def dispatch_market(ctx, action):
     def execute():
         try:
             market = market_from_context(ctx)
+            if action == 'update_reference': return market.update_reference(ctx.body)
+            if action == 'ingest_observation': return market.ingest_observation(ctx.body)
             user = service_player(ctx, market)
             if action == 'snapshot': return market.snapshot(user)
             if action == 'order': return market.order(user, ctx.body)
@@ -79,7 +94,15 @@ async def handle(ctx):
 def render():
     spec = yaml.safe_load(BASE.read_text(encoding='utf-8'))
     engine = ENGINE.read_text(encoding='utf-8')
-    # Engine has one future import; keep at start of generated modules.
+    extensions = EXTENSIONS.read_text(encoding='utf-8')
+    # Inlining the tested extension avoids imports from unavailable game files
+    # inside the isolated LoopRD trusted-Python runner.
+    import_line = 'from game.exchange_extensions import ADDITIONAL_COMPANIES, REFERENCE_CODES, STRATEGIES, BOT_COUNT, BOT_ORDERS_PER_AUCTION, BOT_SEED_CREDITS, reference_class, deterministic_number, choose_peer_auction, bot_intent\n'
+    if engine.count(import_line) != 1:raise ValueError('Market Grove extension import changed unexpectedly')
+    engine = engine.replace(import_line, '', 1)
+    future = 'from __future__ import annotations\n'
+    if engine.count(future) != 1:raise ValueError('Market Grove engine future header changed')
+    engine = engine.replace(future, future+extensions+'\n', 1)
     common=engine+'\n'+ADAPTER
     for handler in spec['handlers']:
         action=OPERATIONS[handler['path']]

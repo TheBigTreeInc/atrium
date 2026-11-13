@@ -1,0 +1,124 @@
+{
+  "schema": "ziprunner.project-memory/v1",
+  "project_key": "atrium",
+  "canonical_project_id": null,
+  "version": "0.5.84",
+  "owner_project": "atrium",
+  "source": {
+    "repository_url": "https://github.com/TheBigTreeInc/atrium",
+    "source_path": "registry/project-memory.json",
+    "source_ref": "main (exact HEAD unverified); Library Atrium 0.5.83 base; source candidate 0.5.84"
+  },
+  "facts": [
+    {
+      "id": "atrium-identity",
+      "topic": "identity",
+      "statement": "Atrium is the game discovery, marketplace presentation and multiplayer coordination project; it is not the TaviX package installer.",
+      "source": "README.md; DESIGN.adoc",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "observed"
+    },
+    {
+      "id": "atrium-repository",
+      "topic": "repository",
+      "statement": "TheBigTreeInc/atrium is a reachable GitHub source repository with default branch main.",
+      "source": "GitHub repository metadata (queried 2026-11-12)",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "verified"
+    },
+    {
+      "id": "atrium-source-version",
+      "topic": "source-version",
+      "statement": "GitHub main package.json and the extracted 0.5.82 ZipRunner source ZIP both declare 0.5.82. The 0.5.83 registry update is a candidate only.",
+      "source": "GitHub main/package.json; SHA-256 afe650d38ed016398c368b5e669a89dcf1ddbffd584be58da4f0d4d015e00c6e",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "observed"
+    },
+    {
+      "id": "atrium-uuid",
+      "topic": "uuid",
+      "statement": "Canonical project UUID is not present in inspected project.zr, package.json or current shared catalog; GitHub numeric repository ID is not a project UUID.",
+      "source": "project.zr; package.json; /registry/catalog.json",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "unverified"
+    },
+    {
+      "id": "atrium-distribution",
+      "topic": "distribution",
+      "statement": "Atrium display-only TaviX marketplace uses an independently approved and hash-pinned repository index; installation and trust stay with Tavi/TaviX.",
+      "source": "docs/ATRIUM_TAVIX_MARKETPLACE_ASSETS_082.adoc",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "observed"
+    },
+    {
+      "id": "atrium-multiplayer",
+      "topic": "multiplayer",
+      "statement": "Social contact/challenge adapter and Life lobby tests exist, but trusted runtime and real two-client Life admission remain unmounted/unaccepted.",
+      "source": "docs/ATRIUM_SOCIAL_0145_081.adoc; README.md",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "observed"
+    },
+    {
+      "id": "atrium-assets",
+      "topic": "assets",
+      "statement": "Atrium 0.5.82 includes optional Tavi Assets 0.1.11 SDK bridge; host grant and entitlement approval are separate.",
+      "source": "docs/ATRIUM_TAVIX_MARKETPLACE_ASSETS_082.adoc",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "observed"
+    },
+    {
+      "id": "atrium-approval",
+      "topic": "approval",
+      "statement": "Source QA is not Windows ZipRunner acceptance, GitHub publication, TaviX approval or release.",
+      "source": "project.zr; .ziprunner-workboard-update.json; README.md",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "observed"
+    },
+    {
+      "id": "atrium-source-completeness",
+      "topic": "source-completeness",
+      "statement": "Delivered 0.5.82 ZIP omitted root AGENTS.md and engineering instructions known to exist on GitHub main; full source checkout equivalence is not verified.",
+      "source": "GitHub main/AGENTS.md and INSTRUCT.md; archive file listing",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "unverified"
+    },
+    {
+      "id": "atrium-library-cleanup",
+      "topic": "library-cleanup",
+      "statement": "Thirteen old Atrium Library files are retained in place because their original bytes are not currently materializable for safe move verification.",
+      "source": "Library listing and materialization attempts 2026-11-12",
+      "observed_at": "2026-11-12",
+      "review_after": "2026-11-19",
+      "status": "observed"
+    },
+    {
+      "id": "atrium-market-grove-084",
+      "topic": "market-grove",
+      "statement": "Atrium source 0.5.84 extends its existing independently scoped Market Grove LoopRD child with one global simulated order book, 44 fictional instruments, 20 bot strategies/200 accounts, reference ingestion, and practice-only balances. Real spendable Gold settlement is not implemented and requires a separately authorized Tavi Wallet contract.",
+      "source": "docs/ATRIUM_MARKET_GROVE_EXCHANGE_084.adoc; games/market-grove/docs/TAVI_WALLET_STOCKS.adoc",
+      "observed_at": "2026-11-13",
+      "review_after": "2026-11-20",
+      "status": "observed"
+    }
+  ],
+  "links": {
+    "source": "https://github.com/TheBigTreeInc/atrium",
+    "project_agent": ".ziprunner/PROJECT_AGENTS.md",
+    "registry_entry": "/registry/projects/atrium/v1/2026-11-12-r1/PROJECT.md",
+    "schematic_mirror": "/schematics/atrium/0.5.82/",
+    "base_source_zip_sha256": "afe650d38ed016398c368b5e669a89dcf1ddbffd584be58da4f0d4d015e00c6e"
+  },
+  "review_policy": {
+    "days": 7
+  },
+  "publication_status": "proposed"
+}

@@ -1,0 +1,21 @@
+Atrium 0.5.84 Market Grove source-only QA, 2026-11-13 (Linux container)
+Base: exact bytes /Atrium/Latest/atrium-0.5.83-ziprunner.zip
+Base SHA-256: 5eabf9fdfcb433f9ded827045181cd38f7b664d38cb30a8b703ff4d06f2033ff
+
+PASSED source:
+- python tools/build_market_grove_spec.py --check: generated child descriptor matches source
+- python tools/build_spec.py --check: existing Checkers source matches
+- python tools/check_specs.py: 1 root, 6 resources, 15 models, 24 handlers (root lint)
+- python -m unittest tests.test_market_grove_exchange_084 tests.test_market_grove_reference_import_084 tests.test_market_grove_engine tests.test_market_grove_import tests.test_project_memory -q: 39 tests passed
+- python tools/checkers_group_qa.py: 47 checks passed (source tree)
+- npm test: 123/123 tests passed
+- npm run build: static web output and immutable Atrium TaviX 1.0.4 copy generated; TaviX checkout absent, optional staging skipped
+- npm run verify: Pages-safe static portal verified
+- python tools/package_zip.py: deterministic package and metadata/workboard validation succeeded
+
+INCOMPLETE:
+- Full direct Python unittest discovery first run: 434 tests, 1 failed (project-memory version 0.5.83 vs 0.5.84). Fixed source record to 0.5.84, focused project-memory tests passed. Second full-suite invocation exceeded environment timeout before final summary. Thus DO NOT claim 434/434 full suite.
+- The legacy nested Python runner did print 'All Python source checks passed' during discovery; parent full-suite result remains incomplete.
+- No Windows ZipRunner build or real LoopRD child DB migration, two-person acceptance, provider approval, live ECMAScript browser acceptance, production Wallet Gold settlement, TaviX installation acceptance, Git push, release or marketplace publication.
+
+Release controls: LoopRD market:reference grant operator-only. No real-wallet API integration, no spendable Tavi Gold, no approved external data streaming or real-world payment. Existing operator and runtime secrets must remain protected.

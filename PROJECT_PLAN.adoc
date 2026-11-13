@@ -71,3 +71,7 @@ The operator-scoped candidate API and additive Atrium schema v3 are implemented;
 == v0.5.17 trusted Looprd 0.2.0 metadata registration
 
 Versioned v2 deployment-level receiver supports automatic reviewed metadata registration from one trusted Looprd deployment and preserves existing per-game v1 manual policy. No automatic immutable app release, player identity, runtime sender installation or public launch is claimed. See `docs/P1_067_TRUSTED_DISCOVERY_V2.adoc`; operator migration and sender integration are pending.
+
+== Atrium Market Grove v0.5.84 source implementation
+
+Source ready for ZipRunner candidate validation: 44 instruments (equities, fictional commodity and FX instruments), 20 strategies/200 practice bots, shared multi-principal auctions, isolated reference ingestion and regression tests. Source implementation is not a live rollout. The next accepted gates are Windows ZipRunner, LoopRD child schema backups/upgrade, public game identity routing and operator-scoped rate imports. A *separate* blocked work item requires Tavi Wallet escrow, pre-funded bot treasury and verified earned Gold-only seller settlement before Assets Store profits are possible. Do not modify immutable Atrium TaviX release or game-to-wallet permission grants as part of this pass.
